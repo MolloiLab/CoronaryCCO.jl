@@ -16,3 +16,4 @@ oracle/out/
 .claude/
 /CLAUDE.md
 /AGENTS.md
+examples/*/out/

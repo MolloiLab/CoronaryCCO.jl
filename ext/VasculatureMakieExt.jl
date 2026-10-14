@@ -2,10 +2,10 @@
 # Figures of HCT-CCO postprocessing/coronary_postprocess.py (commit 9bc141f):
 # plot_diameter_vs_order and the figure drawn in compute_hemodynamics. Sizes are in points
 # (1/72 in) with matplotlib's default font sizes, saved at 150 dpi like the Python.
-module CoronaryCCOMakieExt
+module VasculatureMakieExt
 
 using CairoMakie
-using CoronaryCCO: CoronaryCCO, LITERATURE_MU, LITERATURE_SD, PERF_REST, PERF_STRESS
+using Vasculature: Vasculature, LITERATURE_MU, LITERATURE_SD, PERF_REST, PERF_STRESS
 
 const DPI = 150
 const INK = colorant"#2c3e50"
@@ -28,7 +28,7 @@ _legend(ax, pos, size) = axislegend(
     padding = (4, 4, 2, 2), patchsize = (20, 10)
 )
 
-function CoronaryCCO.plot_postprocess(r::NamedTuple, prefix::AbstractString)
+function Vasculature.plot_postprocess(r::NamedTuple, prefix::AbstractString)
     files = [plot_diameter_vs_order(r.diameter_stats, prefix * "_diameter_vs_order.png")]
     r.hemodynamics === nothing || push!(files, plot_hemodynamics(r.hemodynamics, prefix * "_hemodynamics.png"))
     return files

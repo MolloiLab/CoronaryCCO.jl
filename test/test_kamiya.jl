@@ -10,7 +10,7 @@
 # Each line: gamma dP1 dP2 f0 f1 f2 l0 l1 l2 x1_in x2_in x1_out x2_out usable iterations
 # termination_type, floats as C99 hex. The files are regenerable and not committed; the
 # test is skipped when they are absent.
-using CoronaryCCO
+using Vasculature
 using Test
 
 const CERES_DIR = joinpath(@__DIR__, "..", "oracle", "out", "ceres")
@@ -24,8 +24,8 @@ function check_ceres_file(path; show = 5)
         usable = f[14] == "1"
         iters = parse(Int, f[15])
         term = parse(Int, f[16])
-        ok, y1, y2, it = CoronaryCCO.kamiya_ceres(v[1:11]...)
-        t, = CoronaryCCO._kamiya_ceres_full(v[1:11]...)
+        ok, y1, y2, it = Vasculature.kamiya_ceres(v[1:11]...)
+        t, = Vasculature._kamiya_ceres_full(v[1:11]...)
         total += 1
         if y1 === v[12] && y2 === v[13] && ok == usable && it == iters && t == term
             exact += 1
@@ -57,7 +57,7 @@ end
 
 # Measured through top-level functions: a closure defined inside @testset may not be inferred,
 # which boxes the returned tuple at the call site and reports a false allocation.
-kamiya_run(a) = CoronaryCCO.kamiya_ceres(a...)
+kamiya_run(a) = Vasculature.kamiya_ceres(a...)
 kamiya_alloc(a) = @allocated kamiya_run(a)
 
 @testset "kamiya_ceres is allocation free and generic" begin
@@ -73,5 +73,5 @@ kamiya_alloc(a) = @allocated kamiya_run(a)
     @test a32 isa Float32 && b32 isa Float32
     @test isapprox(a32, a64; rtol = 1.0e-4) && isapprox(b32, b64; rtol = 1.0e-4)
     # A non-finite start fails in preprocessing and leaves the start point untouched.
-    @test CoronaryCCO.kamiya_ceres(args[1:9]..., NaN, 0.01) === (false, NaN, 0.01, 0)
+    @test Vasculature.kamiya_ceres(args[1:9]..., NaN, 0.01) === (false, NaN, 0.01, 0)
 end

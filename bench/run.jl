@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Times the growth of an n-terminal tree on HCT-CCO's case0 sample.
 #   julia -t auto --project=bench bench/run.jl 40000 [Float32|Float64] [upstream|full]
-using CoronaryCCO
+using Vasculature
 using Downloads
 
 const UPSTREAM = "https://raw.githubusercontent.com/Sujal-vajire/HCT-CCO/9bc141fe3438312f84d5e878cc9830b166ad63fd/samples"

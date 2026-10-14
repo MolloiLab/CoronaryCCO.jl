@@ -13,7 +13,7 @@ postprocess("tree.xml", "out/case0"; domain_vol = "case0.vol", mass = :upstream,
 ```
 
 ```julia
-using CoronaryCCO
+using Vasculature
 E = generate("case0.vol", "case0.xml"; nterm = 2000, aperf = 10000, min_dist = 1,
              root = (-26, 41, 13), seed = 1, export_xml = "tree.xml")
 using CairoMakie                      # optional: also writes the two figures
@@ -39,7 +39,7 @@ undefined SE, and `\r\n` line endings. The returned NamedTuple holds the compute
 `orders`, `diameters`, the ordering internals (`strahler`, `seg2elem`, `elem_order`), the
 `connectivity` matrices, the `diameter_stats` table, and `hemodynamics` (per-segment flow,
 pressure and WSS for both states, plus the per-order medians). The figures are drawn by the
-`CoronaryCCOMakieExt` package extension. Without CairoMakie, `postprocess` writes everything
+`VasculatureMakieExt` package extension. Without CairoMakie, `postprocess` writes everything
 else and logs a note.
 
 ## Verification
@@ -100,7 +100,7 @@ Both are fixed by default. The upstream behaviour stays available for verificati
 - **VTP encoding.** The arrays are written inline as uncompressed base64 (`format="binary"`),
   not appended and zlib-compressed as `vtkXMLPolyDataWriter` does. The content is the same,
   and the file opens in ParaView and VTK.
-- **OBJ header.** The first comment line names CoronaryCCO.jl instead of VTK.
+- **OBJ header.** The first comment line names Vasculature.jl instead of VTK.
 - **Figures** are redrawn with Makie at the Python figure sizes (8 x 5.5 in and 12 x 5 in,
   150 dpi). They show the same series, bands, scales, labels and titles as the matplotlib
   figures. They are not pixel-identical.

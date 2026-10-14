@@ -1,9 +1,11 @@
 # Notice: provenance, attribution, and licenses
 
-CoronaryCCO.jl is a Julia port of **HCT-CCO**. It is a derivative work. The
-algorithm, its constants, and its control flow come from the upstream authors
-listed below. This port changes the language and the execution strategy. It does
-not claim the method.
+Vasculature.jl contains a Julia port of **HCT-CCO**: its
+vascular tree growth engine. That part is a derivative work. The growth algorithm,
+its constants, and its control flow come from the upstream authors listed below. The
+port changes the language and the execution strategy. It does not claim the method.
+The flow, transport and phantom stages are new code built on the published
+physiology cited in `docs/`.
 
 ## Upstream works this package is derived from
 
@@ -50,14 +52,14 @@ not claim the method.
 
 ## License of this package
 
-CoronaryCCO.jl is distributed under the GNU General Public License v3.0 or (at
+Vasculature.jl is distributed under the GNU General Public License v3.0 or (at
 your option) any later version (`GPL-3.0-or-later`), the same terms as HCT-CCO.
 The full text is in [`LICENSE`](LICENSE). Every source file carries an SPDX
 header and a short provenance line naming the upstream file it ports.
 
 ## Upstream dependencies that this port does NOT redistribute
 
-HCT-CCO builds on the libraries below. CoronaryCCO.jl replaces each with Julia
+HCT-CCO builds on the libraries below. Vasculature.jl replaces each with Julia
 code and contains none of their source. They are listed so that credit and
 license terms stay visible. Where this port reproduces one of their numerical
 procedures (for example the Ceres trust-region solve), it does so to match

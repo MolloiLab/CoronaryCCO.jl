@@ -3,7 +3,7 @@
 #
 # Reference outputs, when present, come from running the upstream script on trees grown by
 # this package (the directory is regenerable and not committed):
-#   julia -t 8 --project -e 'using CoronaryCCO; S = "oracle/build/src/samples";
+#   julia -t 8 --project -e 'using Vasculature; S = "oracle/build/src/samples";
 #       generate("$S/case0.vol", "$S/case0.xml"; nterm = 2000, aperf = 10000, min_dist = 1,
 #                root = (-26, 41, 13), seed = 1, T = Float64, export_xml = "oracle/out/pp/tree2000.xml")'
 #   python -I oracle/pp_reference.py oracle/build/src/postprocessing/coronary_postprocess.py \
@@ -13,7 +13,7 @@
 # must agree bit for bit. The tube mesh is compared for the smallest reference tree. These
 # comparisons switch on the upstream behaviour (`mass = :upstream, elements = :upstream`);
 # the defaults correct two upstream bugs (see docs/postprocess.md).
-using CoronaryCCO
+using Vasculature
 using Test
 
 const PP_DIR = joinpath(@__DIR__, "..", "oracle", "out", "pp")
@@ -54,7 +54,7 @@ end
 
 @testset "post-processing" begin
     @testset "numpy and printf primitives" begin
-        C = CoronaryCCO
+        C = Vasculature
         @test C._np_median([3.0, 1.0, 2.0]) == 2.0
         @test C._np_median([4.0, 1.0, 2.0, 3.0]) == 2.5
         @test C._np_percentile([1.0, 2.0, 3.0, 4.0], 25) == 1.75
@@ -77,7 +77,7 @@ end
         n = nsegments(E.m) - 1                          # one XML edge per non-root-node segment
         @test length(r.orders) == length(r.diameters) == n
         @test all(1 .<= r.orders .<= 11)
-        @test r.diameters == 2 .* parse.(Float64, CoronaryCCO._g.(E.m.radius[2:end]))   # XML keeps %g
+        @test r.diameters == 2 .* parse.(Float64, Vasculature._g.(E.m.radius[2:end]))   # XML keeps %g
         for suffix in ("_tree.vtp", "_tree.obj", (string("_", k, ".csv") for k in PP_CSV)...)
             @test isfile(prefix * suffix)
         end
@@ -88,9 +88,9 @@ end
         # the network solve conserves flow, keeps 100 mmHg at the inlet side and drops pressure
         h = r.hemodynamics
         @test h.mass_g ≈ 254.98 * 1.05                  # 254,980 voxels > 128, 1 mm^3 each
-        @test CoronaryCCO.domain_mass_g(sample("case0.vol"); mass = :upstream)[1] ≈ 41.7396
+        @test Vasculature.domain_mass_g(sample("case0.vol"); mass = :upstream)[1] ≈ 41.7396
         st = h.stress
-        net = CoronaryCCO._hemo_network(r.tree)
+        net = Vasculature._hemo_network(r.tree)
         @test st.flow[net.root] ≈ 3.5 * h.mass_g / 60
         for i in 1:n
             ch = net.children[i]
@@ -104,8 +104,8 @@ end
         node2seg = Dict(tp.to[i] => i for i in 1:n)
         par = [get(node2seg, tp.from[i], 0) for i in 1:n]
         siblings(o) = count(segs -> !allunique(par[segs]), o.elem_segs)
-        @test siblings(CoronaryCCO.diameter_defined_orders(tp)) == 0
-        @test siblings(CoronaryCCO.diameter_defined_orders(tp; elements = :upstream)) > 0
+        @test siblings(Vasculature.diameter_defined_orders(tp)) == 0
+        @test siblings(Vasculature.diameter_defined_orders(tp; elements = :upstream)) > 0
     end
 
     refs = isdir(PP_DIR) ? [m.captures[1] for m in filter(!isnothing, match.(r"^tree(\w+)\.xml$", readdir(PP_DIR)))] : String[]

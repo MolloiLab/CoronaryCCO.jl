@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Post-processing: pure-Julia port of HCT-CCO postprocessing/coronary_postprocess.py (commit
 # 9bc141f), entry point run(xml_path, prefix, domain_vol). Figures live in the CairoMakie
-# extension (ext/CoronaryCCOMakieExt.jl).
+# extension (ext/VasculatureMakieExt.jl).
 
 include("postprocess/numpy.jl")
 include("postprocess/tree.jl")

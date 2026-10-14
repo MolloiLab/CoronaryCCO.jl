@@ -1,11 +1,12 @@
 cff-version: 1.2.0
 title: >-
-  CoronaryCCO.jl: a vendor-neutral, GPU-accelerated Julia port of HCT-CCO
-  for subject-specific coronary arterial tree generation
+  Vasculature.jl: vendor-neutral, GPU-accelerated vascular network growth,
+  flow, contrast transport and voxel phantoms in Julia
 message: >-
-  If you use this software, please cite the HCT-CCO article and the OpenCCO
-  article listed under references, as well as this software. CoronaryCCO.jl
-  is a port; the method belongs to the upstream authors.
+  If you use this software, please cite it. If you use its tree growth, please
+  also cite the HCT-CCO article and the OpenCCO article listed under
+  references: the growth engine is a port, and that method belongs to the
+  upstream authors.
 type: software
 license: GPL-3.0-or-later
 authors:
@@ -13,10 +14,12 @@ authors:
     family-names: Black
     affiliation: University of California, Irvine — Molloi Lab
     orcid: https://orcid.org/0000-0002-9150-9827
-repository-code: https://github.com/MolloiLab/CoronaryCCO.jl
-url: https://github.com/MolloiLab/CoronaryCCO.jl
+repository-code: https://github.com/MolloiLab/Vasculature.jl
+url: https://github.com/MolloiLab/Vasculature.jl
 abstract: >-
-  Pure-Julia port of HCT-CCO (Hierarchy CT-Driven Constrained Constructive
+  Pure-Julia tools from organ geometry to a grown vascular network, steady
+  flow, contrast transport and a voxelized material phantom. Its growth
+  engine is a port of HCT-CCO (Hierarchy CT-Driven Constrained Constructive
   Optimization), which grows subject-specific coronary arterial trees from a
   segmented epicardial base tree inside a CT-derived myocardial domain. Kernels
   are written with AcceleratedKernels.jl and KernelAbstractions.jl so the same

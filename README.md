@@ -1,21 +1,28 @@
-# CoronaryCCO.jl
+# Vasculature.jl
 
-[![CI](https://github.com/MolloiLab/CoronaryCCO.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/MolloiLab/CoronaryCCO.jl/actions/workflows/CI.yml)
+[![CI](https://github.com/MolloiLab/Vasculature.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/MolloiLab/Vasculature.jl/actions/workflows/CI.yml)
 [![License: GPL v3+](https://img.shields.io/badge/License-GPLv3+-blue.svg)](LICENSE)
 
-A pure-Julia, vendor-neutral port of **HCT-CCO** (Vajire, Choy, Kassab and Lee), which
-grows subject-specific coronary arterial trees from a segmented epicardial base tree
-inside a CT-derived myocardial domain.
+Pure-Julia, vendor-neutral tools that take an organ mesh or mask to a grown vascular network
+and a voxelized material phantom: **grow → flow → mesh + voxelize + materialize**. The phantom
+is the hand-off point. CT simulation (for example with
+[BasisSimulator.jl](https://github.com/MolloiLab/BasisSimulator.jl)) and perfusion analysis
+stay in their own packages and appear here only as worked examples.
 
-> **This is a port, not a new method.** The algorithm belongs to the HCT-CCO authors, and
-> HCT-CCO itself extends **OpenCCO** (Kerautret, Ngo, Passat, Talbot and Jaquet). If you
-> use this package, please cite both of their articles (see [How to cite](#how-to-cite)).
-> Upstream: <https://github.com/Sujal-vajire/HCT-CCO>.
+The growth engine is a port of **HCT-CCO** (Vajire, Choy, Kassab and Lee), which grows
+subject-specific coronary arterial trees from a segmented epicardial base tree inside a
+CT-derived myocardial domain. The first target is coronary perfusion; brain and other organs
+are planned.
+
+> **The growth engine is a port, not a new method.** The algorithm belongs to the HCT-CCO
+> authors, and HCT-CCO itself extends **OpenCCO** (Kerautret, Ngo, Passat, Talbot and Jaquet).
+> If you use tree growth from this package, please cite both of their articles (see
+> [How to cite](#how-to-cite)). Upstream: <https://github.com/Sujal-vajire/HCT-CCO>.
 
 ## What it does
 
 ```julia
-using CoronaryCCO
+using Vasculature
 E = generate("case0.vol", "case0.xml"; nterm = 40_000, aperf = 10_000, min_dist = 1,
              root = (-26, 41, 13), seed = 1, export_xml = "tree.xml")
 postprocess("tree.xml", "tree"; domain_vol = "case0.vol")   # orders, morphometry, hemodynamics, VTP/OBJ
@@ -24,7 +31,7 @@ dds_orders(E.m)                                              # orders computed f
 
 On an Apple M4 laptop CPU (8 threads), case0 with HCT-CCO's sample settings:
 
-| terminals | upstream C++ | CoronaryCCO exact mode | CoronaryCCO (default) |
+| terminals | upstream C++ | Vasculature exact mode | Vasculature (default) |
 |---:|---:|---:|---:|
 | 4,000 | 81 s | 2.3 s | 1.6 s |
 | 40,000 | ≈ 3.6–5 h (extrapolated) | 109 s | 14 s |

@@ -1,13 +1,13 @@
-# Where CoronaryCCO.jl departs from upstream HCT-CCO, and why
+# Where Vasculature.jl departs from upstream HCT-CCO, and why
 
-CoronaryCCO.jl reproduces HCT-CCO (commit `9bc141f`) bit for bit in its Float64 exact mode:
+Vasculature.jl reproduces HCT-CCO (commit `9bc141f`) bit for bit in its Float64 exact mode:
 on the `case0` sample, every segment's topology, coordinates, radius, resistance, flow and
 radius ratio match the C++ reference build at 500 and 2,000 terminals. Every behaviour below
 is therefore reproduced by default, and each correction is an explicit option.
 
 For each item: what the released code does, what the HCT-CCO paper says (Vajire, Choy, Kassab
 and Lee, *Ann. Biomed. Eng.* 2026, doi:10.1007/s10439-026-04383-4), where the behaviour comes
-from, why it was easy to miss, what it changes, and what CoronaryCCO offers. These notes are
+from, why it was easy to miss, what it changes, and what Vasculature offers. These notes are
 meant to help interpret upstream results, not to diminish the method; several of the
 behaviours are inherited from OpenCCO, and some are invisible at the scales the paper ran.
 
@@ -32,7 +32,7 @@ the grown terminals had to be filled in analytically.
 literature thresholds), so it cannot by itself validate the growth. The hemodynamic check also
 lacks the arterioles below ~50 µm, which carry most of the arterial pressure drop.
 
-**CoronaryCCO.** Fast mode grows 2 × 10⁵ terminals in about 100 s on a laptop CPU, so terminal
+**Vasculature.** Fast mode grows 2 × 10⁵ terminals in about 100 s on a laptop CPU, so terminal
 counts that reach true order-1 arterioles are practical. Orders are computed from the tree
 itself (`dds_orders`: topological Strahler, and the Jiang–Kassab–Fung diameter-defined
 procedure) with no diameter changes.
@@ -54,7 +54,7 @@ From the 3.18 mm root to Kassab's 9 µm order-1 arterioles (a ratio of ~350) tak
 terminals at γ = 2.33 but ~4 × 10⁷ at γ = 3. Measured: at 2 × 10⁵ terminals the median leaf
 is 51 µm with γ = 3 and 16.8 µm with γ = 2.33.
 
-**CoronaryCCO.** `gamma` is a parameter; the first-principles runs use the paper's 2.33.
+**Vasculature.** `gamma` is a parameter; the first-principles runs use the paper's 2.33.
 
 **Evidence.** The paper sets γ = 2.33 and attributes it to the HK coronary scaling law, citing
 Huo and Kassab (2009, its reference 20). That paper derives a resistance scaling law; the
@@ -93,7 +93,7 @@ which nearest segments are tried.
 **Why it was easy to miss.** The trees still look plausible: the restriction schedule and
 nearest-neighbour attachment produce hierarchy on their own.
 
-**CoronaryCCO.** `volume = :full` counts the whole tree.
+**Vasculature.** `volume = :full` counts the whole tree.
 
 **Evidence.** The CCO cost is the total intravascular volume of the tree,
 V = π Σᵢ rᵢ² lᵢ over all segments (Schreiner and Buxbaum 1993; Karch et al. 1999; OpenCCO
@@ -116,7 +116,7 @@ clearance from the epicardial and endocardial surfaces.
 wrong geometry near oblique walls. The Euclidean distance and DGtal's output differed for the
 first time at step 29 of a 500-terminal run, which is how this was found.
 
-**CoronaryCCO.** `metric = :euclidean`.
+**Vasculature.** `metric = :euclidean`.
 
 **Evidence.** Danielsson (1980); the paper's own Methods.
 
@@ -130,7 +130,7 @@ first time at step 29 of a 500-terminal run, which is how this was found.
 cannot exceed the number of admissible voxels (~2.5 × 10⁵ for case0's 1 mm mask). The paper's
 counts (≤ 2 × 10⁴) never came close, so the cap was invisible.
 
-**CoronaryCCO.** `sampling = :continuous` samples uniformly inside admissible voxels and
+**Vasculature.** `sampling = :continuous` samples uniformly inside admissible voxels and
 re-checks the wall clearance at the sampled point.
 
 **Evidence.** CCO places each new terminal at a random location drawn from the perfusion
@@ -153,7 +153,7 @@ input centerlines.
 **Why it was easy to miss.** Kinks are local and the paper's figures show whole hearts; the
 reported geometric check is vessel crossings (< 0.1% of segments), not path curvature.
 
-**CoronaryCCO.** `fix_base = true` keeps junctions on imaged centerlines: when the host segment
+**Vasculature.** `fix_base = true` keeps junctions on imaged centerlines: when the host segment
 belongs to the base tree, the bifurcation point is projected onto its centerline (5–95% of
 its length). Pieces of a split base vessel stay "base", so later splits keep them in place.
 
@@ -175,7 +175,7 @@ form in that first 10% (the unrestricted stage), so they are checked at radii up
 too small and later overlap: at 10⁵ terminals, 69 pairs of large vessels (r ≥ 0.25 mm)
 overlapped, by up to 1.66 mm, including branches folded back alongside their grandparents.
 
-**CoronaryCCO.** `collision = :final` multiplies every radius in the intersection, spacing and
+**Vasculature.** `collision = :final` multiplies every radius in the intersection, spacing and
 degenerate-length tests by (root radius cap / current root radius). For a fixed tree
 structure all radii scale with the root radius, so this anticipates each vessel's final
 size. At 10⁵ terminals the worst overlap fell to 0.33 mm, and what remains is between
@@ -191,7 +191,7 @@ collision tests; no angle is checked, so a daughter can leave its parent backwar
 Physiol.*) predicts that the smaller daughter leaves at most perpendicular to the parent and
 the larger one nearly straight on; no daughter turns back.
 
-**CoronaryCCO.** `max_branch_angle = 90` rejects candidate bifurcations in which the
+**Vasculature.** `max_branch_angle = 90` rejects candidate bifurcations in which the
 continuing segment, the new branch, or the moved parent segment turns by more than 90°. At
 10⁵ terminals this removed every grown-vessel turn above 90° (45 among vessels with
 r ≥ 0.1 mm without it).
@@ -208,7 +208,7 @@ stress scales with this mass.
 **Note.** If the paper's own domains were uncompressed (Version 2) masks with a zero
 background, the count would have been right there; the error shows up on the public sample.
 
-**CoronaryCCO.** The post-processing defaults to the decoded mask (`mass = :mask`);
+**Vasculature.** The post-processing defaults to the decoded mask (`mass = :mask`);
 `mass = :upstream` reproduces the Python for verification.
 
 ## 10. Reproducibility details (no change in behaviour)

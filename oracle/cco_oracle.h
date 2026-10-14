@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Instrumentation force-included (-include) into the upstream HCT-CCO build so it can
-// serve as the reference ("oracle") for CoronaryCCO.jl. It changes no arithmetic:
+// serve as the reference ("oracle") for Vasculature.jl. It changes no arithmetic:
 //   1. rand()/srand() are replaced by a portable SplitMix64-based generator with the
 //      same RAND_MAX contract, seeded from CCO_SEED, so Julia can replay the exact
 //      candidate stream on any platform.

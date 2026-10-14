@@ -1,4 +1,4 @@
-name = "CoronaryCCO"
+name = "Vasculature"
 uuid = "8abde15c-62e6-4bf1-8420-1c5aafac9fe2"
 version = "0.1.0"
 authors = ["Dale Black <djblack@uci.edu>"]
@@ -14,7 +14,7 @@ Zlib_jll = "83775a58-1f1d-513f-b197-d71354ab007a"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 
 [extensions]
-CoronaryCCOMakieExt = "CairoMakie"
+VasculatureMakieExt = "CairoMakie"
 
 [compat]
 AcceleratedKernels = "0.4, 0.5"

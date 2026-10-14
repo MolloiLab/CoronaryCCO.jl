@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-using CoronaryCCO
+using Vasculature
 using Downloads
 using Test
 
-const C = CoronaryCCO
+const C = Vasculature
 
 # HCT-CCO's sample case (the HCT-CCO authors' data, under the HCT-CCO license), fetched from
 # the pinned upstream commit rather than redistributed here.
@@ -26,7 +26,7 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
     a.left == b.left && a.right == b.right && a.flow == b.flow &&
     a.resistance == b.resistance && a.terminals == b.terminals
 
-@testset "CoronaryCCO" begin
+@testset "Vasculature" begin
     @testset "defaults match upstream HctCco CLI" begin
         p = CCOParams()
         @test p.nterm == 500
