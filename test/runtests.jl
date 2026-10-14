@@ -80,6 +80,19 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test abs(par.m.radius[2] - ex.m.radius[2]) <= 1.0e-3 * ex.m.radius[2]
     end
 
+    @testset "corrected growth options" begin
+        E = grow_case0(
+            2000; T = Float32, gamma = 2.33, volume = :full, metric = :euclidean,
+            sampling = :continuous, fix_base = true, collision = :final, max_branch_angle = 90
+        )
+        q = tree_qc(E; rmin = 0.1)
+        @test q.grown_turns_90 == 0          # no daughter turns back past 90°
+        @test q.base_turns_135 == 0          # imaged vessels are not folded
+        R = dds_orders(E.m)
+        @test R.stats[1].count > R.stats[end].count
+        @test all(s.mean > 0 for s in R.stats)
+    end
+
     @testset "export round trip" begin
         E = grow_case0(100; T = Float64)
         path = tempname() * ".xml"

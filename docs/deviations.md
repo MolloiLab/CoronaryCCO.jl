@@ -161,7 +161,42 @@ its length). Pieces of a split base vessel stay "base", so later splits keep the
 anatomy that growth extends. (Jaquet et al. 2019, the hybrid method the paper compares
 against, likewise starts growth from the segmented epicardial vessels.)
 
-## 7. Myocardial mass in the hemodynamic check
+## 7. Collision tests use insertion-time radii, which are far below final radii
+
+**Released code.** A candidate bifurcation is rejected if its three segments intersect an
+existing vessel or are shorter than twice their radius, using the radii of the current tree.
+The test is never repeated.
+
+**Why it matters.** Each terminal carries q_term = Q_perf / N_final, so early in growth the tree
+carries only a fraction of its final flow and every radius is a fraction of its final size.
+On case0 the root radius is 0.15 mm after import, 0.70 mm at 1% of growth and 1.42 mm at 5%,
+reaching its 1.588 mm cap only at about 10% (2 × 10⁵ terminals, γ = 2.33). The large vessels
+form in that first 10% (the unrestricted stage), so they are checked at radii up to ten times
+too small and later overlap: at 10⁵ terminals, 69 pairs of large vessels (r ≥ 0.25 mm)
+overlapped, by up to 1.66 mm, including branches folded back alongside their grandparents.
+
+**CoronaryCCO.** `collision = :final` multiplies every radius in the intersection, spacing and
+degenerate-length tests by (root radius cap / current root radius). For a fixed tree
+structure all radii scale with the root radius, so this anticipates each vessel's final
+size. At 10⁵ terminals the worst overlap fell to 0.33 mm, and what remains is between
+segments two steps apart at closely spaced junctions (cylinders overlapping at a shared node),
+which a merged surface mesh absorbs. `tree_qc` reports these checks for any grown tree.
+
+## 8. No limit on branching angles
+
+**Released code.** The bifurcation point comes from the Kamiya optimization and the
+collision tests; no angle is checked, so a daughter can leave its parent backwards.
+
+**Evidence.** Murray's minimum-work analysis of branching angles (Murray 1926, *J. Gen.
+Physiol.*) predicts that the smaller daughter leaves at most perpendicular to the parent and
+the larger one nearly straight on; no daughter turns back.
+
+**CoronaryCCO.** `max_branch_angle = 90` rejects candidate bifurcations in which the
+continuing segment, the new branch, or the moved parent segment turns by more than 90°. At
+10⁵ terminals this removed every grown-vessel turn above 90° (45 among vessels with
+r ≥ 0.1 mm without it).
+
+## 9. Myocardial mass in the hemodynamic check
 
 **Released code.** `_read_domain_mass_g` counts non-zero bytes of the `.vol` payload without
 decompressing it. For the shipped case0 (Version 3, zlib) that is 41.74 g; the decoded mask
@@ -176,7 +211,7 @@ background, the count would have been right there; the error shows up on the pub
 **CoronaryCCO.** The post-processing defaults to the decoded mask (`mass = :mask`);
 `mass = :upstream` reproduces the Python for verification.
 
-## 8. Reproducibility details (no change in behaviour)
+## 10. Reproducibility details (no change in behaviour)
 
 - `std::sort` is not stable, so equal distances in the nearest-segment sort are ordered
   differently by libc++ and libstdc++ (C++ standard, [alg.sort]); the reference build and the
@@ -188,7 +223,7 @@ background, the count would have been right there; the error shows up on the pub
   1 survives the XML import, `myVectParent[0]` is overwritten on leaf splits, XML values are
   read in single precision, and the XML `pTerm` does not update the pressure drop.
 
-## 9. Fast mode implements the paper's incremental update
+## 11. Fast mode implements the paper's incremental update
 
 The paper describes updating resistances "incrementally along the path from the new terminal
 to the root" using a radius-independent baseline resistance R̃ = 8μL/π (Eq. 2 and the text
@@ -208,5 +243,6 @@ root, which is what makes 10⁵–10⁶ terminals practical. It equals exact mod
 - Kassab GS, Rider CA, Tang NJ, Fung YC. Morphometry of pig coronary arterial trees. *Am. J. Physiol.* 265:H350–H365, 1993. doi:10.1152/ajpheart.1993.265.1.H350
 - Kerautret B, Ngo P, Passat N, Talbot H, Jaquet C. OpenCCO: an implementation of constrained constructive optimization for generating 2D and 3D vascular trees. *Image Process. On Line* 13:258–279, 2023. doi:10.5201/ipol.2023.477
 - Murray CD. The physiological principle of minimum work. *Proc. Natl. Acad. Sci. USA* 12:207–214, 1926. doi:10.1073/pnas.12.3.207
+- Murray CD. The physiological principle of minimum work applied to the angle of branching of arteries. *J. Gen. Physiol.* 9:835–841, 1926. doi:10.1085/jgp.9.6.835
 - Schreiner W, Buxbaum PF. Computer-optimization of vascular trees. *IEEE Trans. Biomed. Eng.* 40:482–491, 1993. doi:10.1109/10.243413
 - Vajire SL, Choy JS, Kassab GS, Lee LC. Hierarchy aware CT-driven constrained constructive optimization: a framework for coronary network generation. *Ann. Biomed. Eng.*, 2026. doi:10.1007/s10439-026-04383-4

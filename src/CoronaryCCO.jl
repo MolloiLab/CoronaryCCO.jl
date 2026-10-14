@@ -31,10 +31,11 @@ include("grid.jl")
 include("grow.jl")
 include("fast.jl")
 include("morphometry.jl")
+include("qc.jl")
 include("generate.jl")
 include("postprocess.jl")
 
 export CCOParams, CCOModel, MaskDomain, Engine, nsegments
-export read_vol, import_gxl, export_gxl, grow!, generate, dds_orders
+export read_vol, import_gxl, export_gxl, grow!, generate, dds_orders, tree_qc
 
 end

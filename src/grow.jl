@@ -55,6 +55,9 @@ mutable struct Engine{T}
     volume::Symbol            # fast mode only: :upstream or :full (see fast.jl)
     sampling::Symbol          # :voxel (upstream: integer voxel points) or :continuous
     fix_base::Bool            # keep the imaged base tree's centerlines where branches attach
+    collision::Symbol         # :current (upstream) or :final radii in collision/spacing tests
+    cscale::T                 # radius scale used by those tests (1 for :current)
+    max_angle_cos::T          # cos of the largest allowed turn at a new bifurcation (-1: none)
     isbase::Vector{Bool}      # segment lies on an imaged base-tree vessel
     F::FastState{T}
     stats::GrowStats
@@ -63,8 +66,10 @@ end
 function Engine(
         m::CCOModel{T}, dom::MaskDomain{T}; seed::Integer = 0, cell::Real = 2.0,
         mode::Symbol = :fast, volume::Symbol = :upstream, sampling::Symbol = :voxel,
-        fix_base::Bool = false
+        fix_base::Bool = false, collision::Symbol = :current,
+        max_branch_angle::Union{Nothing, Real} = nothing
     ) where {T}
+    collision in (:current, :final) || throw(ArgumentError("collision must be :current or :final"))
     sampling in (:voxel, :continuous) || throw(ArgumentError("sampling must be :voxel or :continuous"))
     mode in (:exact, :fast) || throw(ArgumentError("mode must be :exact or :fast"))
     volume in (:upstream, :full) || throw(ArgumentError("volume must be :upstream or :full"))
@@ -81,7 +86,9 @@ function Engine(
     E = Engine{T}(
         m, L, g, dom, CRand(seed), m.params, UInt64(seed),
         [Workspace{T}() for _ in 1:m.params.num_neighbors], zero(T), tc, Bool[],
-        mode, volume, sampling, fix_base, trues(nsegments(m)) |> Vector{Bool},
+        mode, volume, sampling, fix_base, collision, one(T),
+        max_branch_angle === nothing ? -one(T) : T(cosd(max_branch_angle)),
+        trues(nsegments(m)) |> Vector{Bool},
         FastState{T}(), GrowStats()
     )
     update_rmax!(E)
@@ -101,8 +108,9 @@ update_rmax!(E::Engine) = (E.rmax = maximum(@view E.m.radius[2:end]); E)
 # HctccoModel::isIntersectingTree(ptA, ptB, r, idExcept) without the zero-index shortcut.
 function scan_hit(E::Engine{T}, A::P3{T}, B::P3{T}, r::T, e1, e2, e3) where {T}
     m = E.m
-    test(j) = j != e1 && j != e2 && j != e3 && is_intersecting(A, B, r, segA(m, j), segB(m, j), m.radius[j])
-    return grid_any(test, E.g, A, B, r + E.rmax)
+    c = E.cscale; rq = r * c
+    test(j) = j != e1 && j != e2 && j != e3 && is_intersecting(A, B, rq, segA(m, j), segB(m, j), m.radius[j] * c)
+    return grid_any_r(test, E.g, A, B, r -> rq + r * c, E.rmax)
 end
 
 # Upstream's idExcept==0 shortcut: an excluded "index 0" (either "no child" or the root
@@ -128,9 +136,10 @@ end
 # HctccoModel::isDistanceValid(p, minPerfusionDistance)
 function distance_valid(E::Engine{T}, p::P3{T}, mpd::T) where {T}
     m = E.m
-    seg_bad(j) = proj_distance(segA(m, j), segB(m, j), p) < cmax(mpd, m.radius[j] * T(2))
+    c = E.cscale
+    seg_bad(j) = proj_distance(segA(m, j), segB(m, j), p) < cmax(mpd, m.radius[j] * c * T(2))
     term_bad(j) = E.tcount[j] > 0 && norm3(sub3(m.pos[j], p)) < mpd
-    grid_any(seg_bad, E.g, p, p, cmax(mpd, E.rmax * T(2))) && return false
+    grid_any_r(seg_bad, E.g, p, p, r -> cmax(mpd, r * c * T(2)), E.rmax) && return false
     grid_any(term_bad, E.g, p, p, mpd) && return false
     return true
 end
@@ -159,8 +168,9 @@ function generate_a_location!(E::Engine{T}, thr::T) where {T}
     # terminals after the first list entry within thr of res
     tclose(j) = (E.tcount[j] - (j == first ? 1 : 0)) > 0 && !(norm3(sub3(m.pos[j], res)) > thr)
     grid_any(tclose, E.g, res, res, thr) && return res, false
-    sclose(j) = j > nt && !(proj_distance(segA(m, j), segB(m, j), res) > m.radius[j])
-    grid_any(sclose, E.g, res, res, E.rmax) && return res, false
+    c = E.cscale
+    sclose(j) = j > nt && !(proj_distance(segA(m, j), segB(m, j), res) > m.radius[j] * c)
+    grid_any_r(sclose, E.g, res, res, r -> r * c, E.rmax) && return res, false
     return res, true
 end
 
@@ -234,6 +244,13 @@ end
 
 # ---------------------------------------------------------------------------------------
 # Candidate evaluation (HctccoModel::isAddable on a virtual copy of the tree).
+
+# Direction change from u to v no larger than the angle whose cosine is cmin.
+@inline function _turn_ok(u::P3{T}, v::P3{T}, cmin::T) where {T}
+    nu = norm3(u); nv = norm3(v)
+    (nu == 0 || nv == 0) && return true
+    return dot3(u, v) >= cmin * nu * nv
+end
 
 # HctccoModel::terminalFlowWeight
 function terminal_flow_weight(m::CCOModel{T}, p::P3{T}) where {T}
@@ -388,6 +405,18 @@ function try_candidate!(ws::Workspace{T}, E::Engine{T}, p::P3{T}, s::Int32) wher
             t = clamp(dot3(sub3(pOpt, pParent), ax) / dot3(ax, ax), T(0.05), T(0.95))
             pOpt = add3(pParent, mul3(ax, t))
         end
+        if E.max_angle_cos > -1
+            # Minimum-work branching (Murray 1926) never sends a daughter backward relative to
+            # the parent's flow; reject bifurcations whose new or moved segments turn more
+            # than the configured angle.
+            up = sub3(pOpt, pParent)
+            _turn_ok(up, sub3(ps, pOpt), E.max_angle_cos) || return (false, zero(T), p, zero(T), i + 1)
+            _turn_ok(up, sub3(p, pOpt), E.max_angle_cos) || return (false, zero(T), p, zero(T), i + 1)
+            if par != 1 && m.parent[par] != 1
+                _turn_ok(sub3(pParent, m.pos[m.parent[par]]), up, E.max_angle_cos) ||
+                    return (false, zero(T), p, zero(T), i + 1)
+            end
+        end
         if !_has_zero(m, idL, idR, par)
             scan_hit(E, pOpt, pParent, r0, idL, idR, par) && return (false, zero(T), p, zero(T), i + 1)
         end
@@ -409,7 +438,8 @@ function try_candidate!(ws::Workspace{T}, E::Engine{T}, p::P3{T}, s::Int32) wher
                 l0 = norm3(sub3(pOpt, pParent)) * lf
                 l1 = norm3(sub3(pOpt, ps)) * lf
                 l2 = norm3(sub3(pOpt, p)) * lf
-                if (T(2) * r0 <= l0) && (T(2) * r1 <= l1) && (T(2) * r2 <= l2)
+                c2 = T(2) * E.cscale    # degenerate check (2r <= l), at final radii with collision = :final
+                if (c2 * r0 <= l0) && (c2 * r1 <= l1) && (c2 * r2 <= l2)
                     return (true, vol, pOpt, qNew, i + 1)
                 end
             else
@@ -498,6 +528,12 @@ function grow!(
     t0 = time()
     for i in 1:min(nseed - 1, steps)
         st.steps += 1
+        if E.collision === :final && m.root_radius_max > 0
+            # Radii scale with the root radius for a fixed structure, so testing at
+            # cap / current root radius anticipates each vessel's size once all flow is in.
+            r_now = E.mode === :fast ? fast_root_radius(E) : m.radius[2]
+            E.cscale = max(one(T), m.root_radius_max / r_now)
+        end
         nbsol = 0; nbT = 0
         volopt = -one(T)
         best_s = Int32(0); best_p = (zero(T), zero(T), zero(T)); best_opt = best_p; best_q = zero(T)

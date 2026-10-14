@@ -72,20 +72,23 @@ function fast_refresh_radii!(E::Engine{T}) where {T}
     m.radius[2] = r
     stack = Tuple{Int32, T}[(Int32(2), one(T))]
     rmax = r
-    while !isempty(stack)
+    @inbounds while !isempty(stack)
         j, B = pop!(stack)
         a = m.left[j]; b = m.right[j]
         bin = a != 0 && b != 0
         for c in (a, b)
             c == 0 && continue
             Bc = bin ? B * m.beta[c] : B
-            m.radius[c] = r * Bc
-            m.radius[c] > rmax && (rmax = m.radius[c])
+            rc = r * Bc
+            m.radius[c] = rc
+            rc > rmax && (rmax = rc)
             push!(stack, (c, Bc))
         end
     end
     E.rmax = rmax
     E.F.since = 0
+    E.g.prune = true
+    grid_refresh_radii!(E.g, m)
     return E
 end
 
@@ -247,3 +250,5 @@ function commit_fast!(E::Engine{T}, s::Int32, pOpt::P3{T}, p::P3{T}, qNew::T) wh
     grid_insert!(E.g, m, s); grid_insert!(E.g, m, nl); grid_insert!(E.g, m, nr)
     return
 end
+# (grid_insert! raises the cell radius bounds for the three updated segments; every other
+# stored radius changes only in fast_refresh_radii!, which recomputes all bounds.)

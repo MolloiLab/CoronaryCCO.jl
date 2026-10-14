@@ -22,6 +22,12 @@ Two upstream quirks are reproduced by default and can be corrected:
 - Upstream moves the end of a split segment to the optimized bifurcation point, which can bend
   imaged base-tree vessels sharply; `fix_base = true` keeps junctions on the imaged
   centerlines.
+- Collision and spacing tests use each vessel's radius at insertion time, but early in
+  growth all radii are a fraction of their final size, so vessels that passed the test
+  later overlap; `collision = :final` tests at radii scaled to the final root radius.
+- Upstream places no limit on branching angles; `max_branch_angle = 90` rejects bifurcations
+  in which a daughter (or the moved parent segment) turns back by more than 90°, the limit
+  Murray's minimum-work analysis of branching angles implies.
 """
 function generate(
         domain_vol::AbstractString, base_xml::AbstractString; nterm::Integer,
@@ -29,7 +35,8 @@ function generate(
         root_radius_max::Real = 1.588, seed::Integer = 0, T::Type = Float32,
         parallel::Bool = true, progress::Integer = 0, export_xml = nothing,
         trace = nothing, volume::Symbol = :upstream, metric::Symbol = :upstream,
-        mode::Symbol = :fast, sampling::Symbol = :voxel, fix_base::Bool = false, kwargs...
+        mode::Symbol = :fast, sampling::Symbol = :voxel, fix_base::Bool = false,
+        collision::Symbol = :current, max_branch_angle = nothing, kwargs...
     )
     p = CCOParams(;
         nterm = Int(nterm), aperf = Float64(aperf), gamma = Float64(gamma),
@@ -41,7 +48,10 @@ function generate(
         min_dist = min_dist, metric = metric
     )
     m = import_gxl(T, base_xml, p)
-    E = Engine(m, dom; seed = seed, mode = mode, volume = volume, sampling = sampling, fix_base = fix_base)  # mode = :exact is test-only
+    E = Engine(
+        m, dom; seed = seed, mode = mode, volume = volume, sampling = sampling, fix_base = fix_base,
+        collision = collision, max_branch_angle = max_branch_angle
+    )  # mode = :exact is test-only
     grow!(E; parallel = parallel, progress = Int(progress), trace = trace)
     export_xml === nothing || export_gxl(E.m, export_xml)
     return E
