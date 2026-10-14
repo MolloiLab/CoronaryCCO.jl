@@ -41,6 +41,26 @@ inline void cco_srand_env() {
   const char *s = std::getenv("CCO_SEED");
   cco_oracle::state() = s ? std::strtoull(s, nullptr, 10) : 0;
 }
+// Records every Kamiya/Ceres solve when CCO_CERES_DUMP=path is set: inputs, outputs,
+// usability and iteration count, all as exact hex floats.
+inline FILE *ceres_dump_file() {
+  static FILE *f = [] {
+    const char *p = std::getenv("CCO_CERES_DUMP");
+    return p ? std::fopen(p, "w") : static_cast<FILE *>(nullptr);
+  }();
+  return f;
+}
+inline void cco_ceres_record(double gamma, double dp1, double dp2, double f0, double f1,
+                             double f2, double l0, double l1, double l2, double x1in,
+                             double x2in, double x1out, double x2out, bool usable,
+                             size_t iters, int termination) {
+  FILE *f = ceres_dump_file();
+  if (!f) return;
+  std::fprintf(f, "%a %a %a %a %a %a %a %a %a %a %a %a %a %d %zu %d\n", gamma, dp1, dp2, f0,
+               f1, f2, l0, l1, l2, x1in, x2in, x1out, x2out, usable ? 1 : 0, iters,
+               termination);
+}
+
 #define CCO_COUNT(name) (cco_oracle::counters()[name] += 1)
 #define CCO_COUNT_ADD(name, n) (cco_oracle::counters()[name] += (n))
 
@@ -60,6 +80,22 @@ void cco_dump_tree(const TTree &t) {
                  s.myResistance, s.myFlow, s.myBeta);
   }
   std::fclose(f);
+}
+
+// Per-step trace (CCO_TRACE=path): step, locations tried, best volume, segment count, and the
+// last two segments' distal points (new left = old distal of the split segment, new terminal).
+template <class TTree>
+void cco_trace_step(const TTree &t, unsigned step, unsigned nbT, double volOpt) {
+  static FILE *f = [] {
+    const char *p = std::getenv("CCO_TRACE");
+    return p ? std::fopen(p, "w") : static_cast<FILE *>(nullptr);
+  }();
+  if (!f) return;
+  size_t n = t.myVectSegments.size();
+  const auto &a = t.myVectSegments[n - 1].myCoordinate;
+  unsigned s = t.myVectParent[n - 1];
+  const auto &b = t.myVectSegments[s].myCoordinate;
+  std::fprintf(f, "%u %u %a %zu %u %a %a %a %a %a %a\n", step, nbT, volOpt, n, s, a[0], a[1], a[2], b[0], b[1], b[2]);
 }
 
 // Depth statistics of the final tree (deepest root-to-leaf path, in segments).

@@ -1,0 +1,570 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Ports the growth loop of HCT-CCO commit 9bc141f: CoronaryGrowth::expandTree and the
+# HctccoModel methods it drives (generateNewLocation, getN_NearestSegments,
+# isIntersectingTree, isAddable, isDistanceValid, isValidConnection, isConnectable,
+# getConnectableSegmentsForMiddleStage, terminalFlowWeight).
+#
+# Upstream evaluates each candidate bifurcation on a deep copy of the whole tree. Here every
+# candidate reads the shared base tree and writes only its own workspace, so candidates run
+# in parallel; the winner is picked in upstream's candidate order and committed once.
+
+struct Workspace{T}
+    cum::Vector{T}
+    vol::Vector{T}
+    beta::Vector{T}
+end
+Workspace{T}() where {T} = Workspace{T}(T[], T[], T[])
+
+# Fast-mode state (see fast.jl).
+mutable struct FastState{T}
+    Rt::Vector{T}         # baseline resistance (resistance / length factor)
+    W::Vector{T}          # subtree volume factor (see above)
+    since::Int            # commits since the last full radius refresh
+    every::Int            # refresh period (0: adaptive)
+end
+FastState{T}() where {T} = FastState{T}(T[], T[], 0, 0)
+
+mutable struct GrowStats
+    steps::Int
+    locations::Int
+    candidates::Int
+    addable_calls::Int
+    kamiya_iters::Int
+    accepted::Int
+    seeds_found::Int
+    t_location::Float64
+    t_nearest::Float64
+    t_candidates::Float64
+    t_commit::Float64
+end
+GrowStats() = GrowStats(0, 0, 0, 0, 0, 0, 1, 0.0, 0.0, 0.0, 0.0)
+
+mutable struct Engine{T}
+    m::CCOModel{T}
+    L::Layout{T}
+    g::SegGrid{T}
+    dom::MaskDomain{T}
+    rng::CRand
+    p::CCOParams
+    seed::UInt64
+    ws::Vector{Workspace{T}}
+    rmax::T
+    tcount::Vector{Int8}      # occurrences of each segment in the terminal list
+    middle::Vector{Bool}      # scratch: middle-stage connectable set
+    mode::Symbol              # :fast (production) or :exact (test-only bitwise reference)
+    volume::Symbol            # fast mode only: :upstream or :full (see fast.jl)
+    sampling::Symbol          # :voxel (upstream: integer voxel points) or :continuous
+    fix_base::Bool            # keep the imaged base tree's centerlines where branches attach
+    isbase::Vector{Bool}      # segment lies on an imaged base-tree vessel
+    F::FastState{T}
+    stats::GrowStats
+end
+
+function Engine(
+        m::CCOModel{T}, dom::MaskDomain{T}; seed::Integer = 0, cell::Real = 2.0,
+        mode::Symbol = :fast, volume::Symbol = :upstream, sampling::Symbol = :voxel,
+        fix_base::Bool = false
+    ) where {T}
+    sampling in (:voxel, :continuous) || throw(ArgumentError("sampling must be :voxel or :continuous"))
+    mode in (:exact, :fast) || throw(ArgumentError("mode must be :exact or :fast"))
+    volume in (:upstream, :full) || throw(ArgumentError("volume must be :upstream or :full"))
+    (mode === :exact && volume !== :upstream) &&
+        throw(ArgumentError("exact mode reproduces upstream, which uses volume = :upstream"))
+    L = init_layout!(Layout{T}(), m)
+    lo = (T(dom.lower[1]), T(dom.lower[2]), T(dom.lower[3]))
+    hi = (T(dom.upper[1]), T(dom.upper[2]), T(dom.upper[3]))
+    g = grid_build!(SegGrid{T}(lo, hi, cell), m)
+    tc = zeros(Int8, nsegments(m))
+    for t in m.terminals
+        tc[t] += Int8(1)
+    end
+    E = Engine{T}(
+        m, L, g, dom, CRand(seed), m.params, UInt64(seed),
+        [Workspace{T}() for _ in 1:m.params.num_neighbors], zero(T), tc, Bool[],
+        mode, volume, sampling, fix_base, trues(nsegments(m)) |> Vector{Bool},
+        FastState{T}(), GrowStats()
+    )
+    update_rmax!(E)
+    middle_init!(E)
+    mode === :fast && init_fast!(E)
+    return E
+end
+
+update_rmax!(E::Engine) = (E.rmax = maximum(@view E.m.radius[2:end]); E)
+
+# ---------------------------------------------------------------------------------------
+# Scans over the tree through the spatial grid (same answers as upstream's full scans).
+
+@inline segA(m, j) = @inbounds m.pos[j]
+@inline segB(m, j) = @inbounds m.pos[m.parent[j]]
+
+# HctccoModel::isIntersectingTree(ptA, ptB, r, idExcept) without the zero-index shortcut.
+function scan_hit(E::Engine{T}, A::P3{T}, B::P3{T}, r::T, e1, e2, e3) where {T}
+    m = E.m
+    test(j) = j != e1 && j != e2 && j != e3 && is_intersecting(A, B, r, segA(m, j), segB(m, j), m.radius[j])
+    return grid_any(test, E.g, A, B, r + E.rmax)
+end
+
+# Upstream's idExcept==0 shortcut: an excluded "index 0" (either "no child" or the root
+# segment) makes the whole test report no intersection.
+@inline _has_zero(m, idL, idR, idPar) = idL == 0 || idR == 0 || idPar == 1
+
+# HctccoModel::isIntersectingTree(ptA, ptB, r, idSeg): the three segments of a bifurcation
+# at ptB joining ptA to segment idSeg.
+function intersects_bifurcation(E::Engine{T}, ptA::P3{T}, ptB::P3{T}, r::T, s) where {T}
+    m = E.m
+    par = m.parent[s]
+    idL = m.left[par]; idR = m.right[par]
+    if !_has_zero(m, idL, idR, par)
+        scan_hit(E, ptB, m.pos[par], r, idL, idR, par) && return true
+    end
+    idL = m.left[s]; idR = m.right[s]
+    if !_has_zero(m, idL, idR, s)
+        scan_hit(E, ptB, m.pos[s], r, s, idL, idR) && return true
+    end
+    return scan_hit(E, ptB, ptA, r, s, 0, 0)
+end
+
+# HctccoModel::isDistanceValid(p, minPerfusionDistance)
+function distance_valid(E::Engine{T}, p::P3{T}, mpd::T) where {T}
+    m = E.m
+    seg_bad(j) = proj_distance(segA(m, j), segB(m, j), p) < cmax(mpd, m.radius[j] * T(2))
+    term_bad(j) = E.tcount[j] > 0 && norm3(sub3(m.pos[j], p)) < mpd
+    grid_any(seg_bad, E.g, p, p, cmax(mpd, E.rmax * T(2))) && return false
+    grid_any(term_bad, E.g, p, p, mpd) && return false
+    return true
+end
+
+# ---------------------------------------------------------------------------------------
+# Candidate locations (generateNewLocation / generateALocation).
+
+function distance_threshold(m::CCOModel{T}) where {T}
+    rp = m.rperf
+    return upow((T(4) * T(π) * rp * rp * rp) / (T(3) * T(m.kterm_total)), one(T) / T(3))
+end
+
+function generate_a_location!(E::Engine{T}, thr::T) where {T}
+    m = E.m
+    q = random_point!(E.dom, E.rng)
+    res = (T(q[1]), T(q[2]), T(q[3]))
+    if E.sampling === :continuous
+        # Upstream only proposes integer voxel points, which caps the terminal count near the
+        # number of admissible voxels. Jitter within the voxel and re-check the wall clearance.
+        u() = T(crand!(E.rng)) / T(2147483648) - T(0.5)
+        res = (res[1] + u(), res[2] + u(), res[3] + u())
+        interpolate_distance(E.dom, res) >= E.dom.min_dist || return res, false
+    end
+    nt = length(m.terminals)
+    first = m.terminals[1]
+    # terminals after the first list entry within thr of res
+    tclose(j) = (E.tcount[j] - (j == first ? 1 : 0)) > 0 && !(norm3(sub3(m.pos[j], res)) > thr)
+    grid_any(tclose, E.g, res, res, thr) && return res, false
+    sclose(j) = j > nt && !(proj_distance(segA(m, j), segB(m, j), res) > m.radius[j])
+    grid_any(sclose, E.g, res, res, E.rmax) && return res, false
+    return res, true
+end
+
+function generate_new_location!(E::Engine{T}) where {T}
+    thr = distance_threshold(E.m)
+    ntr = E.p.nb_try_candidate
+    n = ntr
+    while true
+        n -= 1
+        res, found = generate_a_location!(E, thr)
+        found && return res
+        if n == 0
+            n = ntr; thr *= T(0.9)
+        end
+    end
+    return
+end
+
+# ---------------------------------------------------------------------------------------
+# Connectivity rules.
+
+function restriction_level(E::Engine)
+    m = E.m; p = E.p
+    prog = m.nterm == 0 ? 0.0 : clamp(Float64(m.kterm_total) / Float64(m.nterm), 0.0, 1.0)
+    if p.extension_mode
+        return prog < 0.25 ? 0.5 : 1.0
+    end
+    return prog < 0.1 ? 0.0 : prog < 0.35 ? 0.5 : 1.0
+end
+
+# HctccoModel::isConnectable: listed as a terminal, or a parent of a listed terminal.
+@inline function is_connectable(E::Engine, j)
+    m = E.m
+    E.tcount[j] > 0 && return true
+    L = m.left[j]; R = m.right[j]
+    return (L != 0 && E.tcount[L] > 0) || (R != 0 && E.tcount[R] > 0)
+end
+
+# HctccoModel::getConnectableSegmentsForMiddleStage is kept incrementally in E.middle
+# (middle_init!/middle_update! in fast.jl): terminals plus up to three generations of
+# ancestors; upstream's 4-6 generation branch can never add anything.
+
+# HctccoModel::getN_NearestSegments with stable ordering (ties by segment index).
+function nearest_segments(E::Engine{T}, p::P3{T}, n::Int) where {T}
+    m = E.m
+    level = E.p.anywhere_mode ? 0.0 : restriction_level(E)
+    keep(j) = level >= 1.0 ? is_connectable(E, j) : level == 0.5 ? E.middle[j] : true
+    R = E.g.h
+    best = Tuple{T, Int32}[]
+    seen = Set{Int32}()
+    while true
+        empty!(best); empty!(seen)
+        bx = _cellbox(E.g, p, p, R + E.g.margin)
+        covers_all = bx[1] == 1 && bx[3] == 1 && bx[5] == 1 &&
+            bx[2] == E.g.dims[1] && bx[4] == E.g.dims[2] && bx[6] == E.g.dims[3]
+        grid_any(E.g, p, p, R) do j
+            if keep(j) && !(j in seen)
+                push!(seen, j)
+                push!(best, (proj_distance(segA(m, j), segB(m, j), p), j))
+            end
+            false
+        end
+        sort!(best)
+        if covers_all || (length(best) >= n && best[n][1] < R - E.g.margin)
+            return Int32[b[2] for b in best[1:min(n, length(best))]]
+        end
+        R *= 2
+    end
+    return
+end
+
+# ---------------------------------------------------------------------------------------
+# Candidate evaluation (HctccoModel::isAddable on a virtual copy of the tree).
+
+# HctccoModel::terminalFlowWeight
+function terminal_flow_weight(m::CCOModel{T}, p::P3{T}) where {T}
+    cv = T(m.params.term_flow_cv)
+    cv <= 0 && return one(T)
+    hashu(salt) = begin
+        h = 0xcbf29ce484222325 ⊻ salt
+        for i in 1:3
+            q = round(Int64, Float64(p[i]) * 1000.0, RoundNearestTiesAway)
+            h ⊻= reinterpret(UInt64, q)
+            h *= 0x00000100000001b3
+        end
+        T(Float64((h >> 17) & 0x3FFFFFFF) / Float64(0x40000000))
+    end
+    u1 = hashu(0x9E3779B97F4A7C15); u2 = hashu(0xC2B2AE3D27D4EB4F)
+    u1 < T(1.0e-12) && (u1 = T(1.0e-12))
+    z = sqrt(T(-2) * log(u1)) * cos(T(2) * T(π) * u2)
+    sigma = sqrt(log(one(T) + cv * cv))
+    w = exp(sigma * z - T(0.5) * sigma * sigma)
+    return clamp(w, T(0.05), T(20))
+end
+
+"""
+Tentative tree for candidate segment `s` with bifurcation at `pOpt` and new terminal `p`:
+path-only resistance update (every other node's inputs are unchanged), root radius, then a
+full radius sweep and volume sweep with the two new segments as virtual nodes. Returns
+(total volume, radius of s, radius of new left, radius of new terminal).
+"""
+function tentative!(ws::Workspace{T}, E::Engine{T}, s, pOpt::P3{T}, p::P3{T}, qNew::T) where {T}
+    m = E.m; L = E.L; lf = m.lf; g = m.gamma
+    ps = m.pos[s]; ppar = m.pos[m.parent[s]]
+    l_s = norm3(sub3(pOpt, ppar)) * lf
+    l_nl = norm3(sub3(ps, pOpt)) * lf
+    l_nr = norm3(sub3(p, pOpt)) * lf
+    a = m.left[s]; b = m.right[s]
+    R_nl = own_resistance(l_nl)
+    if a != 0 && b == 0
+        R_nl += m.resistance[a]
+    elseif b != 0 && a == 0
+        R_nl += m.resistance[b]
+    elseif a != 0 && b != 0
+        _, _, inv = resistance_combine(g, m.flow[a], m.flow[b], m.resistance[a], m.resistance[b])
+        R_nl += inv
+    end
+    R_nr = own_resistance(l_nr)
+    b_nl, b_nr, inv = resistance_combine(g, m.flow[s], qNew, R_nl, R_nr)
+    R_c = own_resistance(l_s) + inv
+    f_c = m.flow[s] + qNew
+    n = length(L.pre)
+    beta = ws.beta
+    copyto!(beta, 1, L.beta, 1, n)
+    c = s
+    par = m.parent[c]
+    while par != 1
+        R_a = own_resistance(seglen(m, par))
+        la = m.left[par]; ra = m.right[par]
+        if la != 0 && ra == 0
+            beta[L.ppos[la]] = one(T); R_a += R_c
+        elseif ra != 0 && la == 0
+            beta[L.ppos[ra]] = one(T); R_a += R_c
+        else
+            fL = la == c ? f_c : m.flow[la]; RL = la == c ? R_c : m.resistance[la]
+            fR = ra == c ? f_c : m.flow[ra]; RR = ra == c ? R_c : m.resistance[ra]
+            bL, bR, inv2 = resistance_combine(g, fL, fR, RL, RR)
+            beta[L.ppos[la]] = bL; beta[L.ppos[ra]] = bR
+            R_a += inv2
+        end
+        f_c = m.flow[par] + qNew
+        R_c = R_a
+        c = par
+        par = m.parent[c]
+    end
+    rroot = upow((R_c * f_c) / m.pdrop, T(0.25))
+    (m.root_radius_max > 0 && rroot > m.root_radius_max) && (rroot = m.root_radius_max)
+    # Top-down cumulative betas; the old children of s now hang below the new left node.
+    ks = L.ppos[s]
+    cum = ws.cum; vol = ws.vol
+    cum_nl = zero(T); cum_nr = zero(T)
+    cum[1] = one(T)
+    if ks == 1
+        cum_nl = b_nl; cum_nr = b_nr
+    end
+    @inbounds for k in 2:n
+        pk = L.par[k]
+        base = pk == ks ? cum_nl : cum[pk]
+        cum[k] = L.bin[k] ? base * beta[k] : base
+        if k == ks
+            cum_nl = cum[k] * b_nl; cum_nr = cum[k] * b_nr
+        end
+    end
+    # Bottom-up volume; at s, add the virtual new-left (with s's old children) and new terminal.
+    s_bin = a != 0 && b != 0
+    @inbounds for k in n:-1:1
+        r = rroot * cum[k]
+        lk = L.lc[k]; rk = L.rc[k]
+        if k == ks
+            r_nl = rroot * cum_nl; r_nr = rroot * cum_nr
+            v_nl = (r_nl * r_nl) * l_nl
+            s_bin && (v_nl = v_nl + (vol[lk] + vol[rk]))
+            v_nr = (r_nr * r_nr) * l_nr
+            vol[k] = (r * r) * l_s + (v_nl + v_nr)
+        else
+            vk = (r * r) * L.len[k]
+            vol[k] = (lk != 0 && rk != 0) ? vk + (vol[lk] + vol[rk]) : vk
+        end
+    end
+    return vol[1], rroot * cum[ks], rroot * cum_nl, rroot * cum_nr
+end
+
+"""
+    try_candidate!(ws, E, p, s) -> (ok, vol, pOpt, qNew, iterations)
+
+HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared base tree.
+"""
+function try_candidate!(ws::Workspace{T}, E::Engine{T}, p::P3{T}, s::Int32) where {T}
+    m = E.m; dom = E.dom; prm = E.p
+    fail = (false, zero(T), p, zero(T), 0)
+    (prm.anywhere_mode || is_connectable(E, s)) || return fail
+    distance_valid(E, p, T(0.05)) || return fail
+    # isValidConnection
+    norm3(sub3(p, m.pos[s])) > T(25) && return fail
+    rs = E.mode === :fast ? fast_radius(E, s) : m.radius[s]
+    rs * T(0.7) < T(0.005) && return fail
+    ps = m.pos[s]
+    par = m.parent[s]
+    pParent = m.pos[par]
+    newCenter = div3(add3(add3(p, ps), pParent), T(3))
+    cDom = itrunc3(newCenter)
+    is_inside(dom, cDom) || return fail
+    check_no_intersect(dom, itrunc3(p), cDom) || return fail
+    check_no_intersect(dom, itrunc3(ps), cDom) || return fail
+    pParentDom = itrunc3(pParent)
+    check_no_intersect(dom, pParentDom, cDom) || return fail
+    qNew = m.qterm * terminal_flow_weight(m, p)
+    # sCurrent / sNewLeft / sNewRight state carried across iterations.
+    rc = rs
+    rL = rs; fL = m.flow[s]
+    rR = rs; fR = qNew
+    pCurrent = div3(add3(pParent, ps), T(2))
+    lf = m.lf
+    volCurr = zero(T)
+    idL = m.left[par]; idR = m.right[par]
+    sL = m.left[s]; sR = m.right[s]
+    pLDom = itrunc3(ps); pRDom = itrunc3(p)
+    for i in 0:(prm.kamiya_iters - 1)
+        ok, pOpt, r0, r1, r2 = kamiya_optimization(m.gamma, lf, pCurrent, pParent, rc, ps, rL, fL, p, rR, fR)
+        ok || return (false, zero(T), p, zero(T), i + 1)
+        if E.fix_base && E.isbase[s]
+            # Upstream moves the split segment's end to the optimal bifurcation point, which
+            # bends imaged vessels. Keep the junction on the imaged centerline instead.
+            ax = sub3(ps, pParent)
+            t = clamp(dot3(sub3(pOpt, pParent), ax) / dot3(ax, ax), T(0.05), T(0.95))
+            pOpt = add3(pParent, mul3(ax, t))
+        end
+        if !_has_zero(m, idL, idR, par)
+            scan_hit(E, pOpt, pParent, r0, idL, idR, par) && return (false, zero(T), p, zero(T), i + 1)
+        end
+        if !_has_zero(m, sL, sR, s)
+            scan_hit(E, pOpt, ps, r1, s, sL, sR) && return (false, zero(T), p, zero(T), i + 1)
+        end
+        scan_hit(E, pOpt, p, r2, s, 0, 0) && return (false, zero(T), p, zero(T), i + 1)
+        oDom = itrunc3(pOpt)
+        is_inside(dom, oDom) || return (false, zero(T), p, zero(T), i + 1)
+        check_no_intersect(dom, pParentDom, oDom) || return (false, zero(T), p, zero(T), i + 1)
+        check_no_intersect(dom, pLDom, oDom) || return (false, zero(T), p, zero(T), i + 1)
+        check_no_intersect(dom, pRDom, oDom) || return (false, zero(T), p, zero(T), i + 1)
+        vol, r_s, r_nl, r_nr = E.mode === :fast ? tentative_fast!(ws, E, s, pOpt, p, qNew) :
+            tentative!(ws, E, s, pOpt, p, qNew)
+        if i == 0
+            volCurr = vol
+        else
+            if abs(volCurr - vol) < T(prm.kamiya_tol)
+                l0 = norm3(sub3(pOpt, pParent)) * lf
+                l1 = norm3(sub3(pOpt, ps)) * lf
+                l2 = norm3(sub3(pOpt, p)) * lf
+                if (T(2) * r0 <= l0) && (T(2) * r1 <= l1) && (T(2) * r2 <= l2)
+                    return (true, vol, pOpt, qNew, i + 1)
+                end
+            else
+                volCurr = vol
+            end
+        end
+        pCurrent = pOpt
+        rc = r_s; rL = r_nl; rR = r_nr
+    end
+    return (false, zero(T), p, zero(T), prm.kamiya_iters)
+end
+
+# ---------------------------------------------------------------------------------------
+# Commit the winning candidate and refresh the tree (end of an expandTree step).
+
+function commit!(E::Engine{T}, s::Int32, pOpt::P3{T}, p::P3{T}, qNew::T) where {T}
+    m = E.m
+    nl = Int32(nsegments(m) + 1); nr = Int32(nl + 1)
+    a = m.left[s]; b = m.right[s]
+    # new left: the old distal part of s, inheriting its children
+    push!(m.pos, m.pos[s], p)
+    push!(m.radius, m.radius[s], m.radius[s])
+    push!(m.kterm, m.kterm[s], Int32(1))
+    push!(m.resistance, m.resistance[s], zero(T))
+    push!(m.flow, m.flow[s], qNew)
+    push!(m.beta, one(T), one(T))
+    push!(m.parent, s, s)
+    push!(m.left, a, 0); push!(m.right, b, 0)
+    push!(m.glen, zero(T), zero(T))
+    # upstream writes myVectParent[child] even when the child index is 0 (the root slot)
+    m.parent[a == 0 ? 1 : a] = nl
+    m.parent[b == 0 ? 1 : b] = nl
+    m.pos[s] = pOpt
+    m.kterm[s] = m.kterm[s] + Int32(1)
+    m.flow[s] = m.flow[s] + qNew
+    m.left[s] = nl; m.right[s] = nr
+    push!(m.terminals, nr)
+    push!(m.listed, false, true)
+    push!(E.tcount, Int8(0), Int8(1))
+    m.kterm_total += 1
+    update_flow!(m, m.parent[s], qNew)
+    refresh_glen!(m, s); refresh_glen!(m, nl); refresh_glen!(m, nr)
+    splice_layout!(E.L, m, s, nl, nr)
+    full_update!(m, E.L)
+    update_rmax!(E)
+    grid_remove!(E.g, s)
+    grid_insert!(E.g, m, s); grid_insert!(E.g, m, nl); grid_insert!(E.g, m, nr)
+    return
+end
+
+function _ensure_workspaces!(E::Engine{T}) where {T}
+    n = length(E.L.pre)
+    for ws in E.ws
+        if length(ws.cum) < n + 2
+            resize!(ws.cum, 2n + 64); resize!(ws.vol, 2n + 64); resize!(ws.beta, 2n + 64)
+        end
+    end
+    return
+end
+
+# One line per step, same layout as cco_trace_step in oracle/cco_oracle.h.
+function _trace_step(io, m, i, nbT, volopt)
+    n = nsegments(m); s = m.parent[n]
+    a = m.pos[n]; b = m.pos[s]
+    return @printf(
+        io, "%d %d %a %d %d %a %a %a %a %a %a\n", i, nbT, Float64(volopt), n, s - 1,
+        Float64(a[1]), Float64(a[2]), Float64(a[3]), Float64(b[1]), Float64(b[2]), Float64(b[3])
+    )
+end
+
+"""
+    grow!(E; parallel = true, progress = 0)
+
+CoronaryGrowth::expandTree: add terminals until `nterm`. Candidates of each sampled location
+are evaluated in parallel; the minimum-volume one (first in candidate order on ties) wins.
+"""
+function grow!(
+        E::Engine{T}; parallel::Bool = true, progress::Int = 0, trace::Union{Nothing, IO} = nothing,
+        steps::Int = typemax(Int)
+    ) where {T}
+    m = E.m; prm = E.p; st = E.stats
+    reseed!(E.rng, E.seed)            # expandTree re-seeds rand()
+    nseed = m.nterm
+    nn = prm.num_neighbors
+    results = Vector{Tuple{Bool, T, P3{T}, T, Int}}(undef, nn)
+    t0 = time()
+    for i in 1:min(nseed - 1, steps)
+        st.steps += 1
+        nbsol = 0; nbT = 0
+        volopt = -one(T)
+        best_s = Int32(0); best_p = (zero(T), zero(T), zero(T)); best_opt = best_p; best_q = zero(T)
+        while nbsol == 0 && nbT < prm.nb_max_search
+            ta = time_ns()
+            pt = generate_new_location!(E)
+            tb = time_ns()
+            nbT += 1; st.locations += 1
+            vecN = nearest_segments(E, pt, prm.num_neighbors)
+            tc = time_ns()
+            st.t_location += (tb - ta) / 1.0e9; st.t_nearest += (tc - tb) / 1.0e9
+            nc = length(vecN)
+            st.candidates += nc
+            E.mode === :exact && _ensure_workspaces!(E)
+            evalc = function (c)
+                s = vecN[c]
+                ptB = div3(add3(add3(pt, m.pos[s]), m.pos[m.parent[s]]), T(3))
+                rs = E.mode === :fast ? fast_radius(E, s) : m.radius[s]
+                return if intersects_bifurcation(E, pt, ptB, rs, s)
+                    results[c] = (false, zero(T), pt, zero(T), -1)
+                else
+                    results[c] = try_candidate!(E.ws[c], E, pt, s)
+                end
+            end
+            if parallel && nc > 1
+                AK.foreachindex(1:nc; max_tasks = nc, min_elems = 1) do c
+                    evalc(c)
+                end
+            else
+                for c in 1:nc
+                    evalc(c)
+                end
+            end
+            st.t_candidates += (time_ns() - tc) / 1.0e9
+            for c in 1:nc
+                ok, vol, pOpt, qNew, its = results[c]
+                its >= 0 && (st.addable_calls += 1)
+                st.kamiya_iters += max(its, 0)
+                ok || continue
+                st.accepted += 1
+                score = vol
+                if prm.side_branch_bias > 0
+                    qt = m.qterm > 0 ? m.qterm : one(T)
+                    qr = m.flow[vecN[c]] / qt
+                    qr < 1 && (qr = one(T))
+                    score = vol * upow(qr, -T(prm.side_branch_bias))
+                end
+                if volopt < 0 || volopt > score
+                    volopt = score; best_s = vecN[c]; best_p = pt; best_opt = pOpt; best_q = qNew
+                end
+                nbsol += 1
+            end
+        end
+        nbT < prm.nb_max_search && (st.seeds_found += 1)
+        td = time_ns()
+        if best_s != 0
+            push!(E.isbase, E.isbase[best_s], false)
+            E.mode === :fast ? commit_fast!(E, best_s, best_opt, best_p, best_q) :
+                commit!(E, best_s, best_opt, best_p, best_q)
+            middle_update!(E, best_s, Int32(nsegments(m) - 1), Int32(nsegments(m)))
+        end
+        st.t_commit += (time_ns() - td) / 1.0e9
+        trace === nothing || _trace_step(trace, m, i, nbT, volopt)
+        if progress > 0 && i % progress == 0
+            @info "step $i/$(nseed - 1)" segments = nsegments(m) elapsed = round(time() - t0, digits = 1)
+        end
+    end
+    st.seeds_found != nseed && @warn "All seeds not found due to too large domain constraints ($(st.seeds_found) over $nseed)"
+    return E
+end

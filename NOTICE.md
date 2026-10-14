@@ -16,9 +16,10 @@ not claim the method.
   (Michigan State University; California Medical Innovations Institute).
 - License: GNU General Public License v3.0 or (at your option) any later
   version.
-- Article: S. L. Vajire, J. S. Choy, G. S. Kassab and L.-C. Lee, "Hierarchy
+- Article: S. L. Vajire, J. S. Choy, G. S. Kassab and L.-C. Lee, "Hierarchy Aware
   CT-Driven Constrained Constructive Optimization: A Framework for Coronary
-  Network Generation." (Citation to be updated upon publication.)
+  Network Generation," *Annals of Biomedical Engineering*, 2026.
+  <https://doi.org/10.1007/s10439-026-04383-4>
 
 ### OpenCCO (upstream of HCT-CCO)
 

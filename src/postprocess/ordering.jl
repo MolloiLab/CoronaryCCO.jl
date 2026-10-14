@@ -1,0 +1,176 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Diameter-defined Strahler ordering against the literature (Kassab) thresholds, as run()
+# in coronary_postprocess.py (HCT-CCO commit 9bc141f) performs it.
+
+# LITERATURE_MU / LITERATURE_SD (Kassab 1993, upstream's MU/SD arrays) live in morphometry.jl.
+
+# Boundaries between consecutive literature orders: midpoint of the lower order's mean + SD
+# and the upper order's mean - SD, evaluated left to right as numpy does.
+const _LITERATURE_DB = [
+    (((LITERATURE_MU[k + 1] + LITERATURE_SD[k + 1]) + LITERATURE_MU[k]) - LITERATURE_SD[k]) / 2.0
+        for k in 1:(length(LITERATURE_MU) - 1)
+]
+
+# Ports literature_order_of: 11 minus the number of boundaries above d, clipped to 1..11.
+function literature_order_of(d::Real)
+    o = length(LITERATURE_MU) - count(b -> d < b, _LITERATURE_DB)
+    return clamp(o, 1, length(LITERATURE_MU))
+end
+
+# Shared by the stack-based walks below: upstream's iterative post-order with a `seen` set.
+function _postorder!(post::Vector{Int}, seen::BitVector, root::Int, children)
+    st = [(root, false)]
+    while !isempty(st)
+        nd, done = pop!(st)
+        if done
+            push!(post, nd)
+            continue
+        end
+        seen[nd] && continue
+        seen[nd] = true
+        push!(st, (nd, true))
+        for c in children[nd]
+            push!(st, (c, false))
+        end
+    end
+    return post
+end
+
+# Ports strahler_orders_per_segment: leaves are 1; a parent takes its largest child order,
+# plus one when at least two children share it. Segments unreachable from a root stay 0.
+function strahler_orders_per_segment(conn, n::Int)
+    strahler = zeros(Int, n)
+    post = Int[]
+    seen = falses(n)
+    for root in 1:n
+        isempty(conn.parent[root]) && _postorder!(post, seen, root, conn.children)
+    end
+    for s in post
+        ch = conn.children[s]
+        if isempty(ch)
+            strahler[s] = 1
+        else
+            mx = maximum(strahler[c] for c in ch)
+            strahler[s] = count(c -> strahler[c] == mx, ch) >= 2 ? mx + 1 : mx
+        end
+    end
+    return strahler
+end
+
+# Ports group_strahler_elements: maximal connected runs of equal Strahler order, grown by a
+# depth-first walk over parent (siblings included, as upstream) and children lists. The
+# discovery order of each run is kept because numpy's pairwise mean depends on it.
+function group_strahler_elements(strahler::Vector{Int}, conn, n::Int)
+    seg2elem = fill(0, n)
+    elem_segs = Vector{Vector{Int}}()
+    for s in 1:n
+        seg2elem[s] == 0 || continue
+        o = strahler[s]
+        e = length(elem_segs) + 1
+        stk = [s]
+        seg2elem[s] = e
+        comp = [s]
+        while !isempty(stk)
+            cur = pop!(stk)
+            for nb in Iterators.flatten((conn.parent[cur], conn.children[cur]))
+                if seg2elem[nb] == 0 && strahler[nb] == o
+                    seg2elem[nb] = e
+                    push!(stk, nb)
+                    push!(comp, nb)
+                end
+            end
+        end
+        push!(elem_segs, comp)
+    end
+    return seg2elem, elem_segs
+end
+
+# Ports refine_root_element: if the root's element spans more than one literature order, split
+# it into maximal connected runs of equal literature order (the first run keeps the element id).
+function refine_root_element(seg2elem, elem_segs, elem_order, diameters, conn)
+    n = length(seg2elem)
+    root = findfirst(s -> isempty(conn.parent[s]), 1:n)
+    root === nothing && return seg2elem, elem_segs, elem_order
+    e0 = seg2elem[root]
+    segs0 = elem_segs[e0]
+    lit = Dict(s => literature_order_of(diameters[s]) for s in segs0)
+    length(unique(values(lit))) <= 1 && return seg2elem, elem_segs, elem_order
+    seg2elem = copy(seg2elem)
+    elem_segs = copy(elem_segs)
+    elem_order = copy(elem_order)
+    visited = Set{Int}()
+    first = true
+    for s in segs0
+        s in visited && continue
+        o = lit[s]
+        stk = [s]
+        comp = Int[]
+        while !isempty(stk)
+            cur = pop!(stk)
+            cur in visited && continue
+            push!(visited, cur)
+            push!(comp, cur)
+            for nb in Iterators.flatten((conn.parent[cur], conn.children[cur]))
+                if haskey(lit, nb) && !(nb in visited) && lit[nb] == o
+                    push!(stk, nb)
+                end
+            end
+        end
+        if first
+            elem_segs[e0] = comp
+            elem_order[e0] = o
+            seg2elem[comp] .= e0
+            first = false
+        else
+            push!(elem_segs, comp)
+            push!(elem_order, o)
+            seg2elem[comp] .= length(elem_segs)
+        end
+    end
+    return seg2elem, elem_segs, elem_order
+end
+
+# Ports element_connectivity_counts: for every (daughter order m, parent order n), one count per
+# parent element of order n of its distinct daughter elements of order m.
+function element_connectivity_counts(seg2elem, elem_order, conn)
+    ne = length(elem_order)
+    echildren = [Set{Int}() for _ in 1:ne]
+    for s in eachindex(seg2elem), c in conn.children[s]
+        a, b = seg2elem[s], seg2elem[c]
+        a == b || push!(echildren[a], b)
+    end
+    present = sort(unique(elem_order))
+    counts = Dict((m, p) => Int[] for m in present for p in present)
+    for e in 1:ne
+        p = elem_order[e]
+        for m in present
+            push!(counts[(m, p)], count(c -> elem_order[c] == m, echildren[e]))
+        end
+    end
+    return present, counts
+end
+
+"""
+    diameter_defined_orders(t::PPTree, diameters = 2 .* t.radius; elements = :series) -> NamedTuple
+
+The ordering of coronary_postprocess.run(): topological Strahler order per segment, grouping
+into maximal same-order elements, relabelling each element by its mean diameter against the
+literature thresholds, and the root-element guard. `orders[s]` is the final order of segment `s`.
+
+Elements are runs of same-order segments joined end to end (`elements = :series`).
+`elements = :upstream` reproduces upstream, whose neighbour lists also join sibling segments
+(two daughters of one bifurcation with equal Strahler order become a single element).
+"""
+function diameter_defined_orders(
+        t::PPTree, diameters::Vector{Float64} = 2 .* t.radius; elements::Symbol = :series
+    )
+    elements in (:series, :upstream) || throw(ArgumentError("elements must be :series or :upstream, got :$elements"))
+    n = nsegments(t)
+    conn = segment_connections(t; siblings = elements === :upstream)
+    strahler = strahler_orders_per_segment(conn, n)
+    seg2elem, elem_segs = group_strahler_elements(strahler, conn, n)
+    elem_order = [literature_order_of(_np_mean(diameters[c])) for c in elem_segs]
+    seg2elem, elem_segs, elem_order = refine_root_element(seg2elem, elem_segs, elem_order, diameters, conn)
+    orders = [elem_order[seg2elem[s]] for s in 1:n]
+    return (; orders, strahler, seg2elem, elem_segs, elem_order, conn)
+end

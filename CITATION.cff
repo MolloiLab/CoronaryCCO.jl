@@ -46,8 +46,8 @@ references:
     commit: 9bc141f
   - type: article
     title: >-
-      Hierarchy CT-Driven Constrained Constructive Optimization: A Framework
-      for Coronary Network Generation
+      Hierarchy Aware CT-Driven Constrained Constructive Optimization: A
+      Framework for Coronary Network Generation
     authors:
       - given-names: S. L.
         family-names: Vajire
@@ -57,7 +57,9 @@ references:
         family-names: Kassab
       - given-names: L.-C.
         family-names: Lee
-    notes: Citation to be updated upon publication.
+    journal: Annals of Biomedical Engineering
+    year: 2026
+    doi: 10.1007/s10439-026-04383-4
   - type: article
     title: >-
       OpenCCO: An Implementation of Constrained Constructive Optimization for

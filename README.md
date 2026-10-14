@@ -12,47 +12,57 @@ inside a CT-derived myocardial domain.
 > use this package, please cite both of their articles (see [How to cite](#how-to-cite)).
 > Upstream: <https://github.com/Sujal-vajire/HCT-CCO>.
 
-## Why a port
+## What it does
 
-Upstream needs on the order of hours to grow a full 40,000-terminal tree. This port aims
-for minutes on the same problem. It keeps the algorithm's decisions and changes how the
-work is executed:
+```julia
+using CoronaryCCO
+E = generate("case0.vol", "case0.xml"; nterm = 40_000, aperf = 10_000, min_dist = 1,
+             root = (-26, 41, 13), seed = 1, export_xml = "tree.xml")
+postprocess("tree.xml", "tree"; domain_vol = "case0.vol")   # orders, morphometry, hemodynamics, VTP/OBJ
+dds_orders(E.m)                                              # orders computed from the tree itself
+```
 
-- The whole-tree hydraulic and volume updates run in a cache-friendly preorder layout,
-  across candidate bifurcations in parallel.
-- Resistance updates touch only the path from the new bifurcation to the root. The rest
-  of the tree has unchanged inputs, so recomputing it would reproduce the same bits.
-- Brute-force scans over every segment are replaced by conservative spatial queries
-  that return the same answers.
-- Kernels use [AcceleratedKernels.jl](https://github.com/JuliaGPU/AcceleratedKernels.jl)
-  (and [KernelAbstractions.jl](https://github.com/JuliaGPU/KernelAbstractions.jl) where a
-  custom kernel is needed), so the same code runs on multithreaded CPUs and on CUDA, ROCm,
-  oneAPI and Metal GPUs.
+On an Apple M4 laptop CPU (8 threads), case0 with HCT-CCO's sample settings:
 
-## Numerical contract
+| terminals | upstream C++ | CoronaryCCO exact mode | CoronaryCCO (default) |
+|---:|---:|---:|---:|
+| 4,000 | 81 s | 2.3 s | 1.6 s |
+| 40,000 | ≈ 3.6–5 h (extrapolated) | 109 s | 14 s |
+| 200,000 | – | – | ≈ 100 s |
 
-- Every kernel is generic over the float type `T`. Production runs use `Float32` on every
-  backend.
-- `Float32` runs are bitwise identical across backends (CPU threads, Metal, CUDA, ...).
-- The test suite also runs the same code at `Float64` on the CPU and compares it bit for
-  bit against an instrumented build of upstream HCT-CCO (see [`oracle/`](oracle)). This
-  proves the port reproduces upstream's logic exactly, decision by decision.
-- Upstream draws candidate points from `rand()`. Both sides replace it with the same
-  portable SplitMix64 generator, so a seed defines one candidate stream everywhere.
+- **Exact mode** (test-only) reproduces upstream bit for bit in Float64: on case0, every
+  segment's topology, coordinates, radius, resistance, flow and radius ratio match the C++
+  reference build at 500 and 2,000 terminals. Ceres's Levenberg–Marquardt solve is replicated
+  bit for bit on 514,000 recorded and synthetic cases.
+- **The default engine** updates resistances, radii and volume only along the path from each
+  new bifurcation to the root (the incremental update the HCT-CCO paper describes), using a
+  spatial grid for all geometric queries. It equals exact mode to rounding.
+- Kernels are written with AcceleratedKernels.jl / KernelAbstractions.jl, so they run on
+  multithreaded CPUs and on CUDA, ROCm, oneAPI and Metal GPUs. Production runs use `Float32`.
+- Post-processing (`postprocess`) is a pure-Julia port of HCT-CCO's Python script and
+  reproduces its CSVs byte for byte; figures come from a CairoMakie extension.
 
-## Status
+## Departures from upstream
 
-Early development. Package skeleton, parameter and tree layout, the upstream reference
-build, and the feasibility benchmark are in place. The growth loop port is next. See
-[`docs/feasibility.md`](docs/feasibility.md) for the measured speed-up budget.
+Upstream behaviour is the default. Where upstream has a bug or differs from the HCT-CCO
+paper, an option gives the corrected behaviour: full-tree volume objective (`volume = :full`),
+Euclidean wall distance (`metric = :euclidean`), continuous terminal sampling
+(`sampling = :continuous`), imaged vessels kept on their centerlines (`fix_base = true`), and
+in post-processing the decoded myocardial mass and end-to-end element grouping (defaults).
+Each one is documented, with its origin and the supporting literature, in
+[`docs/deviations.md`](docs/deviations.md).
+
+With the paper's bifurcation exponent γ = 2.33 and these corrections, growth reaches all 11
+Strahler orders without rescaling diameters after growth; see the deviations document for
+the terminal counts this requires.
 
 ## How to cite
 
 Please cite the upstream work:
 
-1. S. L. Vajire, J. S. Choy, G. S. Kassab and L.-C. Lee, "Hierarchy CT-Driven Constrained
-   Constructive Optimization: A Framework for Coronary Network Generation." (Citation to
-   be updated upon publication.) Code: <https://github.com/Sujal-vajire/HCT-CCO>.
+1. S. L. Vajire, J. S. Choy, G. S. Kassab and L.-C. Lee, "Hierarchy Aware CT-Driven
+   Constrained Constructive Optimization: A Framework for Coronary Network Generation," *Annals of Biomedical Engineering*, 2026.
+   <https://doi.org/10.1007/s10439-026-04383-4>. Code: <https://github.com/Sujal-vajire/HCT-CCO>.
 2. B. Kerautret, P. Ngo, N. Passat, H. Talbot and C. Jaquet, "OpenCCO: An Implementation
    of Constrained Constructive Optimization for Generating 2D and 3D Vascular Trees,"
    *Image Processing On Line*, 13, 258–279, 2023.

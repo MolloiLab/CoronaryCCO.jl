@@ -18,8 +18,23 @@ import KernelAbstractions as KA
 
 include("upstream_math.jl")
 include("params.jl")
-include("tree.jl")
+include("rng.jl")
+include("io_vol.jl")
+include("domain.jl")
+include("geometry.jl")
+include("model.jl")
+include("io_gxl.jl")
+include("kamiya_lm.jl")
+include("kamiya.jl")
+include("layout.jl")
+include("grid.jl")
+include("grow.jl")
+include("fast.jl")
+include("morphometry.jl")
+include("generate.jl")
+include("postprocess.jl")
 
-export CCOParams, CCOTree, nsegments
+export CCOParams, CCOModel, MaskDomain, Engine, nsegments
+export read_vol, import_gxl, export_gxl, grow!, generate, dds_orders
 
 end
