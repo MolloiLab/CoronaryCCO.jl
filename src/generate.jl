@@ -35,6 +35,11 @@ every terminal: a candidate may join any tree, and the one that adds the least t
 wins, so the territories emerge from the optimization. All trees share the perfusion pressure
 drop and the terminal flow, so each root radius follows from the same law; `root_radius_max`
 may be a vector, one cap per tree (in file order). Forests need `mode = :fast`.
+Unconstrained competition lets the volume objective starve a tree with a long imaged trunk (an
+XCAT RCA won 165 of 2,000 terminals). To keep anatomical territories without a hard seam, a
+domain voxel value ≥ `0xC0` lists in its low six bits which trees may claim a terminal there
+(bit k−1 for tree k): give each territory its own tree and a band around the watershed both
+trees, and the trees interleave across the band. Any other inside value (e.g. 255) allows all.
 
 Growth is batched by default (`growth = :batched`, fast mode): after the first `n_seq`
 terminals it adds terminals in parallel rounds on CPU threads or any GPU (`device =`

@@ -63,6 +63,7 @@ mutable struct Engine{T}
     lscale::T                 # matching length scale for the degeneracy test (1 for :current)
     max_angle_cos::T          # cos of the largest allowed turn at a new bifurcation (-1: none)
     isbase::Vector{Bool}      # segment lies on an imaged base-tree vessel
+    treeid::Vector{UInt8}     # tree of each segment (index into roots; 0 for the root sentinel)
     roots::Vector{Int32}      # root segment of each tree (one for a tree, several for a forest)
     rcaps::Vector{T}          # root radius cap of each tree (0: none)
     rest::Vector{T}           # per tree: unscaled volume of the other trees (update_forest!)
@@ -72,6 +73,30 @@ mutable struct Engine{T}
     F::FastState{T}
     stats::GrowStats
 end
+
+# Tree of every segment: the index in `roots` of the root its path leads to.
+function _tree_ids(m::CCOModel, roots)
+    id = zeros(UInt8, nsegments(m))
+    for j in 2:nsegments(m)
+        k = j
+        while m.parent[k] != 1
+            k = m.parent[k]
+        end
+        id[j] = UInt8(something(findfirst(==(k), roots), 0))
+    end
+    return id
+end
+
+# Territories in a forest. A domain voxel value >= 0xC0 lists in its low six bits the trees a
+# terminal there may join (bit k-1 for tree k); any other inside value (e.g. 255) allows all.
+# This lets trees interdigitate across a boundary band instead of meeting at a hard seam.
+@inline function _allowed_bits(d, p::P3{T}) where {T}
+    q = (unsafe_trunc(Int32, floor(p[1] + T(0.5))), unsafe_trunc(Int32, floor(p[2] + T(0.5))), unsafe_trunc(Int32, floor(p[3] + T(0.5))))
+    in_bounds(d, q) || return 0x3f
+    v = img_at(d, q)
+    return v >= 0xc0 ? (v & 0x3f) : 0x3f
+end
+@inline _tree_ok(treeid, j, bits::UInt8) = (t = @inbounds(treeid[j]); t == 0 || ((bits >> (t - 0x01)) & 0x01) == 0x01)
 
 function Engine(
         m::CCOModel{T}, dom::MaskDomain{T}; seed::Integer = 0, cell::Real = 2.0,
@@ -105,7 +130,7 @@ function Engine(
         [Workspace{T}() for _ in 1:m.params.num_neighbors], zero(T), tc, Bool[],
         mode, volume, sampling, fix_base, collision, one(T), one(T),
         max_branch_angle === nothing ? -one(T) : T(cosd(max_branch_angle)),
-        trues(nsegments(m)) |> Vector{Bool}, roots, caps, zeros(T, length(roots)),
+        trues(nsegments(m)) |> Vector{Bool}, _tree_ids(m, roots), roots, caps, zeros(T, length(roots)),
         fill(T(Inf), length(roots)),
         zeros(T, m.params.num_neighbors, 1), zeros(Int32, m.params.num_neighbors, 1),
         FastState{T}(), GrowStats()
@@ -244,6 +269,7 @@ end
 @inline function nearest_k!(bd, bj, col, E, p::P3{T}, n::Int) where {T}
     m = E.m; g = E.g
     level = _level(E)
+    bits = _allowed_bits(E.dom, p)
     R = g.h
     @inbounds while true
         k = 0
@@ -256,6 +282,7 @@ end
                 (kx == max(sb[1], bx[1]) && ky == max(sb[3], bx[3]) && kz == max(sb[5], bx[5])) || continue
                 keep = level >= 1 ? is_connectable(E, j) : level == 0.5 ? E.middle[j] : true
                 keep || continue
+                (bits == 0x3f || _tree_ok(E.treeid, j, bits)) || continue
                 d = proj_distance(segA(m, j), segB(m, j), p)
                 # insertion into the sorted top-n list
                 if k < n
@@ -650,6 +677,7 @@ function sequential_step!(E::Engine{T}, results, parallel::Bool) where {T}
     td = time_ns()
     if best_s != 0
         push!(E.isbase, E.isbase[best_s], false)
+        push!(E.treeid, E.treeid[best_s], E.treeid[best_s])
         E.mode === :fast ? commit_fast!(E, best_s, best_opt, best_p, best_q) :
             commit!(E, best_s, best_opt, best_p, best_q)
         middle_update!(E, best_s, Int32(nsegments(m) - 1), Int32(nsegments(m)))

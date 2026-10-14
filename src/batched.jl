@@ -281,6 +281,7 @@ function batched_round!(E::Engine{T}, pool::BatchPool{T}, nb::Int; parallel::Boo
     for k in pool.acc
         s, _, pOpt, qNew, _, _, _ = res[k]
         push!(E.isbase, E.isbase[s], false)
+        push!(E.treeid, E.treeid[s], E.treeid[s])
         nl, nr = commit_structure!(E, s, pOpt, pts[k], qNew)
         grid_remove!(E.g, s)
         grid_insert!(E.g, m, s); grid_insert!(E.g, m, nl); grid_insert!(E.g, m, nr)

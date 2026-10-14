@@ -70,7 +70,7 @@ struct ParamView{T}
     term_flow_cv::T
 end
 
-struct TreeView{T, M, F, G, D, VI8, VB, VR, VT}
+struct TreeView{T, M, F, G, D, VI8, VB, VU8, VR, VT}
     m::M
     F::F
     g::G
@@ -79,6 +79,7 @@ struct TreeView{T, M, F, G, D, VI8, VB, VR, VT}
     tcount::VI8
     middle::VB
     isbase::VB
+    treeid::VU8
     cscale::T
     lscale::T
     max_angle_cos::T
@@ -169,7 +170,7 @@ function tree_view(E::Engine{T}, vc::ViewCache; to = identity) where {T}
         T(p.term_flow_cv)
     )
     return TreeView(
-        M, F, G, D, P, up(:tcount, E.tcount), up(:middle, E.middle), up(:isbase, E.isbase), E.cscale,
+        M, F, G, D, P, up(:tcount, E.tcount), up(:middle, E.middle), up(:isbase, E.isbase), up(:treeid, E.treeid), E.cscale,
         E.lscale, E.max_angle_cos, E.rmax,
         E.fix_base, E.volume === :full, T(_level(E)), up(:roots, E.roots), up(:rcaps, E.rcaps),
         up(:rest, E.rest), up(:rmin, E.rmin)
