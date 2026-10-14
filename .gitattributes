@@ -1,0 +1,3 @@
+# The upstream C++ reference build harness is test tooling, not part of the package.
+# Exclude it from GitHub's language statistics so the repo reports as Julia.
+oracle/** linguist-vendored
