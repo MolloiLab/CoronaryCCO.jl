@@ -1,0 +1,18 @@
+.DS_Store
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+Manifest*.toml
+LocalPreferences.toml
+*.pluto-cache.toml
+
+# Downloaded upstream sample data and C++ reference outputs (regenerable)
+test/data/
+bench/out/
+oracle/build/
+oracle/out/
+
+# Local agent config
+.claude/
+/CLAUDE.md
+/AGENTS.md
