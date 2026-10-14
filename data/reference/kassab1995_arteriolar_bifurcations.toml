@@ -1,0 +1,38 @@
+# Kassab GS, Fung YC (1995). The pattern of coronary arteriolar bifurcations and the uniform
+# shear hypothesis. Ann Biomed Eng 23:13-20. Numbers from the Results text of the publisher PDF.
+
+[meta]
+id = "kassab1995_arteriolar_bifurcations"
+data_type = "experimental"
+validates = "Bifurcation diameter law of terminal arterioles (9-50 um): Murray ratio (D1^3 + D2^3)/D0^3 at CCO bifurcations near the terminals, i.e. the bifurcation exponent gamma = 3 used by CCO."
+species = "pig"
+preparation = "7 farm pigs (4 normal controls, 3 with right ventricular hypertrophy from 5-week pulmonary artery stenosis). Silicone-elastomer cast of maximally vasodilated coronary vessels; arteriolar bifurcations measured by optical sectioning of histological sections (same method as Kassab et al. 1993)."
+conditions = "Maximally vasodilated, cast. Only vessels 9-50 um in diameter."
+verification = "FT"
+access = "Publisher PDF (Springer, local copy)."
+notes = """D0 = parent, D1 >= D2 daughters. Murray's law predicts (D1^3 + D2^3)/D0^3 = 1. Branch diameter ratios D1/D0 and D2/D0 vs D2/D1 are shown only in Figs. 3-5 (not digitized); the authors state agreement with Murray's law within 95% confidence limits."""
+use_in_model = """For CCO bifurcations whose parent and daughters are all 9-50 um, compute (D1^3 + D2^3)/D0^3 and compare the mean with 1.03 (LV) / 1.05 (RV). CCO with gamma = 3 gives exactly 1 by construction, so this checks only that the imposed exponent is realistic."""
+
+[source]
+authors = ["Kassab GS", "Fung YC"]
+year = 1995
+title = "The pattern of coronary arteriolar bifurcations and the uniform shear hypothesis"
+journal = "Ann Biomed Eng"
+volume = "23"
+issue = "1"
+pages = "13-20"
+doi = "10.1007/BF02368296"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 23, issue 1, 13-20)"
+
+[data.murray_ratio]
+description = "Mean (D1^3 + D2^3)/D0^3 over arteriolar bifurcations with all branches 9-50 um"
+location = "Results, text accompanying Fig. 6"
+provenance = "FT"
+statistic = "mean +/- SE"
+group = ["normal LV", "normal RV", "RVH RV"]
+n_pigs = [4, 4, 3]
+n_arteriole_trees = [112, 144, 160]
+n_bifurcation_nodes = [489, 1193, 1007]
+murray_ratio_mean = [1.03, 1.05, 1.10]
+murray_ratio_se = [0.015, 0.0096, 0.0097]
+missing_note = ""

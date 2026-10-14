@@ -1,0 +1,150 @@
+[meta]
+id = "chilian1986_microvascular_pressure"
+data_type = "experimental"
+validates = "Pulsatile and mean subepicardial microvascular pressure vs vessel size class (arterioles ~100-325 um, venules ~110-225 um) in the beating LV, with tone intact and during papaverine vasodilation; percent of total coronary resistance upstream of each class"
+species = "cat"
+preparation = "Anesthetized open-chest cats: ketamine 2 mg/kg i.m. then pentobarbital sodium 30 mg/kg i.m. (supplemented as required), midsternal split. High-frequency jet ventilation triggered from LV pressure to abolish respiratory motion; LV free wall partially restrained by 3-4 needles through the anterior interventricular groove (measurements >= 0.5 cm from pins). Subepicardial microvessels viewed by stroboscopic epi-illumination (Leitz Ploemopak, x60/x100), diameter by SIT video (resolution ~1.5-2.5 um); epicardium covered with mineral oil. Pressure by servo-null micropipette (2-5 um tip) carried by a computer-driven electromagnetic micromanipulator ('Wobbler') tracking the vessel through the cardiac cycle; each value the average of 10-15 beats over ~30 s. Subepicardial perfusion by 15 um radioactive microspheres."
+conditions = "Control: coronary vasomotor tone intact (mean aortic pressure 76 +/- 4 mmHg). Vasodilation: papaverine 0.3 mg/kg/min i.v. (different preparations), mean aortic pressure held near control by donor-cat blood and/or a descending-aortic snare; peak/rest flow-velocity ratio after 15-20 s occlusion fell from 4.5 to 1.2 (near-maximal dilation). Beating heart; all vessels subepicardial LV."
+verification = "FT"
+access = "Original publisher PDF supplied locally by the project lead (validation-papers/), read with pdftotext and confirmed against 200 dpi page renders"
+notes = """All values mean +/- SE. Vessel classes are the authors' (large/medium/small arterioles, small/medium venules); the class mean diameter +/- SE
+is given in each table column header, and differs slightly between control and papaverine columns (vessels dilated).
+Each class was compared with the aortic pressure measured simultaneously in the same preparations, so the aortic pressure differs by column.
+Relative resistance definition (paper): mean microvascular pressure as % of mean aortic pressure = % of total resistance DOWNSTREAM of the
+site; 100 minus that = % upstream. Table 6 omits the small-arteriole class; its % can be computed from Table 4 (44/78 = 56 %).
+The abstract quotes myocardial perfusion 139 +/- 9 (control) and 339 +/- 52 (papaverine) ml/min/100 g, whereas Table 3 gives 132 +/- 8 (n = 10)
+and 339 +/- 60 (n = 7); Table 3 values are recorded. Results text: 'About 20-25% of total coronary resistance was proximal to arterioles
+180-220 um'; arterioles 70-130 um had 50-55% of aortic pressure (45-50% of resistance upstream). With papaverine, large and medium arterioles
+accounted for only 6 and 10% of total resistance. No venous outflow (coronary sinus) pressure reported apart from right atrial pressure."""
+use_in_model = """Beating-heart, resting-tone and dilated reference for the subepicardial arterial pressure profile. Compare model mean pressure (or % of
+inlet pressure) in subepicardial arteries/arterioles of ~300, ~190 and ~100 um and in venules of ~110 and ~190-225 um against pressure_control /
+pct_aortic. Note the model's tone state: resting data imply ~45-50% of resistance upstream of 100 um arterioles; a passive (fully dilated)
+Poiseuille tree should look more like the papaverine column. Small-heart species (cat): compare by diameter class, not by Strahler order."""
+
+[source]
+authors = ["Chilian WM", "Eastham CL", "Marcus ML"]
+year = 1986
+title = "Microvascular distribution of coronary vascular resistance in beating left ventricle"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "251"
+issue = "4"
+pages = "H779-H788"
+doi = "10.1152/ajpheart.1986.251.4.h779"
+crossref_verified = "2026-10-14; Crossref title exact match ('Microvascular distribution of coronary vascular resistance in beating left ventricle')"
+pmid = "3766755"
+
+[data.pressure_control]
+description = "Pulsatile and mean pressures in microvessel classes and in the simultaneously measured aorta, coronary tone intact"
+location = "Table 4"
+provenance = "FT"
+statistic = "mean +/- SE"
+vessel_class = ["large arterioles", "medium arterioles", "small arterioles", "small venules", "medium venules"]
+diameter_mean_um = [300.0, 187.0, 98.0, 110.0, 188.0]
+diameter_se_um = [31.0, 6.0, 14.0, 6.0, 15.0]
+n = [6, 9, 5, 5, 3]
+systolic_mmHg = [88.0, 79.0, 60.0, 14.0, 11.0]
+systolic_se_mmHg = [6.0, 6.0, 9.0, 2.0, 6.0]
+diastolic_mmHg = [50.0, 45.0, 37.0, 2.0, 3.0]
+diastolic_se_mmHg = [5.0, 2.0, 7.0, 1.0, 4.0]
+mean_mmHg = [65.0, 58.0, 44.0, 8.0, 8.0]
+mean_se_mmHg = [5.0, 3.0, 7.0, 1.0, 3.0]
+aortic_systolic_mmHg = [93.0, 99.0, 98.0, 104.0, 92.0]
+aortic_systolic_se_mmHg = [8.0, 5.0, 13.0, 16.0, 8.0]
+aortic_diastolic_mmHg = [54.0, 59.0, 60.0, 75.0, 60.0]
+aortic_diastolic_se_mmHg = [4.0, 5.0, 8.0, 12.0, 6.0]
+aortic_mean_mmHg = [70.0, 75.0, 78.0, 89.0, 72.0]
+aortic_mean_se_mmHg = [5.0, 5.0, 10.0, 14.0, 6.0]
+missing_note = ""
+
+[data.pressure_papaverine]
+description = "Pulsatile and mean pressures in microvessel classes and in the simultaneously measured aorta during papaverine 0.3 mg/kg/min i.v."
+location = "Table 5"
+provenance = "FT"
+statistic = "mean +/- SE"
+vessel_class = ["large arterioles", "medium arterioles", "small venules", "medium venules"]
+diameter_mean_um = [325.0, 192.0, 122.0, 224.0]
+diameter_se_um = [18.0, 8.0, 10.0, 19.0]
+n = [14, 5, 4, 5]
+systolic_mmHg = [96.0, 85.0, 32.0, 20.0]
+systolic_se_mmHg = [4.0, 6.0, 8.0, 1.0]
+diastolic_mmHg = [51.0, 47.0, 5.0, 4.0]
+diastolic_se_mmHg = [3.0, 2.0, 1.0, 1.0]
+mean_mmHg = [67.0, 60.0, 15.0, 11.0]
+mean_se_mmHg = [4.0, 3.0, 2.0, 2.0]
+aortic_systolic_mmHg = [102.0, 95.0, 113.0, 113.0]
+aortic_systolic_se_mmHg = [14.0, 5.0, 4.0, 3.0]
+aortic_diastolic_mmHg = [53.0, 52.0, 50.0, 52.0]
+aortic_diastolic_se_mmHg = [3.0, 3.0, 9.0, 6.0]
+aortic_mean_mmHg = [70.0, 66.0, 73.0, 66.0]
+aortic_mean_se_mmHg = [3.0, 3.0, 7.0, 4.0]
+missing_note = "No small-arteriole (~100 um) class was measured during papaverine."
+
+[data.pct_aortic]
+description = "Microvascular pressure as % of aortic pressure (= % of total resistance downstream of the site), control vs papaverine"
+location = "Table 6 (same data plotted in Fig. 7)"
+provenance = "FT"
+statistic = "mean +/- SE"
+vessel_class = ["large arterioles", "medium arterioles", "small venules", "medium venules"]
+control_diameter_um = [300.0, 187.0, 110.0, 188.0]
+control_diameter_se_um = [31.0, 6.0, 6.0, 15.0]
+papaverine_diameter_um = [325.0, 192.0, 122.0, 224.0]
+papaverine_diameter_se_um = [18.0, 8.0, 10.0, 19.0]
+control_systolic_pct = [95.0, 79.0, 13.0, 12.0]
+control_systolic_se_pct = [3.0, 4.0, 3.0, 6.0]
+control_diastolic_pct = [93.0, 76.0, 3.0, 5.0]
+control_diastolic_se_pct = [4.0, 5.0, 2.0, 4.0]
+control_mean_pct = [96.0, 77.0, 9.0, 11.0]
+control_mean_se_pct = [6.0, 4.0, 2.0, 4.0]
+n_control = [7, 9, 5, 3]
+papaverine_systolic_pct = [94.0, 90.0, 28.0, 18.0]
+papaverine_systolic_se_pct = [2.0, 5.0, 5.0, 6.0]
+papaverine_diastolic_pct = [96.0, 91.0, 10.0, 8.0]
+papaverine_diastolic_se_pct = [2.0, 2.0, 3.0, 2.0]
+papaverine_mean_pct = [96.0, 90.0, 21.0, 17.0]
+papaverine_mean_se_pct = [4.0, 4.0, 3.0, 4.0]
+n_papaverine = [14, 5, 4, 5]
+missing_note = "Small arterioles (98 +/- 14 um, control only) not in Table 6; from Table 4 their mean pressure is 44/78 = 56 % of aortic. Large-arteriole control n is 7 here vs 6 in Table 4 (as printed)."
+
+[data.resistance_partition_text]
+description = "Percent of total coronary resistance located upstream of a vessel class, as stated in Results/Discussion/abstract"
+location = "Results ('Microvascular pressures: coronary tone intact', 'coronary dilation'), Discussion paragraph 1, Abstract"
+provenance = "FT"
+statistic = "approximate ranges as stated"
+condition = ["control", "control", "control", "control", "papaverine", "papaverine"]
+site = ["arterioles 180-220 um", "arterioles 70-130 um", "100-200 um venules", "distal to 100 um arterioles", "medium arterioles 175-200 um", "100 um venules"]
+pct_resistance_upstream_low = [20.0, 45.0, 90.0, nan, 10.0, 80.0]
+pct_resistance_upstream_high = [25.0, 50.0, 90.0, nan, 10.0, 80.0]
+pct_resistance_downstream = [nan, nan, nan, 55.0, nan, nan]
+missing_note = "Statements are approximate. Abstract also: ~25% of resistance proximal to 200 um arterioles and ~20% in arterioles 100-200 um at rest; aorta-to-200 um gradient ~20 mmHg, aorta-to-100 um 30-35 mmHg; with papaverine aorta-to-200 um gradient 5-10 mmHg. Large and medium arterioles contributed 6 and 10% of total resistance with papaverine."
+
+[data.hemodynamics]
+description = "Systemic hemodynamics, subepicardial perfusion and blood gases, control vs papaverine"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SE"
+variable = ["aortic systolic pressure mmHg", "aortic diastolic pressure mmHg", "mean aortic pressure mmHg", "heart rate bpm", "right atrial pressure mmHg", "subepicardial perfusion ml/min/100g"]
+control_value = [97.0, 63.0, 76.0, 152.0, 3.5, 132.0]
+control_se = [4.0, 4.0, 4.0, 5.0, 1.4, 8.0]
+control_n = [26, 26, 26, 26, 6, 10]
+papaverine_value = [105.0, 50.0, 72.0, 177.0, 2.7, 339.0]
+papaverine_se = [2.0, 2.0, 3.0, 6.0, 0.3, 60.0]
+papaverine_n = [22, 22, 22, 22, 20, 7]
+missing_note = "Abstract gives perfusion 139 +/- 9 and 339 +/- 52 ml/min/100 g (differs from Table 3). Coronary resistance shown only graphically (Fig. 4), not digitized."
+
+[data.restraint_validation]
+description = "Hemodynamics and subepicardial perfusion before and after partial LV restraint (pins), and with dipyridamole 0.5 mg/kg/min (vasodilator reserve check)"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SE, n = 5"
+timepoint = ["control", "post-restraint 0.5 min", "post-restraint 20 min", "post-restraint 30 min", "dipyridamole"]
+heart_rate_bpm = [173.0, 184.0, 175.0, 178.0, 194.0]
+heart_rate_se_bpm = [12.0, 12.0, 9.0, 12.0, 16.0]
+mean_arterial_pressure_mmHg = [82.0, 108.0, 80.0, 79.0, 67.0]
+mean_arterial_pressure_se_mmHg = [6.0, 2.0, 6.0, 4.0, 8.0]
+right_atrial_pressure_mmHg = [2.8, 3.6, 3.0, 3.0, 2.5]
+right_atrial_pressure_se_mmHg = [0.4, 1.2, 0.5, 0.4, 0.6]
+perfusion_normal_epi_ml_min_100g = [135.0, 152.0, 139.0, 127.0, 331.0]
+perfusion_normal_epi_se_ml_min_100g = [12.0, 11.0, 8.0, 9.0, 28.0]
+perfusion_restrained_epi_ml_min_100g = [129.0, 193.0, 152.0, 131.0, 353.0]
+perfusion_restrained_epi_se_ml_min_100g = [16.0, 21.0, 13.0, 11.0, 19.0]
+missing_note = ""

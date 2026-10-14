@@ -1,0 +1,54 @@
+# Wu XS, Ewert DL, Liu YH, Ritman EL (1992). In vivo relation of intramyocardial blood volume to myocardial
+# perfusion. Evidence supporting microvascular site for autoregulation. Dog, fast CT (Dynamic Spatial
+# Reconstructor), aortic-root iohexol bolus. ABSTRACT ONLY (Wayback copy of the AHA page has the abstract only).
+
+[meta]
+id = "wu1992_blood_volume_flow"
+data_type = "experimental"
+validates = "Scaling of intramyocardial blood volume fraction with regional perfusion, FMB = a * F^(1/2), in subendocardium and subepicardium; with the central volume principle this gives regional MTT = FMB/F proportional to F^(-1/2)."
+species = "dog"
+preparation = "Anesthetized dogs, Dynamic Spatial Reconstructor (high-speed CT), iohexol bolus into the aortic root. Groups: controls; epicardial stenosis; progressive microembolization with 15 um microspheres."
+conditions = "Range of flows in control dogs (vasodilation state details not in abstract). FMB in %, F in ml/g/min."
+verification = "abs"
+access = "Abstract via PubMed (PMID 1735165) and the Wayback Machine snapshot of circ.ahajournals.org/content/85/2/730 (abstract page only). Full text not open."
+notes = """
+a has units % (ml min / g)^(1/2) as printed.
+Stenosis: a rose to about 10 for 25-43% stenosis (9 mmHg gradient) and to > 11 for 50-55% stenosis (40 mmHg gradient); resting flow was not impaired but flow reserve was.
+Embolization: a stayed about 9.5 up to 50% of the fatal microsphere dose, then fell progressively to 4.6 at the fatal dose.
+Number of dogs and flow range not given in abstract.
+CT intramyocardial blood volume excludes large epicardial vessels and relies on the contrast agent's intravascular distribution during first pass.
+"""
+use_in_model = """For model regions (endo and epi separately) at several total flows, compute intramyocardial blood volume fraction (%) and regional flow (ml/g/min); fit FMB = a * F^0.5 and compare a with 9.5 (endo) / 9.6 (epi). E.g. F = 1 ml/g/min -> FMB ~ 9.5%, MTT ~ 5.7 s; F = 4 -> FMB ~ 19%, MTT ~ 2.9 s (these examples are arithmetic on the fitted law, not reported values)."""
+
+[source]
+authors = ["Wu XS", "Ewert DL", "Liu YH", "Ritman EL"]
+year = 1992
+title = "In vivo relation of intramyocardial blood volume to myocardial perfusion. Evidence supporting microvascular site for autoregulation"
+journal = "Circulation"
+volume = "85"
+issue = "2"
+pages = "730-737"
+doi = "10.1161/01.cir.85.2.730"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 85, issue 2, 730-737; authors Wu, Ewert, Liu, Ritman)"
+pmid = "1735165"
+
+[data.fmb_flow_law_control]
+description = "Coefficient a in FMB (%) = a * F^(1/2), F in ml/g/min, control dogs"
+location = "Abstract, Methods and Results"
+provenance = "abs"
+statistic = "mean +/- SD"
+layer = ["subendocardium", "subepicardium"]
+a_coefficient = [9.5, 9.6]
+a_sd = [1.2, 1.1]
+exponent = 0.5
+unit = "a in % (ml min / g)^(1/2)"
+missing_note = "n and flow range not in abstract."
+
+[data.fmb_flow_law_stenosis_embolization]
+description = "Coefficient a under stenosis and microembolization"
+location = "Abstract"
+provenance = "abs"
+condition = ["stenosis 25-43% (gradient 9 mmHg)", "stenosis 50-55% (gradient 40 mmHg)", "embolization up to 50% fatal dose", "embolization at fatal dose"]
+a_coefficient = [10.0, 11.0, 9.5, 4.6]
+a_qualifier = ["approximately", "greater than", "approximately", "exact"]
+missing_note = "No SDs given for these."

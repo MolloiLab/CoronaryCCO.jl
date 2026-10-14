@@ -1,0 +1,63 @@
+# Stapleton DD, Moffett TC, Baskin DG, Bassingthwaighte JB (1995). Autoradiographic assessment of blood flow
+# heterogeneity in the hamster heart. Molecular flow marker (125I-desmethylimipramine) + quantitative
+# autoradiography; RD at 16 x 16 x 20 um voxels. Full text read from PMC (PMC3496780, HTML).
+
+[meta]
+id = "stapleton1995_flow_heterogeneity"
+data_type = "experimental"
+validates = "Flow heterogeneity at near-cellular resolution (5e3 um^3 voxels), i.e. at or below the CCO terminal-segment scale; an upper-end check for RD of the finest model flow field."
+species = "hamster"
+preparation = "5 open-chest Syrian hamsters; left atrial injection of 125I-desmethylimipramine (2 uCi); heart beat 15 s more, excised, frozen in Freon 22; 20 um cryosections every 100 um apex to base; film autoradiography digitized at 16 x 16 um pixels; endocardial surface layer excluded. Heart mass about 0.5 g."
+conditions = "Open chest, anesthesia not restated in the flow-distribution series (extraction series used pentobarbital 50 mg/kg ip). No vasodilator."
+verification = "FT"
+access = "PMC3496780 (NIH author manuscript), HTML article page."
+notes = """
+Voxel volume stated as 5e3 um^3 (16 x 16 x 20 um); the authors note this slightly overestimates the true voxel if sections flattened. 5e3 um^3 corresponds to about 5e-9 g of tissue.
+The authors state the regions resolved are smaller than the volume supplied by single arterioles, so the result 'must slightly exaggerate' true heterogeneity; they also state 31% at this scale is somewhat LESS than a simple power-law extrapolation from rabbit hearts (RD 32% at ~50 mg pieces), suggesting the RD vs size relation flattens at small scale (consistent with van Beek et al. 1989 network models).
+Extraction check (isolated Langendorff hamster hearts, 10.1 ml/g/min buffer): DMI retention R(20 s) 96 +/- 2%, extraction at albumin peak 97 +/- 2% (7 curves, 2 hearts).
+Distributions slightly leptokurtic; average skewness not different from zero.
+"""
+use_in_model = """Compute the RD of terminal-bed flow per unit tissue volume at the finest model resolution (terminal segment or ~20 um voxel). Expect a value near 31% (or modestly lower if the model's terminal territories are larger than 5e3 um^3). Together with bassingthwaighte1989 this brackets the RD vs mass curve from 5e-9 g to ~10 g."""
+
+[source]
+authors = ["Stapleton DD", "Moffett TC", "Baskin DG", "Bassingthwaighte JB"]
+year = 1995
+title = "Autoradiographic assessment of blood flow heterogeneity in the hamster heart"
+journal = "Microcirculation"
+volume = "2"
+issue = "3"
+pages = "277-282"
+doi = "10.3109/10739689509146773"
+crossref_verified = "2026-10-14; Crossref title match (case differs; Crossref lists third author as 'RASKIN', PubMed and PMC list Baskin DG)"
+pmid = "8748951"
+pmcid = "PMC3496780"
+
+[data.rd_per_heart]
+description = "Relative dispersion of IDMI deposition density (relative regional flow) over all slices of each heart, 16 x 16 x 20 um voxels"
+location = "Results ('in the heart shown in the right panel of Fig. 3, the RD is 33%. In the four other animals ... 29%, 26%, 36%, and 31%')"
+provenance = "FT"
+statistic = "one RD per heart"
+heart = [1, 2, 3, 4, 5]
+rd_percent = [33.0, 29.0, 26.0, 36.0, 31.0]
+voxel_volume_um3 = 5000.0
+missing_note = "Heart 1 is the Fig. 3 heart (52 slices, 7.5e6 pixels); pixel counts of other hearts not given."
+
+[data.rd_summary]
+description = "Mean RD over hearts"
+location = "Abstract and Results"
+provenance = "FT"
+value = 31.0
+sd = 4.0
+unit = "percent"
+n = 5
+voxel_volume_um3 = 5000.0
+missing_note = ""
+
+[data.rd_single_slice]
+description = "RD of one 20 um slice (125,000 pixels), same heart as Fig. 3 right panel"
+location = "Fig. 3 legend"
+provenance = "FT"
+value = 29.0
+unit = "percent"
+n = 1
+missing_note = ""

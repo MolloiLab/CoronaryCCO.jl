@@ -1,0 +1,49 @@
+# Nickander J, Themudo R, Thalen S, Sigfridsson A, Xue H, Kellman P, Ugander M (2019). The relative
+# contributions of myocardial perfusion, blood volume and extracellular volume to native T1 and native T2 at
+# rest and during adenosine stress in normal physiology. 41 healthy volunteers, quantitative perfusion CMR.
+# Open access (CC BY 4.0); full text read from Europe PMC XML (PMC6876099).
+
+[meta]
+id = "nickander2019_cmr_myocardial_blood_volume"
+data_type = "experimental"
+validates = "Human myocardial blood volume (MBV, %) and myocardial blood flow at rest and adenosine stress in healthy young adults, plus ECV. MBV/MBF gives a whole-bed intravascular mean transit time for comparison with the model."
+species = "human"
+preparation = "41 healthy subjects (26 +/- 5 y, 51% female), 1.5 T. Dual-sequence first-pass perfusion (FLASH AIF + bSSFP myocardium), gadobutrol 0.05 mmol/kg, inline Gadgetron perfusion and MBV maps from a distributed blood-tissue exchange model (Kellman/Xue). Mid-ventricular slice, ROI in the mid-mural third."
+conditions = "Rest and adenosine 140 ug/kg/min iv. Rest HR 71 +/- 12, stress HR 95 +/- 16 bpm; rest SBP 109 +/- 11, stress 112 +/- 12 mmHg; RPP rose 38 +/- 28%."
+verification = "FT"
+access = "Europe PMC full-text XML, PMC6876099 (open access, CC BY 4.0)."
+notes = """
+MBV is model-derived (blood-tissue exchange model fit), in % (volume fraction of tissue), and includes the intramyocardial vessels resolved within the ROI; it is not a direct volume measurement.
+Fig. 4 of the paper is a schematic stating MBV about 9% at rest, consisting of plasma and red cells.
+Segmental values and reproducibility in Additional file 1 (not read).
+LV mass 119 +/- 28 g; LVEF 59 +/- 4%; hematocrit measured but value not restated here.
+"""
+use_in_model = """Compute model intramyocardial blood volume fraction (vessels inside the myocardium, excluding epicardial arteries/veins if the CMR ROI excludes them) at rest-like and maximally dilated settings; compare with mbv_percent. A whole-bed intravascular mean transit time can be formed as MBV/MBF (central volume principle) from the paired means; that ratio is not reported by the paper and must be computed by the user, with the caveat that mean of ratios != ratio of means."""
+
+[source]
+authors = ["Nickander J", "Themudo R", "Thalen S", "Sigfridsson A", "Xue H", "Kellman P", "Ugander M"]
+year = 2019
+title = "The relative contributions of myocardial perfusion, blood volume and extracellular volume to native T1 and native T2 at rest and during adenosine stress in normal physiology"
+journal = "J Cardiovasc Magn Reson"
+volume = "21"
+issue = "1"
+pages = "73"
+doi = "10.1186/s12968-019-0585-9"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 21, article 73)"
+pmid = "31767018"
+pmcid = "PMC6876099"
+
+[data.rest_stress]
+description = "Mid-mural myocardial blood volume, blood flow and ECV at rest and adenosine stress"
+location = "Results, 'Myocardial T1, T2, MBV, perfusion and ECV during adenosine stress'"
+provenance = "FT"
+statistic = "mean +/- SD"
+state = ["rest", "adenosine stress"]
+mbv_percent = [9.0, 12.1]
+mbv_sd_percent = [0.7, 1.1]
+mbf_ml_min_g = [0.9, 3.4]
+mbf_sd_ml_min_g = [0.2, 0.7]
+ecv_percent = [27.3, 30.9]
+ecv_sd_percent = [2.8, 3.2]
+n = [41, 41]
+missing_note = "ECV stress n = 37 (4 excluded for FOV mismatch). All rest-stress differences p <= 0.001."

@@ -1,0 +1,46 @@
+# Yang J, Wang Z, Wang H, et al. (2024). Myocardial transit time mapping by CMR: a novel indicator of
+# microcirculatory dysfunction in cardiac amyloidosis. Only the CONTROL group (no cardiac abnormality) is a
+# model target. MyoTT = delay between contrast arrival in the aortic root and in the coronary sinus at rest.
+# Full text read from PMC (PMC11612126, HTML).
+
+[meta]
+id = "yang2024_cmr_myocardial_transit_time"
+data_type = "experimental"
+validates = "Human resting aortic-root-to-coronary-sinus contrast arrival delay (MyoTT): a threshold-crossing (appearance-type) transit time across the whole coronary bed, not the mean transit time."
+species = "human"
+preparation = "20 controls without cardiac structural or functional abnormality (vs 20 cardiac amyloidosis patients). 1.5 T Philips Ingenia; saturation-recovery gradient-echo first-pass sequence with at least one slice covering the coronary sinus and aortic root; gadobutrol 0.15 mmol/kg iv + 25 ml saline at 3 ml/s. ROIs >= 0.3 cm^2 at the CS ostium and centrally in the aortic root, manually tracked."
+conditions = "Rest only. MyoTT = time difference between the signal reaching '80% above baseline' in the aortic root and in the CS (paper Methods; Fig. 1 legend says 'measurement time set at 80% of the exact maximum value')."
+verification = "FT"
+access = "PMC11612126 (author manuscript), HTML article page."
+notes = """
+Control demographics: 14/20 male, age 56.40 +/- 12.19 y, BSA 1.86 +/- 0.20 m^2, SBP 122.9 +/- 5.7, DBP 75.4 +/- 4.4 mmHg. Control ECV 26.60 +/- 3.45%.
+Heart rate of controls not reported in the extracted tables.
+The two threshold definitions in Methods vs Fig. 1 legend differ slightly ('80% above baseline' vs '80% of the exact maximum'); both are threshold crossings on the upslope, so MyoTT approximates a delay between bolus fronts, i.e. close to an appearance-time difference plus the rise time to 80%.
+Inter-observer ICC 0.949, intra-observer 0.950.
+Amyloidosis values (not a target): 14.37 +/- 3.80 s.
+"""
+use_in_model = """Inject a model bolus at the aortic root (with a realistic dispersed input), record concentration at the coronary sinus outlet, and compute the delay between the two curves crossing the same relative threshold (80% of their own peak or 80% rise above baseline). Compare with myott_controls (7.7 +/- 1.5 s at rest). This includes epicardial artery + microvascular + venous transit."""
+
+[source]
+authors = ["Yang J", "Wang Z", "Wang H", "Zheng P", "Deng W", "Gao H", "Yao K", "Cheng Y", "Wu M", "He R", "Yue X", "Yu Y", "Zhao R", "Li X"]
+year = 2024
+title = "Myocardial Transit Time Mapping by CMR: A Novel Indicator of Microcirculatory Dysfunction in Cardiac Amyloidosis"
+journal = "J Imaging Inform Med"
+volume = "37"
+issue = "6"
+pages = "3049-3056"
+doi = "10.1007/s10278-024-01179-7"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 37, issue 6, 3049-3056)"
+pmid = "38940890"
+pmcid = "PMC11612126"
+
+[data.myott_controls]
+description = "Absolute MyoTT in controls at rest"
+location = "Table 2 ('Absolute MyoTT, sec') and abstract"
+provenance = "FT"
+statistic = "mean +/- SD"
+value = 7.66
+sd = 1.51
+unit = "s"
+n = 20
+missing_note = "No stress values. Heart-rate-indexed MyoTT not stored."

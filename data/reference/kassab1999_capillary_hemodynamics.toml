@@ -1,0 +1,91 @@
+# Kassab GS, Le KN, Fung YC (1999). A hemodynamic analysis of coronary capillary blood flow based on
+# anatomic and distensibility data.
+# This is a MODEL paper. Only its experimental INPUT data (capillary distensibility measured by
+# intravital microscopy) are relevant here; no model outputs are stored.
+# The publisher full text could NOT be read (journals.physiology.org returns HTTP 403; Unpaywall lists
+# no open-access copy; no Wayback copy). Numbers come from open-access later papers. Each dataset says which.
+
+[meta]
+id = "kassab1999_capillary_hemodynamics"
+data_type = "experimental"
+validates = "Capillary distensibility (diameter change per unit transmural pressure) for a compliant lumped capillary bed, and a published pressure-radius curve for order 0 (capillary) and order 1 (smallest arteriole) vessels fitted to these data."
+species = "pig"
+preparation = "Distensibility of coronary capillaries on the epicardial surface measured as a pressure-diameter relationship by intravital microscopy (abstract). Anatomic inputs were the earlier pig capillary-network data (Kassab and Fung 1994). Number of animals and vessels not verified (full text not accessible)."
+conditions = "Epicardial surface capillaries; the abstract states the analysis applies to the diastolic state and that intramyocardial capillary compliance remains unknown. Arrest/perfusion details not verified."
+verification = "mixed"
+access = "Primary full text not accessible (publisher HTTP 403, Unpaywall closed, no Wayback copy). Abstract read via PubMed E-utilities (PMID 10600833). Numbers read from open-access secondary sources: Huo and Kassab 2009 J Appl Physiol (PMC2724323, HTML) and Namani, Kassab, Lanir 2018 J Gen Physiol (PMC5749109, XML)."
+notes = """
+Input data only. The paper's model results (pressure and flow dispersion with and without cross-connections, resistance) are model outputs and are not stored.
+Abstract findings (qualitative, provenance abs): (1) dispersions of pressure and flow are significantly reduced when capillary cross-connections are present, and flow resistance is reduced as well (model result); (2) epicardial surface capillary compliance is so small that its effect on the blood pressure drop is negligible in the diastolic state; (3) intramyocardial capillary compliance and systolic muscle-vessel interaction remain unknown.
+Huo and Kassab 2009 convert the capillary diameter-compliance into a normalised compliance of about 2.1e-3 per mmHg for order 0. That conversion is their own estimate and is not stored.
+The pressure-radius curve parameters in capillary_pressure_radius_fit are a published FIT by Namani et al. 2018 to the Kassab 1999 in situ diameter-pressure data. They are derived values, not raw measurements. Namani state that the radius for each order was referred to the 80 mmHg cast radius (Kassab 1993) to be compatible with the in situ data, so R80 should be read as a cast-based radius, not as a Kassab 1999 measurement. The same Ap, Bp, phi_p, Cp values for orders 0 and 1 reappear in Wang 2024 CMPB Table A2 (PMC10872892); that is the same lineage, not an independent check.
+"""
+use_in_model = """If the lumped capillary bed is compliant, its diameter-compliance should be of the order of capillary_diameter_compliance (about 0.017 um/mmHg for capillaries under 8 um), i.e. close to rigid over the physiological pressure range. If a pressure-radius law is needed for capillaries or the smallest arterioles, capillary_pressure_radius_fit gives the Namani 2018 arctan law R(dP) = Bp + (Ap - Bp)/pi * (pi/2 + atan((dP - phi_p)/Cp)), radius in um, transvascular pressure dP in mmHg."""
+
+[source]
+authors = ["Kassab GS", "Le KN", "Fung YC"]
+year = 1999
+title = "A hemodynamic analysis of coronary capillary blood flow based on anatomic and distensibility data"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "277"
+issue = "6"
+pages = "H2158-H2166"
+doi = "10.1152/ajpheart.1999.277.6.H2158"
+crossref_verified = "2026-10-14; Crossref title match (Crossref title has a double space before 'based'; otherwise exact; vol 277, issue 6, H2158-H2166; authors Kassab, Le, Fung)"
+pmid = "10600833"
+
+[secondary_source]
+key = "huo2009"
+authors = ["Huo Y", "Kassab GS"]
+year = 2009
+title = "Effect of compliance and hematocrit on wall shear stress in a model of the entire coronary arterial tree"
+journal = "J Appl Physiol"
+volume = "107"
+issue = "2"
+pages = "500-505"
+doi = "10.1152/japplphysiol.91013.2008"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 107, 500-505)"
+pmid = "19541733"
+pmcid = "PMC2724323"
+how_it_cites_primary = "Reference 12 = Kassab, Le, Fung 1999 (cited for the capillary diameter-compliance in Methods, 'Vessel compliance')."
+
+[more_secondary_sources.namani2018]
+authors = ["Namani R", "Kassab GS", "Lanir Y"]
+year = 2018
+title = "Integrative model of coronary flow in anatomically based vasculature under myogenic, shear, and metabolic regulation"
+journal = "J Gen Physiol"
+volume = "150"
+issue = "1"
+pages = "145-168"
+doi = "10.1085/jgp.201711795"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 150, 145-168)"
+pmid = "29196421"
+pmcid = "PMC5749109"
+how_it_cites_primary = "Appendix: 'Parameters for vessel orders 0-1 were obtained by curve-fitting Eq. 1 to in situ diameter-pressure data (Kassab et al., 1999)'; Table A2 footnote a: 'In situ data (Kassab et al., 1999)'."
+
+[data.capillary_diameter_compliance]
+description = "Diameter-compliance (change in diameter per unit change in transmural pressure, dD/dP) of pig coronary capillary segments under 8 um in diameter (epicardial surface, intravital microscopy)."
+location = "Secondary: Huo and Kassab 2009, Methods, 'Vessel compliance' paragraph, citing ref 12 (Kassab, Le, Fung 1999)."
+provenance = "secondary"
+secondary_ref = ["huo2009"]
+statistic = "mean +/- SD (as printed: 1.7 +/- 0.91 x 10^-2 um/mmHg; Huo does not say SD or SE)"
+value = 0.017
+sd = 0.0091
+unit = "um/mmHg"
+n = nan
+missing_note = "n (vessels, animals), the pressure range of the measurement and the raw pressure-diameter points are in the primary full text, which could not be read."
+
+[data.capillary_pressure_radius_fit]
+description = "DERIVED, not raw data: parameters of the arctan pressure-radius law R(dP) = Bp + (Ap - Bp)/pi * (pi/2 + atan((dP - phi_p)/Cp)) fitted by Namani et al. 2018 to the Kassab 1999 in situ diameter-pressure data, for order 0 (capillary) and order 1 (smallest arteriole). R0 and R80 are the fitted radius at 0 and 80 mmHg."
+location = "Secondary: Namani 2018 Table A2, rows order 0 and order 1 (data source 'In situ', footnote a: Kassab et al., 1999); Eq. 1 in Methods."
+provenance = "secondary"
+secondary_ref = ["namani2018"]
+statistic = "fitted parameters (no uncertainty given)"
+order = [0, 1]
+R0_um = [2.65, 3.89]
+R80_um = [3.13, 4.44]
+Ap_um = [3.20, 4.51]
+Bp_um = [2.43, 3.59]
+phi_p_mmHg = [0.0, 0.0]
+Cp_mmHg = [19.28, 17.24]
+missing_note = "Fit quality and the underlying data points are not reported. R80 is tied to the Kassab 1993 cast radius per Namani's text, so it is not an independent Kassab 1999 measurement."

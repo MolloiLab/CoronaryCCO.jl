@@ -1,0 +1,82 @@
+# Yipintsoi T, Kroll K, Bassingthwaighte JB (2016). Fractal regional myocardial blood flows pattern according
+# to metabolism, not vascular anatomy. Open-chest dogs, microspheres, ~0.2 g LV pieces, control vs
+# catecholamine stimulation vs adenosine vasodilation. Full text read from PMC (PMC4796624, HTML).
+
+[meta]
+id = "yipintsoi2016_flow_heterogeneity"
+data_type = "experimental"
+validates = "LV and RV flow heterogeneity (RD at ~0.2 g pieces) and spatial correlation (Hurst coefficient H, D = 2 - H) at rest, under metabolic stimulation, and under adenosine vasodilation, with absolute flows. Adenosine state is the best experimental analog of a fully dilated, anatomy-only (no vasomotor tone) CCO tree."
+species = "dog"
+preparation = "Adult mongrel dogs (4 main + 1 adenosine-only dog), 20-26 kg, morphine + alpha-chloralose, open chest. 15 +/- 1 um carbonized microspheres (4-5 labels) into the left atrium over 15 s, aortic reference sample. Hearts cut completely: LV 643 +/- 160 pieces, mean piece weight 0.17-0.24 g per heart (0.1-0.2% of LV); LV weight 128.9 +/- 15.6 g."
+conditions = "C1 control; LM low catecholamine (norepinephrine 4 ug/ml + epinephrine 1 ug/ml at 1 ml/min, plus atropine 0.25 mg/kg); HM high catecholamine (2.5 ml/min); HM + Ado (adenosine iv titrated to keep mean aortic pressure near 100 mmHg); C2 final control 10-30 min after stopping infusions; Ado alone (iv adenosine about 400-700 ug/kg/min) in one heart."
+verification = "FT"
+access = "PMC4796624, HTML article page (pmc.ncbi.nlm.nih.gov)."
+notes = """
+RD values are observed RDs from single microsphere injections (not corrected for method error); RD of LV and RV each relative to their own mean.
+Text: range of RD 12-26% during adenosine vs 21-33% in LV (and >40% in RV) in other states.
+Hurst coefficient H from the average of dispersional analysis (Disp) and the nearest-neighbour correlation-falloff method; the authors treat flows as 1-D (E = 1), so D = 2 - H. Mean H over all conditions 0.80 (D about 1.2), nearest-neighbour correlation r1 = 2^(2H-1) - 1 = 0.516.
+Fig. 6 (fifth dog, adenosine only): mean LV flow Ado1 2.31, control 1.59, Ado2 1.51 ml/g/min; 761 pieces averaging 157 +/- 54 mg, heart weight 119 g; the two adenosine flow patterns were almost identical, differing from control.
+Fig. 1 example (heart 4): adenosine LV flow 4.17 vs control 0.37 ml/g/min (>10-fold).
+Sestier et al. (cited in Introduction, not stored): RD rose from 22 to 31% with a fourfold adenosine flow increase at constant coronary pressure.
+"""
+use_in_model = """Voxelize the LV into ~0.2 g pieces and compute RD of piece flow. The CCO model without vasomotor tone corresponds to the adenosine states (RD_LV about 20%, H about 0.8-0.9). Rest states (RD_LV about 23-26%) include metabolic vasoregulation the model does not have. Use fractal D = 2 - H from hurst_by_state for the spatial-correlation check (dispersional analysis over aggregated pieces)."""
+
+[source]
+authors = ["Yipintsoi T", "Kroll K", "Bassingthwaighte JB"]
+year = 2016
+title = "Fractal regional myocardial blood flows pattern according to metabolism, not vascular anatomy"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "310"
+issue = "3"
+pages = "H351-H364"
+doi = "10.1152/ajpheart.00632.2015"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 310, issue 3, H351-H364)"
+pmid = "26589329"
+pmcid = "PMC4796624"
+
+[data.states]
+description = "Hemodynamics, coronary flow and RD of regional flows per physiological state"
+location = "Table 1 'Measured parameters during each of the interventions'"
+provenance = "FT"
+statistic = "mean +/- SD across dogs (ranges for RD); Ado alone is a single dog"
+state = ["C1 control", "LM low catecholamine", "HM high catecholamine", "HM + adenosine", "C2 control 2", "adenosine alone"]
+n = [4, 3, 4, 4, 3, 1]
+aortic_pressure_mmHg = [97.0, 131.0, 171.0, 107.0, 101.0, 102.0]
+aortic_pressure_sd_mmHg = [12.0, 22.0, 22.0, 8.0, 5.0, nan]
+heart_rate_bpm = [79.0, 173.0, 200.0, 185.0, 181.0, 147.0]
+heart_rate_sd_bpm = [12.0, 58.0, 38.0, 22.0, 10.0, nan]
+double_product = [9.4, 26.2, 36.5, 25.0, 20.9, 19.7]
+double_product_sd = [0.4, 8.5, 8.6, 2.4, 1.6, nan]
+cbf_lv_ml_min_g = [0.54, 1.56, 2.41, 4.20, 0.98, 4.17]
+cbf_lv_sd_ml_min_g = [0.14, 0.56, 0.92, 0.91, 0.16, nan]
+cbf_rv_ml_min_g = [0.37, 1.18, 1.61, 3.70, 0.64, 3.23]
+cbf_rv_sd_ml_min_g = [0.12, 0.33, 0.66, 0.68, 0.25, nan]
+cbf_over_co_percent = [3.1, 5.3, 7.0, 11.9, 4.5, 12.6]
+cbf_over_co_sd_percent = [0.8, 1.4, 1.2, 2.4, 0.6, nan]
+mvo2_lv_ul_min_g = [45.0, 144.0, 206.0, 179.0, 71.0, 110.0]
+mvo2_lv_sd_ul_min_g = [6.0, 19.0, 49.0, 75.0, 16.0, nan]
+rd_lv_percent = [25.4, 22.9, 24.5, 20.0, 25.6, 20.4]
+rd_lv_sd_percent = [3.4, 1.4, 3.2, 5.4, 4.2, nan]
+rd_lv_min_percent = [21.0, 22.0, 21.0, 13.0, 21.0, nan]
+rd_lv_max_percent = [32.0, 24.0, 28.0, 26.0, 30.0, nan]
+rd_rv_percent = [28.4, 28.0, 28.8, 15.9, 27.3, 18.1]
+rd_rv_sd_percent = [9.2, 13.1, 5.3, 1.8, 6.9, nan]
+rd_rv_min_percent = [20.0, 25.0, 24.0, 15.0, 22.0, nan]
+rd_rv_max_percent = [42.0, 40.0, 37.0, 20.0, 36.0, nan]
+piece_mass_g_range = [0.17, 0.24]
+missing_note = "Double product ('DP Work') units not restated in the table; values copied as printed (heart rate x systolic aortic pressure, presumably x 1e-3). nan = single animal, no SD/range."
+
+[data.hurst_by_state]
+description = "Hurst coefficient H of LV regional flows per dog and state (average of dispersional analysis and correlation-falloff estimates); fractal D = 2 - H"
+location = "Table 5 'Hurst coefficients'"
+provenance = "FT"
+statistic = "per-dog values; mean +/- SD row from table"
+state = ["C1", "C2", "LM", "HM", "HM + Ado", "Ado1", "Ado2"]
+H_LV1 = [0.75, nan, 0.82, 0.83, 0.81, nan, nan]
+H_LV2 = [0.61, 0.78, 0.75, 0.76, 0.71, nan, nan]
+H_LV3 = [0.77, 0.81, 0.76, 0.79, 0.79, nan, nan]
+H_LV4 = [0.78, 0.79, nan, 0.82, 0.86, 0.77, nan]
+H_LV5 = [nan, 0.67, nan, nan, nan, 0.91, 0.91]
+H_mean = [0.73, 0.76, 0.77, 0.80, 0.79, 0.84, 0.91]
+H_sd = [0.08, 0.06, 0.04, 0.03, 0.06, 0.09, 0.0]
+missing_note = "nan = state not studied in that dog. D is not tabulated; D = 2 - H per the paper's 1-D convention."

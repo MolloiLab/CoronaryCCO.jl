@@ -1,0 +1,185 @@
+# Kassab GS, Fung YC (1994). Topology and dimensions of pig coronary capillary network.
+# Every number below was transcribed from the publisher PDF (local copy). First pass with pdftotext;
+# every table (Tables 1, 2, 3, 5) and every quoted text number was then confirmed on 400 dpi page
+# renders, and the parsed arrays were cross-checked against the OCR text by script.
+# Table 4 (literature capillary diameters of other species) is not transcribed except for the pig rows,
+# which repeat Tables 1-2. Units are in the key suffix.
+
+[meta]
+id = "kassab1994_capillary_network"
+data_type = "experimental"
+validates = "Lumped capillary beds of the CCO model: capillary segment diameter and length by segment type and ventricle, arteriole-to-venule functional length and traced path length, number of cross-connections per path, node-type mix, capillaries fed per arteriole element and drained per venule element by order, and whole-heart capillary counts."
+species = "pig"
+preparation = "Four farm pigs (Yorkshire x Duroc), 30.1 +/- 0.7 kg, 3-4 months. Same preparation as Kassab 1993: KCl-arrested, maximally vasodilated heart perfused with catalysed silicone elastomer (CP101) through the three major coronary arteries and hardened at physiological pressure. Twelve transmural plugs (about 4 x 4 mm) per ventricle per pig; 60-80 um serial sections, dehydrated and cleared; capillaries traced by optical sectioning (148 RV and 117 LV sections). Arteriolar/venular zone topology from additional full-thickness plugs (about 10 x 10 mm) of one further pig."
+conditions = "Diastolic arrest (KCl), maximal vasodilation, silicone-elastomer cast hardened at physiological perfusion pressure (the companion arterial paper used 80 mmHg). Diameters are cast lumen diameters. Free walls of RV and LV reported separately; data of the four pigs pooled."
+verification = "FT"
+access = "Publisher PDF (journals.physiology.org, UC Irvine institutional download), local copy in the lab's validation-papers folder; tables read from rendered page images."
+notes = """
+Capillaries are order 0. C0a = capillary segments fed directly by arterioles ('arterial capillaries'); C0v = segments draining directly into venules ('venous capillaries'); C00 = the other capillary segments connecting C0a and C0v; Ccc = cross-connections between capillaries (the middle bar of an H node), which may join adjacent capillaries or capillaries from different arterioles. Segment = vessel between successive nodes. The network is not treelike.
+Functional capillary length = straight-line distance between the centres of mass of adjacent arteriolar and venular domains. Capillary blood path length = traced curved length from arteriole to venule. The paper states the path-to-functional ratio is about 1.09 (RV) and 1.07 (LV) and that the path length is 8-10 times the segment length.
+Table 3 C0a rows are given by ventricle (RV, LV), not by artery. The values equal the order 0 row of the Kassab 1993 connectivity matrices (RCA 2.75 +/- 0.082; LAD and LCX 3.18 +/- 0.118).
+Internal inconsistency kept as printed: the Results text says RV order 4 arterioles give rise to 0.40 capillaries, but Table 3 prints 0.040 +/- 0.028. The table value is stored.
+Capillary density (number per mm^2 or mm^3) is NOT reported in this paper.
+Secondary sources compared with this original (an earlier version of this file used them):
+(1) Wang et al. 2024 (Comput Methods Programs Biomed 243:107908, Table A1) segment diameters/lengths for ac, cp, cc, cv are exactly the LV values of Table 2 (C0a, C00, Ccc, C0v); Wang does not say they are LV.
+(2) Wang et al. 2024 (J Appl Physiol 136:1157) quote the RV capillary path length as 547 +/- 180 um; the original is 547 +/- 228 um (n = 8). The LV value 550 +/- 203 um matches.
+(3) Functional lengths 501 +/- 178 (RV) and 512 +/- 163 um (LV) match the original. Wang et al. 2025 (Comput Methods Programs Biomed 258:108486) print the RV value as 510 +/- 178, which is wrong.
+(4) Gkontra et al. 2018 (Sci Rep 8:1854) attribute a smallest LV capillary diameter of 4.1 um and a largest pig capillary diameter of 8.2 um to this paper. Neither number is printed here; they equal LV Ccc mean - SD (5.5 - 1.4) and LV C0v mean + SD (7.0 + 1.2), not measured extremes. Dropped.
+(5) Kaimovitz et al. 2010 (Am J Physiol 299:H1064) give capillaries per order 1 arteriole as 3.18 +/- 0.118 (LAD, LCx) and 2.75 +/- 0.082 (RCA), and 2.56 +/- 0.073 per order -1 venule; the values match Table 3, but the original labels the arterial rows LV and RV. Kaimovitz's 'cross-connected mesh of 18-30 capillaries' is not in this paper; the paper instead gives 8 +/- 2 (RV) and 9 +/- 2 (LV) cross-connections per arteriole-venule path. Dropped.
+"""
+use_in_model = "Lumped capillary bed: compare the equivalent capillary path between a CCO arterial terminal (order 1, about 9 um) and its venous terminal with functional_length (straight line, about 0.5 mm) and capillary_path_length (traced, about 0.55 mm). Compare equivalent capillary diameter with segment diameters (about 6 um; lumped 6.1-6.3 um). Compare capillaries fed per order 1 arteriole (2.75 RV, 3.18 LV) and drained per order -1 venule (2.56). A network capillary model should have about 8-9 cross-connections in series along each arteriole-to-venule path, spaced about 53-61 um apart."
+
+[source]
+authors = ["Kassab GS", "Fung YC"]
+year = 1994
+title = "Topology and dimensions of pig coronary capillary network"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "267"
+issue = "1 Pt 2"
+pages = "H319-H325"
+doi = "10.1152/ajpheart.1994.267.1.H319"
+crossref_verified = "2026-10-14; Crossref title exact match (Topology and dimensions of pig coronary capillary network; vol 267, issue 1, H319-H325; authors Kassab, Fung)"
+pmid = "8048597"
+
+[data.segments_RV]
+description = "Capillary segment diameter and length by segment type, RV free wall."
+location = "Table 1 (mean +/- SD, n); length SE from Table 5"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of vessels measured; length_se from Table 5 (mean +/- SE)"
+segment_type = ["C0a", "C00", "C0v", "Ccc"]
+diameter_mean_um = [6.5, 6.0, 6.9, 5.7]
+diameter_sd_um = [1.0, 1.1, 1.2, 1.3]
+n_diameter = [715, 764, 322, 210]
+length_mean_um = [55.4, 62.5, 47.5, 33.4]
+length_sd_um = [40.3, 41.2, 29.5, 28.3]
+n_length = [231, 143, 28, 90]
+length_se_um = [2.6, 3.4, 5.6, 3.0]
+missing_note = ""
+
+[data.segments_LV]
+description = "Capillary segment diameter and length by segment type, LV free wall."
+location = "Table 2 (mean +/- SD, n); length SE from Table 5"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of vessels measured; length_se from Table 5 (mean +/- SE)"
+segment_type = ["C0a", "C00", "C0v", "Ccc"]
+diameter_mean_um = [6.2, 5.7, 7.0, 5.5]
+diameter_sd_um = [1.1, 1.2, 1.2, 1.4]
+n_diameter = [698, 764, 414, 210]
+length_mean_um = [52.0, 54.5, 45.0, 21.1]
+length_sd_um = [32.3, 43.0, 30.5, 15.5]
+n_length = [222, 161, 34, 86]
+length_se_um = [2.2, 3.4, 5.3, 1.7]
+missing_note = ""
+
+[data.lumped_capillary_diameter]
+description = "Capillary diameter with all four segment types (C0a, C00, C0v, Ccc) lumped together."
+location = "Discussion, paragraph on Table 4 (p. H324)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of vessels"
+ventricle = ["RV", "LV"]
+value_um = [6.3, 6.1]
+sd_um = [1.2, 1.2]
+n = [2011, 2086]
+missing_note = ""
+
+[data.lumped_capillary_segment_length]
+description = "Capillary segment length with C0a, C00 and C0v lumped (Ccc excluded), for comparison with other species."
+location = "Discussion, paragraph on Table 5 (p. H324)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of vessels"
+ventricle = ["RV", "LV"]
+value_um = [57.8, 52.7]
+sd_um = [40.4, 36.9]
+n = [402, 417]
+missing_note = ""
+
+[data.cross_connection_spacing]
+description = "Distance between consecutive capillary cross-connections (Ccc) along a capillary (L_cc-cc)."
+location = "Results (p. H321-H322, text after Tables 1-2)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of measurements"
+ventricle = ["RV", "LV"]
+value_um = [61.2, 52.9]
+sd_um = [44.0, 39.6]
+n = [54, 57]
+missing_note = ""
+
+[data.functional_length]
+description = "Mean functional capillary length: straight-line distance between the centres of mass of adjacent arteriolar and venular domains."
+location = "Results, 'Topology of arteriolar and venular zones and functional and path length of capillaries' (p. H323); SE from Table 5"
+provenance = "FT"
+statistic = "mean +/- SD (text), mean +/- SE (Table 5); n = number of measurements"
+ventricle = ["RV", "LV"]
+value_um = [501.0, 512.0]
+sd_um = [178.0, 163.0]
+se_um = [12.9, 11.7]
+n = [189, 193]
+missing_note = ""
+
+[data.capillary_path_length]
+description = "Mean capillary blood path length: curved length traced along the capillary pathway from an arteriole to a venule."
+location = "Results (p. H323)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of pathways traced"
+ventricle = ["RV", "LV"]
+value_um = [547.0, 550.0]
+sd_um = [228.0, 203.0]
+n = [8, 8]
+path_to_functional_length_ratio = [1.09, 1.07]
+missing_note = "The paper prints the path-to-functional ratios as approximate ('~1.09 and 1.07')."
+
+[data.cross_connections_per_path]
+description = "Expected number of cross-connecting capillary segments (Ccc) in a single arteriole-to-venule path, N_cc = L_a-v / L_cc-cc - 1."
+location = "Results (p. H324, top)"
+provenance = "FT"
+statistic = "value +/- propagated error"
+ventricle = ["RV", "LV"]
+value = [8.0, 9.0]
+err = [2.0, 2.0]
+missing_note = ""
+
+[data.node_type_frequency]
+description = "Relative frequency of capillary node patterns (Fig. 1 of the paper): H (with a cross-connection), Y, T and hairpin (HP)."
+location = "Results, 'Pattern of pig coronary capillary network' (p. H322)"
+provenance = "FT"
+statistic = "fraction of nodes"
+node_type = ["H", "Y", "T", "HP"]
+RV_fraction = [0.52, 0.21, 0.21, 0.06]
+LV_fraction = [0.53, 0.21, 0.2, 0.06]
+missing_note = "Number of nodes classified is not given."
+
+[data.capillary_connectivity]
+description = "Mean number of capillary segments given off by (C0a) or draining into (C0v) each element of a given arterial or venous order, i.e. the order 0 row of the connectivity matrix C(0,n). Convention (Results text): component in row n, column m = total number of elements of order n sprung off from elements of order m divided by the total number of elements of order m."
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SE"
+arterial_order = [1, 2, 3, 4]
+C0a_RV = [2.75, 0.674, 0.151, 0.04]
+C0a_RV_se = [0.082, 0.067, 0.045, 0.028]
+C0a_LV = [3.18, 0.675, 0.148, 0.0]
+C0a_LV_se = [0.118, 0.08, 0.081, nan]
+venous_order = [-1, -2, -3, -4, -5, -6, -7, -8]
+C0v_sinusal = [2.56, 0.426, 0.347, 0.033, 0.012, 0.02, 0.006, 0.0]
+C0v_sinusal_se = [0.073, 0.068, 0.067, 0.008, 0.003, 0.007, 0.003, nan]
+C0v_thebesian = [2.56, 0.426, 0.347, 0.067, 0.015, 0.02, 0.014, 0.02]
+C0v_thebesian_se = [0.073, 0.068, 0.067, 0.011, 0.005, 0.008, 0.01, 0.02]
+missing_note = "Venous rows pool RV and LV. No capillaries arise from arterial orders above 4 (text). Printed zeros are stored as 0.0 with SE nan. The text quotes 0.40 for RV order 4, the table 0.040 (stored)."
+
+[data.total_capillary_counts]
+description = "Whole-heart totals computed by the paper from Table 3 and the arterial (Kassab 1993) and venous (Kassab 1994) element counts: number of arterial capillaries (C0a) arising from each coronary artery and in the whole heart, and number of venous capillaries (C0v)."
+location = "Results (p. H322)"
+provenance = "FT"
+statistic = "mean +/- error as printed"
+quantity = ["C0a_from_RCA", "C0a_from_LAD", "C0a_from_LCX", "C0a_whole_heart", "C0v_whole_heart"]
+value = [1187179.0, 1273281.0, 516084.0, 3018384.0, 5085977.0]
+err = [515552.0, 813674.0, 332019.0, 1697777.0, 2085250.0]
+heart_mass_g = 155.0
+missing_note = "Counts of all capillary segments (C00, Ccc) are not given."
+
+[data.capillary_density]
+description = "Capillary number density in pig myocardium."
+location = "Not reported in the paper (checked full text)."
+provenance = "FT"
+value = nan
+unit = "capillaries per mm^2"
+missing_note = "Kassab and Fung 1994 do not report a capillary density. It cites dog values from Bassingthwaighte 1974 in the introduction only."

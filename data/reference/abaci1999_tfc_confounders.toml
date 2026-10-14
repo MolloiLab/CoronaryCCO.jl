@@ -1,0 +1,111 @@
+[meta]
+id = "abaci1999_tfc_confounders"
+data_type = "experimental"
+validates = "Sensitivity of angiographic contrast transit time (uncorrected TIMI frame count) to injection rate, catheter size, intracoronary nitrate, heart rate, and cardiac phase of injection; injection volumes/rates used in diagnostic angiography"
+species = "human"
+preparation = "150 patients (mean age 59 y) undergoing elective diagnostic coronary angiography; excluded prior CABG, left main disease, or >50% proximal stenosis of the studied artery (patients were NOT required to have normal arteries). Five paired-injection protocols of 25 patients each (injection rate, catheter 8F vs 6F, IC nitrate, pacing +20 bpm, systolic vs diastolic injection in left and right coronary arteries). ECG-gated power injector (Angiomat 6000), iopromide 370 (Ultravist-370). Toshiba Infinix CS; 35-mm cinefilm at 25 frames/s."
+conditions = "Resting. Oral lorazepam 1 mg premedication; 5000 U IV heparin. No nitrates before angiography (patients given nitroglycerin for spasm were excluded). No contrast for 90 s before each studied injection. Target injection rates 3-4 mL/s (left) and 2-3 mL/s (right). Injections R-wave synchronized except in the cardiac-cycle groups. Nitrate group: 300 ug intracoronary nitrate between injections."
+verification = "FT"
+access = "Publisher PDF read via Wayback Machine capture 20170705072438 of http://circ.ahajournals.org/content/circulationaha/100/22/2219.full.pdf; text cross-checked against HTML capture 20180511222940 of http://circ.ahajournals.org:80/content/100/22/2219"
+notes = """TFC here is UNCORRECTED (the LAD was not divided by 1.7) and filmed at 25 frames/s (not 30), so values are not directly comparable to Gibson 1996.
+The paper does not report which artery each group's TFC refers to, except the cardiac-cycle groups (left vs right coronary).
+First frame defined as contrast across >70% of the lumen with antegrade motion; last frame as in Gibson 1996.
+Medians are given in parentheses in Table 5 and are reproduced in tfc_median_frames.
+The Discussion summarizes literature on contrast-induced flow changes (initial slight increase during injection, nadir 45% of baseline at 1.9 s,
+hyperemia peaking at 153% of baseline between 5 and 10 s, return to baseline within 60 s); these are cited values (paper refs 4, 15-17), not measured here."""
+use_in_model = """In the contrast-transit simulation, test the same perturbations: (1) increasing injection rate by 1 mL/s or changing catheter size
+should change landmark arrival time by < ~1 frame on average (not significant); (2) epicardial dilation (nitrate) slowed arrival by ~6.4 frames
+(~0.26 s at 25 fps) despite HR rising 70 -> 75 bpm; (3) injecting at the start of diastole shortens arrival by ~5.7 frames (left) and ~3 frames (right)
+vs start of systole, reflecting the diastolic-predominant left coronary flow; (4) pacing +20 bpm shortens arrival by ~5 frames.
+Convert frames to seconds with 25 frames/s. Use injection_parameters to set the injected bolus (volume/rate) for left and right injections."""
+
+[source]
+authors = ["Abaci A", "Oguzhan A", "Eryol NK", "Ergin A"]
+year = 1999
+title = "Effect of potential confounding factors on the thrombolysis in myocardial infarction (TIMI) trial frame count and its reproducibility"
+journal = "Circulation"
+volume = "100"
+issue = "22"
+pages = "2219-2223"
+doi = "10.1161/01.CIR.100.22.2219"
+crossref_verified = "2026-10-14; Crossref title exact match ('Effect of Potential Confounding Factors on the Thrombolysis in Myocardial Infarction (TIMI) Trial Frame Count and Its Reproducibility')"
+pmid = "10577994"
+
+[data.tfc_paired_injections]
+description = "Uncorrected TFC at first and second injection in each paired protocol (25 patients per group), cinefilm 25 frames/s"
+location = "Table 5 (p. 2222); Abstract"
+provenance = "FT"
+statistic = "mean +/- SD (median)"
+group = ["injection_rate_+1mL_per_s", "catheter_8F_then_6F", "intracoronary_nitrate_300ug", "heart_rate_+20bpm_pacing", "cardiac_cycle_left_coronary_systole_then_diastole", "cardiac_cycle_right_coronary_systole_then_diastole"]
+n_patients = [25, 25, 25, 25, 25, 25]
+tfc_first_mean_frames = [28.2, 25.1, 26.4, 30.4, 30.1, 24.2]
+tfc_first_sd_frames = [11.4, 8.7, 11.9, 6.1, 8.8, 4.5]
+tfc_first_median_frames = [24.0, 26.0, 24.0, 29.0, 29.0, 25.0]
+tfc_second_mean_frames = [27.2, 25.7, 32.8, 25.3, 24.4, 21.2]
+tfc_second_sd_frames = [11.5, 12.4, 13.3, 7.2, 7.9, 4.4]
+tfc_second_median_frames = [24.0, 26.0, 31.0, 24.0, 23.0, 20.0]
+p_value = [0.467, 0.693, 0.001, 0.001, 0.001, 0.001]
+p_value_note = "0.001 entries are reported as P < 0.001"
+frame_rate_fps = 25.0
+missing_note = "Abstract gives right-coronary values to 2 decimals (24.16 +/- 4.49 -> 21.24 +/- 4.45); Table 5 rounds to 1 decimal. The artery measured in the first four groups is not specified."
+
+[data.hemodynamics_paired]
+description = "Heart rate and aortic pressure at first and second injection in each group"
+location = "Table 3 (p. 2221)"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["injection_rate", "catheter", "nitrate", "heart_rate", "cardiac_cycle_left", "cardiac_cycle_right"]
+hr_first_mean_bpm = [72.0, 71.0, 70.0, 68.0, 77.0, 69.0]
+hr_first_sd_bpm = [11.0, 10.0, 10.0, 8.0, 13.0, 11.0]
+hr_second_mean_bpm = [72.0, 72.0, 75.0, 89.0, 77.0, 69.0]
+hr_second_sd_bpm = [10.0, 9.0, 11.0, 9.0, 12.0, 10.0]
+dbp_first_mean_mmHg = [82.0, 87.0, 88.0, 84.0, 91.0, 85.0]
+dbp_first_sd_mmHg = [9.0, 11.0, 10.0, 12.0, 13.0, 14.0]
+dbp_second_mean_mmHg = [82.0, 86.0, 80.0, 81.0, 90.0, 84.0]
+dbp_second_sd_mmHg = [9.0, 11.0, 7.0, 11.0, 13.0, 14.0]
+sbp_first_mean_mmHg = [137.0, 136.0, 141.0, 133.0, 139.0, 131.0]
+sbp_first_sd_mmHg = [22.0, 23.0, 22.0, 19.0, 18.0, 22.0]
+sbp_second_mean_mmHg = [138.0, 135.0, 128.0, 134.0, 138.0, 131.0]
+sbp_second_sd_mmHg = [22.0, 24.0, 20.0, 20.0, 19.0, 21.0]
+missing_note = "Values checked against the rendered Table 3 page image. Significant (P < 0.001) changes: nitrate HR, DBP, SBP; heart-rate group HR."
+
+[data.injection_parameters]
+description = "Power-injector contrast delivery (first/second injection) per group; overall left 7.3 +/- 0.9 mL at 3.4 +/- 0.6 mL/s, right 5.2 +/- 0.7 mL at 2.6 +/- 0.5 mL/s"
+location = "Table 4 (p. 2221); Results text p. 2221"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["injection_rate", "catheter", "nitrate", "heart_rate", "cardiac_cycle_left", "cardiac_cycle_right"]
+rate_first_mean_mL_per_s = [2.7, 3.7, 3.6, 3.8, 3.7, 2.4]
+rate_first_sd_mL_per_s = [0.5, 0.4, 0.5, 0.4, 0.3, 0.5]
+rate_second_mean_mL_per_s = [3.7, 3.7, 3.6, 3.8, 3.8, 2.4]
+rate_second_sd_mL_per_s = [0.4, 0.6, 0.6, 0.4, 0.4, 0.4]
+volume_first_mean_mL = [5.6, 7.4, 6.7, 7.3, 7.4, 5.3]
+volume_first_sd_mL = [0.4, 0.8, 1.3, 1.0, 0.8, 0.8]
+volume_second_mean_mL = [6.6, 7.4, 6.7, 7.2, 7.5, 5.4]
+volume_second_sd_mL = [0.4, 0.9, 1.3, 2.0, 0.9, 0.9]
+pressure_first_mean_psi = [161.0, 163.0, 154.0, 119.0, 128.0, 125.0]
+pressure_first_sd_psi = [24.0, 42.0, 37.0, 34.0, 54.0, 27.0]
+pressure_second_mean_psi = [207.0, 191.0, 154.0, 117.0, 129.0, 123.0]
+pressure_second_sd_psi = [27.0, 288.0, 37.0, 34.0, 56.0, 28.0]
+overall_left_volume_mL = [7.3, 0.9]
+overall_left_rate_mL_per_s = [3.4, 0.6]
+overall_right_volume_mL = [5.2, 0.7]
+overall_right_rate_mL_per_s = [2.6, 0.5]
+overall_note = "overall_* arrays are [mean, SD]"
+missing_note = "Values checked against the rendered Table 4 page image. Heart-rate group volumes are printed as 7.3 +/- 1 and 7.2 +/- 2. Catheter-group second-injection pressure is printed as 191 +/- 288 psi (SD as printed; likely a typesetting error, not corrected here). Second-injection P < 0.001 for injection-rate group rate/volume/pressure; P = 0.01 for catheter-group pressure."
+
+[data.reproducibility]
+description = "Intra- and interobserver error of the TFC (30 randomly selected studies)"
+location = "Table 2 (p. 2221); Results text"
+provenance = "FT"
+comparison = ["intraobserver", "interobserver"]
+bias_frames = [-0.47, -1.44]
+mean_abs_difference_frames = [1.33, 2.57]
+sd_abs_difference_frames = [1.24, 1.72]
+relative_difference_mean_pct = [4.4, 8.8]
+relative_difference_sd_pct = [3.9, 6.1]
+coefficient_of_repeatability_frames = [2.48, 3.44]
+r = [0.98, 0.94]
+see_frames = [1.8, 3.0]
+n_studies = [30, 30]
+missing_note = "Bias values checked against the rendered Table 2 (-0.47, -1.44). Note: the Fig. 1 Bland-Altman plot draws the intraobserver mean line at about +0.5, opposite in sign to Table 2; the table value is recorded."

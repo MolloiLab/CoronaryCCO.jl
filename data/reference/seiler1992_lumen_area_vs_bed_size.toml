@@ -1,0 +1,116 @@
+[meta]
+id = "seiler1992_lumen_area_vs_bed_size"
+data_type = "experimental"
+validates = "Epicardial lumen cross-sectional area at each point of the human LCA and RCA trees vs summed distal branch length and distal myocardial mass (power laws); parent-to-daughter area ratio at bifurcations; total LV mass vs total left coronary tree length. No flow was measured."
+species = "human"
+preparation = "Clinical biplane cine coronary arteriograms (9-in mode) with 3-D reconstruction of the entire epicardial tree and automated QCA (CCD film digitizer). Group 1: 12 patients without CAD (normal arteriograms; no CAD by thallium exercise test or cardiac PET; one had an insignificant 35% obtuse-marginal narrowing). Group 2: 17 patients with CAD. LV mass from biplane ventriculograms (Rackley method). Regional mass M = M_tot x L / L_tot (Eq 13)."
+conditions = "Clinical diagnostic arteriography. Vasodilator (nitroglycerin) use not identified in the pages read. Resting state."
+verification = "FT"
+access = "Publisher PDF read via Wayback Machine capture 20170828151016 of http://circ.ahajournals.org/content/circulationaha/85/6/1987.full.pdf; Tables 1, 3, 4, Table 2 and Fig 9 legend checked on rendered page images."
+notes = """Fit form for Table 4: A = intercept + slope * X^exponent, A in cm2, X = regional myocardial mass M (g) or distal summed branch length L (cm).
+Only group 1 (normal) is in the normal-tree datasets; group 2 (CAD) relations are given for reference in area_power_laws.
+Table 3 LCA row order printed as L = 34.0, 48.0, 42.5, 47.5 ...: the '48.0' row is out of sequence (probably 38.0 in the original) but is recorded as printed.
+The paper converts its area-mass relations to theoretical area-flow by assuming a resting myocardial perfusion of 0.8 cm3/min/g; that is an assumption, not data.
+Observed parent-to-daughter mean lumen area ratio A0/mean(A_daughter) = 1.647 = 2^0.72 at 50 bifurcations in 12 normal LCA trees
+(minimum energy loss theory 2^0.67 = 1.588, NS; constant-velocity theory 2^1 = 2, P = 0.005).
+Average total epicardial tree length 75 cm and LV mass 250 g are the reference values used in the text (L = 2 cm ~ 7 g)."""
+use_in_model = """Generate the CCO tree for a heart with given LV mass, compute for every epicardial segment the distal summed branch length L (cm) and distal
+perfused mass M (g), and compare segment lumen area A (cm2) with lca_area_vs_length (binned means +/- SD, group 1) and with the group-1 power laws
+in area_power_laws. Check that bifurcation area ratios approach 1.647 and that total left-tree length relates to LV mass as M_tot = 5 + 1.2 L_tot^1.2.
+Only arteriographically visible segments (roughly > 1 mm diameter) are in the data; truncate the model tree comparably."""
+
+[source]
+authors = ["Seiler C", "Kirkeeide RL", "Gould KL"]
+year = 1992
+title = "Basic structure-function relations of the epicardial coronary vascular tree. Basis of quantitative coronary arteriography for diffuse coronary artery disease"
+journal = "Circulation"
+volume = "85"
+issue = "6"
+pages = "1987-2003"
+doi = "10.1161/01.CIR.85.6.1987"
+crossref_verified = "2026-10-14; Crossref title exact match"
+pmid = "1591819"
+
+[data.lca_area_vs_length]
+description = "Mean lumen cross-sectional area at specified bins of distal summed branch length, left coronary artery (group 1 normal vs group 2 CAD)"
+location = "Table 3 (p. 1997)"
+provenance = "FT"
+statistic = "mean +/- SD"
+distal_length_median_cm = [1.0, 3.0, 5.0, 7.0, 9.0, 11.0, 13.0, 15.0, 19.0, 22.0, 26.0, 30.0, 34.0, 48.0, 42.5, 47.5, 52.5, 62.5, 77.5, 90.0]
+area_normal_mean_cm2 = [0.007, 0.017, 0.024, 0.030, 0.033, 0.041, 0.047, 0.049, 0.069, 0.072, 0.068, 0.106, 0.108, 0.122, 0.100, 0.122, 0.147, 0.142, 0.198, 0.240]
+area_normal_sd_cm2 = [0.004, 0.009, 0.014, 0.015, 0.015, 0.015, 0.013, 0.031, 0.017, 0.020, 0.019, 0.028, 0.028, 0.023, 0.013, 0.032, 0.030, 0.024, 0.071, 0.027]
+n_normal = [17, 42, 35, 27, 23, 30, 23, 22, 14, 24, 7, 3, 12, 13, 3, 5, 5, 3, 2, 4]
+area_cad_mean_cm2 = [0.010, 0.014, 0.017, 0.019, 0.024, 0.024, 0.035, 0.031, 0.038, 0.041, 0.054, 0.057, 0.066, 0.066, 0.078, 0.076, 0.095, 0.098, 0.125, 0.116]
+area_cad_sd_cm2 = [0.006, 0.008, 0.010, 0.008, 0.011, 0.009, 0.012, 0.010, 0.009, 0.017, 0.017, 0.019, 0.025, 0.016, 0.020, 0.009, nan, 0.024, 0.022, 0.019]
+n_cad = [39, 64, 53, 64, 56, 32, 26, 29, 9, 14, 21, 18, 20, 14, 17, 2, 1, 4, 4, 3]
+missing_note = "CAD SD at L = 52.5 cm printed as '...' (n = 1). The 14th length bin is printed as 48.0 (out of order; see meta.notes)."
+
+[data.rca_area_vs_length]
+description = "Mean lumen cross-sectional area at specified bins of distal summed branch length, right coronary artery (group 1 normal vs group 2 CAD)"
+location = "Table 3 (p. 1997)"
+provenance = "FT"
+statistic = "mean +/- SD"
+distal_length_median_cm = [1.5, 4.5, 7.5, 12.5, 17.5, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, 60.0]
+area_normal_mean_cm2 = [0.011, 0.017, 0.021, 0.042, 0.048, 0.054, 0.063, 0.054, 0.101, 0.078, 0.083, 0.088, 0.129]
+area_normal_sd_cm2 = [0.006, 0.012, 0.008, 0.011, 0.016, 0.016, 0.022, 0.019, 0.027, 0.022, 0.012, 0.012, 0.011]
+n_normal = [50, 60, 59, 28, 25, 23, 18, 24, 8, 13, 10, 4, 3]
+area_cad_mean_cm2 = [0.008, 0.011, 0.020, 0.026, 0.037, 0.057, 0.056, 0.045, 0.059, 0.067, 0.070, 0.072, 0.053]
+area_cad_sd_cm2 = [0.003, 0.007, 0.013, 0.012, 0.027, 0.028, 0.024, 0.012, 0.021, 0.019, 0.008, 0.019, 0.029]
+n_cad = [59, 40, 116, 45, 41, 24, 35, 14, 29, 16, 6, 16, 6]
+missing_note = ""
+
+[data.area_power_laws]
+description = "Least-squares power-law fits A = intercept + slope * X^exponent relating lumen area A (cm2) to regional myocardial mass M (g) or distal summed branch length L (cm)"
+location = "Table 4 (p. 1999)"
+provenance = "FT"
+vessel_group = ["RCA_1", "LCA_1", "RCA_1_conduit", "RCA_1", "LCA_1", "RCA_1_conduit", "RCA_2", "LCA_2", "RCA_2_conduit", "RCA_2", "LCA_2", "RCA_2_conduit"]
+group = ["normal", "normal", "normal", "normal", "normal", "normal", "CAD", "CAD", "CAD", "CAD", "CAD", "CAD"]
+x_variable = ["M_g", "M_g", "M_g", "L_cm", "L_cm", "L_cm", "M_g", "M_g", "M_g", "L_cm", "L_cm", "L_cm"]
+intercept_cm2 = [0.0041, 0.0004, 0.004, 0.0017, 0.0002, 0.0018, 0.003, 0.0051, 0.0033, -0.0025, 0.005, 0.0001]
+slope = [0.0036, 0.0029, 0.0031, 0.0059, 0.0056, 0.0048, 0.0031, 0.0012, 0.0021, 0.0068, 0.003, 0.0055]
+exponent = [0.78, 0.76, 0.76, 0.69, 0.82, 0.72, 0.81, 0.81, 0.8, 0.62, 0.84, 0.65]
+see_cm2 = [0.0162, 0.0183, 0.0157, 0.0151, 0.0183, 0.0155, 0.0177, 0.0128, 0.0172, 0.0187, 0.0128, 0.0142]
+r = [0.83, 0.91, 0.84, 0.83, 0.91, 0.83, 0.73, 0.88, 0.74, 0.73, 0.88, 0.73]
+n_points = [325, 314, 253, 325, 314, 253, 447, 490, 345, 447, 490, 345]
+conduit_note = "'conduit' = most proximal RCA down to the posterior descending artery excluded from the tree analysis"
+missing_note = ""
+
+[data.bifurcation_area_ratio]
+description = "Parent-to-daughter mean lumen area ratio A0/mean(A_daughter) at 50 bifurcations in 12 normal left coronary trees"
+location = "Table 2 (p. 1996); Results text"
+provenance = "FT"
+value = 1.647
+exponent_a = 0.72
+definition = "A0 / mean daughter area = 2^a"
+n_bifurcations = 50
+theory_min_energy = 1.588
+theory_constant_velocity = 2.0
+p_vs_min_energy = "NS"
+p_vs_constant_velocity = 0.005
+missing_note = "SD of the observed ratio not given."
+
+[data.lv_mass_vs_left_tree_length]
+description = "Total LV mass vs total left coronary tree length in group 1 (one point per patient)"
+location = "Fig 9 legend (p. 2002)"
+provenance = "FT"
+equation = "M_tot = 5 + 1.2 * L_tot^1.2   (M_tot in g, L_tot in cm)"
+r = 0.89
+see_g = 36.2
+n = 12
+missing_note = "Equation read from the figure legend on the rendered page."
+
+[data.per_patient_normal]
+description = "Group 1 (normal) per-patient total coronary tree length and LV mass (corrected for right-dominant supply of the inferior LV wall)"
+location = "Table 1 (p. 1989)"
+provenance = "FT"
+patient = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+sex = ["M", "F", "M", "F", "F", "M", "M", "F", "M", "M", "M", "F"]
+age_y = [66, 33, 66, 65, 58, 69, 32, 41, 76, 72, 43, 59]
+l_tot_cm = [75.4, 81.3, 106.4, 60.3, 68.0, 92.5, 71.4, 55.04, 68.6, 97.7, 58.8, 99.2]
+m_tot_g = [195.0, 207.0, 403.0, 201.0, 181.0, 320.0, 251.0, 183.0, 165.0, 332.0, 181.0, 269.0]
+heart_rate_bpm = [85, 78, 90, 78, 85, 68, 78, 106, 79, 68, 115, 85]
+l_tot_group_mean_sd_cm = [78.0, 17.0]
+m_tot_group_mean_sd_g = [241.0, 76.0]
+cad_group_l_tot_mean_sd_cm = [74.0, 11.0]
+cad_group_m_tot_mean_sd_g = [263.0, 64.0]
+missing_note = "Table 1 footnote defines L_tot as 'total coronary artery tree length'; Fig 9 calls it total left coronary artery length. Read from the rendered rotated table."

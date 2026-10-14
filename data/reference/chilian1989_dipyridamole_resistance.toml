@@ -1,0 +1,129 @@
+[meta]
+id = "chilian1989_dipyridamole_resistance"
+data_type = "experimental"
+validates = "Subepicardial microvascular pressure vs vessel diameter (arteries ~355 um to veins ~400 um) in the beating LV at rest and during dipyridamole vasodilation; absolute and % resistance of artery (>170 um) / microvessel / vein (>150 um) compartments"
+species = "cat"
+preparation = "24 cats: ketamine 2 mg/kg + acepromazine 1 mg/kg i.m., pentobarbital sodium 30 mg/kg i.v. (supplements ~12-25 mg/h), midsternotomy, high-frequency jet ventilation triggered from LV dP/dt. LV epicardium partially immobilized by 3-4 22 G needles; mineral oil on the surface. Stroboscopic epi-illumination (Leitz Ploemopak), diameters from SIT video in late diastole (3-5 images per vessel). Pressures by servo-null micropipette (2-5 um tip, 3-5 MOhm) carried by an electromagnetic micromanipulator ('wobbler') replaying the vessel's motion (200 intervals per cycle); value = average of 10-15 beats over ~30 s. Subepicardial flow by 15 um radioactive microspheres."
+conditions = "Control (vasomotor tone intact) and dipyridamole 0.4 mg/kg/min i.v., with mean arterial pressure held at control by a descending-aortic snare. Beating heart; subepicardial LV vessels only."
+verification = "mixed"
+access = "Original publisher PDF supplied locally by the project lead (validation-papers/), read with pdftotext; tables confirmed against 300 dpi page renders; Fig. 3 and Fig. 4 digitized from the 300 dpi render"
+notes = """All values mean +/- SE. Compartments (paper): artery = aorta to arteries > 170 um; microvessel = arterioles < 170 um to venules < 150 um;
+venous = veins > 150 um to 0 (right-atrial/atmospheric reference not stated beyond 'pressure drop'). Compartment resistance = pressure drop / MBF
+(MBF in ml/min/g). Coronary resistance in Table 1 (66 +/- 5) is a mean of individual ratios (mean pressure 90 / mean flow 1.80 = 50).
+Microvessel-compartment pressure gradient fell from 62 (control) to 25 mmHg (dipyridamole) (Discussion). Coronary venular pressure rose to
+~27 mmHg with dipyridamole. Nonrestrained-region flow 1.73 +/- 0.11 and 6.36 +/- 0.14 ml/min/g (not different from restrained region).
+Fig. 3 x-axis is a single 'adjusted diameter' axis: arterial diameters decrease from 400 um (left) to 0 at an unlabelled central tick, then venous
+diameters increase from 0 to >400 um (authors fit sigmoids on 0-826 um). Fig. 3 points: control 42 of 50 tabulated observations recovered,
+dipyridamole 46 of 50; the missing ones are hidden in overlapping clusters, mainly along the venous baseline (~3-6 mmHg) and in the
+~250-300 um arterial cluster."""
+use_in_model = """Primary beating-heart pressure-vs-diameter check. Compare model mean pressure in subepicardial arterial segments (diameter-binned) and venous
+segments against pressure_vs_diameter_*; compare the model's fraction of the inlet-to-outlet pressure drop over D > 170 um arteries, the
+arteriole-capillary-venule bed, and veins > 150 um against resistance_pct. Resting tone is not in a passive Poiseuille tree, so the dipyridamole
+columns are the more natural comparison for a fully dilated model."""
+
+[source]
+authors = ["Chilian WM", "Layne SM", "Klausner EC", "Eastham CL", "Marcus ML"]
+year = 1989
+title = "Redistribution of coronary microvascular resistance produced by dipyridamole"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "256"
+issue = "2"
+pages = "H383-H390"
+doi = "10.1152/ajpheart.1989.256.2.h383"
+crossref_verified = "2026-10-14; Crossref title exact match ('Redistribution of coronary microvascular resistance produced by dipyridamole')"
+pmid = "2492768"
+
+[data.pressure_by_class]
+description = "Systolic, mean and diastolic pressure in aorta and microvessel classes, control and dipyridamole"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SE; n = observations (n_cats = cats)"
+vessel_class = ["aorta", "arteries", "arterioles", "venules", "veins"]
+control_diameter_um = [nan, 355.0, 170.0, 150.0, 400.0]
+control_diameter_se_um = [nan, 35.0, 40.0, 30.0, 30.0]
+control_systolic_mmHg = [109.0, 107.0, 77.0, 11.0, 8.0]
+control_systolic_se_mmHg = [4.0, 3.0, 5.0, 4.0, 2.0]
+control_mean_mmHg = [90.0, 88.0, 68.0, 6.0, 5.0]
+control_mean_se_mmHg = [6.0, 4.0, 6.0, 4.0, 2.0]
+control_diastolic_mmHg = [77.0, 76.0, 60.0, 1.0, 1.0]
+control_diastolic_se_mmHg = [3.0, 5.0, 3.0, 1.0, 1.0]
+control_n = [24, 18, 7, 11, 14]
+control_n_cats = [24, 14, 6, 8, 8]
+dipyridamole_diameter_um = [nan, 360.0, 175.0, 150.0, 410.0]
+dipyridamole_diameter_se_um = [nan, 30.0, 35.0, 35.0, 35.0]
+dipyridamole_systolic_mmHg = [122.0, 107.0, 72.0, 41.0, 20.0]
+dipyridamole_systolic_se_mmHg = [8.0, 6.0, 4.0, 4.0, 5.0]
+dipyridamole_mean_mmHg = [91.0, 78.0, 52.0, 27.0, 13.0]
+dipyridamole_mean_se_mmHg = [4.0, 5.0, 7.0, 7.0, 3.0]
+dipyridamole_diastolic_mmHg = [76.0, 65.0, 42.0, 12.0, 5.0]
+dipyridamole_diastolic_se_mmHg = [4.0, 4.0, 4.0, 2.0, 3.0]
+dipyridamole_n = [24, 16, 8, 12, 14]
+dipyridamole_n_cats = [24, 14, 7, 9, 9]
+missing_note = "Aorta has no diameter."
+
+[data.resistance_pct]
+description = "Percent of total coronary resistance in artery (> 170 um), microvessel (< 170 um arterioles to < 150 um venules) and venous (> 150 um) compartments"
+location = "Abstract and Results ('Relative distribution of coronary resistance'); plotted in Fig. 5"
+provenance = "FT"
+statistic = "mean +/- SE"
+compartment = ["artery", "microvessel", "venous"]
+control_pct = [25.0, 68.0, 7.0]
+control_se_pct = [8.0, 8.0, 7.0]
+dipyridamole_pct = [42.0, 27.0, 31.0]
+dipyridamole_se_pct = [6.0, 5.0, 8.0]
+missing_note = ""
+
+[data.resistance_absolute]
+description = "Absolute compartment resistance (pressure drop / subepicardial MBF), mmHg*min*g/ml"
+location = "Abstract and Table 1 (total); venous values digitized from Fig. 4"
+provenance = "mixed"
+provenance_per_value = ["FT", "FT", "fig", "FT"]
+figure = "Fig. 4"
+digitization_error = "venous bars about +/-0.3 on mean and +/-0.3 on SE (1 px = 0.08 units at 300 dpi; calibration checked against the text values 17, 6, 66 and 14, which it reproduces to within 0.3)"
+statistic = "mean +/- SE"
+compartment = ["artery", "microvessel", "venous", "total"]
+control = [17.0, 45.0, 4.9, 66.0]
+control_se = [4.0, 6.0, 3.5, 5.0]
+dipyridamole = [6.0, 4.0, 4.9, 14.0]
+dipyridamole_se = [2.0, 2.0, 5.2, 3.0]
+n_total = 16
+missing_note = "Venous resistance not given numerically in the text ('not significantly affected'); read from Fig. 4."
+
+[data.hemodynamics]
+description = "Systemic hemodynamics, subepicardial perfusion, coronary resistance, blood gases"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SE"
+variable = ["mean arterial pressure mmHg", "right atrial pressure mmHg", "heart rate bpm", "myocardial perfusion ml/min/g", "coronary resistance mmHg*min*g/ml", "PO2 mmHg", "PCO2 mmHg", "pH"]
+control_value = [90.0, 3.5, 180.0, 1.80, 66.0, 98.0, 28.0, 7.39]
+control_se = [6.0, 1.5, 9.0, 0.09, 5.0, 6.0, 4.0, 0.03]
+dipyridamole_value = [91.0, 3.0, 176.0, 6.42, 14.0, 95.0, 31.0, 7.33]
+dipyridamole_se = [4.0, 1.5, 6.0, 0.31, 3.0, 4.0, 6.0, 0.04]
+n = [24, 8, 24, 16, 16, 24, 24, 24]
+missing_note = ""
+
+[data.pressure_vs_diameter_control]
+description = "Individual mean microvascular pressures vs diameter, control (filled circles). Arterial and venous sides listed separately."
+location = "Fig. 3 (filled circles)"
+provenance = "fig"
+figure = "Fig. 3"
+digitization_error = "about +/-3 um and +/-1 mmHg for isolated markers; +/-6 um and +/-1.5 mmHg for markers split out of overlapping clusters (disk fitting; 1 px = 0.96 um, 0.11 mmHg at 300 dpi)"
+statistic = "individual vessels"
+arterial_diameter_um = [370.0, 345.0, 344.0, 320.0, 295.0, 273.0, 271.0, 264.0, 249.0, 245.0, 230.0, 221.0, 221.0, 208.0, 207.0, 193.0, 184.0, 167.0, 158.0, 152.0, 133.0, 118.0, 111.0]
+arterial_pressure_mmHg = [91.2, 91.3, 89.8, 94.2, 92.9, 90.8, 89.8, 85.1, 87.9, 79.8, 85.5, 88.3, 83.0, 81.3, 53.4, 81.1, 76.9, 66.6, 65.8, 68.2, 63.8, 61.0, 56.8]
+venous_diameter_um = [111.0, 135.0, 140.0, 167.0, 198.0, 214.0, 215.0, 226.0, 236.0, 237.0, 261.0, 262.0, 276.0, 295.0, 366.0, 411.0, 436.0, 445.0, 460.0]
+venous_pressure_mmHg = [5.5, 4.2, 5.2, 4.3, 5.2, 5.3, 3.5, 4.6, 5.2, 3.5, 5.2, 3.2, 4.0, 4.7, 5.2, 4.8, 3.6, 4.1, 2.9]
+missing_note = "42 of 50 control observations recovered (23 arterial of 25, 19 venous of 25); the rest are hidden in overlapping clusters. Aortic pressure per point not given (Table 2 control mean aortic 90 mmHg)."
+
+[data.pressure_vs_diameter_dipyridamole]
+description = "Individual mean microvascular pressures vs diameter, dipyridamole 0.4 mg/kg/min (open circles)"
+location = "Fig. 3 (open circles)"
+provenance = "fig"
+figure = "Fig. 3"
+digitization_error = "about +/-3 um and +/-1 mmHg (ring centres from enclosed holes); +/-6 um and +/-1.5 mmHg where rings overlap or the fitted curve crosses the ring"
+statistic = "individual vessels"
+arterial_diameter_um = [394.0, 369.0, 344.0, 311.0, 288.0, 285.0, 273.0, 273.0, 270.0, 264.0, 245.0, 245.0, 220.0, 215.0, 173.0, 167.0, 164.0, 157.0, 148.0, 139.0, 125.0]
+arterial_pressure_mmHg = [84.9, 85.0, 85.0, 76.6, 86.3, 75.0, 76.6, 82.2, 75.3, 79.7, 76.6, 74.9, 76.5, 78.9, 46.5, 53.9, 59.0, 49.8, 55.1, 51.0, 48.4]
+venous_diameter_um = [123.0, 136.0, 156.0, 157.0, 172.0, 175.0, 177.0, 184.0, 206.0, 206.0, 211.0, 224.0, 224.0, 237.0, 237.0, 239.0, 246.0, 252.0, 286.0, 286.0, 310.0, 310.0, 422.0, 436.0, 451.0]
+venous_pressure_mmHg = [26.8, 26.9, 18.8, 25.1, 24.1, 21.3, 33.9, 22.9, 18.8, 12.2, 22.1, 13.8, 12.1, 11.3, 13.1, 14.8, 9.3, 13.7, 9.9, 8.0, 10.7, 8.2, 4.0, 5.7, 7.3]
+missing_note = "46 of 50 dipyridamole observations recovered (21 arterial of 24, 25 venous of 26). Mean aortic pressure ~91 mmHg (Table 2)."

@@ -1,0 +1,91 @@
+[meta]
+id = "nellis1981_microvascular_pressure"
+data_type = "experimental"
+validates = "Micropipette pressures in small coronary arteries and veins (above/below 140 um) of the beating right ventricle, absolute and as % of aortic pressure"
+species = "rabbit"
+preparation = "New Zealand white rabbits (1-1.5 kg), pentobarbital 50 mg/kg, open chest. Right-ventricular free-wall surface vessels viewed with stroboscopic illumination synchronized to the heart; pressures by servo-null micropipette either with the RV fixed by a holding rod ('fixed-position') or with an electromagnetic micromanipulator tracking the vessel ('free-motion'). Lungs bypassed with an oxygenator (pulmonary artery to left atrium, roller pump) so ventilation could stop; circuit primed with washed donor red cells in Krebs-Ringer."
+conditions = "Baseline, no vasodilator. Beating heart; right ventricle (not left)."
+verification = "mixed"
+access = "Publisher PDF (ahajournals.org) read via Wayback Machine capture 20220816213936 of https://www.ahajournals.org/doi/pdf/10.1161/01.RES.49.2.342"
+notes = """Fig. 6 pools fixed-position and free-motion data: 18 arteries and 31 veins from 16 animals, split at 140 um diameter into groups of
+roughly equal size. Free-motion venous pressures are lower than fixed-position ones (6.0 +/- 0.71 vs 11.1 +/- 4.2 mmHg mean, SEM),
+so the pooled venular values in Fig. 6 are biased upward relative to free-motion alone.
+The upper panel of Fig. 6 (absolute pressures) has heavily overlapping symbols for the two venule groups; only the lower panel
+(% of aortic) was digitized for veins. Authors: 'appreciable pressure drop ... in arteries with decreasing diameter', the largest drop
+in arteries < 140 um; 'little if any pressure gradient' among veins."""
+use_in_model = """Compare model mean pressure (as % of inlet mean pressure) in subepicardial arteries > 140 um and < 140 um (but larger than ~40 um,
+the smallest arteries punctured), and in veins/venules 45-192 um, with pct_aortic. Right-ventricular, small-heart data: use as a
+shape check of the arterial pressure fall above the arteriolar level, not as an LV absolute target."""
+
+[source]
+authors = ["Nellis SH", "Liedtke AJ", "Whitesell L"]
+year = 1981
+title = "Small coronary vessel pressure and diameter in an intact beating rabbit heart using fixed-position and free-motion techniques"
+journal = "Circ Res"
+volume = "49"
+issue = "2"
+pages = "342-353"
+doi = "10.1161/01.res.49.2.342"
+crossref_verified = "2026-10-14; Crossref title exact match ('Small coronary vessel pressure and diameter in an intact beating rabbit heart using fixed-position and free-motion techniques.')"
+
+[data.pressure_pct_aortic]
+description = "Mean pressure as percent of aortic mean pressure, by vessel group (fixed + free-motion pooled)"
+location = "Fig. 6, lower panel"
+provenance = "fig"
+figure = "Fig. 6 (lower)"
+digitization_error = "about +/-1.5 % on means, +/-1 % on SEM (pixel-located marker centres on a 250 dpi render of a scanned figure)"
+statistic = "mean +/- SEM"
+vessel_group = ["aorta", "arteries > 140 um", "arteries < 140 um", "veins < 140 um", "veins > 140 um"]
+pct_aortic_mean = [100.0, 83.8, 66.6, 16.0, 14.1]
+pct_aortic_sem = [0.0, 2.6, 3.2, 2.5, 2.7]
+n_vessels_total_arteries = 18
+n_vessels_total_veins = 31
+missing_note = "Per-group n not given (groups 'approximately equal'). Aorta is 100 % by definition."
+
+[data.artery_pressure_absolute]
+description = "Peak (max), average (mean) and minimum pressure over the cardiac cycle in aorta and small arteries (fixed + free-motion pooled)"
+location = "Fig. 6, upper panel"
+provenance = "fig"
+figure = "Fig. 6 (upper)"
+digitization_error = "about +/-1.5 mmHg on means (triangle markers +/-2 mmHg), +/-1 mmHg on SEM"
+statistic = "mean +/- SEM"
+vessel_group = ["aorta", "arteries > 140 um", "arteries < 140 um"]
+max_pressure_mmHg = [90.6, 76.5, 57.1]
+max_pressure_sem_mmHg = [3.4, 3.1, 3.5]
+mean_pressure_mmHg = [76.8, 61.5, 49.0]
+mean_pressure_sem_mmHg = [2.8, 3.4, 3.0]
+min_pressure_mmHg = [64.2, 51.0, 42.3]
+min_pressure_sem_mmHg = [2.8, 3.1, 3.5]
+missing_note = "Venule absolute values not digitized: max/mean/min symbols overlap and cannot be separated reliably."
+
+[data.free_motion_vein_pressures]
+description = "Small vein pressures measured by the free-motion technique only, individual vessels"
+location = "Table 1"
+provenance = "FT"
+statistic = "individual values; summary row mean and SEM"
+diameter_um = [136.0, 66.0, 77.0, 128.0, 128.0, 85.0, 77.0, 45.0, 166.0, 80.0, 60.0, 85.0, 192.0]
+mean_pressure_mmHg = [4.0, 5.0, 4.0, 4.0, 4.0, 4.0, 10.0, 5.0, 6.0, 4.0, 8.0, 10.0, 10.0]
+pulse_pressure_mmHg = [8.0, 3.0, 7.0, 8.0, 8.0, 10.0, 2.0, 10.0, 2.0, 8.0, 2.0, 2.0, 6.0]
+aortic_pressure_mmHg = [60.0, 98.0, 90.0, 70.0, 80.0, 100.0, 72.0, 80.0, 85.0, 78.0, 88.0, 75.0, 78.0]
+heart_rate_bpm = [175.0, 161.0, 158.0, 164.0, 195.0, 206.0, 213.0, 203.0, 211.0, 196.0, 253.0, 217.0, 192.0]
+summary_diameter_mean_um = 101.5
+summary_diameter_sem_um = 12.0
+summary_mean_pressure_mmHg = 6.0
+summary_mean_pressure_sem_mmHg = 0.71
+summary_pulse_pressure_mmHg = 5.8
+summary_pulse_pressure_sem_mmHg = 0.9
+summary_aortic_pressure_mmHg = 81.1
+summary_aortic_pressure_sem_mmHg = 3.1
+missing_note = "Phase-angle and delay columns omitted. Text says the 13 veins ranged 45-160 um, but the table lists 166 and 192 um vessels; table values recorded."
+
+[data.vein_pressure_by_technique]
+description = "Average vein pressure, free-motion vs fixed-position technique (vessels of comparable size)"
+location = "Results text (p. 349) and Summary"
+provenance = "FT"
+statistic = "mean +/- SEM"
+technique = ["free-motion", "fixed-position"]
+mean_pressure_mmHg = [6.0, 11.1]
+mean_pressure_sem_mmHg = [0.71, 4.2]
+pulse_pressure_mmHg = [5.8, 13.5]
+pulse_pressure_sem_mmHg = [0.9, 4.7]
+missing_note = "The Summary quotes 6.8 +/- 0.7 vs 13.5 +/- 4.7 mmHg for the free vs fixed comparison; the Results text gives mean 6.0 +/- 0.71 vs 11.1 +/- 4.2 and pulse 5.8 +/- 0.9 vs 13.5 +/- 4.7. Results-text values are recorded."

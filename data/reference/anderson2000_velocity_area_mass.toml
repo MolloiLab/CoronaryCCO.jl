@@ -1,0 +1,96 @@
+[meta]
+id = "anderson2000_velocity_area_mass"
+data_type = "experimental"
+validates = "Resting proximal LAD average peak velocity (APV) and its inverse relation to lumen-area-to-regional-mass ratio (flow continuity); estimated LAD resting flow (ml/min) and regional perfusion"
+species = "human"
+preparation = "59 patients undergoing diagnostic catheterization (chest pain, heart failure, valvular disease, or preoperative evaluation); excluded remote anterior MI, recent MI, occlusions, visible collaterals, left main stenosis, >90% LAD stenosis, prior CABG. LAD disease deliberately ranged from none/luminal irregularities (n = 22) to mild 30-50% (n = 15) and moderate 50-70% (n = 22). 0.014-in Doppler FloWire in the proximal LAD; QCA diameter 5 mm distal to the wire tip (circular area assumed); biplane ventriculographic LV mass; regional mass from summed distal branch lengths (Seiler method)."
+conditions = "Resting; hyperemia by 18 ug intracoronary adenosine for CFR. Nitroglycerin use not stated in the available text."
+verification = "FT"
+access = "HighWire full-text HTML read via Wayback Machine capture 20150408063446 of http://circ.ahajournals.org:80/content/102/1/48.full. Tables 1-3 were popup/image tables that were not archived; values below are from Abstract and Results text."
+notes = """Spatial mean velocity taken as V = APV/2. Qart = V x A; Qbed = perfusion (from double product) x regional mass.
+Regression from Abstract: V = 46.5/(A/m), r = 0.68, P < 0.001 (units of V and of the constant are not stated in the available text;
+V is defined in the Methods as the spatially averaged velocity, APV/2).
+This cohort is NOT purely normal: only the 'none or luminal irregularities' group (n = 22) approximates normal arteries.
+Estimated regional perfusion 58 +/- 15 ml/min/100 g (range 27-103) from the double product, not measured."""
+use_in_model = """At the proximal LAD under resting conditions, compare model APV (2 x mean velocity for Poiseuille) and the lumen area / distal myocardial mass
+ratio (mm2 per 100 g) against the values here. A healthy CCO tree with A/m >= 10 mm2/100 g should give resting APV near 23 +/- 9 cm/s.
+Compare the model's proximal LAD resting flow with ~59-63 ml/min (Qart / Qbed)."""
+
+[source]
+authors = ["Anderson HV", "Stokes MJ", "Leon M", "Abu-Halawa SA", "Stuart Y", "Kirkeeide RL"]
+year = 2000
+title = "Coronary artery flow velocity is related to lumen area and regional left ventricular mass"
+journal = "Circulation"
+volume = "102"
+issue = "1"
+pages = "48-54"
+doi = "10.1161/01.CIR.102.1.48"
+crossref_verified = "2026-10-14; Crossref title exact match (case-insensitive)"
+pmid = "10880414"
+
+[data.apv_by_disease_group]
+description = "Resting proximal LAD APV and lumen-area-to-regional-mass ratio by angiographic LAD disease category"
+location = "Abstract (Methods and Results)"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["none_or_luminal_irregularities", "mild_30_50pct", "moderate_50_70pct"]
+n = [22, 15, 22]
+apv_rest_mean_cm_per_s = [27.0, 33.0, 37.0]
+apv_rest_sd_cm_per_s = [16.0, 11.0, 20.0]
+area_to_mass_mean_mm2_per_100g = [8.7, 8.5, 5.6]
+area_to_mass_sd_mm2_per_100g = [4.0, 6.2, 3.0]
+p_apv_trend = 0.06
+p_area_to_mass = 0.04
+missing_note = "Per-group hyperemic APV, CFR, and diameters are in Table 3 (not archived)."
+
+[data.apv_by_area_mass_ratio]
+description = "Resting LAD APV in patients with normal (>= 10 mm2/100 g) vs low (< 10) area-to-mass ratio"
+location = "Results 'Velocity and A/m Ratio'"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["A_over_m_ge_10", "A_over_m_lt_10"]
+apv_rest_mean_cm_per_s = [23.0, 34.0]
+apv_rest_sd_cm_per_s = [9.0, 18.0]
+p_value = 0.02
+missing_note = "Subgroup n not stated in the text."
+
+[data.sex_comparison]
+description = "LV mass, BSA, A/m ratio, resting APV and CFR by sex (all 59 patients)"
+location = "Results 'Angiographic and Hemodynamic Findings'"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["men", "women"]
+lv_mass_mean_g = [248.0, 190.0]
+lv_mass_sd_g = [87.0, 67.0]
+bsa_mean_m2 = [2.02, 1.82]
+bsa_sd_m2 = [0.31, 0.22]
+area_to_mass_mean_mm2_per_100g = [6.8, 8.1]
+area_to_mass_sd_mm2_per_100g = [4.6, 4.5]
+apv_rest_mean_cm_per_s = [31.0, 32.0]
+apv_rest_sd_cm_per_s = [18.0, 15.0]
+cfr_mean = [2.3, 2.5]
+cfr_sd = [1.2, 0.8]
+missing_note = "n per sex is in Table 1 (not archived)."
+
+[data.lad_resting_flow]
+description = "Estimated resting proximal LAD flow by two methods (all 59 patients)"
+location = "Results 'Qbed versus Qart'; Limitations"
+provenance = "FT"
+statistic = "mean +/- SD"
+method = ["Qbed = perfusion x regional mass", "Qart = (APV/2) x lumen area"]
+flow_mean_ml_per_min = [63.0, 59.0]
+flow_sd_ml_per_min = [31.0, 24.0]
+regression = "Qbed = 0.96 x Qart, r = 0.66, P < 0.001; mean difference 4 ml/min, SD 34"
+estimated_perfusion_ml_per_min_per_100g = [58.0, 15.0]
+estimated_perfusion_note = "[mean, SD]; range 27-103; from double product, not measured"
+n = 59
+missing_note = ""
+
+[data.velocity_area_mass_regression]
+description = "Resting spatial-mean velocity vs lumen-area-to-regional-mass ratio"
+location = "Abstract; Fig 4"
+provenance = "FT"
+equation = "V = 46.5 / (A/m)"
+r = 0.68
+n = 59
+missing_note = "Units of V and the constant are not given in the available text; A/m is in mm2/100 g elsewhere in the paper."

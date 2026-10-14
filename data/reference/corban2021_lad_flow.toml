@@ -1,0 +1,46 @@
+[meta]
+id = "corban2021_lad_flow"
+data_type = "experimental"
+validates = "Resting and hyperemic mid-LAD volumetric blood flow (ml/min) and coronary flow velocity reserve in a large cohort with angiographically non-obstructed arteries, by sex"
+species = "human"
+preparation = "1,683 patients with signs/symptoms of ischaemia and angiographically unobstructed coronary arteries (< 40% stenosis) undergoing invasive coronary vasomotion testing; 65% women, median age 51 [42, 59] y. Doppler average velocity in the LAD; mid-LAD diameter by quantitative angiography; CBF computed at rest (rCBF) and hyperemia (hCBF)."
+conditions = "Rest and hyperemia (agent not stated in the abstract)."
+verification = "abs"
+access = "Europe PMC / PubMed abstract (PMID 31589144). A PMC record (PMC9724856) exists but full text was not retrievable: Europe PMC returned HTTP 500 and NCBI efetch returned the abstract only."
+notes = """This is a symptomatic referral population in which coronary microvascular and endothelial dysfunction are common; it is not a healthy normal cohort.
+Values are medians [IQR]. Resting microvascular resistance (MAP/rCBF) was similar in men and women (p = 0.82)."""
+use_in_model = """Compare the model's resting and maximal-vasodilation flow through the mid LAD with these medians (rest ~46-50 ml/min, hyperemia ~140-147 ml/min),
+and the hyperemic/rest velocity ratio with the CFVR medians. Treat as a loose population-level range rather than a healthy target."""
+
+[source]
+authors = ["Corban MT", "Prasad A", "Gulati R", "Lerman LO", "Lerman A"]
+year = 2021
+title = "Sex-specific differences in coronary blood flow and flow velocity reserve in symptomatic patients with non-obstructive disease"
+journal = "EuroIntervention"
+volume = "16"
+issue = "13"
+pages = "1079-1084"
+doi = "10.4244/EIJ-D-19-00520"
+crossref_verified = "2026-10-14; Crossref title exact match"
+pmid = "31589144"
+
+[data.lad_flow_by_sex]
+description = "Mid-LAD coronary flow velocity reserve and computed blood flow at rest and hyperemia, women vs men"
+location = "Abstract (Methods and results)"
+provenance = "abs"
+statistic = "median [IQR]"
+sex = ["female", "male"]
+n = [1096, 587]
+cfvr_median = [2.7, 3.1]
+cfvr_q1 = [2.4, 2.7]
+cfvr_q3 = [3.2, 3.6]
+rest_cbf_median_ml_per_min = [49.7, 45.9]
+rest_cbf_q1_ml_per_min = [34.0, 31.8]
+rest_cbf_q3_ml_per_min = [71.1, 68.7]
+hyperemic_cbf_median_ml_per_min = [139.5, 147.1]
+hyperemic_cbf_q1_ml_per_min = [93.0, 95.7]
+hyperemic_cbf_q3_ml_per_min = [195.2, 218.6]
+p_cfvr = 0.001
+p_rest_cbf = 0.04
+p_hyperemic_cbf = 0.02
+missing_note = "Male n = 1683 - 1096 = 587 (computed from the abstract totals). p_cfvr is reported as p < 0.001. Absolute APV (cm/s) and LAD diameter are in the full text (not accessible)."

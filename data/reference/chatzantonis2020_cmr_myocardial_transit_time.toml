@@ -1,0 +1,43 @@
+# Chatzantonis G, Bietenbeck M, Florian A, Meier C, Korthals D, Reinecke H, Yilmaz A (2020). "Myocardial
+# transit-time" (MyoTT): a novel and easy-to-perform CMR parameter to assess microvascular disease.
+# ABSTRACT ONLY (Springer full text not open; Unpaywall closed). Only the control group is a model target.
+
+[meta]
+id = "chatzantonis2020_cmr_myocardial_transit_time"
+data_type = "experimental"
+validates = "Human resting aortic-root-to-coronary-sinus contrast transit time (MyoTT) in control patients without relevant cardiac disease."
+species = "human"
+preparation = "20 control patients without relevant cardiac disease (vs 20 hypertrophic cardiomyopathy patients), 1.5 T CMR, first-pass perfusion acquisition at rest. MyoTT = temporal difference between the appearance of gadolinium in the aortic root and in the coronary sinus."
+conditions = "Rest only."
+verification = "abs"
+access = "Abstract via PubMed E-utilities (PMID 31321491). Full text not open access."
+notes = """
+Controls were patients referred for CMR without relevant cardiac disease, not healthy volunteers.
+The statistic printed as '6.5 (4.8-8.4) s' is presumably median (interquartile range); the abstract does not say so explicitly.
+Optimal cut-off HCM vs controls 7.85 s (AUC 0.90). HCM MyoTT 11.0 (9.1-14.5) s (not a target).
+Follow-up study with the same definition and a detailed threshold rule: yang2024_cmr_myocardial_transit_time (controls 7.7 +/- 1.5 s).
+"""
+use_in_model = """Same comparison as yang2024: delay between aortic-root and coronary-sinus concentration curves (appearance/threshold). Target about 6.5 s (IQR 4.8-8.4) at rest."""
+
+[source]
+authors = ["Chatzantonis G", "Bietenbeck M", "Florian A", "Meier C", "Korthals D", "Reinecke H", "Yilmaz A"]
+year = 2020
+title = "\"Myocardial transit-time\" (MyoTT): a novel and easy-to-perform CMR parameter to assess microvascular disease"
+journal = "Clin Res Cardiol"
+volume = "109"
+issue = "4"
+pages = "488-497"
+doi = "10.1007/s00392-019-01530-x"
+crossref_verified = "2026-10-14; Crossref title exact match (typographic quotes differ; vol 109, issue 4, 488-497; online 2019-07-18)"
+pmid = "31321491"
+
+[data.myott_controls]
+description = "MyoTT in control patients at rest"
+location = "Abstract, Results"
+provenance = "abs"
+statistic = "median (IQR), presumed"
+value = 6.5
+range = [4.8, 8.4]
+unit = "s"
+n = 20
+missing_note = "Statistic type not stated in abstract; heart rate not given."

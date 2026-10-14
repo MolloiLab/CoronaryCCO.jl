@@ -1,0 +1,73 @@
+[meta]
+id = "wilson1985_doppler_catheter_cfr"
+data_type = "experimental"
+validates = "Hyperemic-to-resting coronary flow velocity ratio (vasodilator reserve) in normal human epicardial arteries after intracoronary ionic contrast and IV dipyridamole; time course of contrast-induced hyperemia (relevant to contrast-injection transit models)"
+species = "human"
+preparation = "No. 3F subselective coronary Doppler catheter with a 20-MHz piezoelectric crystal and pulsed Doppler meter (validated in calves), passed through a Judkins 8F guiding catheter into the right or left coronary artery and positioned for maximal resting signal. Human results: 10 patients with angiographically normal coronary arteries (vasodilator reserve protocol); phasic recordings obtained in 58 of 70 patients overall."
+conditions = "Awake, fasting catheterization patients (various sedatives, no atropine); heparin 5,000-10,000 U IV. Intracoronary meglumine diatrizoate (ionic contrast) 2-6 ml, then IV dipyridamole 0.56 mg/kg (one patient received an extra 0.4 mg/kg). Velocity measured as Doppler frequency shift (relative units), so only ratios to resting velocity are reported."
+verification = "FT"
+access = "Publisher PDF read via Wayback Machine capture 20170824202554 of http://circ.ahajournals.org/content/circulationaha/72/1/82.full.pdf"
+notes = """Velocities are reported relative to resting velocity (Doppler shift, not calibrated cm/s).
+Systolic/diastolic velocity ratio (all patients with recordings): RCA 0.67 +/- 0.11 vs LAD 0.17 +/- 0.05 (mean +/- SEM).
+Peak contrast-induced response did not vary significantly with the coronary vessel studied.
+Dipyridamole (infused over 4 min): mean time from onset of infusion to peak velocity 6.5 min (range 2.5-8.7 min); at the end of the 4-min infusion velocity was only 67% of its eventual peak (Results, Fig 8).
+Ionic contrast (meglumine diatrizoate) is hyperosmolar and a stronger vasodilator than modern nonionic agents; apply with care."""
+use_in_model = """Use velocity_reserve as a target for the model's maximal-vasodilation / rest flow ratio in normal epicardial arteries (dipyridamole ~5x).
+If the contrast-transit model includes contrast-induced hyperemia, compare peak timing (17 s after injection onset) and return to baseline (~50 s)
+with contrast_hyperemia_timing; these timings set how long the flow field can be assumed stationary during a contrast bolus."""
+
+[source]
+authors = ["Wilson RF", "Laughlin DE", "Ackell PH", "Chilian WM", "Holida MD", "Hartley CJ", "Armstrong ML", "Marcus ML", "White CW"]
+year = 1985
+title = "Transluminal, subselective measurement of coronary artery blood flow velocity and vasodilator reserve in man"
+journal = "Circulation"
+volume = "72"
+issue = "1"
+pages = "82-92"
+doi = "10.1161/01.CIR.72.1.82"
+crossref_verified = "2026-10-14; Crossref title exact match"
+pmid = "3159506"
+
+[data.velocity_reserve]
+description = "Peak / resting coronary blood flow velocity in 10 patients with angiographically normal arteries"
+location = "Abstract; Results 'Subselective measurement of coronary vasodilator reserve in normal vessels'"
+provenance = "FT"
+statistic = "mean (range)"
+stimulus = ["intracoronary meglumine diatrizoate 2-6 ml", "IV dipyridamole 0.56 mg/kg"]
+velocity_ratio_mean = [3.5, 5.0]
+velocity_ratio_min = [2.8, 3.8]
+velocity_ratio_max = [5.0, 7.0]
+n_patients = 10
+missing_note = "SD not given. One patient reached only 2.3x after 0.56 mg/kg dipyridamole and 4.2x after an extra 0.4 mg/kg; the reported range 3.8-7.0 refers to the paper's summary of the dipyridamole response."
+
+[data.resistance_index_dipyridamole]
+description = "Coronary resistance index after IV dipyridamole relative to resting"
+location = "Results"
+provenance = "FT"
+value = 0.17
+range = [0.10, 0.22]
+unit = "fraction of resting resistance index"
+n = 10
+missing_note = ""
+
+[data.contrast_hyperemia_timing]
+description = "Time course of the velocity response to intracoronary meglumine diatrizoate"
+location = "Results"
+provenance = "FT"
+statistic = "mean (range)"
+quantity = ["time from injection onset to peak velocity", "time to return to baseline"]
+time_mean_s = [17.0, 50.0]
+time_min_s = [12.0, 39.0]
+time_max_s = [22.0, 69.0]
+n = 10
+missing_note = ""
+
+[data.systolic_diastolic_ratio]
+description = "Ratio of systolic to diastolic coronary flow velocity signal"
+location = "Results 'Studies in humans'"
+provenance = "FT"
+statistic = "mean +/- SEM"
+vessel = ["RCA", "LAD"]
+ratio_mean = [0.67, 0.17]
+ratio_sem = [0.11, 0.05]
+missing_note = "n per vessel not stated in the text read."

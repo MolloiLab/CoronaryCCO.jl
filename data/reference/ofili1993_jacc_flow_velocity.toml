@@ -1,0 +1,36 @@
+[meta]
+id = "ofili1993_jacc_flow_velocity"
+data_type = "experimental"
+validates = "Proximal Doppler flow velocity (peak diastolic velocity), coronary vasodilator reserve and phasic flow fractions in angiographically normal human coronary arteries"
+species = "human"
+preparation = "12-MHz Doppler guide wire with fast Fourier spectral analysis; proximal measurements in 17 angiographically normal arteries, compared with 29 significantly stenosed arteries (also before/after angioplasty)."
+conditions = "Rest and hyperemia (agent not stated in the abstract)."
+verification = "abs"
+access = "PubMed abstract (PMID 8425991) and Wayback capture 20240413202619 of the ScienceDirect abstract page. Full text (Elsevier open archive) returned HTTP 403; Elsevier API returned metadata only."
+notes = """Only normal-artery values are recorded as data; stenosed-artery values (peak diastolic velocity 41 +/- 26 cm/s, CVR 1.6 +/- 0.7) and
+angioplasty results are in the abstract but are not normal-vessel data. Per-artery breakdown and APV not available."""
+use_in_model = """Compare the model's proximal-artery peak diastolic velocity (centerline velocity at diastolic peak) at rest with 64 +/- 26 cm/s,
+the maximal/rest ratio with 2.3 +/- 0.8, and the fraction of per-cycle flow volume delivered in the first third (46%) and first half (65%) of the cardiac cycle."""
+
+[source]
+authors = ["Ofili EO", "Kern MJ", "Labovitz AJ", "St Vrain JA", "Segal J", "Aguirre FV", "Castello R"]
+year = 1993
+title = "Analysis of coronary blood flow velocity dynamics in angiographically normal and stenosed arteries before and after endolumen enlargement by angioplasty"
+journal = "J Am Coll Cardiol"
+volume = "21"
+issue = "2"
+pages = "308-316"
+doi = "10.1016/0735-1097(93)90668-Q"
+crossref_verified = "2026-10-14; Crossref title match (Crossref record has the typo 'angiographicaily')"
+pmid = "8425991"
+
+[data.normal_proximal]
+description = "Proximal normal arteries: peak diastolic velocity, coronary vasodilator reserve, and flow fraction in the first third / first half of the coronary cycle"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD"
+quantity = ["peak_diastolic_velocity_cm_per_s", "coronary_vasodilator_reserve", "flow_fraction_first_third_pct", "flow_fraction_first_half_pct"]
+mean = [64.0, 2.3, 46.0, 65.0]
+sd = [26.0, 0.8, 3.0, 2.0]
+n_arteries = 17
+missing_note = "Mean velocity/APV, distal values and per-artery data are in the full text (not accessible)."

@@ -1,0 +1,115 @@
+# Bassingthwaighte JB, King RB, Roger SA (1989). Fractal nature of regional myocardial blood flow heterogeneity.
+# Full text first read from the NIH author manuscript in PMC (PMC3361973, HTML), then re-verified against the
+# original journal PDF (Circ Res 65:578-590, 13 pages; local copy supplied by the project lead): pdftotext
+# -layout plus 300 dpi page renders of Table 1, Table 2, Fig. 1, Fig. 6 and Fig. 7 checked by eye. Fractal relation (paper Eq. 5): RD(m) = RD(m_ref) * (m / m_ref)^(1 - D),
+# with m_ref = 1 g. Equivalent by piece number N (Eq. 1): RD(N) = RD(N=1) * N^(D - 1).
+
+[meta]
+id = "bassingthwaighte1989_flow_heterogeneity"
+data_type = "experimental"
+validates = "Spatial heterogeneity of regional LV blood flow as a function of tissue sample mass: RD at 1 g reference mass and fractal dimension D, per animal and per species (baboon, sheep, rabbit). Target for the flow distribution over CCO terminal segments after aggregating tissue into pieces of known mass."
+species = "baboon, sheep, rabbit"
+preparation = """Baboons: 10 awake animals, 15 um microspheres (4-6 differently labelled injections at different times, control, mild exercise or heat stress); a separate group of 3 baboons got simultaneous injections to measure method error. Sheep: 11 anesthetized open-chest animals, 2-iododesmethylimipramine (IDMI, 'molecular microsphere') plus 15 um microspheres injected into the left atrium; in 5 sheep two IDMIs and two microsphere labels were injected simultaneously. Rabbits: 6 anesthetized open-chest animals, two IDMIs and two microsphere labels simultaneously. Hearts stopped about 1 min after injection. LV only. LV usually cut into 96 (rabbit), 168 (baboon) or 192 (sheep) pieces (4 rings x 8 sectors x 3 or 6 transmural slices), then regrouped into aggregates of adjacent pieces."""
+conditions = "Baboons awake (control and mild stresses; flow did not change much). Sheep and rabbits anesthetized, open chest; sheep in good physiological condition; 4 of 6 rabbits good, 2 rabbits had low blood pressure and high heart rate at injection (paper Results). No vasodilator."
+verification = "mixed"
+access = "Original journal PDF (local copy from project lead), verified page by page at 300 dpi; also NIH author manuscript PMC3361973 (HTML). Table 2 values cross-checked programmatically between both sources (27/27 rows identical)."
+notes = """
+RD_s is SPATIAL dispersion: observed dispersion corrected for method error (sheep, rabbits: RD_s^2 = RD_obs^2 - RD_M^2, Eq. 11) or for method + temporal error (baboons: RD_s^2 = RD_obs^2 - RD_tau,M^2, Eq. 12).
+Regressions used aggregates up to 2 g (Fractal Analysis section); Fig. 5 legend says pieces up to 4 g for the example sheep.
+Text says rabbit average D 1.25 +/- 0.07 with N = 7 (confirmed in the original journal PDF, so not a transcription error), but Results and Table 2 list 6 rabbits; the mean of the 6 Table 2 values is 1.247, matching 1.25.
+Text: temporal RD_tau(m = 1 g) about 6% in baboons, with fractal D of 1.233 (r = 0.996) for RD_tau over 0.2-2 g (Fig. 6 legend). The regression printed inside Fig. 6 is RD_tau = 6.26 m^-0.233 (r = -0.996).
+Text: microspheres give 2-4 times the method variation of IDMI and a small bias toward high-flow and subendocardial regions; microsphere fractal slopes in sheep and rabbits were essentially the same as IDMI slopes.
+Discussion extrapolation (not a measurement): if the unit size were about 1 mm^3, RD would be more than 60% by the linear fractal relation; the authors expect a plateau before that.
+Fig. 8 (not digitized): hearts with larger RD_s(1 g) tend to have smaller D.
+"""
+use_in_model = """Assign each CCO terminal flow to the tissue it perfuses, voxelize the LV into pieces of mass m (0.1 to 2 g, as in the paper), compute RD = SD/mean of mass-weighted piece flow at each m, fit log RD vs log m. Compare RD(1 g) and D with per_animal_fractal / composite_fractal_fit (spatial, method-corrected). Model has no method noise, so compare with RD_s not RD_obs. Expect D about 1.15-1.25 and RD(1 g) about 7-43% (species range)."""
+
+[source]
+authors = ["Bassingthwaighte JB", "King RB", "Roger SA"]
+year = 1989
+title = "Fractal nature of regional myocardial blood flow heterogeneity"
+journal = "Circ Res"
+volume = "65"
+issue = "3"
+pages = "578-590"
+doi = "10.1161/01.res.65.3.578"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 65, issue 3, 578-590; authors Bassingthwaighte, King, Roger)"
+pmid = "2766485"
+pmcid = "PMC3361973"
+
+[data.per_animal_fractal]
+description = "Fractal analysis of spatial dispersion RD_s for individual animals: fractal dimension D_s, RD_s at m_ref = 1 g, and correlation coefficient r of log RD_s vs log m"
+location = "Table 2 'Fractal Analysis of Individual Animals'"
+provenance = "FT"
+statistic = "per-animal regression values (no SD given)"
+animal_id = ["01", "02", "03", "05", "06", "07", "08", "09", "10", "11", "230186", "010586", "220586", "290586", "050686", "190686-1", "190686-2", "080886-1", "080886-2", "300487", "060587", "181185", "121285", "191285a", "090186", "160186a", "160186b"]
+species = ["baboon", "baboon", "baboon", "baboon", "baboon", "baboon", "baboon", "baboon", "baboon", "baboon", "sheep", "sheep", "sheep", "sheep", "sheep", "sheep", "sheep", "sheep", "sheep", "sheep", "sheep", "rabbit", "rabbit", "rabbit", "rabbit", "rabbit", "rabbit"]
+tracer = ["microspheres", "microspheres", "microspheres", "microspheres", "microspheres", "microspheres", "microspheres", "microspheres", "microspheres", "microspheres", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI", "IDMI"]
+fractal_D = [1.16, 1.20, 1.23, 1.20, 1.14, 1.23, 1.29, 1.19, 1.23, 1.24, 1.13, 1.13, 1.24, 1.30, 1.22, 1.10, 1.07, 1.19, 1.19, 1.18, 1.14, 1.22, 1.18, 1.20, 1.37, 1.26, 1.25]
+rd_s_1g_percent = [17.9, 15.4, 15.7, 15.2, 21.8, 14.6, 11.6, 11.4, 11.8, 13.5, 24.3, 16.3, 10.2, 12.1, 9.3, 43.0, 33.7, 21.6, 14.7, 32.5, 20.8, 24.0, 25.6, 21.1, 7.2, 7.8, 7.0]
+r = [-0.998, -0.993, -0.982, -0.997, -0.995, -0.999, -0.998, -0.991, -1.000, -0.996, -0.999, -0.982, -0.995, -0.998, -0.991, -0.998, -0.970, -0.989, -0.993, -0.990, -0.972, -0.960, -0.957, -0.919, -0.986, -0.977, -0.995]
+missing_note = "Table 2 tracer column is not printed; tracer assigned from Methods/Fig. 7 legend (baboon microspheres, sheep and rabbit IDMI)."
+
+[data.species_mean_D]
+description = "Average of individual-animal D_s per species, as stated in text"
+location = "Results, 'Fractal Relations for Spatial Dispersion of Regional LV Flow'"
+provenance = "FT"
+statistic = "mean +/- SD across animals"
+species = ["baboon", "sheep", "rabbit"]
+D_mean = [1.21, 1.17, 1.25]
+D_sd = [0.04, 0.07, 0.07]
+n = [10, 11, 7]
+missing_note = "Rabbit n printed as 7 in text but Table 2 lists 6 rabbits."
+
+[data.composite_fractal_fit]
+description = "Composite regression of RD_s vs piece mass m (grams) pooling all pieces of all animals of a species: RD_s(%) = a * m^(-b), so D = 1 + b"
+location = "Fig. 7 (equation printed at top of each panel) and Fig. 7 legend / Results text for D and r"
+provenance = "fig"
+provenance_per_value = ["fig", "fig", "fig"]
+digitization_error = "prefactor a read from the equation printed inside the figure (original PDF page 585 rendered at 300 dpi; the source is a scan, glyphs are blurred). Read identically from the PMC image and the original; baboon '15.0' could be misread by +/-0.1. Exponents and r agree with the text values."
+figure = "Fig. 7"
+statistic = "single composite regression"
+species = ["baboon", "sheep", "rabbit"]
+tracer = ["microspheres", "IDMI", "IDMI"]
+rd_s_1g_percent = [15.0, 19.4, 15.3]
+exponent_b = [0.202, 0.160, 0.225]
+fractal_D = [1.202, 1.160, 1.225]
+r = [-0.998, -0.997, -0.985]
+n_observations = [48588, 12765, 4404]
+missing_note = "D, r and n_observations are FT (text); only the prefactor a is from figure text."
+
+[data.sheep_rd_obs_vs_mass]
+description = "Observed relative dispersion RD_obs (not method-corrected) vs average piece mass in the LV of one sheep, IDMI, after aggregating adjacent pieces"
+location = "Fig. 1"
+provenance = "fig"
+digitization_error = "re-digitized from the original PDF page 579 at 300 dpi (74.0 px per g, 29.5 px per percent; axis ticks located automatically, markers by morphological blob detection). About +/-0.03 g for m < 1 g, +/-0.05 g above; +/-0.2 percentage points in RD. Points 2 and 3 overlap and were split by blob width (+/-0.05 g). Agrees with the earlier PMC-image digitization within these errors."
+figure = "Fig. 1"
+statistic = "single RD per aggregation level (vertical bars in figure = SD over 3-8 aggregation patterns, not digitized)"
+species = "sheep"
+piece_mass_g = [0.13, 0.33, 0.47, 0.96, 1.91, 3.89, 7.80]
+rd_obs_percent = [21.0, 18.4, 18.4, 16.8, 15.0, 14.0, 9.7]
+missing_note = "Error bars not digitized. Observed RD includes IDMI method dispersion (small for IDMI). Per-animal RD at each piece mass exists only as unlabeled points in Figs. 5 and 7; not digitized (points cannot be assigned to animals); Table 2 regression lines give each animal's RD(m) = RD_s(1 g) * m^(1 - D_s)."
+
+[data.design_piece_mass_sheep]
+description = "Aggregation scheme for sheep LV: number of pieces (observations), nominal average piece weight, and number of ways RD was calculated"
+location = "Table 1"
+provenance = "FT"
+n_pieces = [192, 96, 64, 32, 16, 8, 4]
+piece_mass_g = [0.2, 0.4, 0.6, 1.2, 2.4, 4.8, 9.6]
+n_ways = [1, 3, 3, 6, 8, 8, 8]
+missing_note = ""
+
+[data.baboon_temporal_rd]
+description = "Temporal component of regional flow variation in baboons at 1 g. value = text ('about 6%'); value_fig = prefactor of the regression printed inside Fig. 6 (RD_tau = 6.26 m^-0.233)"
+location = "Results text and Fig. 6 legend; Fig. 6 in-figure equation"
+provenance = "FT"
+provenance_per_value = ["FT", "fig"]
+value = 6.0
+value_fig = 6.26
+digitization_error = "value_fig read from figure text at 300 dpi; legible, +/-0.01"
+unit = "percent (RD_tau at m = 1 g)"
+fractal_D = 1.233
+r = 0.996
+mass_range_g = [0.2, 2.0]
+n = 10
+missing_note = ""

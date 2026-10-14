@@ -1,0 +1,45 @@
+[meta]
+id = "ofili1995_doppler_apv"
+data_type = "experimental"
+validates = "Proximal vs distal intracoronary Doppler velocity, volumetric flow and vascular resistance in angiographically normal human LAD, LCx and RCA (rest and hyperemia)"
+species = "human"
+preparation = "Paired proximal and distal Doppler guide-wire velocity measurements in 28 angiographically normal coronary arteries in awake patients; diameter and cross-sectional area of proximal and distal segments by angiography; coronary flow and vascular resistance computed."
+conditions = "Rest and hyperemia (agent not stated in the abstract)."
+verification = "missing"
+access = "PubMed abstract only (PMID 7611121). Am Heart J full text is closed (Unpaywall: closed); the Elsevier API returned metadata only; ScienceDirect returned HTTP 403; the Wayback copy of the ScienceDirect page has the abstract only."
+notes = """The abstract gives no numbers. Qualitative findings (Abstract): mean velocity and coronary vasodilator reserve were similar in all three native
+arteries and were preserved from proximal to distal segments; volumetric flow decreased from proximal to distal segments; flow vs vascular
+resistance followed an inverse curvilinear (polynomial) relation suggesting a resistance nadir below which flow no longer increases.
+For numeric proximal/distal data from the same group see ofili1993_ajc_proximal_distal (proximal-to-distal velocity ratio 1.1 +/- 0.2 in 20 normal arteries)."""
+use_in_model = """Qualitative check: in a normal model tree, mean velocity should be roughly preserved from proximal to distal epicardial segments
+(proximal/distal ratio near 1) while volumetric flow falls distally, and the velocity reserve should be similar proximal and distal. Fill the
+numeric arrays when the full text becomes available."""
+
+[source]
+authors = ["Ofili EO", "Kern MJ", "St Vrain JA", "Donohue TJ", "Bach R", "al-Joundi B", "Aguirre FV", "Castello R", "Labovitz AJ"]
+year = 1995
+title = "Differential characterization of blood flow, velocity, and vascular resistance between proximal and distal normal epicardial human coronary arteries: analysis by intracoronary Doppler spectral flow velocity"
+journal = "Am Heart J"
+volume = "130"
+issue = "1"
+pages = "37-46"
+doi = "10.1016/0002-8703(95)90233-3"
+crossref_verified = "2026-10-14; Crossref title exact match"
+pmid = "7611121"
+
+[data.apv_proximal_distal]
+description = "Average peak velocity at rest and hyperemia, proximal and distal segments, per artery (placeholder; numbers not available)"
+location = "Full text tables (not accessed)"
+provenance = "missing"
+statistic = "mean +/- SD"
+vessel = ["LAD", "LAD", "LCx", "LCx", "RCA", "RCA"]
+segment = ["proximal", "distal", "proximal", "distal", "proximal", "distal"]
+apv_rest_mean_cm_per_s = [nan, nan, nan, nan, nan, nan]
+apv_rest_sd_cm_per_s = [nan, nan, nan, nan, nan, nan]
+apv_hyperemia_mean_cm_per_s = [nan, nan, nan, nan, nan, nan]
+apv_hyperemia_sd_cm_per_s = [nan, nan, nan, nan, nan, nan]
+cfvr_mean = [nan, nan, nan, nan, nan, nan]
+diameter_mean_mm = [nan, nan, nan, nan, nan, nan]
+flow_mean_ml_per_min = [nan, nan, nan, nan, nan, nan]
+n_arteries_total = 28
+missing_note = "All numbers missing: full text not accessible (paywalled Am Heart J); abstract contains no numeric results. Only n = 28 arteries is from the abstract."

@@ -1,0 +1,118 @@
+# King RB, Bassingthwaighte JB, Hales JRS, Rowell LB (1985). Stability of heterogeneity of myocardial blood
+# flow in normal awake baboons. Full text read from the NIH author manuscript in PMC (PMC3426898, HTML;
+# tables are HTML text). Relative dispersion RD = SD/mean of piece flows, pieces of about 0.17 g.
+
+[meta]
+id = "king1985_flow_heterogeneity"
+data_type = "experimental"
+validates = "Regional flow heterogeneity (RD) at about 0.17 g piece mass in whole heart, LV, RV and atria of awake primates; split into observed, temporal ('twinkling'), methodological and spatial components. Also mean LV/RV/atrial flow relative to whole-heart flow."
+species = "baboon"
+preparation = """13 male adolescent baboons (Papio anubis), 8.2-15.5 kg; 11 awake, sitting in primate chairs (rest/feeding, mild leg exercise or whole-body heating), 2 lightly anesthetized methodological controls. 15 +/- 3 um microspheres (0.5e6/kg) injected into the LV apex over about 40 s, up to six labels at intervals of 20 min to several hours, arterial reference sampling. Hearts cut into 204 locatable pieces: LV 168 (4 rings x 8 sectors (apical ring 4) x 6 transmural slices), RV 27, atria 9. LV slice weights 0.032-0.737 g, mean about 0.17 g."""
+conditions = "Awake, conscious, no vasodilator. Heat stress and mild exercise did not change total myocardial flow significantly, so test and control states are physiologically similar (paper Methods)."
+verification = "FT"
+access = "NIH author manuscript, PMC3426898, read as HTML (pmc.ncbi.nlm.nih.gov article page)."
+notes = """
+Abstract gives spatial RD corrected for method scatter and temporal variation: 0.33 +/- 0.06 whole heart (n = 67), 0.26 +/- 0.07 LV, 0.32 +/- 0.11 RV, 0.22 +/- 0.19 atria; temporal RD per piece 0.11 +/- 0.03 whole heart (n = 2040), 0.09 +/- 0.03 LV, 0.15 +/- 0.05 RV, 0.23 +/- 0.06 atria. These abstract values differ slightly from the Results/Table values stored below (Table 3 LV RD_temporal = 0.114); both are in this file, abstract values in abstract_corrected_rd.
+Results text computes LV RD_spatial = sqrt(0.283^2 - 0.114^2) = 0.26 and whole heart 0.333 (the printed formula for the whole heart contains a typo, '0.57^2').
+Method noise (six labels injected simultaneously in one awake baboon): RD_method 6.7 +/- 1.0% in LV (n = 504) and 6.5 +/- 1.0% whole heart (n = 720). LV RD_twinkle = sqrt(0.114^2 - 0.067^2) = 0.092.
+Pooled density function of all 13 hearts (Fig. 4 legend): RD whole heart 0.38, LV 0.30, RV 0.31, atria 0.17; LV mass fraction 0.70 with relative flow 1.14, RV 0.20 and 0.81, atria 0.10 and 0.41.
+Distributions were nearly symmetric but leptokurtic. Flow pattern stable over hours: mean correlation between states 0.86 +/- 0.07 (control-control, n = 21), 0.83 +/- 0.10 (control-test, n = 65), 0.86 +/- 0.09 (test-test, n = 33).
+9 vs 15 um spheres and LA vs LV injection gave similar RD (0.34 +/- 0.024, n = 8).
+"""
+use_in_model = """Voxelize the model LV into pieces of about 0.17 g (match the paper's ~15 x 10 x 1 mm transmural slices if possible), compute RD of piece flow; compare with LV RD_spatial about 0.26 (method- and temporal-corrected) and RD_obs 0.28. Model flows are noise-free and static, so the spatial value is the right target. Use region_mean_flow_relative for LV vs RV perfusion if the model includes RV."""
+
+[source]
+authors = ["King RB", "Bassingthwaighte JB", "Hales JRS", "Rowell LB"]
+year = 1985
+title = "Stability of heterogeneity of myocardial blood flow in normal awake baboons"
+journal = "Circ Res"
+volume = "57"
+issue = "2"
+pages = "285-295"
+doi = "10.1161/01.res.57.2.285"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 57, issue 2, 285-295; authors King, Bassingthwaighte, Hales, Rowell)"
+pmid = "4017198"
+pmcid = "PMC3426898"
+
+[data.rd_observed]
+description = "Observed relative dispersion RD_obs of regional flows (fraction, not percent), each microsphere injection; averages over animals and states; columns whole heart, LV, RV, atria"
+location = "Table 2 'Observed Heterogeneity of Regional Flows, RD_obs', row 'All animals'"
+provenance = "FT"
+statistic = "mean (SD) over n observations (injections)"
+state = ["control", "test", "all"]
+n = [36, 31, 67]
+rd_whole_heart = [0.358, 0.355, 0.357]
+rd_whole_heart_sd = [0.054, 0.059, 0.056]
+rd_lv = [0.292, 0.273, 0.283]
+rd_lv_sd = [0.062, 0.069, 0.066]
+rd_rv = [0.353, 0.369, 0.361]
+rd_rv_sd = [0.112, 0.085, 0.100]
+rd_atria = [0.340, 0.309, 0.326]
+rd_atria_sd = [0.130, 0.112, 0.122]
+piece_mass_g = 0.17
+missing_note = "Per-group rows (heated, exercised, controls) not stored. The (0:066) entry in the source is read as 0.066."
+
+[data.rd_temporal]
+description = "Temporal relative dispersion: mean over pieces of the RD of the 4-6 flow values measured at different times in each piece (includes method noise)"
+location = "Table 3 'Temporal Heterogeneity of Flow, RD_temporal'"
+provenance = "FT"
+statistic = "mean (SD) over n pieces"
+group = ["heated", "exercised", "all test animals"]
+n_pieces = [1428, 612, 2040]
+rd_whole_heart = [0.115, 0.155, 0.127]
+rd_whole_heart_sd = [0.012, 0.021, 0.024]
+rd_lv = [0.103, 0.141, 0.114]
+rd_lv_sd = [0.014, 0.033, 0.027]
+rd_rv = [0.140, 0.204, 0.159]
+rd_rv_sd = [0.017, 0.055, 0.043]
+rd_atria = [0.223, 0.283, 0.241]
+rd_atria_sd = [0.058, 0.060, 0.059]
+missing_note = ""
+
+[data.rd_components_lv]
+description = "LV variance decomposition stated in Results text"
+location = "Methods ('Assessment of the Microsphere Method') and Results ('Temporal Heterogeneity', 'Spatial Heterogeneity')"
+provenance = "FT"
+component = ["observed", "temporal (incl. method)", "method", "twinkle (temporal minus method)", "spatial"]
+rd_lv = [0.283, 0.114, 0.067, 0.092, 0.26]
+missing_note = "Spatial and twinkle are the authors' quadrature subtractions, not separate measurements."
+
+[data.abstract_corrected_rd]
+description = "Spatial RD corrected for method scatter and temporal variation, and temporal RD per piece, as given in the abstract"
+location = "Summary (abstract)"
+provenance = "FT"
+statistic = "mean +/- SD"
+region = ["whole heart", "LV", "RV", "atria"]
+rd_spatial = [0.33, 0.26, 0.32, 0.22]
+rd_spatial_sd = [0.06, 0.07, 0.11, 0.19]
+n_spatial = 67
+rd_temporal = [0.11, 0.09, 0.15, 0.23]
+rd_temporal_sd = [0.03, 0.03, 0.05, 0.06]
+n_temporal = 2040
+missing_note = ""
+
+[data.region_mean_flow_relative]
+description = "Mass fraction and flow per gram relative to whole-heart mean, control state"
+location = "Results 'Mean Flow in Ventricles and Atria' and abstract"
+provenance = "FT"
+statistic = "mean +/- SD"
+region = ["LV", "RV", "atria"]
+mass_fraction_percent = [70.0, 20.2, 9.8]
+mass_fraction_sd = [2.0, 2.1, 1.6]
+flow_fraction_percent = [80.0, 16.0, 4.0]
+flow_fraction_sd = [3.0, 2.0, 2.0]
+flow_per_g_relative = [1.14, 0.81, 0.41]
+flow_per_g_relative_sd = [0.047, 0.13, 0.13]
+n = 13
+missing_note = ""
+
+[data.resting_flow]
+description = "Absolute resting coronary flow per gram (whole heart and LV), control state"
+location = "Results 'Control State'"
+provenance = "FT"
+statistic = "mean +/- SD"
+quantity = ["whole heart F'_H", "LV F'_LV"]
+flow_ml_min_g = [2.13, 2.41]
+flow_sd_ml_min_g = [0.80, 0.90]
+n = 11
+missing_note = "Mean arterial pressure 108 +/- 14 torr (n = 10), heart rate 141 +/- 24 /min (n = 9)."

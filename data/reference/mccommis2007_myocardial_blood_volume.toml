@@ -1,0 +1,45 @@
+# McCommis KS, Goldstein TA, Zhang H, Misselwitz B, Gropler RJ, Zheng J (2007). Quantification of myocardial
+# blood volume during dipyridamole and dobutamine stress: a perfusion CMR study. Normal dogs; CMR with an
+# intravascular agent (Gadomer) validated against 99mTc-labelled red cells. ABSTRACT ONLY (full text not open).
+
+[meta]
+id = "mccommis2007_myocardial_blood_volume"
+data_type = "experimental"
+validates = "Absolute transmural myocardial blood volume (ml/100 g) at rest, under dipyridamole vasodilation and under dobutamine stress in normal dogs; shows MBV rises little with pure vasodilation (~3x flow) but ~33-35% with dobutamine."
+species = "dog"
+preparation = "12 normal mongrel dogs; 8 dipyridamole iv, 4 dobutamine. First-pass perfusion CMR with Gadomer 0.015 mmol/kg (intravascular). Reference MBV by 99mTc-RBC injected at end of study, hearts excised (n = 4 rest, 4 dipyridamole, 4 dobutamine)."
+conditions = "Rest; dipyridamole iv; dobutamine iv. MBF increased about 3-fold with both agents (abstract). Doses and anesthesia not given in abstract."
+verification = "abs"
+access = "Abstract via PubMed E-utilities (PMID 17891616). Publisher full text not open access (Unpaywall: closed)."
+notes = """
+99mTc-RBC MBV in this lab is corrected for hematocrit (stated in the related McCommis 2010 Eur Radiol paper, PMC2900455, Methods), giving whole-blood volume.
+Dipyridamole: MBV +14% (99mTc, not significant) and +1% (CMR). Dobutamine: +35% (99mTc) and +33% (CMR), significant.
+Related open paper McCommis 2010 (PMC2900455, 27 dogs incl. stenosis) reports only reserves and figures, no absolute MBV in text; not stored.
+"""
+use_in_model = """Compare model intramyocardial blood volume per 100 g at baseline with mbv (about 6 ml/100 g) and the fractional change under full dilation (model has passive vessels, so compare with the dipyridamole state: small change, 1-14%). Dobutamine change reflects capillary recruitment with raised O2 demand, which a passive CCO model will not reproduce."""
+
+[source]
+authors = ["McCommis KS", "Goldstein TA", "Zhang H", "Misselwitz B", "Gropler RJ", "Zheng J"]
+year = 2007
+title = "Quantification of myocardial blood volume during dipyridamole and dobutamine stress: a perfusion CMR study"
+journal = "J Cardiovasc Magn Reson"
+volume = "9"
+issue = "5"
+pages = "785-792"
+doi = "10.1080/10976640701545206"
+crossref_verified = "2026-10-14; Crossref title match (Crossref and PubMed spell 'Doubtamine' in the title; otherwise identical)"
+pmid = "17891616"
+
+[data.mbv]
+description = "Transmural myocardial blood volume by CMR and by 99mTc-RBC"
+location = "Abstract, Results"
+provenance = "abs"
+statistic = "mean +/- SD"
+state = ["rest", "dipyridamole", "dobutamine"]
+mbv_cmr_ml_per_100g = [6.2, 7.2, 8.3]
+mbv_cmr_sd = [1.3, 0.8, 0.5]
+mbv_tc99m_rbc_ml_per_100g = [6.1, 7.0, 8.6]
+mbv_tc99m_rbc_sd = [0.5, 0.9, 0.7]
+n_tc99m = [4, 4, 4]
+n_cmr = [12, 8, 4]
+missing_note = "CMR n per state inferred from the abstract design (12 dogs at rest, 8 dipyridamole, 4 dobutamine), not stated beside the values. MBF values not given in abstract (only 'approximately 3-fold')."

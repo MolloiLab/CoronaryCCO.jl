@@ -1,0 +1,100 @@
+[meta]
+id = "fujii1992_epi_endo_pressure"
+data_type = "experimental"
+validates = "Subepicardial vs subendocardial arteriolar and venular pressures (~100-130 um vessels) vs left-main perfusion pressure during maximal vasodilation; normotensive dog"
+species = "dog"
+preparation = "Isolated, blood-perfused, lidocaine-arrested canine hearts (mongrel dogs 18-28 kg). Left main coronary cannulated and perfused from a pressurized reservoir with autologous oxygenated blood (37 C); posterior LV incised at the septal junction to expose the subendocardium; venous blood drained by gravity. Servo-null micropipettes (2-5 um tips) in arterioles and venules identified by FITC-dextran transit; diameters by video microscopy at 80 mmHg."
+conditions = "Diastolic arrest (intracoronary lidocaine) plus adenosine 6 mg/min in the perfusion line for maximal vasodilation. Left main coronary (LMC) perfusion pressure 60, 70, 80, 90, 100 mmHg. Non-beating: no extravascular compression. Only the normotensive control group is tabulated here (hypertensive one-clip one-kidney group omitted)."
+verification = "mixed"
+access = "Publisher PDF (ahajournals.org) read via Wayback Machine capture 20231115035007 of https://www.ahajournals.org/doi/pdf/10.1161/01.res.71.1.120"
+notes = """All values mean +/- SEM. Micropunctured vessels were 'approximately 100 um'; measured diameters (80 mmHg) in controls:
+epi arterioles 114 +/- 7 (n = 19), endo arterioles 100 +/- 12 (n = 13), epi venules 128 +/- 11 (n = 8), endo venules 127 +/- 10 um (n = 11).
+The abstract quotes control endocardial values '50 +/- 2 and 50 +/- 3 mm Hg at 90 and 100 mm Hg'; the Fig. 1 absolute values are ~45 and ~50 mmHg,
+so the abstract numbers are evidently percent of LMC pressure (Fig. 3), i.e. endo arteriolar pressure ~50 % of perfusion pressure.
+Endocardial arteriolar pressure was significantly lower than epicardial at every LMC pressure; endo venular pressure tended to be
+higher than epi venular pressure (not significant). Same design as Chilian 1991 (pig), so the two can be compared directly."""
+use_in_model = """Run the model in arrested, maximally dilated mode (no intramyocardial pressure), inlet = LMC pressure, outlet ~0 mmHg.
+Compare pressure in ~100-130 um arterioles and venules in the outer vs inner third of the wall with the series below, or as % of inlet pressure."""
+
+[source]
+authors = ["Fujii M", "Nuno DW", "Lamping KG", "Dellsperger KC", "Eastham CL", "Harrison DG"]
+year = 1992
+title = "Effect of hypertension and hypertrophy on coronary microvascular pressure"
+journal = "Circ Res"
+volume = "71"
+issue = "1"
+pages = "120-126"
+doi = "10.1161/01.res.71.1.120"
+crossref_verified = "2026-10-14; Crossref title exact match ('Effect of hypertension and hypertrophy on coronary microvascular pressure.')"
+pmid = "1535028"
+
+[data.vessel_diameters]
+description = "Diameters of micropunctured vessels at 80 mmHg LMC pressure, maximal dilation, normotensive dogs"
+location = "Results, 'Microvascular Pressures in Normotensive and Hypertensive Hearts' (p. 123)"
+provenance = "FT"
+statistic = "mean +/- SEM"
+region = ["subepicardium", "subendocardium", "subepicardium", "subendocardium"]
+vessel = ["arteriole", "arteriole", "venule", "venule"]
+diameter_mean_um = [114.0, 100.0, 128.0, 127.0]
+diameter_sem_um = [7.0, 12.0, 11.0, 10.0]
+n_vessels = [19, 13, 8, 11]
+missing_note = ""
+
+[data.microvascular_pressure_normotensive]
+description = "Arteriolar and venular pressures vs left-main perfusion pressure, normotensive dogs, maximal vasodilation"
+location = "Fig. 1, left panel ('Normotensive dogs'); n per point from legend"
+provenance = "fig"
+figure = "Fig. 1 (left)"
+digitization_error = "about +/-1 mmHg on means, +/-0.5 mmHg on SEM (marker centre taken as midpoint of error-bar caps; 1 px = 0.21 mmHg at 250 dpi)"
+statistic = "mean +/- SEM"
+lmc_pressure_mmHg = [60.0, 70.0, 80.0, 90.0, 100.0]
+epi_arteriole_mmHg = [39.4, 45.6, 49.9, 56.5, 61.5]
+epi_arteriole_sem_mmHg = [1.9, 2.0, 2.0, 2.9, 3.3]
+n_epi_arteriole = [14, 15, 19, 14, 14]
+endo_arteriole_mmHg = [30.7, 34.9, 39.6, 45.0, 50.4]
+endo_arteriole_sem_mmHg = [1.7, 1.8, 1.8, 2.1, 2.6]
+n_endo_arteriole = [12, 12, 13, 11, 9]
+endo_venule_mmHg = [11.2, 12.9, 15.1, 16.5, 17.6]
+endo_venule_sem_mmHg = [1.8, 1.8, 1.8, 2.2, 2.6]
+n_endo_venule = [10, 9, 11, 10, 10]
+epi_venule_mmHg = [6.0, 7.7, 8.8, 10.0, 11.3]
+epi_venule_sem_mmHg = [nan, nan, nan, nan, nan]
+n_epi_venule = [7, 7, 8, 8, 8]
+missing_note = "Epicardial venule (open triangle) SEM bars are hidden within the symbol; values are triangle centroids (+/-1.5 mmHg)."
+
+[data.endo_arteriole_pct_text]
+description = "Endocardial arteriolar pressure as percent of LMC pressure, normotensive controls (abstract; printed with unit 'mm Hg' but matching % of perfusion pressure)"
+location = "Abstract"
+provenance = "FT"
+statistic = "mean +/- SEM"
+lmc_pressure_mmHg = [90.0, 100.0]
+endo_arteriole_pct_of_lmc = [50.0, 50.0]
+endo_arteriole_pct_sem = [2.0, 3.0]
+missing_note = "Unit interpretation (percent) is inferred from agreement with Fig. 1 absolute values; see meta.notes."
+
+[data.max_flow_control]
+description = "Maximal (adenosine) left main coronary blood flow at 80 mmHg perfusion pressure, before LV incision, control dogs"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SEM"
+n = 23
+lmc_flow_ml_min = 418.0
+lmc_flow_sem_ml_min = 15.0
+lmc_flow_per_100g_ml_min = 308.0
+lmc_flow_per_100g_sem_ml_min = 13.0
+lv_weight_g = 137.0
+lv_weight_sem_g = 4.0
+missing_note = ""
+
+[data.regional_flow_control]
+description = "Regional myocardial blood flow (microspheres) at 80 mmHg before and after LV incision, normotensive hearts"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SEM"
+n = 4
+layer = ["subendocardial", "midmyocardial", "subepicardial", "transmural"]
+before_ml_min_100g = [417.0, 386.0, 275.0, 358.0]
+before_sem_ml_min_100g = [63.0, 33.0, 32.0, 40.0]
+after_ml_min_100g = [398.0, 342.0, 228.0, 322.0]
+after_sem_ml_min_100g = [60.0, 45.0, 36.0, 48.0]
+missing_note = ""

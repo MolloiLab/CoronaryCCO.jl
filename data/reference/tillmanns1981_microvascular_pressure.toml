@@ -1,0 +1,76 @@
+[meta]
+id = "tillmanns1981_microvascular_pressure"
+data_type = "experimental"
+validates = "Pulsatile (systolic/diastolic/mean) servo-null pressures in epimyocardial arterioles and venules of the beating heart, by vessel-size class; arteriole:aortic pressure ratio"
+species = "rat and cat (pooled in Table 1; see notes)"
+preparation = "Open-chest, beating hearts in situ; 25 rats (Wistar / Wistar-Furth, 200-400 g, Inactin 100 mg/kg i.p.) and 9 cats (0.9-1.5 kg, pentobarbital 25-30 mg/kg i.p.), positive-pressure ventilation. Epimyocardium viewed by incident-light / fluorescence intravital microscopy (FITC-dextran 150 kDa), motion restrained by five fine needles inserted under the field. Resistance servo-null micropipettes (1-7 um tips) in arterioles (30-150 um), small coronary arteries (150-300 um) and venules (30-150 um) of the left and right ventricles."
+conditions = "Control (no drug) for Tables 1-2. Dipyridamole 0.5 mg/kg i.v. only for the venular systolic pressure comparison."
+verification = "FT"
+access = "Publisher PDF (ahajournals.org) read via Wayback Machine capture 20220710031158 of https://www.ahajournals.org/doi/pdf/10.1161/01.RES.49.5.1202"
+notes = """Table 1 and Table 2 titles say 'Ventricular Myocardium of the Rat Heart', but the Results state that the 15 large coronary
+arterioles (150-300 um) were punctured in seven cats and that arterioles < 100 um were 'occasionally' studied; venules were
+studied in 25 rats and 7 cats. The tables therefore appear to pool species; treat species as rat/cat mixed.
+Venular diameter row in Table 1 is internally inconsistent: 'small venules (50-100 um)' are listed with mean diameter 148 +/- 26 um and
+'large venules (100-200 um)' with 68 +/- 15 um. The text says systolic large and small venular pressures averaged 24.4 and 22.8 mmHg
+respectively, the reverse of the table (small 24, large 23). The columns may be swapped; values are recorded exactly as printed.
+Statistic is mean +/- 1 SD over individual measurements. Mean pressure in arterioles of ~30 um was ~30% below aortic mean (Discussion).
+Measurements were made in motion-restrained beating hearts (needles under the field), which may affect intramyocardial compression."""
+use_in_model = """Beating-heart (pulsatile) epicardial-layer reference. Compare model mean pressure in subepicardial arterioles 150-300 um and 25-100 um,
+and venules 50-200 um, normalised to model aortic/inlet mean pressure, against mean_pressure / aortic mean (80 mmHg) or Table 2 ratios.
+Species is small-heart rat/cat, so use ratios rather than absolute mmHg when comparing with a pig/human-sized tree."""
+
+[source]
+authors = ["Tillmanns H", "Steinhausen M", "Leinberger H", "Thederan H", "Kubler W"]
+year = 1981
+title = "Pressure measurements in the terminal vascular bed of the epimyocardium of rats and cats"
+journal = "Circ Res"
+volume = "49"
+issue = "5"
+pages = "1202-1211"
+doi = "10.1161/01.res.49.5.1202"
+crossref_verified = "2026-10-14; Crossref title exact match ('Pressure measurements in the terminal vascular bed of the epimyocardium of rats and cats.')"
+pmid = "7296785"
+
+[data.pressure_by_vessel_class]
+description = "Pulsatile and mean pressures in the terminal vascular bed, by vessel class (control)"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- 1 SD (individual measurements)"
+vessel_class = ["ascending aorta", "large coronary arterioles", "small coronary arterioles", "small coronary venules", "large coronary venules"]
+diameter_range_low_um = [nan, 150.0, 25.0, 50.0, 100.0]
+diameter_range_high_um = [nan, 300.0, 100.0, 100.0, 200.0]
+diameter_mean_um = [nan, 209.0, 59.0, 148.0, 68.0]
+diameter_sd_um = [nan, 49.0, 32.0, 26.0, 15.0]
+n_measurements = [60, 15, 7, 19, 23]
+systolic_mean_mmHg = [100.0, 98.0, 67.0, 24.0, 23.0]
+systolic_sd_mmHg = [9.0, 7.0, 12.0, 5.0, 4.0]
+diastolic_mean_mmHg = [71.0, 68.0, 45.0, 5.0, 4.0]
+diastolic_sd_mmHg = [8.0, 8.0, 9.0, 2.0, 2.0]
+mean_pressure_mmHg = [80.0, 73.0, 53.0, 11.0, 10.0]
+mean_pressure_sd_mmHg = [8.0, 9.0, 9.0, 2.0, 2.0]
+missing_note = "No diameter for aorta. Venule diameter means look swapped relative to their size-class labels (see meta.notes)."
+
+[data.arteriole_aortic_ratio]
+description = "Coronary arteriolar : aortic pressure ratio (only measurements recorded simultaneously with aortic pressure)"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- 1 SD"
+vessel_class = ["large coronary arterioles (150-300 um)", "small coronary arterioles (25-100 um)"]
+n_measurements = [15, 7]
+systolic_ratio = [0.97, 0.71]
+systolic_ratio_sd = [0.03, 0.12]
+diastolic_ratio = [0.95, 0.64]
+diastolic_ratio_sd = [0.05, 0.13]
+mean_ratio = [0.96, 0.67]
+mean_ratio_sd = [0.03, 0.12]
+missing_note = ""
+
+[data.venular_systolic_dipyridamole]
+description = "Systolic coronary venular pressure, control vs maximal arteriolar dilation with dipyridamole 0.5 mg/kg i.v."
+location = "Abstract and Results (p. 1207)"
+provenance = "FT"
+statistic = "mean +/- SD (as printed, '25 +/- 3')"
+condition = ["control", "dipyridamole"]
+systolic_venular_mmHg = [25.0, 27.0]
+systolic_venular_sd_mmHg = [3.0, 6.0]
+missing_note = "n not stated for this comparison."

@@ -1,0 +1,87 @@
+# Knopp TJ, Dobbs WA, Greenleaf JF, Bassingthwaighte JB (1976). Transcoronary intravascular transport functions
+# obtained via a stable deconvolution technique. Indocyanine green, aortic-root input vs coronary-sinus output,
+# deconvolved to the transcoronary transit-time density h(t). Full text first read from PMC (PMC3529720, HTML),
+# then re-verified against the original journal PDF (Ann Biomed Eng 4:44-59, 16 pages; local copy supplied by
+# the project lead) with pdftotext -layout and 300 dpi renders of pages 51-52 (Fig. 2, Results, Fig. 3).
+
+[meta]
+id = "knopp1976_coronary_transit"
+data_type = "experimental"
+validates = "Shape of the whole-bed intravascular transit-time distribution from aortic root to coronary sinus: mean transit time range, relative dispersion sigma/tbar, skewness, kurtosis, appearance time / tbar, peak time / tbar; the shape is invariant with flow (h(t/tbar) superimposes)."
+species = "dog"
+preparation = "3 closed-chest dogs (21, 22, 26 kg), pentobarbital 30 mg/kg, ventilated at 40/min. ICG boluses (~0.4 ml, 1.25 mg/ml, <0.5 s) into the mid left atrium; simultaneous sampling from aortic root (at coronary ostia) and coronary sinus through matched catheter-densitometer systems (mean transit times matched within 0.2%). Deconvolution with 20 lagged-normal fitting functions (sigma_i/tbar_i = 0.16, skewness 1.0)."
+conditions = "Spontaneous flow variation; in dog 6069 also isoproterenol 2 ug/min (3 curves), levarterenol (3 curves) or acetylcholine 0.1 mg/min (4 curves) into the aortic arch to vary flow. Coronary flow itself was not measured."
+verification = "mixed"
+access = "Original journal PDF (local copy from project lead), Results and Fig. 3 checked at 300 dpi; also PMC3529720 (NIH author manuscript, HTML). Fig. 3 right panels digitized from the 300 dpi original."
+notes = """
+60 transport functions: 25 from dog 3069, 21 from dog 6069, 14 from dog 2069.
+The tracer is intravascular (ICG binds plasma protein), so h(t) is a plasma transit-time density; the coronary sinus drains mainly LV myocardium.
+The text states sigma/tbar, skewness and kurtosis were statistically independent of tbar ('similarity' of h). Downslopes are not monoexponential: fitting 70-30% of peak, about 2-12% of the area lies in the tail above the exponential extrapolation.
+Comparison values quoted in the paper (other studies, not stored as data): sigma/tbar 0.18 for a branched artery (human leg), 0.46 for the dog lung.
+Definitions as printed in the paper: skewness = 'third central moment to the power of 2/3 divided by the variance'; kurtosis = 'the square root of the fourth moment divided by the variance' (3.0 for a Gaussian).
+"""
+use_in_model = """The paper has no tables: per-experiment mean transit times, appearance times, flows and vascular volumes are NOT reported (coronary flow was not measured); only pooled statistics, two example tbar values (Fig. 2) and figures. Inject an intravascular bolus at the model aortic root (or LCA/RCA ostia), record outflow at the venous root (coronary sinus analog), and compute h(t). Compare tbar range (3-7 s at the dogs' flows), sigma/tbar 0.38 +/- 0.05, t_appearance/tbar 0.40 +/- 0.02, t_peak/tbar 0.76 +/- 0.07, and the normalized shapes in normalized_transport_function (three dogs). Check that sigma/tbar stays constant when total flow is scaled (it should for a fixed-geometry plug-flow model)."""
+
+[source]
+authors = ["Knopp TJ", "Dobbs WA", "Greenleaf JF", "Bassingthwaighte JB"]
+year = 1976
+title = "Transcoronary intravascular transport functions obtained via a stable deconvolution technique"
+journal = "Ann Biomed Eng"
+volume = "4"
+issue = "1"
+pages = "44-59"
+doi = "10.1007/bf02363557"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 4, issue 1, 44-59; authors Knopp, Dobbs, Greenleaf, Bassingthwaighte)"
+pmid = "779536"
+pmcid = "PMC3529720"
+
+[data.transport_function_shape]
+description = "Moments and shape ratios of the 60 transcoronary transport functions h(t)"
+location = "Abstract and Results (paragraph following Fig. 2)"
+provenance = "FT"
+statistic = "mean +/- SD over N = 60 curves (3 dogs)"
+quantity = ["relative dispersion sigma/tbar", "skewness", "kurtosis", "appearance time / tbar", "peak time / tbar"]
+value = [0.38, 1.40, 6.14, 0.40, 0.76]
+sd = [0.05, 0.37, 1.80, 0.02, 0.07]
+n = 60
+missing_note = "Per-curve values not tabulated."
+
+[data.mean_transit_time_range]
+description = "Range of mean transit times tbar of the transcoronary transport functions; typical value; the two Fig. 2 examples"
+location = "Abstract (range), Discussion (approximately 5 s), Fig. 2 legend (examples)"
+provenance = "FT"
+range = [3.0, 7.0]
+unit = "s"
+n = 60
+typical_value_s = 5.0
+example_tbar_s = [6.1, 3.6]
+missing_note = "Coronary blood flow and myocardial mass were not measured, so tbar cannot be converted to blood volume. typical_value_s: Discussion states the mean transit time through the coronary bed 'was approximately 5 sec' (cardiac cycle about 0.3 s). example_tbar_s: the two curve pairs of Fig. 2 (legend). Per-curve tbar values are not tabulated."
+
+[data.deconvolution_fit_quality]
+description = "Coefficient of variation between recorded coronary-sinus curve and the convolution of aortic-root curve with fitted h(t)"
+location = "Results, paragraph describing Fig. 2"
+provenance = "FT"
+statistic = "mean (range) over curves"
+value = 0.041
+range = [0.010, 0.095]
+unit = "dimensionless (SD of residual / mean output concentration)"
+missing_note = ""
+
+[data.normalized_transport_function]
+description = "Normalized transport functions tbar*h(t) vs t/tbar for each of the three dogs: central (median) curve of the superimposed curves, with the upper/lower envelope of the plotted curves at each abscissa"
+location = "Fig. 3, right panels (original PDF page 52)"
+provenance = "fig"
+figure = "Fig. 3"
+digitization_error = "digitized from the original PDF rendered at 300 dpi (221 px per unit t/tbar, 80.5 px per unit tbar*h; tick marks located automatically). Median over dark pixels in each image column: about +/-0.02 in t/tbar and +/-0.08 in tbar*h on the upslope/peak, +/-0.03 on the tail. Values within ~0.03 of the axis line (<= 0.04) cannot be separated from the axis and are set to nan. Checks: mean t/tbar of each digitized median curve = 0.99-1.01, relative dispersion 0.36-0.39 (paper 0.38 +/- 0.05); area 1.08-1.09 (median of a bundle slightly overestimates). The 3069 value at t/tbar = 0.3 is a small early bump on one curve."
+statistic = "median and envelope over the plotted curves (25, 21, 14 curves for dogs 3069, 6069, 2069)"
+t_over_tbar = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4]
+dog3069_median = [0.11, 0.12, 0.40, 0.96, 1.37, 1.45, 1.38, 1.17, 0.99, 0.80, 0.61, 0.44, 0.30, 0.22, 0.16, 0.12, 0.09, 0.07, 0.06, 0.05, nan, nan]
+dog3069_upper = [0.11, 0.24, 0.65, 1.11, 1.55, 1.65, 1.51, 1.29, 1.12, 0.90, 0.70, 0.52, 0.35, 0.27, 0.20, 0.16, 0.12, 0.09, 0.07, 0.06, nan, nan]
+dog3069_lower = [0.11, nan, 0.17, 0.80, 1.14, 1.31, 1.25, nan, 0.89, 0.70, 0.52, 0.37, 0.25, 0.17, 0.12, 0.08, 0.06, nan, nan, nan, nan, nan]
+dog6069_median = [0.05, 0.11, 0.47, 1.04, 1.45, 1.48, 1.33, 1.06, 0.88, 0.68, 0.52, 0.39, 0.32, 0.25, 0.20, 0.17, 0.14, 0.10, 0.10, 0.08, 0.07, 0.06]
+dog6069_upper = [0.06, 0.38, 1.00, 1.34, 1.60, 1.61, 1.45, 1.25, 1.04, 0.85, 0.66, 0.49, 0.39, 0.30, 0.24, 0.19, 0.17, 0.16, 0.13, 0.12, 0.09, 0.08]
+dog6069_lower = [nan, nan, 0.22, 0.86, 1.20, 1.34, 1.12, nan, 0.64, 0.47, 0.35, 0.27, 0.23, 0.19, 0.17, 0.14, 0.11, nan, 0.07, nan, nan, nan]
+dog2069_median = [nan, 0.06, 0.29, 0.96, 1.58, 1.57, 1.42, 1.12, 0.89, 0.66, 0.46, 0.38, 0.32, 0.25, 0.20, 0.17, 0.14, 0.10, 0.07, 0.06, 0.06, 0.05]
+dog2069_upper = [nan, 0.08, 0.64, 1.48, 1.75, 1.82, 1.58, 1.37, 1.17, 0.96, 0.71, 0.58, 0.40, 0.28, 0.25, 0.22, 0.18, 0.14, 0.11, 0.08, 0.07, 0.06]
+dog2069_lower = [nan, nan, 0.13, 0.73, 1.34, 1.30, 1.09, 0.78, 0.59, 0.54, 0.40, 0.33, 0.25, 0.20, 0.13, 0.09, 0.07, nan, nan, nan, nan, nan]
+missing_note = "Tail beyond t/tbar = 2.4 (to 3) is at or below the axis-line resolution. nan = within ~0.03 of the axis, or (lower envelope at t/tbar = 1.0) contaminated by the axis tick mark at that abscissa."

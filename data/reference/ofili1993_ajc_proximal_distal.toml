@@ -1,0 +1,40 @@
+[meta]
+id = "ofili1993_ajc_proximal_distal"
+data_type = "experimental"
+validates = "Proximal-to-distal velocity ratio and coronary vasodilator reserve in angiographically normal human coronary arteries (Doppler flow wire)"
+species = "human"
+preparation = "Doppler angioplasty flow wire; baseline and hyperemic flow velocity in proximal and distal segments of 20 angiographically normal arteries (RCA 8, LCx 7, LAD 5) and 29 significantly stenosed arteries."
+conditions = "Baseline and hyperemia (agent not stated in the abstract)."
+verification = "abs"
+access = "PubMed abstract (PMID 8488773). Full text (Am J Cardiol supplement) not accessible (Unpaywall: closed)."
+notes = """Abstract: all 3 normal arteries had a diastolic-predominant velocity pattern proximally and distally, with significantly less diastolic
+predominance in the RCA; coronary vasodilator reserve was similar in all three normal arteries and in proximal and distal segments.
+The abstract reports CVR 2.3 +/- 0.8 for normal vs 1.6 +/- 0.7 for abnormal arteries (identical to the JACC 1993 abstract of the same group;
+patient overlap with ofili1993_jacc_flow_velocity is likely but not stated)."""
+use_in_model = """In a normal model tree, the ratio of proximal to distal epicardial mean velocity should be about 1.1 (velocity preserved distally).
+The RCA should show less diastolic predominance than the left arteries when intramyocardial compression is modelled."""
+
+[source]
+authors = ["Ofili EO", "Labovitz AJ", "Kern MJ"]
+year = 1993
+title = "Coronary flow velocity dynamics in normal and diseased arteries"
+journal = "Am J Cardiol"
+volume = "71"
+issue = "14"
+pages = "3D-9D"
+doi = "10.1016/0002-9149(93)90128-Y"
+crossref_verified = "2026-10-14; Crossref title exact match"
+pmid = "8488773"
+
+[data.proximal_distal_ratio]
+description = "Proximal-to-distal velocity ratio and coronary vasodilator reserve, normal vs abnormal (stenosed) arteries"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD"
+group = ["normal", "abnormal"]
+proximal_to_distal_velocity_ratio_mean = [1.1, 2.4]
+proximal_to_distal_velocity_ratio_sd = [0.2, 0.7]
+cvr_mean = [2.3, 1.6]
+cvr_sd = [0.8, 0.7]
+n_arteries = [20, 29]
+missing_note = "Which velocity parameter the ratio uses (mean or peak) is not stated in the abstract. Absolute velocities not available."

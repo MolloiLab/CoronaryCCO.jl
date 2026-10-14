@@ -1,0 +1,102 @@
+[meta]
+id = "wieneke2005_flow_velocity"
+data_type = "experimental"
+validates = "Proximal epicardial average peak velocity (APV) at rest and adenosine hyperemia per main artery (LAD, LCx, RCA), IVUS lumen area per artery, coronary flow velocity reserve, and total (global) coronary flow in ml/min and per LV mass, in humans with angiographically normal arteries"
+species = "human"
+preparation = "28 patients (16 men, 12 women) undergoing diagnostic angiography for suspected CAD with angiographically smooth coronary arteries; excluded valvular disease, HOCM, DCM, endocarditis, myocarditis, and proximal-branching marginal/diagonal anatomy. 0.014-in Doppler FloWire (Cardiometrics) and IVUS (Boston Scientific Ultra Cross 30 MHz or Endosonics Avanar) at the same site, co-registered by the Echomap system. Sites: AHA segment 6 (proximal LAD), segment 11 (proximal LCx), segment 1 (proximal RCA). LV mass by M-mode echo (Devereux) within 7 days. 6F or 8F guiding catheter."
+conditions = "5000 IU heparin and 0.2 mg intracoronary nitroglycerin before angiography; 200 ug IC nitroglycerin before IVUS. Hyperemia by intracoronary adenosine bolus, 18 ug left and 12 ug right coronary. Measurements done twice and averaged."
+verification = "FT"
+access = "HighWire full-text HTML read via Wayback Machine capture 20130208023948 of http://jap.physiology.org:80/content/98/3/1076.full (also capture 20161104053905). Tables 1-2 and Fig 2 (per-vessel flow in ml/min) were popup/image content that was not archived."
+notes = """Flow method (paper Methods): spatial mean velocity V = APV/2 (Doucette 1992, Ofili 1995), vessel flow Q = V x A, with A from IVUS;
+a diastolic/systolic-weighted area is used (the weighting equation is an image not available in the archived HTML).
+Global flow = sum of LAD + LCx + RCA proximal flows; global CSA = sum of the three areas.
+Resting APV did not differ between vessels; hyperemic flow (ml/min) was significantly higher in LAD and RCA than LCx (Fig 2, values not available).
+No correlation between lumen area and velocity in any vessel (LAD r = 0.05, LCx r = 0.01, RCA r = 0.05).
+Global resting flow correlated with stress-mass-heart rate product (r = 0.62); resting mean APV correlated with pressure-rate product (r = 0.64);
+global CSA correlated with LV mass (r = 0.61).
+Patients had angina symptoms; authors caution they cannot be taken as truly normal (possible microvascular disease)."""
+use_in_model = """Run the model at rest and at maximal vasodilation. At the proximal LAD (segment 6), proximal LCx (segment 11) and proximal RCA (segment 1),
+compare the model's spatial-mean velocity x 2 (or centerline velocity, if the model is Poiseuille) to apv_by_vessel, and the lumen area to
+ivus_lumen_area_by_vessel. Compare the sum of the three proximal flows to global_flow (197 ml/min rest, 637 ml/min hyperemia) and to
+perfusion per LV mass (91 ml/min/100 g; note this divides total coronary flow by LV mass only). Hyperemic/rest ratio (CFVR) ~3.2-3.5 per vessel."""
+
+[source]
+authors = ["Wieneke H", "von Birgelen C", "Haude M", "Eggebrecht H", "Mohlenkamp S", "Schmermund A", "Bose D", "Altmann C", "Bartel T", "Erbel R"]
+year = 2005
+title = "Determinants of coronary blood flow in humans: quantification by intracoronary Doppler and ultrasound"
+journal = "J Appl Physiol"
+volume = "98"
+issue = "3"
+pages = "1076-1082"
+doi = "10.1152/japplphysiol.00724.2004"
+crossref_verified = "2026-10-14; Crossref title exact match"
+pmid = "15516363"
+
+[data.apv_by_vessel]
+description = "Average peak velocity (time average of spectral peak) in proximal segments at rest and peak adenosine hyperemia"
+location = "Results, 'Differences between coronary arteries' (text)"
+provenance = "FT"
+statistic = "mean +/- SD"
+vessel = ["LAD", "LCx", "RCA"]
+segment_aha = [6, 11, 1]
+apv_rest_mean_cm_per_s = [14.6, 14.2, 13.1]
+apv_rest_sd_cm_per_s = [5.4, 4.4, 5.2]
+apv_hyperemia_mean_cm_per_s = [48.8, 43.9, 42.4]
+apv_hyperemia_sd_cm_per_s = [14.3, 11.5, 12.4]
+cfvr_mean = [3.5, 3.2, 3.5]
+cfvr_sd = [0.9, 0.7, 0.9]
+n_patients = 28
+hyperemic_agent = "intracoronary adenosine bolus, 18 ug (left) / 12 ug (right)"
+missing_note = "Per-vessel n not stated separately (all three vessels studied in 28 patients). Per-vessel volumetric flow (Fig 2) not available."
+
+[data.ivus_lumen_area_by_vessel]
+description = "IVUS lumen cross-sectional area at the Doppler sample site, diastolic and systolic frames, and mean area stenosis"
+location = "Results, 'Differences between coronary arteries' (text)"
+provenance = "FT"
+statistic = "mean +/- SD"
+vessel = ["LAD", "LCx", "RCA"]
+csa_diastolic_mean_mm2 = [17.5, 12.9, 17.4]
+csa_diastolic_sd_mm2 = [4.9, 4.2, 3.7]
+csa_systolic_mean_mm2 = [17.2, 12.6, 16.9]
+csa_systolic_sd_mm2 = [4.7, 4.2, 3.7]
+area_stenosis_mean_pct = [12.6, 7.4, 7.7]
+area_stenosis_sd_pct = [10.3, 8.3, 9.5]
+missing_note = ""
+
+[data.global_flow]
+description = "Global coronary flow (sum of LAD + LCx + RCA proximal flows), rest and adenosine hyperemia"
+location = "Abstract; Results 'Impact of gender and age'; Discussion 'Comparison with other methods'"
+provenance = "FT"
+statistic = "mean +/- SD"
+condition = ["rest", "hyperemia"]
+flow_mean_ml_per_min = [197.1, 637.2]
+flow_sd_ml_per_min = [71.9, 204.4]
+rest_range_ml_per_min = [59.0, 376.0]
+n = 28
+missing_note = ""
+
+[data.perfusion_per_lv_mass]
+description = "Resting global coronary flow divided by echocardiographic LV mass (paper notes this numerator includes RV and atrial supply)"
+location = "Results 'Impact of gender and age'; Discussion"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["all", "men", "women", "age_le_50", "age_gt_50"]
+perfusion_mean_ml_per_min_per_100g = [91.0, 85.4, 99.6, 77.1, 101.6]
+perfusion_sd_ml_per_min_per_100g = [30.0, 33.7, 23.6, 26.4, 28.4]
+n = [28.0, 16.0, 12.0, 13.0, 15.0]
+missing_note = "The Results text gives 'ml/100 g' for the subgroups; the Discussion gives the overall value as 91 +/- 30 ml/100 g/min, so per-minute units are assumed for the subgroups."
+
+[data.lv_mass_and_area_ratio]
+description = "Echocardiographic LV mass and global coronary CSA-to-LV-mass ratio by sex"
+location = "Results 'Impact of gender and age' and 'Determinants of coronary flow'"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["men", "women"]
+lv_mass_mean_g = [242.2, 196.9]
+lv_mass_sd_g = [59.2, 51.5]
+area_to_mass_mean_mm2_per_100g = [21.3, 23.5]
+area_to_mass_sd_mm2_per_100g = [4.8, 3.7]
+bsa_mean_m2 = [2.06, 1.76]
+bsa_sd_m2 = [0.14, 0.17]
+n = [16, 12]
+missing_note = "All patients had area-to-mass ratio > 10 mm2/100 g."

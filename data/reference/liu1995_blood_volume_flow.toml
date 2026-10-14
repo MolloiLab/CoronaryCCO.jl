@@ -1,0 +1,39 @@
+# Liu YH, Bahn RC, Ritman EL (1995). Microvascular blood volume-to-flow relationships in porcine heart wall:
+# whole body CT evaluation in vivo. ABSTRACT ONLY (AJP full text blocked; no open copy found).
+
+[meta]
+id = "liu1995_blood_volume_flow"
+data_type = "experimental"
+validates = "Intramyocardial blood volume vs perfusion law rho = A*F + B*sqrt(F) in pig, with A interpreted as the transit time through the recruitable (mostly capillary) component and B/sqrt(F) as the transit time through the nonrecruitable (mostly arteriole/venule) component."
+species = "pig"
+preparation = "Anesthetized pigs; fast X-ray CT during aortic-root angiograms, repeated after sequential intracoronary injections of nonradioactive 15 um microspheres. Regional F (ml/g/min) and intramyocardial blood volume rho (ml/g) from dynamic CT."
+conditions = "Range of flows produced by the protocol (details not in abstract)."
+verification = "abs"
+access = "Abstract via PubMed E-utilities (PMID 7503282). journals.physiology.org blocked (HTTP 403); Unpaywall: closed."
+notes = """
+From the fitted law (arithmetic, not reported): at F = 1 ml/g/min, rho = 0.016 + 0.076 = 0.092 ml/g; at F = 4, rho = 0.064 + 0.152 = 0.216 ml/g. MTT = rho/F = A + B/sqrt(F): 0.092 min (5.5 s) at F = 1; 0.054 min (3.2 s) at F = 4.
+Embolization changed A and B; values not in abstract.
+Companion dog study with a pure square-root law: wu1992_blood_volume_flow.
+"""
+use_in_model = """Fit the model's (rho, F) pairs across flow states with rho = A F + B sqrt(F); compare A (0.016 min, capillary-like transit) and B (0.076 (ml min/g)^(1/2)). In the model, A should relate to the lumped capillary transit time and B to the arteriolar/venular trees."""
+
+[source]
+authors = ["Liu YH", "Bahn RC", "Ritman EL"]
+year = 1995
+title = "Microvascular blood volume-to-flow relationships in porcine heart wall: whole body CT evaluation in vivo"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "269"
+issue = "5"
+pages = "H1820-H1826"
+doi = "10.1152/ajpheart.1995.269.5.H1820"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 269, issue 5, H1820-H1826; authors Liu, Bahn, Ritman)"
+pmid = "7503282"
+
+[data.rho_flow_law]
+description = "Coefficients of rho (ml/g) = A*F + B*sqrt(F), F in ml/g/min, intramyocardial microcirculation, pre-embolization fit over all flows"
+location = "Abstract"
+provenance = "abs"
+A_min = 0.016
+B_ml_min_per_g_sqrt = 0.076
+unit = "A in min; B in (ml min / g)^(1/2); rho in ml/g"
+missing_note = "No SD, n, or flow range in abstract."

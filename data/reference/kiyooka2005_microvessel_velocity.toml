@@ -1,0 +1,37 @@
+[meta]
+id = "kiyooka2005_microvessel_velocity"
+data_type = "experimental"
+validates = "Red-cell velocity in subepicardial capillaries of the beating heart at control, peak reactive hyperemia and intracoronary adenosine"
+species = "dog"
+preparation = "Open-chest anesthetized dogs (n = 17), atrioventricular block, paced at 60-90 bpm; high-resolution pencil-lens CCD intravital videomicroscope over epicardial capillaries fed by the LAD."
+conditions = "Control; peak reactive hyperemia (RH) after LAD occlusion; intracoronary adenosine."
+verification = "abs"
+access = "PubMed abstract (PMID 15345479) only; full text (AJP) not accessible"
+notes = """Abstract-only. Capillary diameter increased by 17% during RH. Capillary RBC flow was systolic- or diastolic-predominant in individual
+capillaries (watershed between diastolic arterial and systolic venous flow). Volumetric capillary flow increase with adenosine was smaller than the
+arterial flow increase; ~1.5 s capillary refilling lag during RH. Low paced heart rate (60-90 bpm) differs from normal canine rates."""
+use_in_model = """Compare model mean capillary RBC (or blood) velocity in subepicardial capillaries at rest (~1.2 mm/s) and under maximal dilation
+(~1.8-2.1 mm/s)."""
+
+[source]
+authors = ["Kiyooka T", "Hiramatsu O", "Shigeto F", "Nakamoto H", "Tachibana H", "Yada T", "Ogasawara Y", "Kajiya M", "Morimoto T", "Morizane Y", "Mohri S", "Shimizu J", "Ohe T", "Kajiya F"]
+year = 2005
+title = "Direct observation of epicardial coronary capillary hemodynamics during reactive hyperemia and during adenosine administration by intravital video microscopy"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "288"
+issue = "3"
+pages = "H1437-H1443"
+doi = "10.1152/ajpheart.00088.2004"
+crossref_verified = "2026-10-14; Crossref title exact match ('Direct observation of epicardial coronary capillary hemodynamics during reactive hyperemia and during adenosine administration by intravital video microscopy')"
+pmid = "15345479"
+
+[data.capillary_velocity]
+description = "Capillary red-cell flow velocity by condition"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD (as printed '+/-')"
+condition = ["control", "reactive hyperemia (peak)", "adenosine (intracoronary)"]
+velocity_mm_s = [1.2, 2.1, 1.8]
+velocity_sd_mm_s = [0.5, 0.6, 0.7]
+n_dogs = 17
+missing_note = "Statistic (SD vs SE), number of capillaries, capillary diameters and adenosine dose not given in the abstract."

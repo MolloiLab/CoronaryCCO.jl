@@ -1,0 +1,89 @@
+# Chareonthaitawee P, Kaufmann PA, Rimoldi O, Camici PG (2001). Heterogeneity of resting and hyperemic
+# myocardial blood flow in healthy humans. 15O-water PET, 169 healthy volunteers.
+# Full text read from the University of Zurich repository PDF (ZORA 154648), retrieved via the Wayback Machine
+# (snapshot 2019-05-02); the live repository blocks scripted access. The PDF text layer renders "+/-" as "6"
+# and "=" as "5"; values below were decoded from that and checked against the abstract where possible.
+
+[meta]
+id = "chareonthaitawee2001_human_flow_heterogeneity"
+data_type = "experimental"
+validates = "Human LV blood flow at rest and hyperemia (global and 4 regions) and its heterogeneity at very coarse resolution: within-subject CV among 4 LV regions (each roughly a quarter of the LV), and between-subject CV."
+species = "human"
+preparation = "131 men and 38 women, aged 21-86 (mean 46 +/- 12) years, low likelihood of coronary disease. H2(15)O PET (700-900 MBq iv over 20 s), single-tissue-compartment model. Four myocardial ROIs (septal, anterior, lateral, inferior) drawn on 12 consecutive planes."
+conditions = "Baseline (n = 169) and hyperemia (n = 160) with iv dipyridamole 0.56 mg/kg over 4 min (n = 83) or adenosine 140 ug/kg/min (n = 77). Caffeine abstinence 24 h. MBFcorr = MBF / RPP x 1e4 (rate-pressure product correction)."
+verification = "FT"
+access = "Author/repository PDF (ZORA, University of Zurich, eprint 154648) via Wayback Machine snapshot 20190502084717; publisher page not accessed."
+notes = """
+Region size is not given in the paper; with 4 ROIs per LV each region is very roughly 25% of LV mass (tens of grams), so these CVs are at a far coarser scale than microsphere piece RDs.
+The 'temporal heterogeneity' CV values in the PDF text layer are garbled ('19.1627 vs 19.1913' at baseline, '23.6534 vs 25.2366' at hyperemia) and are not stored.
+Uncorrected regional baseline MBF: septum 0.930 +/- 0.206 (males), 1.178 +/- 0.351 (females) etc. (Table 1); stored per sex in regional_mbf_by_sex.
+Hyperemic MBF adenosine (males) 3.766 +/- 0.854 vs dipyridamole 3.107 +/- 1.120 ml/min/g (P = 0.0114).
+Coronary vasodilator reserve 3.753 +/- 1.240 (uncorrected) and 2.794 +/- 0.947 (corrected).
+"""
+use_in_model = """Use global_mbf as human absolute rest/hyperemia flow targets. For heterogeneity, split the model LV into 4 coarse regions (septal, anterior, lateral, inferior) and compute the within-subject CV of regional mean flow; compare with within_subject_regional_cv (13 +/- 8% rest, 17 +/- 10% hyperemia). Between-subject CVs are population variability and are not a model target."""
+
+[source]
+authors = ["Chareonthaitawee P", "Kaufmann PA", "Rimoldi O", "Camici PG"]
+year = 2001
+title = "Heterogeneity of resting and hyperemic myocardial blood flow in healthy humans"
+journal = "Cardiovasc Res"
+volume = "50"
+issue = "1"
+pages = "151-161"
+doi = "10.1016/s0008-6363(01)00202-4"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 50, issue 1, 151-161)"
+pmid = "11282088"
+
+[data.global_mbf]
+description = "Global LV myocardial blood flow, population mean, and between-subject coefficient of variation"
+location = "Abstract; Results 3.1 and 3.2"
+provenance = "FT"
+statistic = "mean +/- SD (range)"
+state = ["baseline uncorrected", "baseline RPP-corrected", "hyperemia (adenosine or dipyridamole)"]
+mbf_ml_min_g = [0.985, 1.330, 3.542]
+mbf_sd_ml_min_g = [0.230, 0.316, 1.010]
+mbf_min_ml_min_g = [0.590, 0.736, 1.110]
+mbf_max_ml_min_g = [2.050, 2.428, 5.990]
+between_subject_cv_percent = [27.0, 24.0, 29.0]
+n = [169, 169, 160]
+missing_note = ""
+
+[data.within_subject_regional_cv]
+description = "Spatial heterogeneity within each individual among the 4 LV regions, summarized as the average coefficient of variation"
+location = "Results 3.1.2 (baseline) and 3.2.3 (hyperemia)"
+provenance = "FT"
+statistic = "mean +/- SD across subjects"
+state = ["baseline (uncorrected and corrected)", "hyperemia"]
+cv_percent = [13.0, 17.0]
+cv_sd_percent = [8.0, 10.0]
+n_regions = 4
+missing_note = "Region mass not reported. n of subjects in each average not restated (169 baseline, 160 hyperemia studied)."
+
+[data.regional_mbf_corrected]
+description = "RPP-corrected baseline MBF per region, whole population"
+location = "Results 3.1.2 and Fig. 3 legend (CV per segment)"
+provenance = "FT"
+statistic = "mean +/- SD across subjects; CV = between-subject"
+region = ["septum", "anterior", "lateral", "inferior"]
+mbf_corr_ml_min_g = [1.333, 1.443, 1.405, 1.232]
+mbf_corr_sd_ml_min_g = [0.329, 0.4113, 0.385, 0.322]
+between_subject_cv_percent = [24.7, 28.6, 25.3, 26.1]
+missing_note = "Anterior SD printed with 4 decimals (0.4113) in source."
+
+[data.regional_mbf_by_sex]
+description = "Segmental baseline MBF by sex, uncorrected and RPP-corrected"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD"
+region = ["septum", "anterior", "lateral", "inferior"]
+female_uncorrected_ml_min_g = [1.178, 1.345, 1.343, 1.089]
+female_uncorrected_sd = [0.351, 0.421, 0.457, 0.324]
+male_uncorrected_ml_min_g = [0.930, 0.980, 0.956, 0.859]
+male_uncorrected_sd = [0.206, 0.260, 0.196, 0.192]
+female_corrected_ml_min_g = [1.519, 1.738, 1.720, 1.403]
+female_corrected_sd = [0.314, 0.411, 0.430, 0.284]
+male_corrected_ml_min_g = [1.281, 1.357, 1.308, 1.178]
+male_corrected_sd = [0.322, 0.378, 0.270, 0.315]
+n_female = 38
+n_male = 131
+missing_note = ""

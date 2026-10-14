@@ -1,0 +1,45 @@
+[meta]
+id = "kern1996_cfvr_normal"
+data_type = "experimental"
+validates = "Coronary flow velocity reserve (hyperemic/basal average peak velocity) in angiographically normal human epicardial arteries, by patient group, artery and sex"
+species = "human"
+preparation = "214 patients: group 1, 85 patients with chest pain syndromes and angiographically normal arteries; group 2, 21 patients with one normal vessel and >= 1 vessel with > 50% stenosis; group 3, 108 heart transplant recipients. 416 arteries studied with a 0.018-in Doppler guide wire; quantitative coronary arteriography."
+conditions = "Maximal hyperemia with intracoronary adenosine 8-18 ug."
+verification = "abs"
+access = "PubMed abstract (PMID 8890809). Full text (JACC open archive) returned HTTP 403 from ScienceDirect/jacc.org and the Elsevier API returned metadata only; no Wayback copy of the full text found."
+notes = """Per-artery CFVR values and absolute APV are in the full text, which could not be read. The abstract states CFVR was similar among LAD, LCx and RCA."""
+use_in_model = """Compare the model's maximal/basal flow ratio in normal epicardial arteries with ~2.8 +/- 0.6 (symptomatic patients with normal arteries)
+or 3.1 +/- 0.9 (transplant recipients). The CFVR should not differ systematically between LAD, LCx and RCA."""
+
+[source]
+authors = ["Kern MJ", "Bach RG", "Mechem CJ", "Caracciolo EA", "Aguirre FV", "Miller LW", "Donohue TJ"]
+year = 1996
+title = "Variations in normal coronary vasodilatory reserve stratified by artery, gender, heart transplantation and coronary artery disease"
+journal = "J Am Coll Cardiol"
+volume = "28"
+issue = "5"
+pages = "1154-1160"
+doi = "10.1016/S0735-1097(96)00327-0"
+crossref_verified = "2026-10-14; Crossref title exact match"
+pmid = "8890809"
+
+[data.cfvr_by_group]
+description = "Coronary vasodilatory reserve (maximal/basal average flow velocity), group mean"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD"
+group = ["normal arteries, chest pain syndromes", "normal vessel, patients with CAD elsewhere", "post-stenotic segment of diseased artery", "heart transplant recipients"]
+cfvr_mean = [2.80, 2.5, 1.8, 3.1]
+cfvr_sd = [0.6, 0.95, 0.6, 0.9]
+n_patients = [85.0, 21.0, nan, 108.0]
+missing_note = "n for the post-stenotic segments not stated in the abstract. Per-artery values and APV in cm/s not available (full text inaccessible)."
+
+[data.cfvr_by_sex_group1]
+description = "CFVR in group 1 (chest pain, normal arteries) by sex (trend, p = 0.07)"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD"
+sex = ["male", "female"]
+cfvr_mean = [2.9, 2.7]
+cfvr_sd = [0.6, 0.6]
+missing_note = "n per sex not given in abstract."

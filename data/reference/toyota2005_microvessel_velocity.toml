@@ -1,0 +1,36 @@
+[meta]
+id = "toyota2005_microvessel_velocity"
+data_type = "experimental"
+validates = "Phasic (systolic retrograde vs forward) flow velocity in subendocardial vs subepicardial coronary arterioles of the beating heart"
+species = "dog"
+preparation = "In vivo beating canine hearts, open chest; high-speed CCD intravital videomicroscope with a rod-probe (needle) lens for subendocardial and subepicardial arterioles."
+conditions = "Baseline (as stated in abstract); other details not available."
+verification = "abs"
+access = "PubMed abstract (PMID 15550516) only; full text (AJP) not accessible"
+notes = """Abstract-only. 'Systolic slosh ratio' (abstract term) = retrograde/forward flow fraction during systole as defined by the authors (definition
+not in abstract). Arteriole diameters, n, and diastolic velocities are not in the abstract. Retrograde velocities are quoted as negative values."""
+use_in_model = """Qualitative/phase check for a model with intramyocardial pressure: subendocardial arterioles should show strong systolic flow reversal
+(retrograde velocities exceeding 40 mm/s) while subepicardial arterioles remain mostly forward in systole. Not usable for a steady Poiseuille run."""
+
+[source]
+authors = ["Toyota E", "Ogasawara Y", "Hiramatsu O", "Tachibana H", "Kajiya F", "Yamamori S", "Chilian WM"]
+year = 2005
+title = "Dynamics of flow velocities in endocardial and epicardial coronary arterioles"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "288"
+issue = "4"
+pages = "H1598-H1603"
+doi = "10.1152/ajpheart.01103.2003"
+crossref_verified = "2026-10-14; Crossref title exact match ('Dynamics of flow velocities in endocardial and epicardial coronary arterioles')"
+pmid = "15550516"
+
+[data.systolic_reversal]
+description = "Systolic slosh ratio and retrograde flow velocity in subendocardial vs subepicardial arterioles"
+location = "Abstract"
+provenance = "abs"
+statistic = "as stated (central values; dispersion not given)"
+layer = ["subendocardial arterioles", "subepicardial arterioles"]
+systolic_slosh_ratio_pct = [84.0, 25.0]
+retrograde_velocity_mm_s = [-40.0, -20.0]
+retrograde_velocity_qualifier = ["measurable retrograde velocity faster than -40 mm/s", "maximum approximately -20 mm/s"]
+missing_note = "Diameters, n, SD, forward/diastolic velocities and conditions other than baseline not available (abstract only). p < 0.0005 (slosh ratio) and p < 0.05 (velocity) endo vs epi."

@@ -1,0 +1,324 @@
+# Kassab GS, Rider CA, Tang NJ, Fung YC (1993). Morphometry of pig coronary arterial trees.
+# Every number below was transcribed from Tables 1-9 of the publisher PDF and checked against
+# a 200-300 dpi rendering of each table. Units are in the key suffix.
+
+[meta]
+id = "kassab1993_arterial_morphometry"
+data_type = "experimental"
+validates = "Per-order element and segment diameter, length, S/E, connectivity matrix and total element counts of the pig coronary arterial tree (RCA, LAD, LCX), orders 1-11 (diameter-defined Strahler)."
+species = "pig"
+preparation = "Five 3-4 month farm pigs, 29-31 kg (30.1 +/- 0.7 kg). KCl arrest; coronaries rinsed with cold cardioplegic solution (EGTA, nifedipine 0.2 mg/l, adenosine 80 mg/l), then with a solution containing 2,3-butanedione monoxime. Silicone-elastomer (GE 88017 / CP-101) cast perfused at 130 mmHg for 5 min, then held at 80 mmHg until hardened. Orders >= 4 measured on corroded arterial casts (Cab-O-Sil added to stop the elastomer at the capillaries); orders <= 4 from optical sectioning of 60-80 um histological slices of cast tissue plugs (4 hearts, 12 plugs per ventricle)."
+conditions = "Diastolic arrest, vasodilated (adenosine + nifedipine rinse), cast at 80 mmHg perfusion pressure. Diameters are lumen diameters of the cast."
+verification = "FT"
+access = "Publisher PDF (journals.physiology.org, UC Irvine institutional download, local copy, re-checked 2026-10-14 against the copy in validation-papers/, identical scan); tables read from rendered page images."
+notes = """
+Orders: diameter-defined Strahler system (Eq. 1a/1b of the paper). Order 1 = smallest arterioles feeding capillaries (order 0).
+Segment = vessel between two bifurcation nodes. Element = segments of the same order connected in series; S/E = segments per element.
+Orders 1-3 of the LCX (Table 3) and of the LAD (Table 2) are identical in the source, for diameters, lengths, S/E and the first three connectivity columns. The small vessels were measured in histological blocks of the LV, so the same small-vessel statistics appear to serve both left-coronary branches. The LCX has 10 orders; the RCA and LAD have 11.
+The 1-element trunk rows (order 11 RCA/LAD, order 10 LCX) have no SD.
+Diameter SDs are the SD across vessels, not SE. Table 9 and connectivity matrices report SE.
+"""
+use_in_model = """Assign diameter-defined Strahler orders to the synthetic tree (Eq. 1 of the source, iterate to convergence), then compare per-order element mean diameter, mean length, S/E and total element count (Table 9) on a log-linear plot vs order. Compare connectivity-matrix columns for asymmetric branching. CCO terminals (~9 um) correspond to order 1."""
+
+[source]
+authors = ["Kassab GS", "Rider CA", "Tang NJ", "Fung YC"]
+year = 1993
+title = "Morphometry of pig coronary arterial trees"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "265"
+issue = "1"
+pages = "H350-H365"
+doi = "10.1152/ajpheart.1993.265.1.H350"
+crossref_verified = "2026-10-14; Crossref title exact match (Morphometry of pig coronary arterial trees; vol 265, issue 1, H350-H365; authors Kassab, Rider, Tang, Fung)"
+
+[data.rca_segments]
+description = "Vessel segments, pig RCA, per diameter-defined Strahler order"
+location = "Table 1 (Segments columns)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of vessels measured"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+diameter_mean_um = [9.6, 13.2, 19.1, 34.1, 64.4, 137.0, 265.0, 438.0, 730.0, 1430.0, 3218.0]
+diameter_sd_um = [0.97, 1.6, 2.7, 6.0, 15.1, 31.5, 45.2, 64.7, 129.0, 379.0, 388.0]
+n_diameter = [1033, 741, 490, 1189, 2594, 2142, 1173, 536, 177, 85, 26]
+length_mean_mm = [0.069, 0.083, 0.085, 0.118, 0.449, 0.748, 0.986, 1.26, 1.62, 1.89, 3.24]
+length_sd_mm = [0.046, 0.07, 0.061, 0.113, 0.35, 0.654, 0.81, 1.1, 1.31, 1.38, 2.09]
+n_length = [510, 441, 328, 202, 526, 1506, 1066, 524, 174, 85, 26]
+missing_note = ""
+
+[data.rca_elements]
+description = "Vessel elements, pig RCA, per diameter-defined Strahler order"
+location = "Table 1 (Elements columns)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of vessels measured"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+diameter_mean_um = [9.3, 12.8, 17.7, 28.6, 63.1, 132.0, 256.0, 428.0, 706.0, 1302.0, 3218.0]
+diameter_sd_um = [0.84, 1.4, 2.1, 5.4, 11.3, 22.2, 30.1, 47.5, 75.2, 239.0, nan]
+n_diameter = [146, 136, 79, 36, 91, 431, 303, 108, 33, 10, 1]
+length_mean_mm = [0.125, 0.141, 0.178, 0.253, 0.545, 1.64, 3.13, 5.99, 9.06, 16.1, 84.1]
+length_sd_mm = [0.084, 0.103, 0.105, 0.174, 0.415, 1.13, 2.11, 3.53, 5.56, 13.3, nan]
+n_length = [146, 136, 79, 36, 91, 428, 299, 108, 33, 10, 1]
+missing_note = "The highest order is a single trunk element (n = 1); the source gives no SD, stored as nan."
+
+[data.lad_segments]
+description = "Vessel segments, pig LAD, per diameter-defined Strahler order"
+location = "Table 2 (Segments columns)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of vessels measured"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+diameter_mean_um = [9.2, 13.0, 18.7, 34.6, 71.6, 150.0, 303.0, 467.0, 715.0, 1492.0, 3176.0]
+diameter_sd_um = [0.94, 1.7, 2.6, 7.4, 17.2, 35.8, 54.5, 56.1, 130.0, 365.0, 654.0]
+n_diameter = [835, 539, 266, 841, 2171, 1627, 1000, 459, 193, 54, 17]
+length_mean_mm = [0.056, 0.072, 0.072, 0.112, 0.454, 0.609, 0.92, 1.09, 1.54, 2.26, 2.82]
+length_sd_mm = [0.038, 0.045, 0.049, 0.1, 0.33, 0.48, 0.79, 0.83, 1.25, 1.56, 1.96]
+n_length = [506, 326, 177, 108, 435, 1017, 901, 437, 191, 54, 17]
+missing_note = ""
+
+[data.lad_elements]
+description = "Vessel elements, pig LAD, per diameter-defined Strahler order"
+location = "Table 2 (Elements columns)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of vessels measured"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+diameter_mean_um = [9.0, 12.3, 17.7, 30.5, 66.2, 139.0, 308.0, 462.0, 714.0, 1573.0, 3176.0]
+diameter_sd_um = [0.73, 1.3, 2.2, 6.0, 13.6, 24.1, 56.6, 40.9, 81.8, 361.0, nan]
+n_diameter = [139, 115, 54, 22, 80, 253, 223, 96, 33, 7, 1]
+length_mean_mm = [0.115, 0.136, 0.149, 0.353, 0.502, 1.31, 3.54, 4.99, 9.03, 20.3, 47.9]
+length_sd_mm = [0.066, 0.088, 0.104, 0.154, 0.349, 0.914, 2.11, 3.02, 6.13, 17.9, nan]
+n_length = [139, 114, 54, 22, 78, 252, 222, 95, 33, 6, 1]
+missing_note = "The highest order is a single trunk element (n = 1); the source gives no SD, stored as nan."
+
+[data.lcx_segments]
+description = "Vessel segments, pig LCX, per diameter-defined Strahler order"
+location = "Table 3 (Segments columns)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of vessels measured"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+diameter_mean_um = [9.2, 13.0, 18.7, 33.2, 76.3, 143.0, 285.0, 468.0, 1025.0, 2603.0]
+diameter_sd_um = [0.94, 1.7, 2.6, 9.1, 14.5, 30.5, 53.3, 78.8, 273.0, 337.0]
+n_diameter = [835, 539, 266, 294, 513, 575, 323, 199, 66, 14]
+length_mean_mm = [0.056, 0.072, 0.072, 0.19, 0.615, 1.11, 1.6, 1.78, 3.18, 3.54]
+length_sd_mm = [0.038, 0.045, 0.049, 0.097, 0.508, 0.983, 1.33, 1.46, 2.41, 2.0]
+n_length = [506, 326, 177, 93, 75, 276, 283, 198, 66, 14]
+missing_note = ""
+
+[data.lcx_elements]
+description = "Vessel elements, pig LCX, per diameter-defined Strahler order"
+location = "Table 3 (Elements columns)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of vessels measured"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+diameter_mean_um = [9.0, 12.3, 17.7, 27.5, 73.2, 139.0, 279.0, 462.0, 961.0, 2603.0]
+diameter_sd_um = [0.73, 1.3, 2.2, 6.1, 14.2, 26.2, 38.4, 56.1, 193.0, nan]
+n_diameter = [139, 115, 54, 14, 22, 76, 89, 49, 10, 1]
+length_mean_mm = [0.115, 0.136, 0.149, 0.405, 0.908, 1.83, 4.22, 6.98, 21.0, 49.6]
+length_sd_mm = [0.066, 0.088, 0.104, 0.17, 0.763, 1.34, 2.26, 3.92, 15.6, nan]
+n_length = [139, 114, 54, 14, 22, 76, 89, 49, 10, 1]
+missing_note = "The highest order is a single trunk element (n = 1); the source gives no SD, stored as nan."
+
+[data.rca_segments_per_element]
+description = "Segment-to-element ratio S/E (mean number of segments in series per element), pig RCA"
+location = "Table 5"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of observations"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+se_ratio_mean = [1.88, 1.88, 2.2, 2.3, 2.0, 2.3, 3.23, 4.68, 5.38, 8.5, 26.0]
+se_ratio_sd = [0.99, 1.0, 1.2, 1.8, 0.91, 1.3, 2.1, 2.7, 3.6, 7.2, nan]
+n = [155, 138, 89, 50, 125, 503, 324, 111, 34, 10, 1]
+missing_note = "Highest order (n = 1) has no SD; stored as nan."
+
+[data.lad_segments_per_element]
+description = "Segment-to-element ratio S/E (mean number of segments in series per element), pig LAD"
+location = "Table 5"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of observations"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+se_ratio_mean = [2.3, 1.79, 2.0, 2.28, 2.02, 2.23, 3.89, 4.69, 6.06, 9.0, 17.0]
+se_ratio_sd = [1.4, 0.95, 1.1, 1.3, 1.2, 1.3, 2.1, 3.0, 4.2, 7.0, nan]
+n = [134, 117, 54, 18, 63, 266, 216, 98, 32, 6, 1]
+missing_note = "Highest order (n = 1) has no SD; stored as nan."
+
+[data.lcx_segments_per_element]
+description = "Segment-to-element ratio S/E (mean number of segments in series per element), pig LCX"
+location = "Table 5"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of observations"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+se_ratio_mean = [2.3, 1.79, 2.0, 2.06, 2.2, 2.11, 2.75, 4.22, 6.6, 14.0]
+se_ratio_sd = [1.4, 0.95, 1.1, 1.2, 1.3, 1.1, 1.6, 2.4, 4.0, nan]
+n = [134, 117, 54, 16, 20, 122, 95, 46, 10, 1]
+missing_note = "Highest order (n = 1) has no SD; stored as nan."
+
+[data.rca_connectivity]
+description = "Connectivity matrix C(m,n), pig RCA: number of elements of order m (row, daughter) that spring directly from parent elements of order n (column), divided by the total number of elements of order n. Row 0 = capillaries."
+location = "Table 6"
+provenance = "FT"
+statistic = "mean +/- SE"
+daughter_order = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+parent_order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+layout = "mean[i][j] = C(daughter_order[i], parent_order[j]); rows = daughter order 0..N, columns = parent order 1..N"
+mean = [
+  [2.75, 0.674, 0.151, 0.04, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+  [0.131, 2.13, 0.802, 0.3, 0.008, 0.004, 0.0, 0.0, 0.0, 0.0, 0.0],
+  [0.0, 0.08, 2.15, 0.7, 0.159, 0.02, 0.037, 0.0, 0.0, 0.0, 0.0],
+  [0.0, 0.0, 0.07, 2.12, 0.688, 0.314, 0.244, 0.143, 0.059, 0.0, 0.0],
+  [0.0, 0.0, 0.0, 0.16, 2.13, 0.444, 0.645, 0.468, 0.324, 0.0, 0.0],
+  [0.0, 0.0, 0.0, 0.0, 0.344, 2.43, 1.43, 1.51, 0.853, 0.727, 0.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.167, 2.14, 1.37, 1.68, 1.8, 1.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.13, 2.32, 1.23, 2.8, 11.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.099, 2.62, 2.0, 8.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.059, 2.4, 5.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4, 6.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+]
+se = [
+  [0.082, 0.067, 0.045, 0.028, nan, nan, nan, nan, nan, nan, nan],
+  [0.027, 0.07, 0.101, 0.104, 0.008, 0.003, nan, nan, nan, nan, nan],
+  [nan, 0.025, 0.085, 0.109, 0.037, 0.006, 0.013, nan, nan, nan, nan],
+  [nan, nan, 0.028, 0.116, 0.067, 0.027, 0.033, 0.033, 0.041, nan, nan],
+  [nan, nan, nan, 0.052, 0.09, 0.031, 0.057, 0.074, 0.145, nan, nan],
+  [nan, nan, nan, nan, 0.035, 0.046, 0.074, 0.157, 0.189, 0.304, nan],
+  [nan, nan, nan, nan, nan, 0.018, 0.06, 0.106, 0.334, 0.611, nan],
+  [nan, nan, nan, nan, nan, nan, 0.019, 0.092, 0.246, 0.854, nan],
+  [nan, nan, nan, nan, nan, nan, nan, 0.031, 0.227, 0.907, nan],
+  [nan, nan, nan, nan, nan, nan, nan, nan, 0.041, 0.562, nan],
+  [nan, nan, nan, nan, nan, nan, nan, nan, nan, 0.221, nan],
+  [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan],
+]
+missing_note = "Cells with daughter order > parent order are blank in the source and stored as 0. se = nan where the source prints no SE: printed zeros, blank cells, and the trunk column (exact counts of branches off the single trunk element)."
+
+[data.lad_connectivity]
+description = "Connectivity matrix C(m,n), pig LAD: number of elements of order m (row, daughter) that spring directly from parent elements of order n (column), divided by the total number of elements of order n. Row 0 = capillaries."
+location = "Table 7"
+provenance = "FT"
+statistic = "mean +/- SE"
+daughter_order = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+parent_order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+layout = "mean[i][j] = C(daughter_order[i], parent_order[j]); rows = daughter order 0..N, columns = parent order 1..N"
+mean = [
+  [3.18, 0.675, 0.148, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+  [0.144, 2.04, 0.63, 0.071, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+  [0.0, 0.094, 2.24, 1.5, 0.063, 0.094, 0.023, 0.0, 0.0, 0.0, 0.0],
+  [0.0, 0.0, 0.074, 2.14, 0.381, 0.098, 0.12, 0.092, 0.03, 0.0, 0.0],
+  [0.0, 0.0, 0.0, 0.143, 2.25, 0.425, 0.38, 0.428, 0.303, 0.167, 0.0],
+  [0.0, 0.0, 0.0, 0.0, 0.238, 2.5, 1.91, 1.56, 1.36, 0.667, 0.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.155, 2.5, 1.58, 1.48, 1.17, 0.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.116, 2.09, 1.3, 2.0, 2.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.061, 2.5, 2.5, 3.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.121, 3.33, 8.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 5.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+]
+se = [
+  [0.118, 0.08, 0.081, nan, nan, nan, nan, nan, nan, nan, nan],
+  [0.031, 0.07, 0.116, 0.071, nan, nan, nan, nan, nan, nan, nan],
+  [nan, 0.027, 0.102, 0.274, 0.025, 0.019, 0.01, nan, nan, nan, nan],
+  [nan, nan, 0.036, 0.204, 0.056, 0.018, 0.028, 0.029, 0.03, nan, nan],
+  [nan, nan, nan, 0.097, 0.097, 0.042, 0.047, 0.07, 0.102, 0.167, nan],
+  [nan, nan, nan, nan, 0.035, 0.07, 0.111, 0.173, 0.281, 0.333, nan],
+  [nan, nan, nan, nan, nan, 0.022, 0.08, 0.159, 0.323, 0.654, nan],
+  [nan, nan, nan, nan, nan, nan, 0.022, 0.106, 0.3, 1.09, nan],
+  [nan, nan, nan, nan, nan, nan, nan, 0.024, 0.209, 1.06, nan],
+  [nan, nan, nan, nan, nan, nan, nan, nan, 0.058, 1.12, nan],
+  [nan, nan, nan, nan, nan, nan, nan, nan, nan, 0.1, nan],
+  [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan],
+]
+missing_note = "Cells with daughter order > parent order are blank in the source and stored as 0. se = nan where the source prints no SE: printed zeros, blank cells, and the trunk column (exact counts of branches off the single trunk element)."
+
+[data.lcx_connectivity]
+description = "Connectivity matrix C(m,n), pig LCX: number of elements of order m (row, daughter) that spring directly from parent elements of order n (column), divided by the total number of elements of order n. Row 0 = capillaries."
+location = "Table 8"
+provenance = "FT"
+statistic = "mean +/- SE"
+daughter_order = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+parent_order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+layout = "mean[i][j] = C(daughter_order[i], parent_order[j]); rows = daughter order 0..N, columns = parent order 1..N"
+mean = [
+  [3.18, 0.675, 0.148, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+  [0.144, 2.04, 0.63, 0.071, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+  [0.0, 0.094, 2.24, 1.5, 0.15, 0.0, 0.0, 0.0, 0.0, 0.0],
+  [0.0, 0.0, 0.074, 2.14, 0.15, 0.025, 0.011, 0.0, 0.0, 0.0],
+  [0.0, 0.0, 0.0, 0.143, 2.85, 0.385, 0.179, 0.109, 0.0, 0.0],
+  [0.0, 0.0, 0.0, 0.0, 0.1, 2.51, 1.13, 0.956, 0.444, 0.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.213, 2.33, 2.02, 1.78, 2.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.168, 2.04, 2.0, 4.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.196, 4.0, 4.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.111, 8.0],
+  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+]
+se = [
+  [0.118, 0.08, 0.081, nan, nan, nan, nan, nan, nan, nan],
+  [0.031, 0.07, 0.116, 0.071, nan, nan, nan, nan, nan, nan],
+  [nan, 0.027, 0.102, 0.274, 0.058, nan, nan, nan, nan, nan],
+  [nan, nan, 0.036, 0.204, 0.077, 0.018, 0.011, nan, nan, nan],
+  [nan, nan, nan, 0.097, 0.148, 0.076, 0.042, 0.046, nan, nan],
+  [nan, nan, nan, nan, 0.043, 0.089, 0.115, 0.158, 0.242, nan],
+  [nan, nan, nan, nan, nan, 0.042, 0.11, 0.252, 0.325, nan],
+  [nan, nan, nan, nan, nan, nan, 0.046, 0.132, 0.667, nan],
+  [nan, nan, nan, nan, nan, nan, nan, 0.067, 0.68, nan],
+  [nan, nan, nan, nan, nan, nan, nan, nan, 0.111, nan],
+  [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan],
+]
+missing_note = "Cells with daughter order > parent order are blank in the source and stored as 0. se = nan where the source prints no SE: printed zeros, blank cells, and the trunk column (exact counts of branches off the single trunk element)."
+
+[data.rca_total_elements]
+description = "Total number of vessel elements per order, RCA, computed by the authors from the connectivity matrix starting at the trunk (Appendix)"
+location = "Table 9"
+provenance = "FT"
+statistic = "mean +/- SE"
+order = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+n_elements_mean = [1.0, 10.0, 35.0, 114.0, 403.0, 1458.0, 7354.0, 20074.0, 51915.0, 138050.0, 393294.0]
+n_elements_se = [nan, nan, nan, 1.0, 5.0, 44.0, 649.0, 3739.0, 13644.0, 46070.0, 158657.0]
+missing_note = "Rows printed without SE (largest orders) are stored with se = nan."
+
+[data.lad_total_elements]
+description = "Total number of vessel elements per order, LAD, computed by the authors from the connectivity matrix starting at the trunk (Appendix)"
+location = "Table 9"
+provenance = "FT"
+statistic = "mean +/- SE"
+order = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+n_elements_mean = [1.0, 7.0, 37.0, 113.0, 348.0, 1385.0, 6386.0, 17985.0, 44456.0, 140293.0, 368554.0]
+n_elements_se = [nan, nan, 2.0, 9.0, 32.0, 162.0, 1052.0, 5676.0, 19672.0, 72949.0, 221134.0]
+missing_note = "Rows printed without SE (largest orders) are stored with se = nan."
+
+[data.lcx_total_elements]
+description = "Total number of vessel elements per order, LCX, computed by the authors from the connectivity matrix starting at the trunk (Appendix)"
+location = "Table 9"
+provenance = "FT"
+statistic = "mean +/- SE"
+order = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+n_elements_mean = [1.0, 10.0, 51.0, 144.0, 638.0, 2148.0, 7554.0, 17820.0, 56915.0, 149380.0]
+n_elements_se = [nan, nan, nan, 4.0, 51.0, 312.0, 2338.0, 8001.0, 29829.0, 90276.0]
+missing_note = "Rows printed without SE (largest orders) are stored with se = nan."
+
+[data.whole_heart_total_elements]
+description = "Total number of vessel elements per order, whole heart (RCA + left common coronary artery, LCCA), computed by the authors from the connectivity matrix starting at the trunk (Appendix)"
+location = "Table 9"
+provenance = "FT"
+statistic = "mean +/- SE"
+order = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+n_elements_mean = [2.0, 18.0, 83.0, 283.0, 909.0, 3524.0, 16093.0, 46194.0, 115638.0, 339873.0, 923339.0]
+n_elements_se = [nan, nan, 2.0, 11.0, 44.0, 247.0, 2117.0, 12089.0, 42301.0, 152326.0, 480169.0]
+missing_note = "Rows printed without SE (largest orders) are stored with se = nan."
+
+[data.horton_fits]
+description = "Least-squares fits log10(Y_n) = a + b*n vs order n (Eqs. 2, 4, 5). Y = mean diameter (um), mean length (um), or total number of elements/segments. Ratio = 10^b between successive orders. Lengths fitted separately for orders 1-3 and 4-11."
+location = "Table 4"
+provenance = "FT"
+columns = ["elements_RCA", "elements_LAD", "elements_LCX", "segments_RCA", "segments_LAD", "segments_LCX"]
+diameter_a = [0.556, 0.549, 0.499, 0.586, 0.587, 0.533]
+diameter_b = [0.259, 0.264, 0.277, 0.257, 0.26, 0.275]
+diameter_R2 = [0.991, 0.992, 0.986, 0.994, 0.994, 0.989]
+diameter_ratio = [1.81, 1.84, 1.89, 1.81, 1.82, 1.88]
+length_o1to3_a = [2.01, 2.01, 2.01, 1.8, 1.7, 1.7]
+length_o1to3_b = [0.077, 0.056, 0.056, 0.045, 0.054, 0.054]
+length_o1to3_R2 = [0.967, 0.972, 0.972, 0.971, 0.969, 0.969]
+length_o1to3_ratio = [1.19, 1.14, 1.14, 1.11, 1.13, 1.13]
+length_o4up_a = [1.13, 1.28, 1.22, 1.86, 1.77, 1.79]
+length_o4up_b = [0.327, 0.305, 0.342, 0.15, 0.158, 0.187]
+length_o4up_R2 = [0.975, 0.99, 0.995, 0.948, 0.952, 0.921]
+length_o4up_ratio = [2.12, 2.02, 2.2, 1.41, 1.44, 1.54]
+number_a = [6.35, 6.32, 5.95, 6.35, 6.36, 6.01]
+number_b = [0.544, 0.545, 0.553, 0.45, 0.458, 0.474]
+number_R2 = [0.991, 0.992, 0.986, 0.998, 0.998, 0.997]
+number_ratio = [3.5, 3.51, 3.57, 2.82, 2.87, 2.98]
+units_note = "Diameter fit in um, length fit in um (Fig. 7 axis), number dimensionless. R2 is the correlation coefficient as labelled in the source."

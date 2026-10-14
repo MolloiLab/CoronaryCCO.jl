@@ -1,0 +1,95 @@
+[meta]
+id = "kanatsuka1990_microvessel_velocity"
+data_type = "experimental"
+validates = "Red-cell velocity vs driving (aortic) pressure in a subepicardial arteriole, venule and capillaries during long diastoles under maximal vasodilation; zero-flow pressure; passive arterial microvessel diameter change with pressure"
+species = "dog"
+preparation = "16 young mongrel dogs (4.5-8.5 kg), urethane 500 mg/kg + chloralose 60 mg/kg, open chest, atrial pacing 140 bpm after sinus-node suppression. Epimyocardial microcirculation transilluminated by a glass fibre in a 20 G needle inserted in the subepicardial LV muscle, viewed through a 'floating objective' that follows cardiac motion; two 24 G needles through the midmyocardium limit horizontal motion. High-speed cine (128-500 frames/s); RBC velocity by frame-to-frame tracking of red cells / plasma gaps."
+conditions = "Maximal vasodilation with dilazep 150 ug/kg i.v. (adenosine potentiator; dipyridamole gave no further dilation). Long diastoles produced by bilateral vagal stimulation + abrupt cessation of pacing, so aortic pressure decays with no cardiac contraction. Velocity tracked only in vessels < 30 um while aortic pressure was high."
+verification = "mixed"
+access = "Publisher PDF (ahajournals.org) read via Wayback Machine capture 20231126042120 of https://www.ahajournals.org/doi/pdf/10.1161/01.res.66.2.503"
+notes = """Fig. 5 shows 'typical examples' (one arteriole, one venule, and the average of 3 capillaries in one field), not group means.
+Diameters of the example arteriole/venule are not given; per Methods, velocity at higher aortic pressures was measured only in vessels
+< 30 um, so the example arteriole and venule are presumably < 30 um. Velocity rose linearly with aortic pressure above ~30 mmHg
+(r = 0.99 +/- 0.02) and became curvilinear below 30 mmHg. Data are mean +/- SD in tables/text.
+In the capillary panel one point (~16 mmHg) is drawn as a filled circle; its meaning is not stated. Capillary points carry SD/SE bars
+across the 3 capillaries (not digitized). Zero-velocity points are plotted on the x-axis at the pressure where RBC progression stopped
+(no antegrade movement for 1 s; detection limit ~2 um/s)."""
+use_in_model = """Diastolic, non-contracting, maximally dilated pressure-flow check of the microvascular end of the tree: drive the model with inlet
+pressure 50 -> 0 mmHg (venous outlet ~3 mmHg, right atrial) and compare RBC/mean velocity in < 30 um arterioles, capillaries and venules.
+Expect the model's capillary velocities near ~1.3 mm/s at 50 mmHg aortic pressure under dilation; the zero-flow pressure (13.6 mmHg)
+is a non-Poiseuille effect (yield-stress / waterfall) that a purely Poiseuille model will not reproduce."""
+
+[source]
+authors = ["Kanatsuka H", "Ashikawa K", "Komaru T", "Suzuki T", "Takishima T"]
+year = 1990
+title = "Diameter change and pressure-red blood cell velocity relations in coronary microvessels during long diastoles in the canine left ventricle"
+journal = "Circ Res"
+volume = "66"
+issue = "2"
+pages = "503-510"
+doi = "10.1161/01.res.66.2.503"
+crossref_verified = "2026-10-14; Crossref title exact match ('Diameter change and pressure-red blood cell velocity relations in coronary microvessels during long diastoles in the canine left ventricle.')"
+pmid = "2297814"
+
+[data.arteriole_velocity_vs_pressure]
+description = "RBC velocity vs aortic pressure in one representative subepicardial arteriole during a long diastole, maximal vasodilation"
+location = "Fig. 5, left panel ('Arteriole')"
+provenance = "fig"
+figure = "Fig. 5"
+digitization_error = "about +/-0.3 mmHg and +/-30 um/s (ring centres located on the 600 dpi embedded page scan; 1 px = 0.045 mmHg, 4.5 um/s)"
+statistic = "single vessel, individual frames"
+aortic_pressure_mmHg = [13.8, 16.9, 20.0, 22.1, 23.1, 24.2, 28.3, 31.4, 34.5, 40.5, 50.7]
+velocity_um_s = [0.0, 155.0, 350.0, 935.0, 1248.0, 1688.0, 2666.0, 3251.0, 4045.0, 5338.0, 7021.0]
+missing_note = "Vessel diameter not reported (presumably < 30 um, see meta.notes)."
+
+[data.venule_velocity_vs_pressure]
+description = "RBC velocity vs aortic pressure in one representative subepicardial venule during a long diastole, maximal vasodilation"
+location = "Fig. 5, middle panel ('Venule')"
+provenance = "fig"
+figure = "Fig. 5"
+digitization_error = "about +/-0.3 mmHg and +/-15 um/s (1 px = 0.045 mmHg, 2.2 um/s)"
+statistic = "single vessel, individual frames"
+aortic_pressure_mmHg = [13.9, 16.9, 20.1, 23.0, 23.0, 27.1, 30.0, 32.1, 36.3, 40.3, 44.3, 50.3]
+velocity_um_s = [0.0, 116.0, 153.0, 249.0, 312.0, 519.0, 974.0, 1120.0, 1546.0, 2022.0, 2697.0, 3312.0]
+missing_note = "Vessel diameter not reported."
+
+[data.capillary_velocity_vs_pressure]
+description = "RBC velocity vs aortic pressure, average of 3 capillaries in one field, long diastole, maximal vasodilation"
+location = "Fig. 5, right panel ('Capillary', n = 3)"
+provenance = "fig"
+figure = "Fig. 5"
+digitization_error = "about +/-0.3 mmHg and +/-10 um/s (1 px = 0.045 mmHg, 1.1 um/s)"
+statistic = "mean of 3 capillaries (error bars not digitized)"
+aortic_pressure_mmHg = [12.1, 16.2, 20.2, 26.1, 29.4, 31.1, 32.2, 34.3, 35.3, 40.1, 42.3, 44.2, 48.2]
+velocity_um_s = [0.0, 85.0, 154.0, 302.0, 422.0, 491.0, 652.0, 729.0, 754.0, 1014.0, 1107.0, 1228.0, 1356.0]
+missing_note = "The 16.2 mmHg point is a filled symbol of unexplained meaning. Error bars omitted."
+
+[data.zero_flow_pressure]
+description = "Aortic pressure at which antegrade RBC progression stopped in the microvessels, with LVEDP and right atrial pressure"
+location = "Table 3"
+provenance = "FT"
+statistic = "individual dogs; summary mean +/- SD"
+dog = [1, 2, 3, 4, 5]
+zero_flow_pressure_mmHg = [12.0, 14.0, 16.0, 14.0, 12.0]
+lvedp_mmHg = [9.0, 12.0, 5.0, 7.0, 10.0]
+right_atrial_pressure_mmHg = [9.0, 0.0, 0.0, 0.0, 7.0]
+mean_zero_flow_pressure_mmHg = 13.6
+sd_zero_flow_pressure_mmHg = 1.7
+missing_note = "Right atrial pressure was held at 0 by venting in 3 dogs; zero-flow pressure unaffected."
+
+[data.diameter_change_long_diastole]
+description = "Internal diameters of arterial and venous microvessels early vs end of long diastole (maximal vasodilation)"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD"
+vessel = ["arterial microvessels", "venous microvessels"]
+n_vessels = [12, 7]
+early_aortic_pressure_mmHg = [100.0, 88.0]
+early_aortic_pressure_sd_mmHg = [nan, 9.0]
+end_aortic_pressure_mmHg = [19.0, 25.0]
+end_aortic_pressure_sd_mmHg = [6.0, 4.0]
+early_diameter_um = [116.0, 85.0]
+early_diameter_sd_um = [69.0, 46.0]
+end_diameter_um = [89.0, 82.0]
+end_diameter_sd_um = [52.0, 46.0]
+missing_note = "Arterial early-diastole value is defined at aortic pressure 100 mmHg (no SD). Abstract gives 116.2 +/- 68.5 and 88.8 +/- 52.2 um, minimal pressure 19.2 +/- 6.4 mmHg. Arterial microvessels ranged 40-221 um, venous 48-183 um."

@@ -1,0 +1,38 @@
+# Crystal GJ, Downey HF, Bashour FA (1981). Small vessel and total coronary blood volume during intracoronary
+# adenosine. Dog LV. ABSTRACT ONLY (AJP full text blocked; no open copy found). Only relative changes available.
+
+[meta]
+id = "crystal1981_myocardial_blood_volume"
+data_type = "experimental"
+validates = "Direction and size of the change in total coronary blood volume vs small-vessel (capillary-dominated) blood volume with maximal adenosine vasodilation at constant perfusion pressure: total volume +75% with flow +574%, small-vessel volume and small-vessel hematocrit unchanged."
+species = "dog"
+preparation = "Anesthetized open-chest dogs; coronary artery perfused at constant pressure; intracoronary adenosine at a maximally dilating dose. Total coronary blood volume (CBV) from washout of 51Cr-RBC; small-vessel blood volume (MSVBV, index of open-capillary density) and small-vessel hematocrit (MSVHct) from 51Cr-RBC plus a plasma label (131I-albumin or 59Fe-siderophilin) in tissue samples; CBF by electromagnetic flowmeter; MVO2 by Fick; tissue PO2 by platinum electrodes."
+conditions = "Control vs maximal intracoronary adenosine, constant coronary perfusion pressure."
+verification = "abs"
+access = "Abstract via PubMed E-utilities (PMID 7270706). journals.physiology.org blocked (HTTP 403); Unpaywall: closed."
+notes = """
+Absolute volumes, hematocrits, n and the definition of the vessel-size cut-off for 'small vessels' are not in the abstract. The authors infer relaxation of arteriolar resistance vessels and of vessels larger than 100 um diameter, but not of precapillary sphincters.
+MSVHct was consistently much less than large-vessel Hct (no value in abstract), so both red-cell and plasma labels are needed for small-vessel volume.
+"""
+use_in_model = """Under a 'full dilation' setting, model total intramyocardial+epicardial blood volume should rise much less than flow (here +75% for +574% flow), and the capillary compartment should change little if capillary diameters are fixed. Compare model ratios (stress/rest) with relative_changes."""
+
+[source]
+authors = ["Crystal GJ", "Downey HF", "Bashour FA"]
+year = 1981
+title = "Small vessel and total coronary blood volume during intracoronary adenosine"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "241"
+issue = "2"
+pages = "H194-H201"
+doi = "10.1152/ajpheart.1981.241.2.H194"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 241, issue 2, H194-H201; authors Crystal, Downey, Bashour)"
+pmid = "7270706"
+
+[data.relative_changes]
+description = "Percent change from control with maximal intracoronary adenosine"
+location = "Abstract"
+provenance = "abs"
+quantity = ["total coronary blood volume (CBV)", "coronary blood flow (CBF)", "myocardial PO2", "small-vessel blood volume (MSVBV)", "small-vessel hematocrit (MSVHct)", "MVO2"]
+change_percent = [75.0, 574.0, 122.0, nan, nan, nan]
+significant = [true, true, true, false, false, false]
+missing_note = "nan = 'did not affect significantly'; numeric change not given. No absolute values, SDs or n in abstract."

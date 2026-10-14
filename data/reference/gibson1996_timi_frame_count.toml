@@ -1,0 +1,120 @@
+[meta]
+id = "gibson1996_timi_frame_count"
+data_type = "experimental"
+validates = "Angiographic contrast transit time from coronary ostium to standard distal landmarks (TIMI frame count, TFC; corrected TFC, CTFC) in arteries with normal flow, per artery (LAD, LCx, RCA); ostium-to-landmark path lengths"
+species = "human"
+preparation = "Diagnostic cine coronary angiography. Normal-value cohort: 78 consecutive patients at the West Roxbury VA Hospital catheterization laboratory without myocardial infarction, with visually normal flow and technically adequate films (one artery per patient: RCA n = 38, LCx n = 21, LAD n = 19). Hand injections of contrast. TIMI 4 trial films (acute MI, after thrombolysis) were used for the reproducibility and catheter-size analyses."
+conditions = "Cinefilm at 30 frames/s. In the TIMI 4 trial protocol, sublingual or IV nitroglycerin was given at both angiographic time points and repeated every 15 min 'to preserve a state of maximum vasodilation'. The paper does not state nitroglycerin use, catheter size, or contrast agent for the 78-patient normal cohort. Resting (no pharmacological hyperemia)."
+verification = "FT"
+access = "HighWire full-text HTML read via Wayback Machine capture 20120513055257 of http://circ.ahajournals.org:80/content/93/5/879.full (and capture 20180308025922 of the same article). Tables 1-2 are image/popup tables that were not archived; all numbers below are from the Results/Methods/Discussion text."
+notes = """TFC definition (Methods, Fig 1): first frame = first frame in which a column of nearly full or fully concentrated dye extends across the
+entire width of the artery origin, touches both borders, and moves antegrade. Last frame = frame in which dye first enters the distal
+landmark branch (full opacification not required). TFC = number of frames between these (last frame counted).
+Landmarks (Methods, Figs 2-4): LAD = distal bifurcation ('mustache', 'pitchfork', 'whale's tail'), usually at the apex; for a wraparound LAD,
+the branch closest to the apex. LCx = distal-most branch of the marginal/LCx segment with the longest total dye path that passes the
+culprit lesion (usually ~5/6 of the way down the vessel). RCA = first branch of the posterolateral extension after the origin of the
+posterior descending artery, regardless of size.
+CTFC = TFC for LCx and RCA; LAD TFC divided by 1.7.
+Frame-rate correction (Limitations): if filmed at other than 30 frames/s, multiply the TFC by 30 / (actual frame rate).
+Results in acute-MI culprit/nonculprit arteries (TIMI 4) are not reproduced here except where noted; they are not normal-flow data.
+Gibson cites Seiler et al. (artery length proportional to subtended mass) and Dodge et al. (3-D vector model) for lengths."""
+use_in_model = """Simulate a bolus injection at the ostium of the model tree and record the time at which contrast first arrives at the equivalent
+distal landmark of each main artery (LAD apical bifurcation, distal-most LCx marginal branch, first RCA posterolateral branch).
+Convert time to frames: TFC = t_arrival[s] * 30. Compare to normal_tfc_by_artery (uncorrected) or, after dividing LAD by 1.7, to the CTFC.
+Normal 95% range of CTFC is 15-27 frames (0.50-0.90 s). The arrival front is driven by the leading (centerline/peak) velocity, not the
+mean, and depends on cardiac phase at injection (see abaci1999_tfc_confounders). The path lengths in landmark_path_lengths give an
+independent check of epicardial tree geometry. Resting flow conditions."""
+
+[source]
+authors = ["Gibson CM", "Cannon CP", "Daley WL", "Dodge JT Jr", "Alexander B Jr", "Marble SJ", "McCabe CH", "Raymond L", "Fortin T", "Poole WK", "Braunwald E"]
+year = 1996
+title = "TIMI frame count: a quantitative method of assessing coronary artery flow"
+journal = "Circulation"
+volume = "93"
+issue = "5"
+pages = "879-888"
+doi = "10.1161/01.CIR.93.5.879"
+crossref_verified = "2026-10-14; Crossref title 'TIMI Frame Count' (subtitle not in Crossref record); journal, volume 93, issue 5, pages 879-888, year 1996 and first author Gibson match"
+pmid = "8598078"
+
+[data.normal_tfc_by_artery]
+description = "Uncorrected TIMI frame count in arteries with normal flow in the absence of acute MI (78 consecutive patients, one artery each), filmed at 30 frames/s"
+location = "Results, 'TIMI Frame Count in the Absence of Acute MI: The CTFC' (p. 882); also Abstract"
+provenance = "FT"
+statistic = "mean +/- SD"
+artery = ["LAD", "LCx", "RCA"]
+tfc_mean_frames = [36.2, 22.2, 20.4]
+tfc_sd_frames = [2.6, 4.1, 3.0]
+n_arteries = [19, 21, 38]
+frame_rate_fps = 30.0
+missing_note = "Table 2 (per-location values incl. MI groups) is an unarchived image table; text values only."
+
+[data.normal_ctfc]
+description = "Corrected TIMI frame count (LAD divided by 1.7) in normal-flow arteries, and pooled normal range"
+location = "Results p. 882 ('yielding a CTFC of 21.1 +/- 1.5 frames for the LAD'; 'mean CTFC for all 78 normal arteries was 21.0 frames with an SD of 3.1 frames, yielding 95% CIs for normal flow of >=15 to <=27 frames')"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["LAD_corrected", "all_78_normal_arteries"]
+ctfc_mean_frames = [21.1, 21.0]
+ctfc_sd_frames = [1.5, 3.1]
+n_arteries = [19, 78]
+normal_range_lower_frames = 15.0
+normal_range_upper_frames = 27.0
+normal_range_definition = "mean +/- 1.96 SD of the 78 normal arteries (paper calls it the 95% CI for normal flow)"
+missing_note = ""
+
+[data.lad_correction_factor]
+description = "LAD correction factor: ratio of LAD TFC to mean of RCA and LCx TFC in normal arteries"
+location = "Abstract; Results p. 882; Discussion 'Differences in Flow Among the Three Coronary Arteries'"
+provenance = "FT"
+value = 1.7
+unit = "dimensionless"
+n = 78
+geometric_model_ratio = 1.55
+geometric_model_note = "Ratio predicted from 3-D vector algebra model of Dodge et al. (paper ref 11) of landmark distances: LAD/RCA 1.5, LAD/LCx 1.6, average 1.55"
+missing_note = ""
+
+[data.landmark_path_lengths]
+description = "Approximate ostium-to-TIMI-landmark path length in the average normal-sized human heart, from the 3-D vector algebra model of Dodge et al. (37 normal-sized hearts)"
+location = "Results p. 882"
+provenance = "FT"
+statistic = "single model value (no SD given)"
+artery = ["LAD", "RCA", "LCx"]
+path_length_cm = [14.7, 9.8, 9.3]
+landmark_definition = ["TIMI landmark in the average LAD (distal apical bifurcation)", "RCA to the midpoint of the first third of the posterolateral branch (usual location of the first small branch)", "LCx to the midpoint of the distal third of the third marginal branch"]
+missing_note = "These are model (Dodge et al. geometry) values quoted by Gibson, not measured in the 78 patients."
+
+[data.reproducibility]
+description = "Difference in TFC between two consecutive hand injections spaced 1-2 min apart in the same infarct-related artery (85 pairs, TIMI 4)"
+location = "Results, 'Variability in the TIMI Frame-Counting Method' (p. 881); Abstract"
+provenance = "FT"
+statistic = "mean +/- SD of absolute difference"
+mean_abs_difference_frames = 4.7
+sd_abs_difference_frames = 3.9
+range_frames = [0.0, 18.0]
+coefficient_of_variation_pct = 9.0
+n_pairs = 85
+missing_note = "Measured in acute-MI infarct arteries, not in normal arteries."
+
+[data.catheter_size]
+description = "90-min CTFC in patent culprit arteries after thrombolysis by catheter size (no clear relation, four-way P = .40)"
+location = "Results, 'Relationship Between CTFC, Cardiac Catheterization, and Hemodynamic Parameters' (p. 882)"
+provenance = "FT"
+statistic = "mean +/- SD"
+catheter_french = [5, 6, 7, 8]
+ctfc_mean_frames = [32.2, 40.8, 39.5, 34.2]
+ctfc_sd_frames = [10.6, 21.9, 19.5, 14.7]
+n_arteries = [7, 106, 82, 23]
+p_value_4way = 0.40
+missing_note = "Acute-MI culprit arteries, not normal arteries. In a one-center subgroup the paper reports no correlation of 90-min CTFC with heart rate, blood pressure, RA pressure, PCWP, cardiac output or index (no numbers given). Number of injections before 90-min angiography: r = .055, P = .43."
+
+[data.nonculprit_ctfc]
+description = "CTFC in nonculprit (non-infarct) arteries during acute MI, for comparison with normal (21.0 +/- 3.1)"
+location = "Results, 'CTFC in Nonculprit Arteries' (p. 883); Abstract"
+provenance = "FT"
+statistic = "mean +/- SD"
+timepoint = ["90 min after thrombolysis", "18-36 h after thrombolysis"]
+ctfc_mean_frames = [25.5, 21.7]
+ctfc_sd_frames = [9.8, 7.1]
+n_arteries = [77.0, nan]
+missing_note = "n at 18-36 h not stated in the text. 77 nonculprit arteries were assessed in films from one center."

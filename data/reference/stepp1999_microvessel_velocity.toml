@@ -1,0 +1,125 @@
+[meta]
+id = "stepp1999_microvessel_velocity"
+data_type = "experimental"
+validates = "Blood (tracer-microsphere) velocity vs diameter in subepicardial coronary small arteries and arterioles (40-430 um), at rest and during maximal adenosine vasodilation; derived wall shear stress"
+species = "dog"
+preparation = "48 adult mongrel dogs (5-15 kg), pentobarbital 30 mg/kg, open chest, high-frequency jet ventilation synchronized to the cardiac cycle, propranolol 1 mg/kg to slow the heart, four 22-gauge pins through the LV to limit vertical motion. Epicardial microvessels imaged by stroboscopic fluorescence intravital microscopy (FITC-dextran for diameter). Velocity from 10 um fluorescent microspheres injected into a coronary artery, triple-strobed within one video frame (8 ms between flashes); spheres within 5% of the diameter from the wall or out of focus excluded."
+conditions = "Basal (beating heart, propranolol). Maximal vasodilation: intracoronary adenosine 25 ug/kg/min for 10 min (coronary flow 12 +/- 3 -> 62 +/- 10 mL/min, 5.3-fold). Also L-NMMA alone and L-NMMA + adenosine (summary values only). All velocities taken in mid/peak diastole (75% of the cardiac cycle)."
+verification = "mixed"
+access = "Publisher PDF (circ.ahajournals.org) read via Wayback Machine capture 20170817071219 of http://circ.ahajournals.org/content/circulationaha/100/14/1555.full.pdf; HTML full text via capture 20160728025939"
+notes = """Velocity is the velocity of 10 um tracer microspheres moving in the focal plane away from the wall, measured in diastole only.
+It is therefore closer to a diastolic near-centreline velocity than to the cycle-averaged mean velocity; the authors nevertheless used it
+directly as v in tau = 4*v*eta/r. In 3 preliminary dogs diastolic velocity was 46% greater than systolic (7 vs 5 mm/s).
+Fig. 2A (basal) and Fig. 3A (basal filled + adenosine open) are 300 dpi raster stencils inside the PDF; points were located by blob
+detection and least-squares disk fitting for overlapping markers. Fig. 2A: all 19 points recovered (mean 7.1 mm/s, matches text 7 +/- 1).
+Fig. 3A adenosine: 14 of the 16 points recovered (mean 14.5 mm/s vs text 15 +/- 1); 2 open circles are hidden behind filled basal markers.
+Basal points also replotted in Fig. 3A agree with Fig. 2A to within ~3 um / 0.1 mm/s.
+Vessel class split used by the authors: small arteries > 160 um, arterioles < 160 um."""
+use_in_model = """Compare model diastolic (or, with a correction, mean) velocity in subepicardial arterial segments 40-430 um against basal_velocity_vs_diameter,
+and under a maximal-dilation run against adenosine_velocity_vs_diameter. If the model reports cross-sectional mean velocity of Poiseuille
+flow, the tracer velocity here is expected to exceed it (centreline = 2x mean for parabolic flow; blunted profiles in blood reduce this),
+so compare the trend with diameter and the rest/adenosine ratio (~2.1x) rather than absolute values alone."""
+
+[source]
+authors = ["Stepp DW", "Nishikawa Y", "Chilian WM"]
+year = 1999
+title = "Regulation of shear stress in the canine coronary microcirculation"
+journal = "Circulation"
+volume = "100"
+issue = "14"
+pages = "1555-1561"
+doi = "10.1161/01.cir.100.14.1555"
+crossref_verified = "2026-10-14; Crossref title exact match ('Regulation of Shear Stress in the Canine Coronary Microcirculation')"
+pmid = "10510060"
+
+[data.basal_velocity_vs_diameter]
+description = "Individual vessels: microsphere velocity vs diameter, basal conditions, mid-diastole"
+location = "Fig. 2A (19 vessels, 13 dogs)"
+provenance = "fig"
+figure = "Fig. 2A"
+digitization_error = "about +/-2 um in diameter and +/-0.2 mm/s in velocity (blob centroids on the 300 dpi embedded raster; 1 px = 0.61 um, 0.065 mm/s); +/-4 um, +/-0.4 mm/s for the 5 points in overlapping markers"
+statistic = "individual vessels"
+diameter_um = [41.0, 54.0, 83.0, 95.0, 96.0, 98.0, 100.0, 103.0, 128.0, 144.0, 147.0, 154.0, 165.0, 180.0, 186.0, 201.0, 229.0, 320.0, 434.0]
+velocity_mm_s = [2.3, 5.6, 5.8, 4.2, 4.7, 12.8, 8.2, 4.2, 8.4, 8.8, 9.1, 7.8, 11.5, 5.0, 7.2, 6.9, 6.6, 3.6, 12.6]
+missing_note = ""
+
+[data.adenosine_velocity_vs_diameter]
+description = "Individual vessels: microsphere velocity vs diameter during intracoronary adenosine (maximal vasodilation), mid-diastole"
+location = "Fig. 3A open circles (16 vessels, 11 dogs)"
+provenance = "fig"
+figure = "Fig. 3A"
+digitization_error = "about +/-2 um and +/-0.3 mm/s for isolated markers; +/-5 um and +/-0.6 mm/s for markers in overlapping clusters (1 px = 0.6 um, 0.067 mm/s)"
+statistic = "individual vessels"
+diameter_um = [84.0, 92.0, 105.0, 106.0, 110.0, 111.0, 113.0, 140.0, 158.0, 165.0, 169.0, 183.0, 328.0, 374.0]
+velocity_mm_s = [25.6, 7.3, 10.8, 12.5, 14.9, 15.5, 16.2, 12.1, 16.6, 10.1, 11.0, 9.5, 24.3, 16.6]
+missing_note = "Only 14 of 16 adenosine points could be resolved; 2 open circles are fully overlapped by filled basal markers (likely near 95-150 um)."
+
+[data.velocity_summary]
+description = "Mean microvascular (microsphere) velocity by condition, all vessels pooled"
+location = "Results text (p. 1557-1559)"
+provenance = "FT"
+statistic = "mean +/- SEM"
+condition = ["basal", "adenosine", "L-NMMA", "L-NMMA + adenosine"]
+velocity_mm_s = [7.0, 15.0, 10.0, 21.0]
+velocity_sem_mm_s = [1.0, 1.0, 1.0, 1.0]
+n_vessels = [19, 16, 16, 16]
+n_dogs = [13, 11, 10, 9]
+missing_note = ""
+
+[data.systole_vs_diastole]
+description = "Preliminary comparison of velocity at mid-systole (25% of cycle) vs mid-diastole (75% of cycle)"
+location = "Results, 'Preliminary Studies'"
+provenance = "FT"
+statistic = "mean (no dispersion given)"
+n_dogs = 3
+phase = ["mid-systole", "mid-diastole"]
+velocity_mm_s = [5.0, 7.0]
+missing_note = "No SD/SEM reported."
+
+[data.shear_stress_summary]
+description = "Wall shear stress (4*v*eta/r) by vessel class and condition"
+location = "Abstract and Results text"
+provenance = "FT"
+statistic = "mean +/- SEM"
+vessel_class = ["arterioles < 160 um", "small arteries > 160 um"]
+basal_dyn_cm2 = [19.0, 10.0]
+basal_sem_dyn_cm2 = [2.0, 2.0]
+adenosine_dyn_cm2 = [37.0, 13.0]
+adenosine_sem_dyn_cm2 = [5.0, 3.0]
+lnmma_dyn_cm2 = [25.0, 10.0]
+lnmma_sem_dyn_cm2 = [6.0, 2.0]
+lnmma_adenosine_dyn_cm2 = [54.0, 28.0]
+lnmma_adenosine_sem_dyn_cm2 = [5.0, 4.0]
+missing_note = "Small-artery basal SEM given as 2 (abstract/Results) and 1 (L-NMMA paragraph); 2 recorded. Viscosity from systemic hematocrit via Brooks et al. 1970; values not reported."
+
+[data.shear_fit_basal]
+description = "Published 2nd-order polynomial fit of basal shear stress (dyn/cm2) vs diameter x (um): y = c0 + c1*x + c2*x^2"
+location = "Fig. 2 legend"
+provenance = "FT"
+c0 = 30.833
+c1 = -0.134
+c2 = 1.817e-4
+r = 0.65
+missing_note = ""
+
+[data.shear_fit_adenosine]
+description = "Published 2nd-order polynomial fit of shear stress (dyn/cm2) vs diameter x (um) during adenosine: y = c0 + c1*x + c2*x^2"
+location = "Fig. 3 legend"
+provenance = "FT"
+c0 = 96.47
+c1 = -0.666
+c2 = 0.001
+r = 0.70
+missing_note = ""
+
+[data.coronary_flow]
+description = "Total coronary blood flow (Transonic probe on the instrumented epicardial artery), basal vs adenosine"
+location = "Results, 'Preliminary Studies'"
+provenance = "FT"
+statistic = "mean +/- SEM"
+n_dogs = 4
+basal_ml_min = 12.0
+basal_sem_ml_min = 3.0
+adenosine_ml_min = 62.0
+adenosine_sem_ml_min = 10.0
+missing_note = "Perfused mass not reported."

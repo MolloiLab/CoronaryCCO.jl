@@ -1,0 +1,161 @@
+[meta]
+id = "chilian1991_epi_endo_pressure"
+data_type = "experimental"
+validates = "Transmural (subepicardial vs subendocardial) arteriolar and venular pressures in ~100 um microvessels, microvascular pressure gradient, and % of total resistance in arteries / microvessels / veins, during maximal vasodilation"
+species = "pig"
+preparation = "Isolated, blood-saline perfused porcine hearts (pigs 7-15 kg, 8-12 weeks, n = 39 operated; data from 23 successful protocol-1 and 5 protocol-2 experiments). Perfusate ~30-40% whole blood in physiological saline, hematocrit 15-25%, 37 C, perfused via a cannula in the left main coronary artery. Posterior LV wall incised to expose subendocardium (anterior papillary muscle and adjacent free wall) and subepicardium (territory of LAD diagonal branches). Servo-null micropipette pressures (1-2 um tips); diameters by intravital video microscopy; regional flow by 15 um radioactive microspheres. Venous outflow drained to atmospheric pressure."
+conditions = "Cardiac arrest with lidocaine (50-100 mg) or sodium pentobarbital (150-250 mg), which the paper states also produced maximal coronary vasodilation (confirmed by abolished reactive hyperemia). Coronary perfusion pressure (CPP) set to 100, 80, 60 and 40 mmHg. Non-beating heart: no extravascular compression."
+verification = "mixed"
+access = "Publisher PDF (ahajournals.org) read via Wayback Machine capture 20220313122417 of https://www.ahajournals.org/doi/pdf/10.1161/01.res.69.3.561"
+notes = """All values in the paper are mean +/- SEM.
+Resistance partition definitions (paper, Data Analysis): arterial = pressure drop from left-main cannula (CPP) to the measured arteriole;
+microvascular = arteriole-to-venule drop in the same region; venous = venule pressure to zero (atmospheric outflow).
+Relative resistance (%) = pressure drop across compartment / CPP x 100.
+Measured arterioles and venules were deliberately chosen in the 80-120 um range on both surfaces.
+DISCREPANCY: the abstract/text give venular pressures at CPP 100 of 33 +/- 3 (endo) and 22 +/- 3 (epi) mmHg, while the
+venular points digitized from Fig. 1 at CPP 100 are ~27 (endo) and ~17 (epi) mmHg. Arteriolar values agree (60 vs 61, 80 vs 79.5).
+The Fig. 2 microvascular gradients (~34 endo, ~62 epi at CPP 100) are consistent with Fig. 1, not with the abstract venular values.
+Fig. 1 venules n = 11 (epi) and 13 (endo); Fig. 2 used only preparations with paired arteriolar+venular measurements (n = 5 epi, 6 endo).
+Both versions are recorded; the source of the difference is not stated in the paper."""
+use_in_model = """Run the model under maximal-vasodilation, non-beating (no intramyocardial pressure) settings with inlet pressure = CPP and venous outlet = 0 mmHg.
+Compare (1) mean pressure in arterioles of diameter 80-120 um, split by transmural depth (outer vs inner third), to arteriole_pressure;
+(2) pressure in venules 80-120 um to venule_pressure; (3) the arterial / microvascular / venous fractions of the total pressure drop to resistance_distribution.
+Note the perfusate hematocrit was 15-25%, so use a reduced discharge hematocrit in the Pries viscosity law if matching absolute flows (Table 1)."""
+
+[source]
+authors = ["Chilian WM"]
+year = 1991
+title = "Microvascular pressures and resistances in the left ventricular subepicardium and subendocardium"
+journal = "Circ Res"
+volume = "69"
+issue = "3"
+pages = "561-570"
+doi = "10.1161/01.res.69.3.561"
+crossref_verified = "2026-10-14; Crossref title exact match ('Microvascular pressures and resistances in the left ventricular subepicardium and subendocardium.')"
+pmid = "1873859"
+
+[data.vessel_diameters]
+description = "Diameters of the micropunctured arterioles and venules"
+location = "Results, 'Coronary Microvascular Pressures and Diameters' (p. 564-565)"
+provenance = "FT"
+statistic = "mean +/- SEM"
+region = ["subepicardium", "subepicardium", "subendocardium", "subendocardium"]
+vessel = ["arteriole", "venule", "arteriole", "venule"]
+diameter_mean_um = [111.0, 93.0, 96.0, 105.0]
+diameter_sem_um = [12.0, 8.0, 13.0, 16.0]
+n_vessels = [9, 11, 12, 13]
+missing_note = ""
+
+[data.pressures_at_cpp100_text]
+description = "Arteriolar and venular pressures at CPP = 100 mmHg, as stated in abstract and results text"
+location = "Abstract"
+provenance = "FT"
+statistic = "mean +/- SEM"
+cpp_mmHg = 100.0
+region = ["subendocardium", "subendocardium", "subepicardium", "subepicardium"]
+vessel = ["arteriole", "venule", "arteriole", "venule"]
+pressure_mean_mmHg = [60.0, 33.0, 80.0, 22.0]
+pressure_sem_mmHg = [4.0, 3.0, 6.0, 3.0]
+missing_note = "Venular values differ from the Fig. 1 points (see meta.notes)."
+
+[data.arteriole_pressure]
+description = "Arteriolar (80-120 um) pressure vs coronary perfusion pressure, maximal vasodilation"
+location = "Fig. 1 (upper panel = Epicardium, lower panel = Endocardium; open circles)"
+provenance = "fig"
+figure = "Fig. 1"
+digitization_error = "about +/-1.5 mmHg on means, +/-1 mmHg on SEM (pixel-located marker centres and error-bar caps on a 250 dpi render; 1 px = 0.22 mmHg)"
+statistic = "mean +/- SEM"
+cpp_mmHg = [40.0, 60.0, 80.0, 100.0]
+epi_pressure_mean_mmHg = [33.2, 48.1, 62.7, 79.5]
+epi_pressure_sem_mmHg = [nan, 1.7, 2.9, 5.2]
+n_epi = 9
+endo_pressure_mean_mmHg = [24.7, 34.7, 49.4, 61.0]
+endo_pressure_sem_mmHg = [2.0, 4.1, 3.8, 3.9]
+n_endo = 12
+missing_note = "Epi SEM at CPP 40 is hidden inside the marker (smaller than ~1.5 mmHg)."
+
+[data.venule_pressure]
+description = "Venular (80-120 um) pressure vs coronary perfusion pressure, maximal vasodilation"
+location = "Fig. 1 (filled circles)"
+provenance = "fig"
+figure = "Fig. 1"
+digitization_error = "about +/-1.5 mmHg on means, +/-1 mmHg on SEM"
+statistic = "mean +/- SEM"
+cpp_mmHg = [40.0, 60.0, 80.0, 100.0]
+epi_pressure_mean_mmHg = [6.1, 10.2, 13.0, 16.8]
+epi_pressure_sem_mmHg = [nan, nan, nan, 2.0]
+n_epi = 11
+endo_pressure_mean_mmHg = [10.7, 15.6, 22.3, 27.4]
+endo_pressure_sem_mmHg = [nan, 2.0, 3.0, 5.0]
+n_endo = 13
+missing_note = "SEM bars hidden inside the marker where nan (smaller than ~1.5 mmHg). Values at CPP 100 are lower than the abstract's 22 (epi) and 33 (endo) mmHg; see meta.notes."
+
+[data.microvascular_gradient]
+description = "Arteriole-to-venule pressure gradient across the microcirculation (paired preparations)"
+location = "Fig. 2"
+provenance = "fig"
+figure = "Fig. 2"
+digitization_error = "about +/-1.5 mmHg on means, +/-1 mmHg on SEM (1 px = 0.21 mmHg)"
+statistic = "mean +/- SEM"
+cpp_mmHg = [40.0, 60.0, 80.0, 100.0]
+epi_gradient_mean_mmHg = [24.9, 36.0, 46.0, 62.0]
+epi_gradient_sem_mmHg = [3.0, 5.0, 5.0, 3.9]
+n_epi = 5
+endo_gradient_mean_mmHg = [11.7, 19.0, 25.0, 34.0]
+endo_gradient_sem_mmHg = [3.9, 3.9, 6.1, 3.9]
+n_endo = 6
+missing_note = ""
+
+[data.resistance_distribution]
+description = "Percent of total coronary resistance in arteries (CPP to ~100 um arteriole), microvessels (arteriole to ~100 um venule) and veins (venule to 0 mmHg)"
+location = "Fig. 3 (four bar-graph panels, one per CPP); open bars = subepicardium, filled bars = subendocardium"
+provenance = "fig"
+figure = "Fig. 3"
+digitization_error = "about +/-1.5 % on means, +/-1 % on SEM (bar tops and caps located by pixel; 1 px = 0.32-0.33 %)"
+statistic = "mean +/- SEM"
+cpp_mmHg = [100.0, 80.0, 60.0, 40.0]
+epi_arterial_pct = [20.2, 20.9, 20.4, 18.3]
+epi_arterial_sem_pct = [4.2, 5.5, 6.1, 4.2]
+epi_microvascular_pct = [63.8, 63.3, 63.4, 67.3]
+epi_microvascular_sem_pct = [6.8, 8.3, 4.1, 8.2]
+epi_venous_pct = [16.8, 16.3, 17.2, 14.9]
+epi_venous_sem_pct = [4.2, 4.1, 3.3, 3.4]
+endo_arterial_pct = [38.7, 38.6, 42.9, 45.6]
+endo_arterial_sem_pct = [4.7, 4.6, 3.6, 5.6]
+endo_microvascular_pct = [34.7, 33.3, 31.5, 31.3]
+endo_microvascular_sem_pct = [4.7, 6.0, 4.9, 5.9]
+endo_venous_pct = [28.7, 29.0, 27.4, 28.3]
+endo_venous_sem_pct = [3.8, 6.0, 3.9, 10.0]
+missing_note = "n per bar not given in the legend (Fig. 1/2 n apply). Digitized fractions sum to 98-105 % (means of independent bars)."
+
+[data.arterial_fraction_text]
+description = "Arterial component of total resistance across perfusion pressures, as stated in the Discussion"
+location = "Discussion, 'Physiological Implications' (p. 568)"
+provenance = "FT"
+statistic = "range over CPP 40-100 mmHg"
+region = ["subendocardium", "subepicardium"]
+arterial_pct_low = [30.0, 20.0]
+arterial_pct_high = [45.0, 25.0]
+missing_note = ""
+
+[data.regional_flow]
+description = "Regional myocardial blood flow (microspheres) in arrested, maximally dilated hearts"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SEM"
+cpp_mmHg = [40.0, 60.0, 80.0, 100.0]
+incised_endo_flow_ml_min_g = [2.4, 3.4, 5.2, 6.4]
+incised_endo_flow_sem_ml_min_g = [0.1, 0.2, 0.2, 0.4]
+incised_mid_flow_ml_min_g = [2.6, 3.7, 6.0, 6.9]
+incised_mid_flow_sem_ml_min_g = [0.1, 0.3, 0.4, 0.7]
+incised_epi_flow_ml_min_g = [1.9, 2.6, 4.2, 5.0]
+incised_epi_flow_sem_ml_min_g = [0.1, 0.2, 0.3, 0.4]
+n_incised = 7
+intact_endo_flow_ml_min_g = [2.8, 4.2, 6.1, 8.0]
+intact_endo_flow_sem_ml_min_g = [0.2, 0.3, 0.3, 0.6]
+intact_mid_flow_ml_min_g = [2.7, 4.0, 6.5, 8.3]
+intact_mid_flow_sem_ml_min_g = [0.2, 0.3, 0.4, 0.7]
+intact_epi_flow_ml_min_g = [1.9, 2.8, 4.5, 5.6]
+intact_epi_flow_sem_ml_min_g = [0.1, 0.3, 0.3, 0.4]
+n_intact = 5
+missing_note = "Perfusate hematocrit 15-25%."

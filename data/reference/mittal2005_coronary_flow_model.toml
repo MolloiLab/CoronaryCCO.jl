@@ -1,0 +1,112 @@
+# Mittal N, Zhou Y, Linares C, Ung S, Kaimovitz B, Molloi S, Kassab GS (2005).
+# Analysis of blood flow in the entire coronary arterial tree.
+# This is a MODEL (steady Poiseuille network on a stochastic reconstruction of the Kassab 1993
+# morphometry), not an experiment. Use it as a like-for-like benchmark for a model built on the
+# same anatomy, never as ground truth. All numbers are from the Results text of the publisher PDF.
+
+[meta]
+id = "mittal2005_coronary_flow_model"
+data_type = "model"
+validates = "Model-to-model benchmark: inlet flow, total arterial conductance, flow-diameter exponent, arterial transit times and arterial volume for a full pig coronary arterial tree down to the first capillary segment."
+species = "pig (anatomy from Kassab et al. 1993 morphometry)"
+preparation = "Computer reconstruction of the full RCA, LAD and LCx arterial trees (~1.7, 1.9 and 1.1 million segments including the first capillary segment) from the Kassab 1993 statistics; steady laminar Poiseuille flow, Pries in vivo viscosity law at hematocrit 0.45."
+conditions = "Inlet pressure 100 mmHg; pressure 26 mmHg at the outlet of the first capillary segment (SD 0 unless stated). Rigid vessels, no myocardial compression, no venous tree."
+verification = "FT"
+access = "Publisher PDF (journals.physiology.org, institutional download, local copy)."
+notes = """
+Per-order pressure, flow and velocity are NOT tabulated in this paper. Pressure vs diameter is shown only as isodensity plots (Fig. 4A-C) and flow/pressure along the LAD trunk in Fig. 2; these were not digitized because the plots show frequency bands, not a central curve.
+The flow-diameter relation is for flow and diameter normalized to the most proximal segment (Fig. 1, all segments excluding capillaries).
+Transit times are arterial-only (inlet to first capillary segment), summed segment transit times along every path.
+"""
+use_in_model = """Run the CCO arterial tree with the same boundary conditions (100 mmHg inlet, 26 mmHg at terminals, Pries viscosity at Hct 0.45) and compare: Q-D exponent on normalized segment data, total arterial conductance per tree, arterial mean transit time and its spread, and total arterial volume. Expect differences because CCO trees are not Kassab-statistics reconstructions."""
+
+[source]
+authors = ["Mittal N", "Zhou Y", "Linares C", "Ung S", "Kaimovitz B", "Molloi S", "Kassab GS"]
+year = 2005
+title = "Analysis of blood flow in the entire coronary arterial tree"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "289"
+issue = "1"
+pages = "H439-H446"
+doi = "10.1152/ajpheart.00730.2004"
+crossref_verified = "2026-10-14; Crossref title exact match (vol 289, issue 1, H439-H446, July 2005)"
+
+[data.flow_diameter_exponent]
+description = "Least-squares power-law exponent of normalized segment flow vs normalized segment diameter, Q/Q0 = (D/D0)^x, all arterial segments excluding capillaries"
+location = "Results, text accompanying Fig. 1; abstract"
+provenance = "FT"
+tree = ["RCA", "LAD", "LCx"]
+exponent = [2.2, 2.1, 2.1]
+r2 = [0.993, 0.995, 0.994]
+missing_note = ""
+
+[data.inlet_flow]
+description = "Inlet flow of the most proximal segment at 100 mmHg inlet, 26 mmHg capillary outlet"
+location = "Results"
+provenance = "FT"
+tree = ["RCA", "LAD", "LCx"]
+inlet_flow_ml_per_s = [0.53, 0.63, 0.32]
+missing_note = ""
+
+[data.arterial_conductance]
+description = "Total arterial conductance G_art from a linear fit of inlet flow vs (inlet - capillary outlet) pressure difference, Q = dP * G_art"
+location = "Results"
+provenance = "FT"
+tree = ["RCA", "LAD", "LCx"]
+conductance_ml_per_s_per_mmHg = [0.0072, 0.0086, 0.0052]
+r2 = [1.000, 1.000, 0.999]
+missing_note = ""
+
+[data.arterial_resistance_per_mass]
+description = "Total arterial equivalent resistance (1/G_art) divided by the total heart weight (150 g)"
+location = "Abstract; Discussion"
+provenance = "FT"
+tree = ["RCA", "LAD", "LCx"]
+value = [0.93, 0.77, 1.28]
+unit_as_printed = "mmHg.ml^-1.s^-1.g^-1"
+heart_weight_used_g = 150.0
+missing_note = "The printed unit is dimensionally inconsistent. The numbers equal (1/G_art)/150 g, i.e. mmHg.s.ml^-1 per g of whole heart (check: 1/0.0072/150 = 0.93). They are normalized by whole-heart weight, not by each tree's perfused mass."
+
+[data.arterial_transit_time]
+description = "Arterial transit time (inlet to first capillary segment) over all paths, inlet pressure 100 mmHg"
+location = "Results; Fig. 5 (LAD distribution)"
+provenance = "FT"
+tree = ["RCA", "LAD", "LCx"]
+transit_time_mean_s = [2.3, 1.5, 1.9]
+transit_time_sd_s = [0.87, 0.56, 0.67]
+transit_time_max_s = [8.8, 7.8, 4.5]
+n_paths = [858353, 936014, 572632]
+tail_exponent_beta = [3.4, 3.2, 3.2]
+tail_exponent_r2 = [0.937, 0.888, 0.782]
+tail_fit_note = "Decay of transit-time frequency beyond the mean fitted as h(t) = alpha * t^-beta; LAD fit h(t) = 3.7 t^-3.2 (Fig. 5 legend)."
+missing_note = ""
+
+[data.arterial_volume]
+description = "Total arterial volume V_t from the hyperbolic fit t_mean = V_t / Q_in over inlet pressures 30-180 mmHg"
+location = "Results"
+provenance = "FT"
+tree = ["RCA", "LAD", "LCx"]
+volume_ml = [1.3, 1.0, 0.61]
+missing_note = ""
+
+[data.major_pressure_drop_location]
+description = "Distance from the trunk inlet at which the major pressure drop along the main path (trunk) occurs"
+location = "Results (Fig. 2 discussion)"
+provenance = "FT"
+tree = ["RCA", "LAD", "LCx"]
+distance_cm = [11.1, 10.7, 7.4]
+missing_note = ""
+
+[data.capillary_flow_reversal]
+description = "Maximum fraction of first capillary segments with reversed flow when the capillary outlet pressure is Gaussian with mean 26 mmHg"
+location = "Results (Fig. 6)"
+provenance = "FT"
+outlet_pressure_sd_mmHg = 10.0
+fraction_reversed_percent_approx = 10.0
+missing_note = "Text gives ~10% for SD = 10 mmHg; CV of capillary flow vs SD is only in Fig. 6B (not digitized)."
+
+[data.per_order_hemodynamics]
+description = "Per-order pressure, flow and velocity"
+location = "not tabulated"
+provenance = "missing"
+missing_note = "Mittal 2005 reports no per-order table. Per-order pressure/flow/velocity on the Kassab anatomy are tabulated in Kassab, Berkley & Fung 1997 (Ann Biomed Eng 25:204-217, doi 10.1007/BF02738551, Crossref verified), but that full text is paywalled and its abstract has no numbers."
