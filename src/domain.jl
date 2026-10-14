@@ -79,12 +79,34 @@ mutable struct MaskDomain{T}
     cache_dist::T
 end
 
+"""
+    read_vol_union(paths) -> (img, lower)
+
+The union of several masks (voxelwise maximum) on the box that covers all of them, for a
+forest grown in one domain (for example the left and right coronary territories).
+"""
+function read_vol_union(paths::AbstractVector{<:AbstractString})
+    vols = [read_vol(p) for p in paths]
+    lo = ntuple(d -> minimum(v[2][d] for v in vols), 3)
+    hi = ntuple(d -> maximum(v[2][d] + Int32(size(v[1], d)) - Int32(1) for v in vols), 3)
+    img = zeros(UInt8, (hi .- lo .+ Int32(1))...)
+    for (v, l) in vols
+        o = l .- lo
+        for k in axes(v, 3), j in axes(v, 2), i in axes(v, 1)
+            I = (i + o[1], j + o[2], k + o[3])
+            img[I...] = max(img[I...], v[i, j, k])
+        end
+    end
+    return img, Int32.(lo)
+end
+
 function MaskDomain{T}(
-        path::AbstractString; root::Union{Nothing, NTuple{3, <:Integer}} = nothing,
+        path::Union{AbstractString, AbstractVector{<:AbstractString}};
+        root::Union{Nothing, NTuple{3, <:Integer}} = nothing,
         min_dist::Real = 5.0, nbtry::Integer = 100, metric::Symbol = :upstream
     ) where {T}
     metric in (:upstream, :euclidean) || throw(ArgumentError("metric must be :upstream (L3, as HCT-CCO) or :euclidean"))
-    img, lower = read_vol(path)
+    img, lower = path isa AbstractString ? read_vol(path) : read_vol_union(path)
     upper = lower .+ Int32.(size(img)) .- Int32(1)
     dist = distance_map(T, img; p = metric === :euclidean ? 2 : 3)
     d = MaskDomain{T}(
@@ -99,14 +121,14 @@ function MaskDomain{T}(
     return d
 end
 
-@inline in_bounds(d::MaskDomain, p::NTuple{3, Int32}) =
+@inline in_bounds(d, p::NTuple{3, Int32}) =
     d.lower[1] <= p[1] <= d.upper[1] && d.lower[2] <= p[2] <= d.upper[2] && d.lower[3] <= p[3] <= d.upper[3]
-@inline _ix(d::MaskDomain, p) = (p[1] - d.lower[1] + 1, p[2] - d.lower[2] + 1, p[3] - d.lower[3] + 1)
-@inline img_at(d::MaskDomain, p::NTuple{3, Int32}) = @inbounds d.img[_ix(d, p)...]
-@inline dist_at(d::MaskDomain, p::NTuple{3, Int32}) = @inbounds d.dist[_ix(d, p)...]
+@inline _ix(d, p) = (p[1] - d.lower[1] + 1, p[2] - d.lower[2] + 1, p[3] - d.lower[3] + 1)
+@inline img_at(d, p::NTuple{3, Int32}) = @inbounds d.img[_ix(d, p)...]
+@inline dist_at(d, p::NTuple{3, Int32}) = @inbounds d.dist[_ix(d, p)...]
 
 # ImageMaskDomainCtrl::isInside: strictly above the threshold.
-@inline is_inside(d::MaskDomain, p::NTuple{3, Int32}) = in_bounds(d, p) && img_at(d, p) > MASK_THRESHOLD
+@inline is_inside(d, p::NTuple{3, Int32}) = in_bounds(d, p) && img_at(d, p) > MASK_THRESHOLD
 
 # std::min / std::max on doubles.
 @inline cmin(a, b) = b < a ? b : a
@@ -131,10 +153,10 @@ end
     return i0, i1, t
 end
 
-function interpolate_distance(d::MaskDomain{T}, pt::P3{T}) where {T}
+@inline function interpolate_distance(d, pt::P3{T}) where {T}
     lo, up = d.lower, d.upper
     @inbounds for i in 1:3
-        (pt[i] < lo[i] || pt[i] > up[i]) && return T(-Inf)
+        (pt[i] < T(lo[i]) || pt[i] > T(up[i])) && return T(-Inf)
     end
     a0, a1, fa = _interp_axis(pt[1], lo[1], up[1])
     b0, b1, fb = _interp_axis(pt[2], lo[2], up[2])
@@ -153,15 +175,8 @@ end
 sample_distance(d::MaskDomain{T}, p::NTuple{3, Int32}) where {T} = interpolate_distance(d, (T(p[1]), T(p[2]), T(p[3])))
 
 # ImageMaskDomainCtrl::randomPoint
-function random_point!(d::MaskDomain{T}, rng::CRand) where {T}
-    dp = d.upper .- d.lower
-    n = 0
-    while n < d.nbtry
-        p = (d.lower[1] + crand!(rng) % dp[1], d.lower[2] + crand!(rng) % dp[2], d.lower[3] + crand!(rng) % dp[3])
-        dist = sample_distance(d, p)
-        img_at(d, p) >= MASK_THRESHOLD && dist >= d.min_dist && return p
-        n += 1
-    end
+# Admissible voxels, listed once; the fallback when rejection sampling fails.
+function point_cache!(d::MaskDomain)
     if isempty(d.cache) || d.cache_dist != d.min_dist
         empty!(d.cache)
         for k in d.lower[3]:d.upper[3], j in d.lower[2]:d.upper[2], i in d.lower[1]:d.upper[1]
@@ -171,13 +186,27 @@ function random_point!(d::MaskDomain{T}, rng::CRand) where {T}
         end
         d.cache_dist = d.min_dist
     end
+    return d
+end
+
+function random_point!(d::MaskDomain{T}, rng::CRand) where {T}
+    dp = d.upper .- d.lower
+    n = 0
+    while n < d.nbtry
+        p = (d.lower[1] + crand!(rng) % dp[1], d.lower[2] + crand!(rng) % dp[2], d.lower[3] + crand!(rng) % dp[3])
+        dist = sample_distance(d, p)
+        img_at(d, p) >= MASK_THRESHOLD && dist >= d.min_dist && return p
+        n += 1
+    end
+    point_cache!(d)
     isempty(d.cache) && return (Int32(0), Int32(0), Int32(0))
     idx = reinterpret(UInt32, crand!(rng)) % UInt32(length(d.cache))
     return d.cache[idx + 1]
 end
 
 # ImageMaskDomainCtrl::checkNoIntersectDomain: sample the segment every unit of length.
-function check_no_intersect(d::MaskDomain{T}, p1::NTuple{3, Int32}, p2::NTuple{3, Int32}) where {T}
+function check_no_intersect(d, p1::NTuple{3, Int32}, p2::NTuple{3, Int32})
+    T = typeof(d.min_dist)
     (in_bounds(d, p1) && in_bounds(d, p2)) || return false
     st = (T(p1[1]), T(p1[2]), T(p1[3]))
     en = (T(p2[1]), T(p2[2]), T(p2[3]))

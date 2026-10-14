@@ -3,11 +3,14 @@
 
 # Julia's `^(::Float64, ::Float64)` is a pure-Julia implementation, not the C library's
 # `pow`. Upstream calls `pow`/`std::pow` from the platform libm, so the Float64 CPU path
-# calls the same symbol. Float32 runs use Julia's `^`; a portable pow that compiles the same
-# on every GPU backend replaces it when the kernels move there.
+# calls the same symbol. Float32 runs use exp(y·log x) in Float32 for positive x: Julia's
+# Float32 `^` widens to a Float64 pow, which was the largest single cost of candidate
+# evaluation; the fastmath forms call libm expf/logf on CPUs and native instructions on GPUs. The relative error is a few
+# ulp times |y·log x|, far below every tolerance the growth uses. Other bases (negative
+# bases with integer exponents occur in the trust-region update) fall back to `^`.
 @inline cpow(x::Float64, y::Float64) = ccall(:pow, Float64, (Float64, Float64), x, y)
 @inline upow(x::Float64, y::Float64) = cpow(x, y)
-@inline upow(x::Float32, y::Float32) = x^y
+@inline upow(x::Float32, y::Float32) = (x > 0.0f0 && isfinite(x)) ? @fastmath(exp(y * log(x))) : x^y
 
 # Points are plain 3-tuples. DGtal's PointVector does every operation componentwise; its
 # dot product and L2 norm accumulate left to right starting from +0.0, which fixes the sign

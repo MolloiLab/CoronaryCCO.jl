@@ -37,6 +37,10 @@ On an Apple M4 laptop CPU (8 threads), case0 with HCT-CCO's sample settings:
 | 40,000 | ≈ 3.6–5 h (extrapolated) | 109 s | 14 s |
 | 200,000 | – | – | ≈ 100 s |
 
+With the corrected options (`docs/deviations.md`), batched growth (the default) grows
+10⁵ terminals in about 7 s and 8 × 10⁵ in 48 s on the CPU, or 41 s with each round evaluated
+on the laptop GPU; sequential growth takes 35–51 s and more than 12 min.
+
 - **Exact mode** (test-only) reproduces upstream bit for bit in Float64: on case0, every
   segment's topology, coordinates, radius, resistance, flow and radius ratio match the C++
   reference build at 500 and 2,000 terminals. Ceres's Levenberg–Marquardt solve is replicated
@@ -44,8 +48,16 @@ On an Apple M4 laptop CPU (8 threads), case0 with HCT-CCO's sample settings:
 - **The default engine** updates resistances, radii and volume only along the path from each
   new bifurcation to the root (the incremental update the HCT-CCO paper describes), using a
   spatial grid for all geometric queries. It equals exact mode to rounding.
-- Kernels are written with AcceleratedKernels.jl / KernelAbstractions.jl, so they run on
-  multithreaded CPUs and on CUDA, ROCm, oneAPI and Metal GPUs. Production runs use `Float32`.
+- **Batched growth** (`growth = :batched`, the default) adds up to 1% of the tree per round, evaluating
+  every location of a round in parallel against the same tree. Its trees are statistically
+  equivalent to sequential growth, not identical (see
+  [`docs/deviations.md`](docs/deviations.md), section 12).
+- Parallel work uses AcceleratedKernels.jl. Each batched round's candidate evaluation is a
+  kernel over flat arrays that runs on CPU threads or, with `device`, on a GPU. It is tested on
+  Apple M-series GPUs with Metal.jl, where unified memory makes uploads cheap:
+  `device = x -> MtlArray{eltype(x), ndims(x), Metal.SharedStorage}(x)`. CUDA, ROCm and oneAPI
+  arrays should work the same way but are untested. Sequential growth, commits and the
+  per-round refresh run on CPU threads. Production runs use `Float32`, which GPUs need.
 - Post-processing (`postprocess`) is a pure-Julia port of HCT-CCO's Python script and
   reproduces its CSVs byte for byte; figures come from a CairoMakie extension.
 

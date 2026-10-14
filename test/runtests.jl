@@ -93,6 +93,32 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test all(s.mean > 0 for s in R.stats)
     end
 
+    @testset "batched growth" begin
+        kw = (;
+            T = Float32, gamma = 2.33, volume = :full, metric = :euclidean, sampling = :continuous,
+            fix_base = true, collision = :final, max_branch_angle = 90,
+        )
+        seq = grow_case0(1200; kw...)
+        # all terminals before n_seq, or batches of one, are exactly sequential growth
+        @test same_tree(seq.m, grow_case0(1200; kw..., growth = :batched, n_seq = 1200).m)
+        @test same_tree(seq.m, grow_case0(1200; kw..., growth = :batched, n_seq = 200, batch_frac = 1.0e-9).m)
+        bat = grow_case0(3000; kw..., growth = :batched, n_seq = 500)
+        # deterministic, and independent of threading
+        @test same_tree(bat.m, grow_case0(3000; kw..., growth = :batched, n_seq = 500).m)
+        @test same_tree(bat.m, grow_case0(3000; kw..., growth = :batched, n_seq = 500, parallel = false).m)
+        # the device argument: an array constructor or a KernelAbstractions backend
+        @test same_tree(bat.m, grow_case0(3000; kw..., growth = :batched, n_seq = 500, device = Array).m)
+        @test same_tree(bat.m, grow_case0(3000; kw..., growth = :batched, n_seq = 500, device = C.KA.CPU()).m)
+        ref = grow_case0(3000; kw...)
+        @test length(bat.m.terminals) == length(ref.m.terminals)
+        vol(E) = sum(Float64(E.m.radius[j])^2 * Float64(E.m.glen[j]) for j in 2:nsegments(E.m))
+        @test abs(vol(bat) - vol(ref)) <= 0.02 * vol(ref)
+        q = tree_qc(bat; rmin = 0.1)
+        @test q.grown_turns_90 == 0
+        @test q.base_turns_135 == 0
+        @test_throws ArgumentError grow_case0(100; T = Float64, mode = :exact, growth = :batched)
+    end
+
     @testset "export round trip" begin
         E = grow_case0(100; T = Float64)
         path = tempname() * ".xml"

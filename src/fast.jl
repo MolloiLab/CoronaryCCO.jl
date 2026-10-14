@@ -46,15 +46,66 @@
     return
 end
 
-@inline function fast_root_radius(E::Engine{T}) where {T}
+# Index of root segment c among E.roots (a forest has a few roots, a tree one).
+@inline function _rootidx(E, c)
+    roots = E.roots
+    @inbounds for k in 1:length(roots)
+        roots[k] == c && return k
+    end
+    return 1
+end
+
+# Pressure-law root radius of the tree whose root segment is c (no cap): every tree takes its
+# root radius from the same pressure drop and the same terminal flow.
+@inline function _root_unc(E, c)
+    T = typeof(E.m.lf)
     m = E.m
-    r = upow((m.lf * E.F.Rt[2] * m.flow[2]) / m.pdrop, T(0.25))
-    (m.root_radius_max > 0 && r > m.root_radius_max) && (r = m.root_radius_max)
-    return r
+    return upow((m.lf * E.F.Rt[c] * m.flow[c]) / m.pdrop, T(0.25))
+end
+
+# Root radius of tree k from its pressure-law radius r. Caps are upper bounds that act through
+# one scale shared by the whole forest, s = min(1, min_j cap_j / r_j): scaling every radius
+# by the same factor is the same as changing the perfusion pressure drop, so the trees stay
+# at equal pressure, and the tree structure (volume ∝ r²) does not depend on the scale. `mk`
+# is min over the other trees of cap_j / r_j (Inf for a single tree, which reduces this to
+# min(r, cap)). Returns (root radius, s).
+@inline function _scaled_root(cap::T, r::T, mk::T) where {T}
+    own = cap > 0 ? cap / r : T(Inf)
+    sc = min(one(T), own, mk)
+    return (sc == own ? cap : r * sc), sc
+end
+
+@inline function fast_root_radius(E, c = E.roots[1])
+    k = _rootidx(E, c)
+    return _scaled_root(E.rcaps[k], _root_unc(E, c), E.rmin[k])[1]
+end
+
+# Refresh, for every tree k, the others' tightest cap ratio (rmin) and the others' unscaled
+# volume (rest), from the current state.
+function update_forest!(E)
+    T = typeof(E.m.lf)
+    m = E.m
+    K = length(E.roots)
+    if K == 1
+        E.rmin[1] = T(Inf); E.rest[1] = zero(T)
+        return E
+    end
+    for k in 1:K
+        mk = T(Inf); A = zero(T)
+        for j in 1:K
+            j == k && continue
+            c = E.roots[j]; r = _root_unc(E, c)
+            E.rcaps[j] > 0 && (mk = min(mk, E.rcaps[j] / r))
+            A += r * r * m.lf * E.F.W[c]
+        end
+        E.rmin[k] = mk; E.rest[k] = A
+    end
+    return E
 end
 
 # Exact radius of segment j: root radius times the betas on its path (unary links count 1).
-function fast_radius(E::Engine{T}, j) where {T}
+@inline function fast_radius(E, j)
+    T = typeof(E.m.lf)
     m = E.m
     B = one(T); c = j
     while m.parent[c] != 1
@@ -62,30 +113,65 @@ function fast_radius(E::Engine{T}, j) where {T}
         (m.left[par] != 0 && m.right[par] != 0) && (B *= m.beta[c])
         c = par
     end
-    return fast_root_radius(E) * B
+    return fast_root_radius(E, c) * B
 end
 
-# All radii from the root down (DFS), after which every stored radius is exact.
+# All radii from the root down, after which every stored radius is exact. A serial
+# breadth-first pass down to a frontier of subtrees, then one depth-first pass per subtree
+# in parallel. Each radius is the same product of betas in the same order either way.
 function fast_refresh_radii!(E::Engine{T}) where {T}
     m = E.m
-    r = fast_root_radius(E)
-    m.radius[2] = r
-    stack = Tuple{Int32, T}[(Int32(2), one(T))]
-    rmax = r
-    @inbounds while !isempty(stack)
-        j, B = pop!(stack)
-        a = m.left[j]; b = m.right[j]
-        bin = a != 0 && b != 0
-        for c in (a, b)
-            c == 0 && continue
-            Bc = bin ? B * m.beta[c] : B
-            rc = r * Bc
-            m.radius[c] = rc
-            rc > rmax && (rmax = rc)
-            push!(stack, (c, Bc))
-        end
+    update_forest!(E)
+    rmax = zero(T)
+    front = Tuple{Int32, T, T}[]          # (segment, product of betas, root radius of its tree)
+    for c in E.roots
+        r = fast_root_radius(E, c)
+        m.radius[c] = r
+        r > rmax && (rmax = r)
+        push!(front, (c, one(T), r))
     end
-    E.rmax = rmax
+    # small trees: one depth-first pass (task start-up would cost more than it saves)
+    target = nsegments(m) < 262_144 ? 1 : 64 * Threads.nthreads()
+    while 0 < length(front) < target
+        nxt = Tuple{Int32, T, T}[]
+        for (j, B, r) in front
+            a = m.left[j]; b = m.right[j]
+            bin = a != 0 && b != 0
+            for c in (a, b)
+                c == 0 && continue
+                Bc = bin ? B * m.beta[c] : B
+                m.radius[c] = r * Bc
+                push!(nxt, (c, Bc, r))
+            end
+        end
+        for (c, _, _) in nxt
+            m.radius[c] > rmax && (rmax = m.radius[c])
+        end
+        length(nxt) == 0 && break
+        front = nxt
+    end
+    nt = length(front)
+    tmax = fill(rmax, nt)
+    AK.foreachindex(1:nt; max_tasks = Threads.nthreads(), min_elems = 1) do f
+        stack = Tuple{Int32, T}[(front[f][1], front[f][2])]
+        r = front[f][3]
+        rm = zero(T)
+        @inbounds while !isempty(stack)
+            j, B = pop!(stack)
+            a = m.left[j]; b = m.right[j]
+            bin = a != 0 && b != 0
+            for c in (a, b)
+                c == 0 && continue
+                Bc = bin ? B * m.beta[c] : B
+                rc = r * Bc
+                m.radius[c] = rc
+                rc > rm && (rm = rc)
+                push!(stack, (c, Bc))
+            end
+        end
+        tmax[f] = max(tmax[f], rm)
+    end
+    E.rmax = nt == 0 ? rmax : maximum(tmax)
     E.F.since = 0
     E.g.prune = true
     grid_refresh_radii!(E.g, m)
@@ -95,7 +181,7 @@ end
 function init_fast!(E::Engine{T}) where {T}
     m = E.m; n = nsegments(m)
     E.F.Rt = zeros(T, n); E.F.W = zeros(T, n)
-    for j in postorder(m)
+    for j in postorder(m)                 # every tree of a forest
         fast_node!(E, j)
     end
     fast_refresh_radii!(E)
@@ -104,10 +190,11 @@ end
 
 """
 Fast-mode tentative tree for candidate segment `s` (bifurcation at `pOpt`, new terminal `p`):
-O(depth). Returns (total volume, radius of s, radius of new left, radius of new terminal).
+O(depth) and allocation free (`ws` is unused). Returns (total volume, radius of s, radius of
+new left, radius of new terminal).
 """
-function tentative_fast!(ws::Workspace{T}, E::Engine{T}, s, pOpt::P3{T}, p::P3{T}, qNew::T) where {T}
-    m = E.m; F = E.F; g = m.gamma; full = E.volume === :full
+@inline function tentative_fast!(ws, E, s, pOpt::P3{T}, p::P3{T}, qNew::T) where {T}
+    m = E.m; F = E.F; g = m.gamma; full = _fullvol(E)
     lg_s = norm3(sub3(pOpt, m.pos[m.parent[s]]))
     lg_nl = norm3(sub3(m.pos[s], pOpt))
     lg_nr = norm3(sub3(p, pOpt))
@@ -127,8 +214,7 @@ function tentative_fast!(ws::Workspace{T}, E::Engine{T}, s, pOpt::P3{T}, p::P3{T
     R_c = own_baseline(lg_s) + inv
     W_c = lg_s + b_nl * b_nl * W_nl + b_nr * b_nr * W_nr
     f_c = m.flow[s] + qNew
-    pb = ws.beta
-    k = 0
+    B = one(T)              # product of the radius ratios on the path (the radius of s / root radius)
     c = s; par = m.parent[c]
     while par != 1
         la = m.left[par]; ra = m.right[par]
@@ -144,21 +230,17 @@ function tentative_fast!(ws::Workspace{T}, E::Engine{T}, s, pOpt::P3{T}, p::P3{T
             W_a += bL * bL * WL + bR * bR * WR
             bc = la == c ? bL : bR
         end
-        k += 1
-        k > length(pb) && resize!(pb, 2k)
-        pb[k] = bc
+        B *= bc
         f_c = m.flow[par] + qNew; R_c = R_a; W_c = W_a
         c = par; par = m.parent[c]
     end
     lf = m.lf
-    rroot = upow((lf * R_c * f_c) / m.pdrop, T(0.25))
-    (m.root_radius_max > 0 && rroot > m.root_radius_max) && (rroot = m.root_radius_max)
-    B = one(T)
-    for i in k:-1:1
-        B *= pb[i]
-    end
+    k = _rootidx(E, c)                    # c is now the root segment of s's tree
+    rroot, sc = _scaled_root(E.rcaps[k], upow((lf * R_c * f_c) / m.pdrop, T(0.25)), E.rmin[k])
     r_s = rroot * B
-    return rroot * rroot * lf * W_c, r_s, r_s * b_nl, r_s * b_nr
+    # total volume: this tree's tentative volume plus the other trees' at the forest's common
+    # scale (zero for a single tree)
+    return rroot * rroot * lf * W_c + sc * sc * E.rest[k], r_s, r_s * b_nl, r_s * b_nr
 end
 
 # Middle-stage flags, maintained incrementally: a segment qualifies if it is listed as a
@@ -204,8 +286,10 @@ function middle_update!(E::Engine, s, nl, nr)
     return E
 end
 
-"Fast-mode commit: same topology update as `commit!`, then an O(depth) hydraulic update."
-function commit_fast!(E::Engine{T}, s::Int32, pOpt::P3{T}, p::P3{T}, qNew::T) where {T}
+# Topology part of a fast-mode commit (shared with batched growth): split s at pOpt, hang its
+# old distal part (new left, nl) and the new terminal (nr) below it, and add qNew to the flow
+# of every ancestor. Returns (nl, nr).
+function commit_structure!(E::Engine{T}, s::Int32, pOpt::P3{T}, p::P3{T}, qNew::T) where {T}
     m = E.m; F = E.F
     nl = Int32(nsegments(m) + 1); nr = Int32(nl + 1)
     a = m.left[s]; b = m.right[s]
@@ -231,6 +315,13 @@ function commit_fast!(E::Engine{T}, s::Int32, pOpt::P3{T}, p::P3{T}, qNew::T) wh
     m.kterm_total += 1
     update_flow!(m, m.parent[s], qNew)
     refresh_glen!(m, s); refresh_glen!(m, nl); refresh_glen!(m, nr)
+    return nl, nr
+end
+
+"Fast-mode commit: same topology update as `commit!`, then an O(depth) hydraulic update."
+function commit_fast!(E::Engine{T}, s::Int32, pOpt::P3{T}, p::P3{T}, qNew::T) where {T}
+    m = E.m; F = E.F
+    nl, nr = commit_structure!(E, s, pOpt, p, qNew)
     fast_node!(E, nl); fast_node!(E, nr)
     j = s
     while j != 1

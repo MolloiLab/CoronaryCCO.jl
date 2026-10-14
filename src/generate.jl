@@ -28,19 +28,35 @@ Two upstream quirks are reproduced by default and can be corrected:
 - Upstream places no limit on branching angles; `max_branch_angle = 90` rejects bifurcations
   in which a daughter (or the moved parent segment) turns back by more than 90°, the limit
   Murray's minimum-work analysis of branching angles implies.
+
+**Forests.** With a vector of base trees (`base_xml = ["lca.xml", "rca.xml"]`), the trees grow
+together in one domain (a vector of `.vol` masks is merged into their union) and compete for
+every terminal: a candidate may join any tree, and the one that adds the least total volume
+wins, so the territories emerge from the optimization. All trees share the perfusion pressure
+drop and the terminal flow, so each root radius follows from the same law; `root_radius_max`
+may be a vector, one cap per tree (in file order). Forests need `mode = :fast`.
+
+Growth is batched by default (`growth = :batched`, fast mode): after the first `n_seq`
+terminals it adds terminals in parallel rounds on CPU threads or any GPU (`device =`
+`CuArray`, `ROCArray`, `MtlArray`, ...), about 15× faster than sequential growth at 800k
+terminals and statistically equivalent to it, not bitwise identical (see `docs/deviations.md`
+§12 and [`grow!`](@ref)). `growth = :sequential` is the reference path; `mode = :exact`, the
+bit-for-bit C++ replica, is always sequential.
 """
 function generate(
-        domain_vol::AbstractString, base_xml::AbstractString; nterm::Integer,
+        domain_vol, base_xml; nterm::Integer,
         aperf::Real, min_dist::Real = 5.0, root = nothing, gamma::Real = 3.0,
-        root_radius_max::Real = 1.588, seed::Integer = 0, T::Type = Float32,
+        root_radius_max = 1.588, seed::Integer = 0, T::Type = Float32,
         parallel::Bool = true, progress::Integer = 0, export_xml = nothing,
         trace = nothing, volume::Symbol = :upstream, metric::Symbol = :upstream,
         mode::Symbol = :fast, sampling::Symbol = :voxel, fix_base::Bool = false,
-        collision::Symbol = :current, max_branch_angle = nothing, kwargs...
+        collision::Symbol = :current, max_branch_angle = nothing,
+        growth::Symbol = mode === :exact ? :sequential : :batched, n_seq::Integer = 2_000, batch_frac::Real = 0.01, batch_max::Integer = 16_384, device = identity,
+        kwargs...
     )
     p = CCOParams(;
         nterm = Int(nterm), aperf = Float64(aperf), gamma = Float64(gamma),
-        root_radius_max = Float64(root_radius_max),
+        root_radius_max = Float64(first(root_radius_max)),
         min_distance_to_border = Float64(min_dist), kwargs...
     )
     dom = MaskDomain{T}(
@@ -50,9 +66,12 @@ function generate(
     m = import_gxl(T, base_xml, p)
     E = Engine(
         m, dom; seed = seed, mode = mode, volume = volume, sampling = sampling, fix_base = fix_base,
-        collision = collision, max_branch_angle = max_branch_angle
+        collision = collision, max_branch_angle = max_branch_angle, root_caps = root_radius_max
     )  # mode = :exact is test-only
-    grow!(E; parallel = parallel, progress = Int(progress), trace = trace)
+    grow!(
+        E; parallel = parallel, progress = Int(progress), trace = trace, growth = growth,
+        n_seq = n_seq, batch_frac = batch_frac, batch_max = batch_max, device = device
+    )
     export_xml === nothing || export_gxl(E.m, export_xml)
     return E
 end

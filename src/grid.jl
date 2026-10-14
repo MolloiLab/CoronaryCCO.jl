@@ -25,10 +25,10 @@ function SegGrid{T}(lower::P3{T}, upper::P3{T}, h::Real) where {T}
     return SegGrid{T}(origin, T(h), dims, cells, NTuple{6, Int32}[], T(1.0e-3), zeros(T, prod(dims)), T[], one(T), false)
 end
 
-@inline _cell(g::SegGrid, x, i) = clamp(Int(fld(x - g.origin[i], g.h)) + 1, 1, g.dims[i])
-@inline _lin(g::SegGrid, i, j, k) = i + (j - 1) * g.dims[1] + (k - 1) * g.dims[1] * g.dims[2]
+@inline _cell(g, x, i) = clamp(unsafe_trunc(Int, floor((x - g.origin[i]) / g.h)) + 1, 1, g.dims[i])
+@inline _lin(g, i, j, k) = i + (j - 1) * g.dims[1] + (k - 1) * g.dims[1] * g.dims[2]
 
-function _cellbox(g::SegGrid, a::P3, b::P3, pad)
+@inline function _cellbox(g, a::P3, b::P3, pad)
     return (
         Int32(_cell(g, min(a[1], b[1]) - pad, 1)), Int32(_cell(g, max(a[1], b[1]) + pad, 1)),
         Int32(_cell(g, min(a[2], b[2]) - pad, 2)), Int32(_cell(g, max(a[2], b[2]) + pad, 2)),
@@ -76,10 +76,18 @@ end
 function grid_refresh_radii!(g::SegGrid{T}, m::CCOModel{T}; tol = 1.25) where {T}
     rad = m.radius; rref = g.rref
     resize!(rref, nsegments(m))
-    gr = one(T)
-    @inbounds for j in 2:nsegments(m)
-        rref[j] > 0 && (q = rad[j] / rref[j]; q > gr && (gr = q))
+    n = nsegments(m)
+    nch = max(1, min(4 * Threads.nthreads(), n ÷ 32768))
+    part = ones(T, nch)
+    AK.foreachindex(1:nch; max_tasks = nch, min_elems = 1) do c
+        q = one(T)
+        len = cld(n - 1, nch)
+        @inbounds for j in (2 + (c - 1) * len):min(n, 1 + c * len)
+            rref[j] > 0 && (x = rad[j] / rref[j]; x > q && (q = x))
+        end
+        part[c] = q
     end
+    gr = maximum(part)
     g.growth = gr
     gr <= T(tol) && return g
     cr = g.cellr; cells = g.cells
@@ -95,10 +103,13 @@ function grid_refresh_radii!(g::SegGrid{T}, m::CCOModel{T}; tol = 1.25) where {T
     return g
 end
 
+# Segments registered in cell c (a SegGrid cell list or a CSR slice of a GridView).
+@inline cell_items(g::SegGrid, c) = @inbounds g.cells[c]
+
 # Like grid_any, for tests whose reach depends on each segment's radius: `need(r)` is the
 # padding a segment of radius r requires. Cells are searched within need(rmax); with pruning
 # on, a cell is skipped when its distance to box [a, b] exceeds need(its radius bound).
-@inline function grid_any_r(f::F, g::SegGrid{T}, a::P3, b::P3, need::N, rmax) where {F, N, T}
+@inline function grid_any_r(f::F, g, a::P3{T}, b::P3, need::N, rmax) where {F, N, T}
     pad = need(rmax)
     bx = _cellbox(g, a, b, pad + g.margin)
     lo = (min(a[1], b[1]), min(a[2], b[2]), min(a[3], b[3]))
@@ -113,7 +124,7 @@ end
             gz = max(zero(T), lo[3] - (cz + h), cz - hi[3])
             gx * gx + gy * gy + gz * gz > (need(g.cellr[c] * g.growth) + g.margin)^2 && continue
         end
-        for j in g.cells[c]
+        for j in cell_items(g, c)
             f(j) && return true
         end
     end
@@ -122,10 +133,10 @@ end
 
 # Call f(j) for every segment registered in a cell overlapping box [a, b] padded by `pad`
 # (a segment can be visited more than once). Stops early, returning true, if f returns true.
-@inline function grid_any(f::F, g::SegGrid, a::P3, b::P3, pad) where {F}
+@inline function grid_any(f::F, g, a::P3, b::P3, pad) where {F}
     bx = _cellbox(g, a, b, pad + g.margin)
     @inbounds for k in bx[5]:bx[6], jj in bx[3]:bx[4], i in bx[1]:bx[2]
-        for j in g.cells[_lin(g, i, jj, k)]
+        for j in cell_items(g, _lin(g, i, jj, k))
             f(j) && return true
         end
     end

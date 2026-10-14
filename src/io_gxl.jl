@@ -120,6 +120,31 @@ function import_gxl(::Type{T}, path::AbstractString, params::CCOParams) where {T
     return m
 end
 
+"""
+    import_gxl(T, paths::AbstractVector, params) -> CCOModel{T}
+
+A forest: each file's tree is imported as above and appended, so the model has one root
+segment per tree (parent = the shared sentinel). Terminal flow, pressures and the length
+factor are shared, as for a single tree.
+"""
+function import_gxl(::Type{T}, paths::AbstractVector{<:AbstractString}, params::CCOParams) where {T}
+    m = import_gxl(T, first(paths), params)
+    for path in paths[2:end]
+        t = import_gxl(T, path, params)
+        o = Int32(nsegments(m) - 1)                   # t's index i >= 2 becomes i + o
+        sh(i) = i == 0 ? Int32(0) : i == 1 ? Int32(1) : Int32(i + o)
+        for f in (:pos, :radius, :kterm, :resistance, :flow, :beta, :listed, :glen)
+            append!(getfield(m, f), getfield(t, f)[2:end])
+        end
+        append!(m.parent, sh.(t.parent[2:end]))
+        append!(m.left, sh.(t.left[2:end])); append!(m.right, sh.(t.right[2:end]))
+        append!(m.terminals, sh.(t.terminals))
+        m.kterm_total += t.kterm_total
+    end
+    update_length_factor!(m)
+    return m
+end
+
 # C++ `ostream << double` with default flags: %g with precision 6.
 _g(x) = @sprintf("%g", Float64(x))
 

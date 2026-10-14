@@ -98,6 +98,33 @@ end
     return bL, bR, one(T) / denom
 end
 
+# Float32 form of the same law with the powers shared: with ρ = ratioR = (num/den)^¼ and
+# e = ρ^-γ, bL = (1 + e)^(-1/γ) and bR = (1 + 1/e)^(-1/γ). Two logs and four exps instead of
+# five general pows; the Float64 method above stays the bitwise port of upstream.
+@inline function resistance_combine(gamma::Float32, segFlow::Float32, brotherFlow::Float32, segHydro::Float32, brotherHydro::Float32)
+    T = Float32
+    keps = T(KEPS)
+    (!isfinite(segFlow) || segFlow < keps) && (segFlow = keps)
+    (!isfinite(brotherFlow) || brotherFlow < keps) && (brotherFlow = keps)
+    (!isfinite(segHydro) || segHydro < keps) && (segHydro = keps)
+    (!isfinite(brotherHydro) || brotherHydro < keps) && (brotherHydro = keps)
+    ratioArgDen = brotherFlow * brotherHydro
+    ratioArgNum = segFlow * segHydro
+    (!isfinite(ratioArgNum) || ratioArgNum <= 0) && (ratioArgNum = keps)
+    (!isfinite(ratioArgDen) || ratioArgDen <= 0) && (ratioArgDen = keps)
+    lr = T(0.25) * @fastmath(log(ratioArgNum / ratioArgDen))
+    isfinite(lr) || (lr = zero(T))
+    ig = one(T) / gamma
+    e = @fastmath exp(-gamma * lr)
+    bL = @fastmath exp(-ig * log(one(T) + e))
+    bR = @fastmath exp(-ig * log(one(T) + one(T) / e))
+    isfinite(bL) || (bL = T(0.5))
+    isfinite(bR) || (bR = T(0.5))
+    denom = ((bL * bL * bL * bL) / segHydro) + ((bR * bR * bR * bR) / brotherHydro)
+    (!isfinite(denom) || denom < keps) && (denom = keps)
+    return bL, bR, one(T) / denom
+end
+
 # 8*mu*l/pi with upstream's guard against zero or non-finite length.
 @inline function own_resistance(l::T) where {T}
     (!(l > zero(T)) || !isfinite(l)) && (l = T(KEPS))
@@ -121,8 +148,14 @@ end
     return
 end
 
-# Postorder (children before parents) of the subtree under j, iteratively.
-function postorder(m::CCOModel, j = 2)
+# Root segments: segments whose parent is the sentinel (index 1). One for a tree, several for
+# a forest (for example left and right coronary arteries grown together).
+tree_roots(m::CCOModel) = Int32[j for j in 2:nsegments(m) if m.parent[j] == 1]
+
+# Postorder (children before parents) of the subtree under j, iteratively; with no j, of every
+# tree in root order (for a single tree, the tree under segment 2).
+function postorder(m::CCOModel, j = nothing)
+    j === nothing && return reduce(vcat, (postorder(m, r) for r in tree_roots(m)); init = Int32[])
     out = Int32[]; stack = Int32[j]
     while !isempty(stack)
         i = pop!(stack); push!(out, i)
@@ -130,6 +163,31 @@ function postorder(m::CCOModel, j = 2)
         m.right[i] != 0 && push!(stack, m.right[i])
     end
     return reverse!(out)
+end
+
+"""
+    tree_model(m, r) -> CCOModel
+
+The tree under root segment `r` of a forest as a standalone model (segments renumbered, the
+root at index 2), for per-tree morphometry and export.
+"""
+function tree_model(m::CCOModel{T}, r::Integer) where {T}
+    segs = reverse(postorder(m, Int32(r)))          # parents before children
+    idx = Dict{Int32, Int32}(Int32(1) => Int32(1))
+    for (k, j) in enumerate(segs)
+        idx[j] = Int32(k + 1)
+    end
+    t = deepcopy(m)
+    sel = vcat(Int32(1), segs)
+    for f in (:pos, :radius, :kterm, :resistance, :flow, :beta, :listed, :glen)
+        setfield!(t, f, getfield(m, f)[sel])
+    end
+    t.parent = Int32[j == 1 ? Int32(2) : idx[m.parent[j]] for j in sel]
+    t.left = Int32[m.left[j] == 0 || j == 1 ? Int32(0) : idx[m.left[j]] for j in sel]
+    t.right = Int32[m.right[j] == 0 || j == 1 ? Int32(0) : idx[m.right[j]] for j in sel]
+    t.terminals = Int32[idx[j] for j in m.terminals if haskey(idx, j) && j != 1]
+    t.kterm_total = count(j -> m.left[j] == 0 && m.right[j] == 0, segs)
+    return t
 end
 
 # HctccoModel::updateResistanceFromRoot(1)

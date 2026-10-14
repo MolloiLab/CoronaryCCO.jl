@@ -178,7 +178,12 @@ overlapped, by up to 1.66 mm, including branches folded back alongside their gra
 **Vasculature.** `collision = :final` multiplies every radius in the intersection, spacing and
 degenerate-length tests by (root radius cap / current root radius). For a fixed tree
 structure all radii scale with the root radius, so this anticipates each vessel's final
-size. At 10⁵ terminals the worst overlap fell to 0.33 mm, and what remains is between
+size. The degenerate-length test (2r ≤ l) compares a radius with a model length, which is the
+geometric length times a length factor that grows as √(terminals + 1). So that test also
+scales lengths to their final value, by √((N_final + 1)/(terminals + 1)), and compares final
+radii with final lengths. Scaling the radii alone made every short segment look degenerate
+early in growth. On an imaged base tree with few terminals (an XCAT right coronary artery with
+3 terminals), no candidate was ever accepted. With both sides scaled, that tree grows normally. At 10⁵ terminals the worst overlap fell to 0.33 mm, and what remains is between
 segments two steps apart at closely spaced junctions (cylinders overlapping at a shared node),
 which a merged surface mesh absorbs. `tree_qc` reports these checks for any grown tree.
 
@@ -232,8 +237,72 @@ volume for every Kamiya iteration of every candidate. Fast mode stores R̃ and a
 subtree volume factor so that each candidate and each commit touches only the path to the
 root, which is what makes 10⁵–10⁶ terminals practical. It equals exact mode to rounding.
 
+## 12. Batched growth (`growth = :batched`)
+
+**What upstream does.** CCO adds one terminal per step (Schreiner & Buxbaum 1993). Each step
+optimizes one bifurcation against the whole current tree, then updates every flow, resistance
+and radius before the next step starts. The steps cannot overlap.
+
+**What batched growth changes.** After the first `n_seq` terminals (default 10,000), terminals
+are added in rounds. A round draws up to `batch_frac` × (current terminals) locations from the
+same random stream (default 1%). Every location's best bifurcation is found in parallel
+against the same tree. Then, in draw order, a location is accepted unless it conflicts with
+one already accepted in the round. Conflicts are:
+
+- a host segment that is the same as, or the parent, child or sibling of, another accepted host;
+- a new terminal closer to another new terminal than the current spacing threshold;
+- new vessels that intersect, or pass closer than the usual clearance to, the new vessels of
+  another accepted insertion, tested at the same scaled radii (`collision = :final`) as every
+  other collision test.
+
+Rejected locations are dropped and new ones are drawn in later rounds, so the final terminal
+count is unchanged. The accepted insertions are committed, and flows, resistances, radius ratios
+and radii are recomputed once per round over the union of their paths to the root. Every rule
+of sequential growth still applies to each insertion: the volume objective, the Kamiya
+bifurcation solve, wall distance, the branching-angle limit and the imaged-vessel rule.
+Selection is deterministic and does not depend on the number of threads.
+
+**What it approximates.** Insertions in the same round do not see each other's flow when
+their bifurcations are optimized. Locations are spread over the domain in proportion to volume,
+so a round of 1% of the tree adds on average about 1% to the flow of any subtree. A small
+subtree can receive one extra terminal more than its share; adjacent hosts are excluded, so the
+segments an insertion is optimized against are never split by another insertion in the round.
+
+**Why this is acceptable.** CCO has no single correct tree. Trees grown from different random
+seeds differ in structure but are equally valid and statistically alike (Schreiner et al.
+1997). So the test for batched growth is whether its trees fall inside the spread of sequential
+trees over seeds, not whether they match one tree bit for bit. Cury et al. (2021) grew CCO
+networks concurrently by domain decomposition for the same reason and compared them against
+sequentially grown networks up to 200,000 segments. With `batch_frac = 0`, or `n_seq ≥ nterm`,
+batched growth is exactly sequential growth.
+
+**Measured agreement.** case0 with the corrected options (γ = 2.33, `volume = :full`,
+`metric = :euclidean`, `sampling = :continuous`, `fix_base`, `collision = :final`,
+`max_branch_angle = 90`), 10⁵ terminals, seeds 1–5, `n_seq = 2000`, `batch_frac = 0.01`
+(`bench/batch_validate.jl`). Ranges are min–max over the five seeds.
+
+| Metric | Sequential | Batched, CPU | Batched, GPU (Metal) |
+|---|---|---|---|
+| wall time, 8 threads (s) | 35–51 | 6.1–7.8 | 7.4–7.9 |
+| total volume (mm³) | 1441–1614 | 1441–1620 | 1442–1619 |
+| leaf diameter, median (µm) | 22.56–22.60 | 22.55–22.59 | 22.54–22.58 |
+| mean terminal depth (segments) | 42.1–44.7 | 41.9–44.8 | 42.0–44.8 |
+| overlaps, r ≥ 0.25 mm | 37–62 | 26–58 | 28–58 |
+| grown turns > 90° | 0 | 0 | 0 |
+| DDS orders 1–10: count, diameter, length | — | 30 of 30 inside | 30 of 30 inside |
+| Strahler orders 1–10: count, diameter, length | — | 26 of 30 inside | 27 of 30 inside |
+
+The rows outside the sequential range miss it by about 1% or less: Strahler order 3–6 mean
+diameters and order 2–4 counts. Kassab's per-order SDs are 10–25% of the mean. Batched trees
+on the CPU and on a GPU differ in the last bits of exp and log, so their trees differ in
+detail but not in statistics. Each backend is deterministic.
+
+Growth time at 8 × 10⁵ terminals (M4, 8 threads): sequential fast mode more than 12 min;
+batched 48 s on the CPU and 41 s with the round evaluation on the GPU.
+
 ## References
 
+- Cury LFM, Maso Talou GD, Younes-Ibrahim M, Blanco PJ. Parallel generation of extensive vascular networks with application to an archetypal human kidney model. *R. Soc. Open Sci.* 8:210973, 2021. doi:10.1098/rsos.210973
 - Danielsson PE. Euclidean distance mapping. *Comput. Graph. Image Process.* 14:227–248, 1980. doi:10.1016/0146-664X(80)90054-4
 - Huo Y, Kassab GS. The scaling of blood flow resistance: from a single vessel to the entire distal tree. *Biophys. J.* 96:339–346, 2009. doi:10.1016/j.bpj.2008.09.038
 - Huo Y, Kassab GS. Intraspecific scaling laws of vascular trees. *J. R. Soc. Interface* 9:190–200, 2012. doi:10.1098/rsif.2011.0270
@@ -245,4 +314,5 @@ root, which is what makes 10⁵–10⁶ terminals practical. It equals exact mod
 - Murray CD. The physiological principle of minimum work. *Proc. Natl. Acad. Sci. USA* 12:207–214, 1926. doi:10.1073/pnas.12.3.207
 - Murray CD. The physiological principle of minimum work applied to the angle of branching of arteries. *J. Gen. Physiol.* 9:835–841, 1926. doi:10.1085/jgp.9.6.835
 - Schreiner W, Buxbaum PF. Computer-optimization of vascular trees. *IEEE Trans. Biomed. Eng.* 40:482–491, 1993. doi:10.1109/10.243413
+- Schreiner W, Neumann F, Neumann M, End A, Roedler SM. Anatomical variability and functional ability of vascular trees modeled by constrained constructive optimization. *J. Theor. Biol.* 187:147–158, 1997. doi:10.1006/jtbi.1997.0413
 - Vajire SL, Choy JS, Kassab GS, Lee LC. Hierarchy aware CT-driven constrained constructive optimization: a framework for coronary network generation. *Ann. Biomed. Eng.*, 2026. doi:10.1007/s10439-026-04383-4

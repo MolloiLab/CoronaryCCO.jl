@@ -5,6 +5,7 @@ authors = ["Dale Black <djblack@uci.edu>"]
 
 [deps]
 AcceleratedKernels = "6a4ca0a5-0e36-4168-a932-d9be78d558f1"
+Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
@@ -18,11 +19,12 @@ VasculatureMakieExt = "CairoMakie"
 
 [compat]
 AcceleratedKernels = "0.4, 0.5"
+Adapt = "4"
 Base64 = "1"
 CairoMakie = "0.15"
+Downloads = "1"
 KernelAbstractions = "0.9, 0.10"
 Printf = "1"
-Downloads = "1"
 Test = "1"
 Zlib_jll = "1"
 julia = "1.12"
