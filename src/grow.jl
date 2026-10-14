@@ -412,6 +412,12 @@ function try_candidate!(ws::Workspace{T}, E::Engine{T}, p::P3{T}, s::Int32) wher
             up = sub3(pOpt, pParent)
             _turn_ok(up, sub3(ps, pOpt), E.max_angle_cos) || return (false, zero(T), p, zero(T), i + 1)
             _turn_ok(up, sub3(p, pOpt), E.max_angle_cos) || return (false, zero(T), p, zero(T), i + 1)
+            # s's existing children now hang below the new left segment (pOpt -> old end of s)
+            dl = sub3(ps, pOpt)
+            for ch in (m.left[s], m.right[s])
+                ch == 0 && continue
+                _turn_ok(dl, sub3(m.pos[ch], ps), E.max_angle_cos) || return (false, zero(T), p, zero(T), i + 1)
+            end
             if par != 1 && m.parent[par] != 1
                 _turn_ok(sub3(pParent, m.pos[m.parent[par]]), up, E.max_angle_cos) ||
                     return (false, zero(T), p, zero(T), i + 1)
