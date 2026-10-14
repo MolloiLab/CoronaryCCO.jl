@@ -55,14 +55,18 @@ end
     end
 end
 
+# Measured through top-level functions: a closure defined inside @testset may not be inferred,
+# which boxes the returned tuple at the call site and reports a false allocation.
+kamiya_run(a) = CoronaryCCO.kamiya_ceres(a...)
+kamiya_alloc(a) = @allocated kamiya_run(a)
+
 @testset "kamiya_ceres is allocation free and generic" begin
     args = (3.0, 290196.27, 193949.4, 12.495, 8.33, 4.165, 1.7, 3.73, 3.19, 0.008, 0.0113)
-    kamiya_run(a) = CoronaryCCO.kamiya_ceres(a...)
-    kamiya_run(args)
-    @test @allocated(kamiya_run(args)) == 0
+    kamiya_alloc(args)
+    @test kamiya_alloc(args) == 0
     args32 = Float32.(args)
-    kamiya_run(args32)
-    @test @allocated(kamiya_run(args32)) == 0
+    kamiya_alloc(args32)
+    @test kamiya_alloc(args32) == 0
     ok64, a64, b64, _ = kamiya_run(args)
     ok32, a32, b32, _ = kamiya_run(args32)
     @test ok64 && ok32
