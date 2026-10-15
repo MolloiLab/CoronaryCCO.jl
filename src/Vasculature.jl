@@ -39,6 +39,6 @@ include("generate.jl")
 include("postprocess.jl")
 
 export CCOParams, CCOModel, MaskDomain, Engine, nsegments
-export read_vol, import_gxl, export_gxl, grow!, generate, dds_orders, tree_qc
+export read_vol, import_gxl, export_gxl, grow!, generate, dds_orders, tree_qc, set_territories!
 
 end

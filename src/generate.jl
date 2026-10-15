@@ -41,6 +41,13 @@ domain voxel value ≥ `0xC0` lists in its low six bits which trees may claim a 
 (bit k−1 for tree k): give each territory its own tree and a band around the watershed both
 trees, and the trees interleave across the band. Any other inside value (e.g. 255) allows all.
 
+**Hierarchical territories.** For finer control (up to 15 groups), pass `territories`, an
+`Array{UInt16,3}` on the domain grid (see [`set_territories!`](@ref)), and `base_groups`, a
+function mapping an imaged segment's midpoint to its group (1–15). Grown segments inherit their
+parent's group, and a terminal joins only groups its voxel allows, so each stretch of an imaged
+artery keeps supplying the myocardium nearest to it, as the epicardial segment above a wall
+region does in real hearts. Bit 15 marks voxels vessels may cross but where no terminal goes.
+
 Growth is batched by default (`growth = :batched`, fast mode): after the first `n_seq`
 terminals it adds terminals in parallel rounds on CPU threads or any GPU (`device =`
 `CuArray`, `ROCArray`, `MtlArray`, ...), about 15× faster than sequential growth at 800k
@@ -57,7 +64,7 @@ function generate(
         mode::Symbol = :fast, sampling::Symbol = :voxel, fix_base::Bool = false,
         collision::Symbol = :current, max_branch_angle = nothing,
         growth::Symbol = mode === :exact ? :sequential : :batched, n_seq::Integer = 2_000, batch_frac::Real = 0.01, batch_max::Integer = 16_384, device = identity,
-        kwargs...
+        territories = nothing, base_groups = nothing, kwargs...
     )
     p = CCOParams(;
         nterm = Int(nterm), aperf = Float64(aperf), gamma = Float64(gamma),
@@ -68,11 +75,19 @@ function generate(
         domain_vol; root = root === nothing ? nothing : Tuple(Int32.(root)),
         min_dist = min_dist, metric = metric
     )
+    territories === nothing || set_territories!(dom, territories)
     m = import_gxl(T, base_xml, p)
     E = Engine(
         m, dom; seed = seed, mode = mode, volume = volume, sampling = sampling, fix_base = fix_base,
         collision = collision, max_branch_angle = max_branch_angle, root_caps = root_radius_max
     )  # mode = :exact is test-only
+    if base_groups !== nothing
+        # territory group of each imaged segment, from its midpoint; grown segments inherit it
+        for j in 2:nsegments(m)
+            a = m.pos[m.parent[j] == 1 ? j : m.parent[j]]; b = m.pos[j]
+            E.treeid[j] = UInt8(base_groups(((a[1] + b[1]) / 2, (a[2] + b[2]) / 2, (a[3] + b[3]) / 2)))
+        end
+    end
     grow!(
         E; parallel = parallel, progress = Int(progress), trace = trace, growth = growth,
         n_seq = n_seq, batch_frac = batch_frac, batch_max = batch_max, device = device

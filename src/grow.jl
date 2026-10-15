@@ -87,16 +87,23 @@ function _tree_ids(m::CCOModel, roots)
     return id
 end
 
+const TERRITORY_REACH = 6.0   # mm; see nearest_k!
+
 # Territories in a forest. A domain voxel value >= 0xC0 lists in its low six bits the trees a
 # terminal there may join (bit k-1 for tree k); any other inside value (e.g. 255) allows all.
 # This lets trees interdigitate across a boundary band instead of meeting at a hard seam.
 @inline function _allowed_bits(d, p::P3{T}) where {T}
     q = (unsafe_trunc(Int32, floor(p[1] + T(0.5))), unsafe_trunc(Int32, floor(p[2] + T(0.5))), unsafe_trunc(Int32, floor(p[3] + T(0.5))))
-    in_bounds(d, q) || return 0x3f
+    in_bounds(d, q) || return 0x7fff
+    if !isempty(d.allow)
+        a = @inbounds(d.allow[_ix(d, q)...]) & 0x7fff
+        return a == 0 ? 0x7fff : a
+    end
     v = img_at(d, q)
-    return v >= 0xc0 ? (v & 0x3f) : 0x3f
+    # 0x3f (all six trees, e.g. a plain 255 mask) means unrestricted, as does any value < 0xc0
+    return (v >= 0xc0 && (v & 0x3f) != 0x3f) ? UInt16(v & 0x3f) : 0x7fff
 end
-@inline _tree_ok(treeid, j, bits::UInt8) = (t = @inbounds(treeid[j]); t == 0 || ((bits >> (t - 0x01)) & 0x01) == 0x01)
+@inline _tree_ok(treeid, j, bits::UInt16) = (t = @inbounds(treeid[j]); t == 0 || ((bits >> (t - 0x01)) & 0x0001) == 0x0001)
 
 function Engine(
         m::CCOModel{T}, dom::MaskDomain{T}; seed::Integer = 0, cell::Real = 2.0,
@@ -282,7 +289,7 @@ end
                 (kx == max(sb[1], bx[1]) && ky == max(sb[3], bx[3]) && kz == max(sb[5], bx[5])) || continue
                 keep = level >= 1 ? is_connectable(E, j) : level == 0.5 ? E.middle[j] : true
                 keep || continue
-                (bits == 0x3f || _tree_ok(E.treeid, j, bits)) || continue
+                (bits == 0x7fff || _tree_ok(E.treeid, j, bits)) || continue
                 d = proj_distance(segA(m, j), segB(m, j), p)
                 # insertion into the sorted top-n list
                 if k < n
@@ -301,6 +308,22 @@ end
             end
         end
         (covers_all || (k >= n && bd[n, col] < R - g.margin)) && return k
+        # With territories, a point joins only segments of its allowed groups. Candidates are the
+        # allowed segments within TERRITORY_REACH of the nearest allowed one, so connections stay
+        # as local as in unrestricted growth while every location can always reach its own
+        # territory's tree (otherwise regions where a neighbouring tree arrived first stay empty).
+        # No connection can exceed 25 mm (try_candidate!), so the search stops there.
+        if bits != 0x7fff
+            if k >= 1 && R - g.margin > bd[1, col] + T(TERRITORY_REACH)
+                lim = bd[1, col] + T(TERRITORY_REACH)
+                while k > 1 && bd[k, col] > lim
+                    k -= 1
+                end
+                return k
+            end
+            R - g.margin > T(25) && return k
+            k >= n && bd[n, col] < R - g.margin && return k
+        end
         R *= 2
     end
     return 0
@@ -509,9 +532,13 @@ HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared bas
                 l0 = norm3(sub3(pOpt, pParent)) * lf
                 l1 = norm3(sub3(pOpt, ps)) * lf
                 l2 = norm3(sub3(pOpt, p)) * lf
-                # degenerate check (2r <= l); with collision = :final both sides at their final scale
+                # degenerate check (2r <= l); with collision = :final both sides at their final scale.
+                # With fix_base, splitting an imaged vessel leaves two collinear pieces of one imaged
+                # centerline, not new stubby segments, so only the new branch is checked; otherwise
+                # thick imaged vessels (proximal LAD, RCA) could never give off a branch.
                 c2 = T(2) * E.cscale; cl = E.lscale
-                if (c2 * r0 <= cl * l0) && (c2 * r1 <= cl * l1) && (c2 * r2 <= cl * l2)
+                onbase = E.fix_base && E.isbase[s]
+                if (onbase || ((c2 * r0 <= cl * l0) && (c2 * r1 <= cl * l1))) && (c2 * r2 <= cl * l2)
                     return (true, vol, pOpt, qNew, i + 1)
                 end
             else

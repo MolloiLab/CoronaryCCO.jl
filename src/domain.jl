@@ -77,7 +77,25 @@ mutable struct MaskDomain{T}
     nbtry::Int
     cache::Vector{NTuple{3, Int32}}
     cache_dist::T
+    allow::Array{UInt16, 3}    # optional per-voxel territory (see `set_territories!`); empty: unused
 end
+
+const NOTERM = 0x8000          # territory bit: traversable by vessels, but no terminal here
+
+"""
+    set_territories!(dom, allow::Array{UInt16,3})
+
+Hierarchical territories on the domain grid. Bit k-1 of `allow[v]` lets segments of group k
+(see `Engine.treeid`) take a terminal at voxel v; 0 allows every group. Bit 15 (`NOTERM`) marks
+a voxel vessels may pass through but where no terminal is placed (for example tissue between an
+epicardial artery and the myocardium).
+"""
+function set_territories!(d::MaskDomain, allow::Array{UInt16, 3})
+    size(allow) == size(d.img) || throw(ArgumentError("territory array must match the domain image"))
+    d.allow = allow; empty!(d.cache)
+    return d
+end
+@inline _noterm(d, p) = !isempty(d.allow) && (@inbounds(d.allow[_ix(d, p)...]) & NOTERM) != 0
 
 """
     read_vol_union(paths) -> (img, lower)
@@ -111,7 +129,7 @@ function MaskDomain{T}(
     dist = distance_map(T, img; p = metric === :euclidean ? 2 : 3)
     d = MaskDomain{T}(
         img, dist, lower, upper, (Int32(0), Int32(0), Int32(0)), T(min_dist),
-        nbtry, NTuple{3, Int32}[], T(-1)
+        nbtry, NTuple{3, Int32}[], T(-1), Array{UInt16, 3}(undef, 0, 0, 0)
     )
     if root !== nothing && is_inside(d, Int32.(root))
         d.center = Int32.(root)
@@ -182,7 +200,7 @@ function point_cache!(d::MaskDomain)
         for k in d.lower[3]:d.upper[3], j in d.lower[2]:d.upper[2], i in d.lower[1]:d.upper[1]
             p = (i, j, k)
             dist = sample_distance(d, p)
-            img_at(d, p) >= MASK_THRESHOLD && dist >= d.min_dist && push!(d.cache, p)
+            img_at(d, p) >= MASK_THRESHOLD && dist >= d.min_dist && !_noterm(d, p) && push!(d.cache, p)
         end
         d.cache_dist = d.min_dist
     end
@@ -195,7 +213,7 @@ function random_point!(d::MaskDomain{T}, rng::CRand) where {T}
     while n < d.nbtry
         p = (d.lower[1] + crand!(rng) % dp[1], d.lower[2] + crand!(rng) % dp[2], d.lower[3] + crand!(rng) % dp[3])
         dist = sample_distance(d, p)
-        img_at(d, p) >= MASK_THRESHOLD && dist >= d.min_dist && return p
+        img_at(d, p) >= MASK_THRESHOLD && dist >= d.min_dist && !_noterm(d, p) && return p
         n += 1
     end
     point_cache!(d)
