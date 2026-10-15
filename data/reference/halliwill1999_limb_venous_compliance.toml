@@ -1,0 +1,75 @@
+[meta]
+id = "halliwill1999_limb_venous_compliance"
+data_type = "experimental"
+validates = "Whole-forearm (and calf) venous pressure-volume curve and venous compliance in healthy young adults by venous-collecting-cuff strain-gauge plethysmography; quadratic P-V model coefficients; agreement of cuff and antecubital intravenous pressure; resting antecubital venous pressure"
+species = "human"
+preparation = "22 healthy normotensive non-smoking volunteers (11 women, 11 men), 20-40 y; subsets per protocol. Mercury-in-Silastic strain gauge (Hokanson EC4) on the forearm 5 cm distal to the antecubital crease; collecting cuff on the upper arm 5 cm proximal to the crease. Study I (n = 7, 3 women): 22 G 5-cm antecubital catheter in the same forearm for intravenous pressure. Study II (n = 9, 5 women): simultaneous forearm and calf. Study IV (n = 11, 6 women): forearm and calf with and without sympathoexcitation."
+conditions = "Supine, 15 min rest, arm slightly above heart level. Method: cuff inflated to 60 mmHg for 4 min (8 min in a repeat trial), then deflated at 1 mmHg/s to 0 mmHg; data 60 -> 10 mmHg in 2-mmHg steps; cuff pressure used as intravenous pressure."
+verification = "FT"
+access = "Full-text HTML (journals.physiology.org) read from Wayback Machine capture 20220120123149 of https://journals.physiology.org/doi/full/10.1152/jappl.1999.87.4.1555; Table 1 and figure-legend regression coefficients read from the HTML."
+notes = """Model (Methods): delta_limb_volume [ml/dl tissue] = beta0 + beta1*P + beta2*P^2, P = cuff pressure (mmHg), fitted 60 -> 10 mmHg during deflation at 1 mmHg/s. Compliance = d(delta V)/dP = beta1 + 2*beta2*P [ml/dl tissue/mmHg].
+beta0 lumps resting-pressure volume, hysteresis (wall creep, capillary filtration) and unstressed-volume shifts; only beta1 and beta2 describe compliance. Doubling the collection time (8 vs 4 min) raised beta0 but not beta1/beta2.
+Units: 'ml/dl of tissue' = ml per 100 ml of forearm tissue at the gauge site (strain-gauge plethysmography; % volume change of the segment under the gauge).
+Regression parameters are estimate +/- SE of the estimate; other values mean +/- SD (Methods).
+Printed inconsistency: the Fig. 5 legend labels the 4-min CALF curve with the same coefficients as the Fig. 6 FOREARM curve (0.928 + 0.108 P - 0.00102 P^2), while the text gives calf beta0 (4 min) = 0.30. The Fig. 6 legend (forearm 0.928..., calf 0.296 + 0.111 P - 0.00094 P^2) matches the text, so those are stored for study II.
+Resting antecubital venous pressure without cuff: 5.7 +/- 1.1 mmHg (n = 7). Intravenous pressure rose during a 60-mmHg collection at 0.54 +/- 0.36 mmHg/s (~147 +/- 68 s to reach 60 mmHg) and fell to resting levels in < 1 s on instantaneous cuff deflation.
+Day-to-day CV of compliance 4.9% (4 subjects, 2 extra days). Compliance in the leg was higher than in the arm (P < 0.05)."""
+use_in_model = """Sets the per-volume compliance of the arm venous reservoir: C_forearm(P) = beta1 + 2*beta2*P ml per 100 ml tissue per mmHg, using the forearm rows of quadratic_pv_fits (study II 4-min, or study IV control). Compliance falls with pressure (beta2 < 0), so a reservoir distended by an injection stiffens as it fills.
+Whole-limb C = C_per_100ml x (limb tissue volume / 100); limb volume must come from elsewhere (e.g. buffa2015_upper_limb_volume); the forearm value applied to the whole arm is an assumption (upper-arm veins not measured here).
+Resting antecubital pressure (5.7 mmHg) gives the reservoir's starting pressure; the < 1 s pressure fall on cuff release bounds the outflow time constant of the distended forearm veins from above."""
+
+[source]
+authors = ["Halliwill JR", "Minson CT", "Joyner MJ"]
+year = 1999
+title = "Measurement of limb venous compliance in humans: technical considerations and physiological findings"
+journal = "J Appl Physiol"
+volume = "87"
+issue = "4"
+pages = "1555-1563"
+doi = "10.1152/jappl.1999.87.4.1555"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 87, issue 4, 1555-1563; authors Halliwill, Minson, Joyner)"
+pmid = "10517791"
+
+[data.cuff_vs_intravenous_pressure]
+description = "Antecubital intravenous pressure vs venous collecting cuff pressure (forearm), resting intravenous pressure"
+location = "Abstract; Results 'Effect of Venous Collecting Cuff on Intravenous Pressure'; Fig. 1"
+provenance = "FT"
+statistic = "mean +/- SD across subjects; n = 7"
+condition = ["steady state (2-min steps 20-60 mmHg)", "deflation 60 -> 10 mmHg at 1 mmHg/s"]
+slope = [0.95, 0.93]
+slope_sd = [0.02, 0.02]
+intercept_mmHg = [-0.3, 1.5]
+intercept_sd_mmHg = [0.7, 1.0]
+r = [0.999, 0.999]
+resting_intravenous_pressure_mmHg = 5.7
+resting_intravenous_pressure_sd_mmHg = 1.1
+pressure_rise_rate_at_60mmHg_cuff_mmHg_per_s = 0.54
+pressure_rise_rate_sd_mmHg_per_s = 0.36
+missing_note = "Abstract prints r = 0.99 +/- 0.00; Results 0.999 +/- 0.000 (stored). Steady-state intercept not different from 0; deflation intercept P < 0.05 vs 0."
+
+[data.quadratic_pv_fits]
+description = "Group regression of delta forearm/calf volume (ml/dl tissue) on cuff pressure: dV = beta0 + beta1*P + beta2*P^2; compliance = beta1 + 2*beta2*P"
+location = "Fig. 6 legend (study II, 4-min collection, n = 9); Fig. 8 legend (study IV control and sympathoexcitation, n = 11); Fig. 5 legend (8-min collection); Fig. 7 legend (calf, external compression, n = 5)"
+provenance = "FT"
+statistic = "estimate +/- SE of the estimate"
+limb = ["forearm", "calf", "forearm", "calf", "forearm", "calf", "calf", "calf", "forearm_or_calf_as_printed"]
+condition = ["study II, 4-min collection", "study II, 4-min collection", "study IV control", "study IV control", "study IV sympathoexcitation (postexercise ischemia)", "study IV sympathoexcitation", "study III without compression stocking", "study III with compression stocking", "study II, 8-min collection (Fig. 5 legend, labelled calf)"]
+n = [9, 9, 11, 11, 11, 11, 5, 5, 9]
+beta0_mL_per_dL = [0.928, 0.296, 0.748, 1.184, 0.540, 0.774, 0.677, -1.847, 1.576]
+beta0_se_mL_per_dL = [0.227, 0.198, 0.205, 0.257, 0.205, 0.244, 0.478, 0.662, 0.224]
+beta1_mL_per_dL_per_mmHg = [0.108, 0.111, 0.087, 0.094, 0.085, 0.093, 0.115, 0.210, 0.107]
+beta1_se_mL_per_dL_per_mmHg = [0.014, 0.012, 0.013, 0.016, 0.013, 0.015, 0.030, 0.042, 0.014]
+beta2_mL_per_dL_per_mmHg2 = [-0.00102, -0.00094, -0.00080, -0.00084, -0.00076, -0.00085, -0.00104, -0.00191, -0.00098]
+beta2_se_mL_per_dL_per_mmHg2 = [0.00020, 0.00018, 0.00018, 0.00023, 0.00018, 0.00022, 0.00042, 0.00059, 0.00020]
+fit_range_mmHg = [10.0, 60.0]
+missing_note = "Compliance at specific pressures is shown only graphically (Figs. 5-8); compute from beta1 + 2*beta2*P if needed (not stored). Last row: the Fig. 5 legend labels it calf, but the 4-min row of that legend duplicates the forearm coefficients of Fig. 6; see notes. Forearm vs calf beta0 and beta1 differ (P < 0.05)."
+
+[data.method_comparison_20_40mmHg]
+description = "Forearm volume change from 20 to 40 mmHg intravenous/cuff pressure by five methods (study I)"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD; n = 7"
+method = ["decreasing pressure at 1 mmHg/s", "step up 20 -> 40 mmHg", "step down 40 -> 20 mmHg", "discontinuous steps up", "discontinuous steps down"]
+delta_volume_per_20mmHg_mL_per_dL = [0.76, 1.11, 1.39, 0.78, 0.83]
+delta_volume_per_20mmHg_sd_mL_per_dL = [0.14, 0.23, 0.38, 0.40, 0.36]
+missing_note = "Table heading 'Compliance, ml/dl of tissue (20 mmHg)': the value is the volume change over the 20-40 mmHg interval, not per mmHg. Step-down differs (P < 0.05) from the 1 mmHg/s and discontinuous methods (hysteresis)."

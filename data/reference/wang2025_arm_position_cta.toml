@@ -1,0 +1,41 @@
+[meta]
+id = "wang2025_arm_position_cta"
+data_type = "experimental"
+validates = "Effect of arm position (both arms raised above the head vs both arms at the side) during antecubital injection on arterial attenuation in a head-to-pelvis CTA at 80 kV"
+species = "human"
+preparation = "185 patients with suspected acute aortic syndrome, BMI < 30, randomly assigned to arms cephalad (group A, n = 105) or arms at the side (group B, n = 80). Siemens Definition FLASH dual-source CT, high-pitch (3.2) head-to-pelvic-floor acquisition, 80 kV, reference 320 mAs with CAREDose 4D, SAFIRE 3."
+conditions = "Iopamidol 370 mgI/mL, 0.9 mL/kg at 5 mL/s via an 18G antecubital cannula, followed by an equal volume of saline; bolus tracking in the ascending aorta, 100 HU threshold, 7 s delay."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC12125744 (open access, CC BY), read 2026-10-15; Tables 1-3 read from the XML."
+notes = """Attenuation is reported as a single value per group across the ROIs in the ascending aorta, carotid, iliac and middle cerebral arteries; per-vessel values are not given in the tables read.
+The injection arm (right or left) is not stated. The groups are unequal (105 vs 80) despite 'random' assignment.
+Arms-up scans also had higher tube current (315 vs 299 mAs) and noise; attenuation at fixed 80 kV should be largely independent of mAs, but beam hardening from the arms in the field of view may contribute."""
+use_in_model = """Segment: arm vein -> axillary/subclavian (thoracic outlet). Raising the arms lowered arterial attenuation by ~9% (536 vs 588 HU at 80 kV), consistent with partial venous outflow obstruction at the thoracic outlet that delays and disperses the bolus. Use as a scenario check for an 'arms-up' increase in arm-segment transit/dispersion; see also nishiyama2024_arm_position_contrast.toml."""
+
+[source]
+authors = ["Wang M", "Zheng C", "Yang L", "Su J", "Sheng J", "He X", "Wang B", "Wu G"]
+year = 2025
+title = "Impact of arm position on low dose dual-source CT one-step aortic and cerebral-carotid artery angiography image quality and radiation dose"
+journal = "BMC Med Imaging"
+volume = "25"
+issue = "1"
+pages = "198"
+doi = "10.1186/s12880-025-01742-w"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 25, issue 1, article 198; authors Wang, Zheng, Yang, Su, Sheng, He, Wang, Wu)"
+pmid = "40448247"
+pmcid = "PMC12125744"
+
+[data.attenuation_by_arm_position]
+description = "Mean arterial attenuation (ROIs in ascending aorta, carotid, iliac and middle cerebral arteries) by arm position"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD; n = patients"
+arm_position = ["both arms cephalad (raised)", "both arms at the side"]
+n = [105, 80]
+attenuation_mean_HU = [535.96, 588.26]
+attenuation_sd_HU = [104.48, 122.53]
+noise_mean_HU = [28.70, 25.98]
+noise_sd_HU = [5.68, 8.82]
+tube_voltage_kV = 80.0
+p_value = "< 0.001"
+missing_note = "Per-vessel attenuation and contrast timing are not reported. Injection side not stated."

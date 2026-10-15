@@ -1,0 +1,94 @@
+[meta]
+id = "lehmonen2022_cmr_chamber_bolus_passage"
+data_type = "experimental"
+validates = "Contrast-bolus passage through SVC, left atrium, left atrial appendage and LV by first-pass CMR, in cardiac cycles: arrival time (10% of max), time to peak, FWHM and full width at tenth maximum (FWTM) per chamber, peak-to-peak transit SVC -> LA, SVC -> LV, LA -> LAA; maximum and minimum enhancement rates (wash-in / washout per cycle)"
+species = "human"
+preparation = "30 stroke-free controls aged 18-50 y (41 +/- 8 y, 15 women), randomly drawn from population registers and age/sex-matched to 30 young cryptogenic-stroke patients (SECRETO study, Helsinki). 1.5 T CMR. Gadoterate meglumine (Dotarem), 0.2 mmol/kg at 4.5 mL/s, given in two halves: the first half injected at the start of the perfusion sequence, the second half after it (to visualize washout). Injection vein not stated. ECG-gated 2D motion-corrected saturation-recovery SSFP perfusion, 4 slice groups (SVC transverse; LAA and LA modified two-chamber, LAA twice per cycle; LV four-chamber), 60 sample points over ~60 s. Circular ROIs >= 150 mm2 (SVC, LA, LV), custom ROI for LAA; baseline = mean of first 3 points."
+conditions = "Rest. All time variables normalized to each subject's R-R interval (units: cardiac cycles, cc). TTP measured from the start of the sequence (= injection start). Transit times = differences between curve peaks. Only the first peak analysed (recirculation excluded)."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC9700591 (CC BY 4.0 open access), read 2026-10-15; Tables 1-3 read from the XML table markup."
+notes = """Values for controls are the target here; patients are stored for completeness (no significant differences except LV minimum enhancement rate).
+Statistics are mixed: normally distributed variables mean +/- SD; others median (IQR) where the bracket is the IQR WIDTH as printed, e.g. '7.1 (2.5)' (not quartiles). Columns *_iqr_width_cc hold that number.
+No right-heart chamber (RA, RV) or pulmonary-artery curves were acquired; the SVC curve is the venous input and LA/LAA/LV are downstream of the lungs.
+The SVC FWHM includes the injection duration (half of 0.2 mmol/kg at 4.5 mL/s; volume per subject not reported) and venous dispersion from the arm.
+Signal-intensity curves at this dose (0.1 mmol/kg in the first half) may be affected by T1-saturation nonlinearity at peak; widths in cc are therefore approximate measures of dispersion. Heart rate in controls was 70 +/- 13 bpm; per-subject R-R intervals are not tabulated, so conversion of cc to seconds is approximate.
+rBF is AUC/FWTM (arbitrary units)."""
+use_in_model = """Constrains segment-wise dispersion in heartbeats for a healthy young heart: bolus width at the SVC (FWHM 7.3 cc, FWTM 15.7 cc), at the LA (FWHM 10.4 cc, FWTM 19.7 cc) and LV (FWHM 10.8 cc, FWTM 20.8 cc), and peak-to-peak transit SVC -> LA 6.6 cc and SVC -> LV 8.2 cc (so LA -> LV ~1.6 cc, LA mixing + LV). The growth of width from SVC to LA (RA + RV + lungs) is the key test of the right-heart + pulmonary mixing model; LV minimum enhancement rate (-36 +/- 13 per cc, normalized units) reflects LV washout per beat at LVEF 64%."""
+
+[source]
+authors = ["Lehmonen L", "Putaala J", "Pöyhönen P", "Kuusisto J", "Pirinen J", "Sinisalo J", "Järvinen V"]
+year = 2022
+title = "MRI-derived cardiac washout is slowed in the left ventricle and associated with left ventricular non-compaction in young patients with cryptogenic ischemic stroke"
+journal = "Int J Cardiovasc Imaging"
+volume = "38"
+issue = "11"
+pages = "2395-2402"
+doi = "10.1007/s10554-022-02643-7"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 38, issue 11, 2395-2402; authors Lehmonen, Putaala, Pöyhönen, Kuusisto, Pirinen, Sinisalo, Järvinen)"
+pmid = "36434329"
+pmcid = "PMC9700591"
+
+[data.time_variables_controls]
+description = "First-pass timing and width per site in stroke-free controls (n = 30), in cardiac cycles"
+location = "Table 2"
+provenance = "FT"
+statistic = "median with IQR width in brackets for arrival/peak/FWHM; mean +/- SD for FWTM"
+site = ["SVC", "LAA", "LA", "LV"]
+arrival_time_median_cc = [7.1, 13.5, 13.0, 13.7]
+arrival_time_iqr_width_cc = [2.5, 3.6, 3.6, 4.0]
+time_to_peak_median_cc = [12.5, 19.8, 18.1, 20.1]
+time_to_peak_iqr_width_cc = [4.7, 6.9, 5.2, 6.8]
+fwhm_median_cc = [7.3, 10.4, 10.4, 10.8]
+fwhm_iqr_width_cc = [2.1, 3.2, 2.7, 2.5]
+fwtm_mean_cc = [15.7, 20.7, 19.7, 20.8]
+fwtm_sd_cc = [3.8, 3.3, 4.3, 4.2]
+heart_rate_mean_bpm = 70.0
+heart_rate_sd_bpm = 13.0
+missing_note = "Arrival = time at 10% of maximum; TTP from sequence start (= injection start). IQR bracket is a width, not quartiles."
+
+[data.time_variables_patients]
+description = "Same variables in young cryptogenic-stroke patients (n = 30)"
+location = "Table 2"
+provenance = "FT"
+statistic = "as for controls"
+site = ["SVC", "LAA", "LA", "LV"]
+arrival_time_median_cc = [6.7, 12.4, 12.2, 13.3]
+arrival_time_iqr_width_cc = [2.0, 2.3, 2.8, 4.0]
+time_to_peak_median_cc = [11.9, 19.6, 18.7, 21.5]
+time_to_peak_iqr_width_cc = [5.0, 5.1, 5.5, 8.0]
+fwhm_median_cc = [6.2, 11.1, 10.5, 11.4]
+fwhm_iqr_width_cc = [3.0, 5.1, 5.6, 6.0]
+fwtm_mean_cc = [14.9, 22.5, 21.6, 21.7]
+fwtm_sd_cc = [3.2, 7.1, 5.2, 4.8]
+heart_rate_mean_bpm = 66.0
+heart_rate_sd_bpm = 11.0
+missing_note = "No significant patient-control differences (P > 0.13)."
+
+[data.transit_times]
+description = "Peak-to-peak transit times between sites, in cardiac cycles"
+location = "Table 2"
+provenance = "FT"
+statistic = "median (IQR width)"
+segment = ["SVC -> LAA", "SVC -> LA", "SVC -> LV", "LA -> LAA"]
+controls_median_cc = [7.0, 6.6, 8.2, 0.9]
+controls_iqr_width_cc = [3.0, 2.7, 2.9, 1.3]
+patients_median_cc = [6.9, 6.2, 8.1, 1.0]
+patients_iqr_width_cc = [3.1, 2.3, 3.4, 1.1]
+missing_note = "No RA, RV or PA curves; SVC -> LA includes RA, RV, pulmonary circulation and LA filling."
+
+[data.enhancement_rates]
+description = "Maximum (wash-in) and minimum (washout) time derivatives of the baseline-corrected curves, and rBF = AUC/FWTM"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SD, or median (IQR width) where marked"
+site = ["SVC", "LAA", "LA", "LV"]
+controls_dmax_per_cc = [88.0, 49.0, 60.0, 88.0]
+controls_dmax_spread = [37.0, 23.0, 27.0, 34.0]
+controls_dmin_per_cc = [-43.0, -22.0, -22.0, -36.0]
+controls_dmin_spread = [28.0, 10.0, 14.0, 13.0]
+controls_rbf = [101.0, 111.0, 106.0, 173.0]
+controls_rbf_sd = [34.0, 44.0, 34.0, 63.0]
+spread_type = "Dmax: SD for SVC, LA, LV; IQR width for LAA. Dmin: IQR width for SVC, LAA, LA; SD for LV."
+patients_dmin_lv_mean_per_cc = -28.0
+patients_dmin_lv_sd_per_cc = 11.0
+missing_note = "Derivatives are in signal units per cardiac cycle (arbitrary MR signal units, not concentration); compare only as relative wash-in/washout rates. AUC values not stored."

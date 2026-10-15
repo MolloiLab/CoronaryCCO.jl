@@ -1,0 +1,39 @@
+[meta]
+id = "berk2026_subclavian_vein_sonoanatomy"
+data_type = "experimental"
+validates = "Right subclavian vein lumen diameter at three points along its course (lateral to medial up to the subclavian-brachiocephalic junction) in supine healthy adults, with and without caudal arm traction"
+species = "human"
+preparation = "20 healthy volunteers (10 men, 10 women), right side only. Supraclavicular ultrasound (Sonosite M-Turbo and Samsung HM70 EVO, 3-16 MHz linear probe). Clavicle divided into thirds; SCV diameter measured at the SCV-brachiocephalic vein merge point, behind the medial third and behind the middle third of the clavicle."
+conditions = "Supine on an operating table, head turned 30 degrees to the left; neutral arm position and after caudal traction of the arm."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC13326537 (BMC Anesthesiol, CC BY open access), read 2026-10-15; Table 1 read from the XML table markup."
+notes = """Diameter measurement direction (AP vs maximal) is not specified in the text read. Respiratory phase not stated.
+Arm traction did not change SCV diameter significantly (p 0.22-0.68).
+The supraclavicular view does not include the infraclavicular (axillary) portion of the vein."""
+use_in_model = """Subclavian segment of the injection path: diameter ~9.5-10.6 mm (area ~70-90 mm2) for the subclavian vein between mid-clavicle and its junction with the internal jugular vein. Length is not reported; combine with a separate length source for volume. Compare with kim2008_ijv_subclavian_csa (SCV CSA 0.92 cm2, supine, infraclavicular)."""
+
+[source]
+authors = ["Berk AZ", "Balaban O", "Eman A", "Dikmen B"]
+year = 2026
+title = "Sono-anatomy of the supraclavicular region for ultrasound-guided subclavian vein catheterization: revaluation of a former method"
+journal = "BMC Anesthesiol"
+volume = "26"
+issue = "1"
+pages = "389"
+doi = "10.1186/s12871-026-03857-1"
+crossref_verified = "2026-10-15; Crossref title match (vol 26, article 389; authors Berk, Balaban, Eman, Dikmen; published 2026-04-25)"
+pmid = "42034986"
+pmcid = "PMC13326537"
+
+[data.subclavian_diameter]
+description = "Right subclavian vein diameter at three positions, before and after caudal traction of the arm"
+location = "Table 1; Abstract"
+provenance = "FT"
+statistic = "mean +/- SD; n = 20 volunteers"
+site = ["SCV-brachiocephalic vein merge point", "behind medial third of clavicle", "behind middle third of clavicle"]
+neutral_diameter_mean_mm = [10.57, 9.47, 9.91]
+neutral_diameter_sd_mm = [1.76, 1.78, 1.96]
+traction_diameter_mean_mm = [10.37, 9.87, 10.38]
+traction_diameter_sd_mm = [1.36, 1.75, 1.69]
+p_value = [0.683, 0.257, 0.217]
+missing_note = "Left subclavian vein not measured. Vein length not reported."

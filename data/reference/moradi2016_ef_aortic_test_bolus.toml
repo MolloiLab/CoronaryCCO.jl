@@ -1,0 +1,51 @@
+[meta]
+id = "moradi2016_ef_aortic_test_bolus"
+data_type = "experimental"
+validates = "Ascending-aorta test-bolus peak time and peak enhancement at 120 kVp after a 15 mL bolus, and the main-scan aortic and coronary attenuation, versus echocardiographic ejection fraction and body weight"
+species = "human"
+preparation = "120 patients (64 men, 56 women; age 57.61 +/- 11 y, range 28-80; weight 75.03 +/- 3.7 kg, range 70-79) referred for coronary CTA (AlZahra Hospital, Isfahan, 2014-2016); EF by echocardiography within 3 months (range 25-70%, mean 55 +/- 7.7). 64-slice GE CT. Metoprolol 40 mg orally to heart rate < 65 bpm in almost all."
+conditions = "Main bolus: 80-100 mL Scanlux-370 (nonionic, as printed) then 50-60 mL saline, 18-gauge catheter, 4-6 mL/s. Test bolus: 15 mL of contrast (rate not separately stated), ROI in the ascending aorta at the aortic root; scan delay = test-bolus peak time + 5 s. 120 kV, 600 mAs, 350 ms rotation."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC5348831 (open access), read 2026-10-15. Table 1 is not in the XML as data; values taken from the Abstract and Results text."
+notes = """PAT = time to peak of the ascending-aorta test-bolus curve; PAE = peak enhancement of that curve (HU, absolute or baseline-subtracted not stated).
+The PAT SD (+/- 2 s) is small relative to the printed range (13-31 s); stored as printed.
+Injection vein side (left/right) and the test-bolus saline flush are not stated.
+Weight range 70-79 kg is narrow; mean 75.03 +/- 3.7 kg."""
+use_in_model = """Ascending-aorta test-bolus time to peak (19.3 +/- 2 s) and peak (235 +/- 40.6 HU at 120 kV) after a 15 mL bolus of Scanlux-370 (injection rate for the main bolus 4-6 mL/s; test-bolus rate not stated); compare with leiknes2023 (20 mL at 6 mL/s, 100 kV: 18.3 s, 194 HU). Weak negative correlation of time to peak with EF (r = -0.266) and of peak with weight (r = -0.255)."""
+
+[source]
+authors = ["Moradi M", "Hashemi P", "Momeni M"]
+year = 2016
+title = "The influence of cardiac function on coronary arterial enhancement at coronary computed tomography angiography: a cross-sectional study"
+journal = "J Res Med Sci"
+volume = "21"
+issue = ""
+pages = "132"
+doi = "10.4103/1735-1995.196614"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 21; authors Moradi, Hashemi, Momeni)"
+pmid = "28331518"
+pmcid = "PMC5348831"
+
+[data.test_bolus_and_main_scan]
+description = "Ascending-aorta test-bolus peak time and peak enhancement; main-scan peak attenuation of the aorta and coronary arteries"
+location = "Abstract and Results"
+provenance = "FT"
+statistic = "mean +/- SD (range); n = 120"
+quantity = ["test-bolus aortic peak time", "test-bolus aortic peak enhancement", "main-scan aorta attenuation", "main-scan RCA attenuation", "main-scan LCA attenuation", "main-scan LCX attenuation", "main-scan LAD attenuation"]
+unit = ["s", "HU", "HU", "HU", "HU", "HU", "HU"]
+mean = [19.3, 235.0, 561.0, 476.0, 505.0, 467.0, 473.0]
+sd = [2.0, 40.6, 119.0, 109.0, 108.0, 113.0, 104.0]
+min = [13.0, 153.0, nan, nan, nan, nan, nan]
+max = [31.0, 435.0, nan, nan, nan, nan, nan]
+tube_voltage_kVp = 120
+missing_note = "Main-scan values are 'peak attenuation' as printed; ranges not given for them."
+
+[data.correlations]
+description = "Pearson correlations reported"
+location = "Results"
+provenance = "FT"
+statistic = "Pearson r; n = 120"
+pair = ["EF vs test-bolus peak time", "EF vs test-bolus peak enhancement", "body weight vs test-bolus peak enhancement", "body weight vs test-bolus peak time", "heart rate vs test-bolus peak time", "heart rate vs test-bolus peak enhancement"]
+r = [-0.266, -0.027, -0.255, 0.081, 0.274, 0.349]
+p_value = [0.003, 0.767, 0.005, 0.379, 0.101, 0.086]
+missing_note = "No regression slopes."

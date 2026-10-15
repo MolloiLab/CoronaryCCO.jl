@@ -106,6 +106,44 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `pelgrim2017_ctp_timing.toml` | Delay from aortic peak to non-ischemic myocardial peak; ischemia contrast window | Human, adenosine dynamic CTP | abs |
 | `lee2022_dynamic_ctp.toml` | Dynamic CTP injection protocol and timing; stress myocardial HU (non-ischemic vs ischemic); CT MBF | Human, adenosine, 50 mL iohexol 350 at 5 mL/s + 30 mL saline, 100 kVp | FT |
 
+### Contrast-bolus pathway (injection site to measurement site)
+
+| File | What it validates | Species / conditions | Status |
+|---|---|---|---|
+| `deng2026_port_vs_peripheral_ct.toml` | Aortic HU and subclavian streak artifact, arm cannula vs chest port (same patients, same dose and rate) | Human, 195 | FT |
+| `wang2025_arm_position_cta.toml` | Arterial HU with arms raised vs at the side (thoracic outlet) | Human, 185, 80 kV | FT |
+| `nishiyama2024_arm_position_contrast.toml` | Collateral venous diversion and subclavian vein area, conventional vs crossed raised arms | Human, 92 | abs |
+| `you2007_injection_arm_side.toml` | Right vs left arm injection: arterial timing | Human, 60 randomized | abs |
+| `tseng2007_left_arm_reflux.toml` | Left brachiocephalic reflux vs retrosternal space | Human, 364 | abs |
+| `skrok2012_mri_first_pass_bolus_kinetics.toml` | RV→LV pulmonary transit (6.4 s), LV bolus FWHM and rise time after a very short bolus | Human, 18 healthy, MRI | FT |
+| `lehmonen2022_cmr_chamber_bolus_passage.toml` | Bolus arrival, peak and width (in cardiac cycles) in SVC, LA, LAA, LV; SVC→LA/LV transit | Human, 30 young controls, CMR | FT |
+| `dock1961_pulmonary_blood_volume.toml` | PA→LA mean transit time and pulmonary blood volume by dye dilution | Human, 4 normal + 45 valve patients | FT |
+| `bae2010_ct_contrast_timing_review.toml` | Arrival times by segment, injection-site shifts, recirculation, saline chaser effect, HU per mgI/mL at 80/100/120 kVp | Human, review | FT (values secondary) |
+| `hazirolan2009_test_bolus_pa_aorta.toml` | PA and aortic test-bolus peak ΔHU and width above 100 HU (20 mL at 5 mL/s, 120 kV), contrast warming | Human, 64 | FT |
+| `sakai2010_cardiac_function_aortic_peak.toml` | Descending-aorta peak time and peak HU vs cardiac index | Human, 29 | abs |
+| `moradi2016_ef_aortic_test_bolus.toml` | Ascending-aorta test-bolus time to peak and peak HU vs ejection fraction | Human, 120 | FT |
+| `tomita2019_kvp_iodine_sensitivity.toml` | Iodine HU ratio vs 120 kVp at 70–140 kVp | Phantom | FT |
+| `mcdermott2024_phantom_idr_coronary_iodine.toml` | Peak coronary iodine concentration vs iodine delivery rate (10-s injection, CO 4.8 L/min) | Circulation phantom | FT |
+| `salinaro2024_basilic_vein_diameter.toml` | Basilic vein diameter (4.4 ± 1.4 mm) and velocity, mid upper arm | Human, 28, 30° head-up, ultrasound | FT |
+| `berk2026_subclavian_vein_sonoanatomy.toml` | Right subclavian vein diameter at three sites (9.5–10.6 mm) | Human, 20, supine, ultrasound | FT |
+| `kim2008_ijv_subclavian_csa.toml` | Subclavian and internal jugular CSA, supine | Human, 20 men, ultrasound | abs |
+| `kawalecrutkowska2025_ijv_csa_posture.toml` | Right vs left internal jugular CSA vs posture | Human, 25, ultrasound | FT |
+| `mahlon2007_svc_ct_length.toml` | SVC length (70.7 ± 14.1 mm) | Human, 112, CT angiography | abs |
+| `lin2009_great_vessels_mdct.toml` | SVC CSA percentiles | Human, 103 healthy, gated CT | abs |
+| `wang2024_svc_brachiocephalic_cadaver.toml` | Brachiocephalic and SVC circumference and length (cadaver; low weight) | Human cadaver | FT |
+| `dymond1982_svc_bolus_fwhm.toml` | SVC bolus FWHM after basilic-vein injection (first-pass radionuclide), right vs left arm RV→LV transit | Human, cardiac patients | FT |
+| `claussen1984_bolus_geometry.toml` | Peripheral vs vena-cava catheter bolus geometry (qualitative) | Human | abs |
+| `vancauteren2018_injector_dead_space.toml` | Injector-to-port tubing dead space (12 mL); cited venous holding volume | Minipig set-up; cited human value | FT (venous value secondary) |
+| `cowan2017_injector_tubing_volume.toml` | Example connecting-tube fluid volume (2.78 mL) and syringe dead space | Patent US9694131B2 (device example) | FT |
+| `halliwill1999_limb_venous_compliance.toml` | Forearm venous pressure-volume fit (ΔV = β0 + β1·P + β2·P²), compliance vs pressure; antecubital venous pressure 5.7 ± 1.1 mmHg | Human, healthy, supine, plethysmography | FT |
+| `oue2019_forearm_venous_capacitance.toml` | Forearm venous compliance at 20 mmHg by sex, capacitance at 60 mmHg, outflow on deflation | Human, healthy, supine | FT |
+| `buffa2015_upper_limb_volume.toml` | Arm tissue volume (wrist to mid upper arm) to scale per-100-mL compliance | Human, 30, water displacement | FT |
+| `coskun2025_pvp_rap_pah.toml` | Arm venous pressure vs right atrial pressure | Human, 138 PAH patients, supine | FT |
+| `amar2001_pvp_cvp_surgical.toml` | CVP minus peripheral venous pressure, ventilated and spontaneous | Human, surgical patients | abs |
+| `munis2001_pvp_cvp_neurosurgical.toml` | Peripheral minus central venous pressure (~3 mmHg) | Human, 15 anesthetized | abs |
+| `zhang2025_limb_basal_arterial_flow.toml` | Resting brachial, radial and ulnar artery flow by Doppler; BSA/BMI regression | Human, 304, supine | FT |
+| `harvey2014_forearm_blood_flow.toml` | Resting forearm blood flow (mL/100 mL/min) and forearm volume | Human, 25 women, plethysmography | FT |
+
 ### Flow regulation, autoregulation and oxygen use
 
 | File | What it validates | Species / conditions | Status |

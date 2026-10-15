@@ -1,0 +1,50 @@
+[meta]
+id = "amar2001_pvp_cvp_surgical"
+data_type = "experimental"
+validates = "Agreement of peripheral venous pressure (PVP) with central venous pressure (CVP) in adults without cardiac dysfunction, during mechanical ventilation and during spontaneous breathing (post-anesthesia care unit); the CVP-PVP bias"
+species = "human"
+preparation = "150 patients without cardiac dysfunction undergoing major elective noncardiac surgery, university hospital (Memorial Sloan-Kettering). Simultaneous CVP and PVP at random points: intraoperatively during mechanical ventilation (n = 100) and in the post-anesthesia care unit during spontaneous ventilation (n = 50); subset of 10 with a 2-L fluid challenge."
+conditions = "Perioperative; supine positioning implied but not stated in the abstract. Peripheral cannula site and size not stated in the abstract."
+verification = "abs"
+access = "Abstract only (PubMed E-utilities, PMID 11254838, read 2026-10-15). Full text (J Cardiothorac Vasc Anesth, Elsevier) not accessible."
+notes = """Bias is defined in the abstract as mean difference CVP minus PVP; negative values mean PVP > CVP.
+With the average bias of -2 mmHg applied, PVP predicted CVP within +/-3 mmHg with 95% probability in both settings.
+The post-anesthesia (spontaneously breathing) group is the closest to an awake supine CT patient."""
+use_in_model = """Sets the resting pressure gradient from the peripheral (arm) vein to the central veins: PVP exceeds CVP by about 2 mmHg (spontaneous breathing: CVP - PVP = -2.2 +/- 1.9 mmHg). Use as dP in R_arm = dP / Q_arm (Q_arm from zhang2025_limb_basal_arterial_flow or harvey2014_forearm_blood_flow), noting the cannula site is not stated."""
+
+[source]
+authors = ["Amar D", "Melendez JA", "Zhang H", "Dobres C", "Leung DH", "Padilla RE"]
+year = 2001
+title = "Correlation of peripheral venous pressure and central venous pressure in surgical patients"
+journal = "J Cardiothorac Vasc Anesth"
+volume = "15"
+issue = "1"
+pages = "40-43"
+doi = "10.1053/jcan.2001.20271"
+crossref_verified = "2026-10-15; Crossref title exact match ('Correlation of peripheral venous pressure and central venous pressure in surgical patients'; vol 15, issue 1, 40-43; authors Amar ... Padilla)"
+pmid = "11254838"
+
+[data.cvp_pvp_bias]
+description = "Bias (CVP - PVP) and correlation by setting"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD of paired differences; n = patients"
+setting = ["intraoperative, mechanical ventilation", "post-anesthesia care unit, spontaneous ventilation"]
+n = [100, 50]
+bias_cvp_minus_pvp_mean_mmHg = [-1.6, -2.2]
+bias_cvp_minus_pvp_sd_mmHg = [1.7, 1.9]
+pearson_r = [0.86, 0.88]
+missing_note = "Absolute CVP and PVP levels for these groups are not given in the abstract. Number of paired measurements per patient not stated."
+
+[data.fluid_challenge]
+description = "PVP and CVP before and after a 2-L fluid challenge (intraoperative subset)"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD; n = 10"
+quantity = ["PVP", "CVP"]
+before_mean_mmHg = [6.0, 4.0]
+before_sd_mmHg = [2.0, 2.0]
+after_mean_mmHg = [11.0, 9.0]
+after_sd_mmHg = [2.0, 2.0]
+n = 10
+missing_note = "Mechanically ventilated, anesthetized patients."

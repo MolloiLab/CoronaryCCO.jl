@@ -1,0 +1,52 @@
+[meta]
+id = "wang2024_svc_brachiocephalic_cadaver"
+data_type = "experimental"
+validates = "Cadaveric lengths and circumferences of the left and right brachiocephalic veins and the superior vena cava (dissection, caliper), with SVC diameter in a subset"
+species = "human (cadaver)"
+preparation = "Cadavers from the Human Anatomy Laboratory, Zhengzhou University (80 specimens, 1 excluded; text says 70 data sets analysed). Thoracotomy; vessel landmarks marked with pins; circumferences of left and right brachiocephalic veins and SVC with a Vernier caliper in 49 specimens; SVC diameter and other distances in 21 specimens."
+conditions = "Post-mortem dissection; fixation method, time since death and vessel filling state are not stated in the text read. Venous lumen dimensions of collapsed post-mortem veins are not equivalent to in vivo supine lumen."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC11616286 (BMC Cardiovasc Disord, CC BY-NC-ND open access), read 2026-10-15; Tables 1 and 3 read from the XML table markup."
+notes = """LOW-WEIGHT SOURCE: cadaveric, no SD (range, median and IQR only), units not printed in the table (Table 1 values appear to be mm, e.g. height 1618; Table 3 values appear to be cm, e.g. height 1607.5 is mm but SVC diameter 1.67 must be cm). Units below are stored as inferred from magnitude and are flagged.
+Table 1 wording is machine-translated: 'length from the point of intersection of the clavicle of the left forearm [= left brachiocephalic vein] to the point of confluence' is read as the left BCV length from where it crosses the clavicle to the SVC confluence; 'right cephalic arm' = right brachiocephalic vein. The start point is a skeletal landmark (clavicle crossing), not the IJV-subclavian junction, so these are partial BCV lengths.
+n per variable: 49 specimens for Table 1 rows (circumferences), 21 for Table 3; the paper's specimen counts (80/79/70) are internally inconsistent."""
+use_in_model = """Only cadaveric source found for brachiocephalic vein length: left BCV (clavicle crossing to confluence) ~63 mm mean (median 59), right BCV ~38 mm (median 37). Use as rough length priors for the brachiocephalic segments; prefer in vivo cross-sections (SVC: lin2009_great_vessels_mdct; SCV: berk2026, kim2008)."""
+
+[source]
+authors = ["Wang Y", "Fu J", "Li HY", "Du SJ", "Zhang YY", "Wang HY", "Wang JW", "Mao JF", "Zhang HT", "Chang C"]
+year = 2024
+title = "Morphological data of the superior vena cava predicted by multiple linear regression equations"
+journal = "BMC Cardiovasc Disord"
+volume = "24"
+issue = "1"
+pages = "694"
+doi = "10.1186/s12872-024-04305-z"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 24, article 694; first authors Wang, Fu, Li, Du, Zhang, Wang)"
+pmid = "39627707"
+pmcid = "PMC11616286"
+
+[data.venous_dimensions_table1]
+description = "Brachiocephalic vein and SVC lengths and circumferences (cadaver)"
+location = "Table 1 ('Anthropometric data of human specimens')"
+provenance = "FT"
+statistic = "mean, median, range and quartile spacing as printed (no SD); n ~ 49 specimens"
+quantity = ["left BCV length, clavicle crossing to confluence", "right BCV length, clavicle crossing to confluence", "upper pericardial edge to confluence (extrapericardial SVC)", "left BCV circumference", "right BCV circumference", "SVC circumference"]
+mean_mm = [63.00, 37.76, 52.02, 38.10, 34.08, 50.22]
+median_mm = [59.00, 37.00, 52.00, 38.00, 34.00, 49.50]
+range_width_mm = [127.0, 70.0, 84.0, 29.0, 32.0, 46.0]
+iqr_width_mm = [44.50, 25.50, 21.25, 10.00, 8.00, 12.00]
+unit_note = "Units not printed; mm inferred from magnitudes (same table lists body height 1618.24)."
+missing_note = "No SD. 'Range' and 'quartile spacing' are printed as widths, not bounds."
+
+[data.svc_diameter_table3]
+description = "SVC diameter (cadaver subset)"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean, median, range width and quartile spacing as printed; n ~ 21 specimens"
+quantity = ["SVC diameter"]
+mean_cm = [1.6714]
+median_cm = [1.6]
+range_width_cm = [1.0]
+iqr_width_cm = [0.35]
+unit_note = "Units not printed; cm inferred (aorta diameter in the same table 3.56)."
+missing_note = "No SD; measurement level not stated."

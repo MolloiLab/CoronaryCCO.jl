@@ -1,266 +1,480 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Whole-body iodine circulation for a clinical IV injection: arm vein → SVC → RA → RV → pulmonary
-# trunk → lungs → LA → LV → aorta → organs → veins → SVC / IVC → RA, with the coronary sinus
-# draining into the RA. Iodine leaves the body only through the kidneys (GFR), so what leaves the
-# coronary sinus recirculates and is diluted and cleared instead of accumulating.
+# Contrast bolus through the circulation as a graph of named vessel segments.
 #
-# Design (sources in the parameter docstrings):
-# - A physiologically based compartment model of the Bae, Heiken & Brink (1998) type, with the
-#   compartment set of Sahbaee et al. (2016), who built theirs for XCAT phantoms. Heart chamber
-#   volumes and the stroke volume come from the XCAT phantom itself.
-# - Every compartment is well mixed and holds plasma (iodine does not enter red cells). Organs
-#   exchange with their extracellular space through a permeability-surface product PS.
-# - Pipes with plug flow (arm veins, lungs) are chains of small well-mixed stages, so a varying
-#   flow (the injection stops, the saline chaser pushes the last contrast out) is handled exactly.
-# - Explicit integration with a step well below every stage's mean transit time. Float32.
+# - A `Circulation` is a list of `Segment`s joined at named nodes. The injection site and every
+#   measurement site (an AIF in the aortic root for coronary CTA, in the pulmonary trunk for
+#   pulmonary CTA, in an internal carotid for the brain) are just names in that graph.
+# - Each segment is a lumped transfer element: a volume carried by plug flow (exact, parcels
+#   in a queue, so a changing flow such as the injector stopping is handled exactly), an optional
+#   pure delay in seconds (a ventricle ejects at the next beat), then well-mixed stages whose
+#   number follows from the segment's relative dispersion. Beds can exchange iodine with an
+#   extracellular space (permeability-surface product PS) and clear it (kidney).
+# - Any segment can be replaced by a detailed model (the grown coronary tree now; grown lung or
+#   brain trees later) through `detailed`, a map from segment name to t -> outflow concentration.
+# - The graph need not be a whole body. A study of one organ can feed that organ from a single
+#   path segment with a delay and a dispersion (`organ_only`), with no heart or lungs at all.
+# - Concentrations are mgI per mL of whole blood (what CT sees). Iodine stays in plasma, so
+#   exchange uses the plasma concentration c / (1 − Hct). Float32 throughout.
+#
+# Volumes and flow: flows are fractions of cardiac output given for the beds (segments from an
+# arterial node to a venous node); artery and vein flows follow from conservation. The injected
+# volume raises venous return and, through the Frank-Starling mechanism, cardiac output while
+# the injector runs; the systemic beds store it (venous compliance), so total iodine and volume
+# are conserved exactly.
 
 module Body
 
-export Injection, BodyParams, simulate
+export Segment, Circulation, Injection, human_circulation, organ_only, simulate, curve, transit_table, aif
 
 const F32 = Float32
 
 """
-    Injection(; conc, volume, rate, saline, saline_rate)
+    Segment(name, from, to; kind, q, v, plug = 0, delay = 0, rd = 1, ve = 0, ps = 0, cl = 0)
 
-Contrast `conc` mgI/mL, `volume` mL at `rate` mL/s from t = 0, then `saline` mL at
-`saline_rate`. Default: iohexol 350, 50 mL at 5 mL/s, 40 mL saline chaser (Lee et al. 2022
-multicentre adenosine CT perfusion protocol; chaser per Mushtaq et al. 2025), right antecubital
-vein (avoids reflux through the left brachiocephalic vein, Tseng et al. 2007).
+- `kind`: `:bed` (arterial node → venous node, has its own flow fraction `q` of cardiac
+  output), `:artery`, `:vein` or `:central` (heart and lungs; carries the whole output).
+  Artery and vein flows are derived from the beds unless `q` is given (a vessel that feeds
+  only part of a bed, such as the hepatic artery).
+- `v`: blood volume, mL. `plug`: fraction of `v` moved by plug flow (first). `delay`: pure
+  delay, s. The rest of `v` is `n` well-mixed stages with `n` set so that the segment's transit
+  time has relative dispersion `rd` (SD / mean) at its nominal flow; `rd = 1` with no plug is
+  one well-mixed tank.
+- `ve`, `ps`: extracellular volume (mL) and permeability-surface product (mL/s) of a bed;
+  `cl`: plasma clearance, mL/s (kidney: GFR).
+- `c`, `r`: venous compliance (mL/mmHg) and outflow resistance (mmHg·s/mL) of a vein that
+  receives an injection. Extra inflow distends it: the stored volume ΔV raises its pressure by
+  ΔV / c and its outflow by ΔV / (r c), so the injected volume leaves with time constant r·c
+  and keeps leaving after the injector stops. 0 = rigid.
 """
-Base.@kwdef struct Injection
-    conc::F32 = 350.0f0
-    volume::F32 = 50.0f0
-    rate::F32 = 5.0f0
-    saline::F32 = 40.0f0
-    saline_rate::F32 = 5.0f0
+Base.@kwdef struct Segment
+    name::Symbol
+    from::Symbol
+    to::Symbol
+    kind::Symbol = :bed
+    q::F32 = 0.0f0
+    v::F32
+    plug::F32 = 0.0f0
+    delay::F32 = 0.0f0
+    rd::F32 = 1.0f0
+    ve::F32 = 0.0f0
+    ps::F32 = 0.0f0
+    cl::F32 = 0.0f0
+    c::F32 = 0.0f0
+    r::F32 = 0.0f0
+end
+Segment(name, from, to; kw...) = Segment(; name, from, to, kw...)
+
+"""
+    Circulation(segments; co, hct, inlet = :ra_in)
+
+`co` cardiac output (mL/s of blood), `hct` large-vessel hematocrit. `inlet` is the node where
+the venous return meets the heart; the injected volume travels with the venous flow up to it.
+"""
+struct Circulation
+    segs::Vector{Segment}
+    co::F32
+    hct::F32
+    inlet::Symbol
+    q::Vector{F32}          # nominal flow of each segment, fraction of cardiac output
 end
 
-inj_rate(j::Injection, t) = t < j.volume / j.rate ? j.rate : t < j.volume / j.rate + j.saline / j.saline_rate ? j.saline_rate : 0.0f0
-inj_conc(j::Injection, t) = t < j.volume / j.rate ? j.conc : 0.0f0
-
-"""
-    BodyParams(; kwargs...)
-
-Blood volumes in mL, flows as fractions of cardiac output.
-
-- `co`: cardiac output, mL/s. Default from XCAT vmale_50: stroke volume 132.2 − 50.6 = 81.6 mL
-  at 60 beats/min = 81.6 mL/s (4.9 L/min; CT perfusion cohorts sit near 5 L/min).
-- `hct`: large-vessel hematocrit 0.43 (ICRP 89 reference male).
-- `v_ra`, `v_rv`, `v_la`, `v_lv`: XCAT chamber volumes at this frame (52.0, 85.4, 37.6, 95.2 mL).
-- `v_pulm`: pulmonary blood 550 mL (ICRP 89: 10.5% of 5.3 L), split into the pulmonary trunk
-  (`v_pa`) and `n_lung` mixing stages. Four stages give the relative dispersion of lung transit
-  Knopp et al. (1976) quote for the dog lung (0.46 ≈ 1/√4), and the mean PA → LA transit
-  (550 − v_pa)/CO ≈ 6 s matches MRI pulmonary transit 5.7 ± 1.4 s (Nelsson et al. 2021).
-- organ flow fractions (Williams & Leggett 1989 / ICRP 89 adult male): brain 0.12, kidneys 0.19,
-  hepatic artery 0.065, gut + spleen (portal) 0.185, muscle 0.17, skin 0.05, fat 0.05, bone 0.05,
-  coronary from the coronary model, the rest "other".
-- `upper`: fraction of the peripheral tissues (muscle, skin, fat, bone, other) draining to the SVC
-  (arms, head and neck, upper thorax). With the brain, SVC flow is ≈ 0.28 of the venous return.
-- organ blood volumes (ICRP 89, % of 5.3 L): brain 1.2, kidneys 2, liver 10, gut + spleen 4.7,
-  muscle 14, skin 3, fat 5, bone 7; large arteries 6% and large veins 18% are transit volumes.
-- extracellular volumes and PS (mL, mL/s): muscle 4000 / 7, skin 1300 / 1, fat 2000 / 2, bone
-  1500 / 1, other 1500 / 3; gut, liver and kidney exchange is flow-limited (PS = 2 F_p); the
-  brain has none (blood–brain barrier). Total ≈ 11 L of the 0.23–0.27 L/kg volume of
-  distribution measured for iohexol (Olsson et al. 1983; Edelson et al. 1984). PS values are
-  scaled from EDTA (Levitt 2003) and are the least certain numbers here; they shape only the
-  recirculation and washout, not the first pass.
-- `gfr`: 2.0 mL/s of plasma (120 mL/min; iohexol renal clearance 120 ± 19 mL/min, Edelson 1984).
-- `arm_flow`: native flow of the injected arm vein, 0.02 CO. `v_arm`: 24 mL of basilic, axillary,
-  subclavian and brachiocephalic vein (about 45 cm) as 30 stages (near plug flow), giving arm → SVC arrival ≈ 3 s at 4–5 mL/s
-  (Borges et al. 2022: 3.0 ± 2.4 s).
-- `beat`: cardiac cycle, 1 s (XCAT). Blood entering a ventricle in diastole leaves at the next
-  systole, so each ventricle adds half a beat of pure delay before mixing.
-- `lung_plug`: a quarter of the pulmonary transit is plug flow (no tracer leaves the lung faster
-  than the shortest capillary path); the rest is `n_lung` mixing stages.
-"""
-Base.@kwdef struct BodyParams
-    co::F32 = 81.6f0
-    hct::F32 = 0.43f0
-    v_ra::F32 = 52.0f0
-    v_rv::F32 = 85.4f0
-    v_la::F32 = 37.6f0
-    v_lv::F32 = 95.2f0
-    v_pa::F32 = 40.0f0
-    v_pulm::F32 = 550.0f0
-    n_lung::Int = 4
-    v_aorta::F32 = 60.0f0
-    v_svc::F32 = 15.0f0
-    v_ivc::F32 = 25.0f0
-    v_arm::F32 = 24.0f0
-    n_arm::Int = 30
-    beat::F32 = 1.0f0
-    lung_plug::F32 = 0.25f0
-    arm_flow::F32 = 0.02f0
-    upper::F32 = 0.4f0
-    f_brain::F32 = 0.12f0
-    f_kidney::F32 = 0.19f0
-    f_hepart::F32 = 0.065f0
-    f_portal::F32 = 0.185f0
-    f_muscle::F32 = 0.17f0
-    f_skin::F32 = 0.05f0
-    f_fat::F32 = 0.05f0
-    f_bone::F32 = 0.05f0
-    f_cor::F32 = 0.033f0
-    v_brain::F32 = 64.0f0
-    v_kidney::F32 = 106.0f0
-    v_liver::F32 = 530.0f0
-    v_portal::F32 = 250.0f0
-    v_muscle::F32 = 742.0f0
-    v_skin::F32 = 160.0f0
-    v_fat::F32 = 265.0f0
-    v_bone::F32 = 370.0f0
-    v_other::F32 = 300.0f0
-    v_cor::F32 = 16.0f0
-    v_art::F32 = 320.0f0
-    v_vein_upper::F32 = 300.0f0
-    v_vein_lower::F32 = 650.0f0
-    e_muscle::F32 = 4000.0f0; ps_muscle::F32 = 7.0f0
-    e_skin::F32 = 1300.0f0; ps_skin::F32 = 1.0f0
-    e_fat::F32 = 2000.0f0; ps_fat::F32 = 2.0f0
-    e_bone::F32 = 1500.0f0; ps_bone::F32 = 1.0f0
-    e_other::F32 = 1500.0f0; ps_other::F32 = 3.0f0
-    e_portal::F32 = 600.0f0
-    e_liver::F32 = 500.0f0
-    e_kidney::F32 = 100.0f0
-    gfr::F32 = 2.0f0
+function Circulation(segs::Vector{Segment}; co, hct, inlet = :ra_in)
+    q = _flows(segs)
+    return Circulation(segs, F32(co), F32(hct), inlet, q)
 end
 
-# A well-mixed plasma compartment, optionally exchanging with an extracellular space.
-mutable struct Tank
-    v::F32      # plasma volume, mL
-    c::F32      # plasma concentration, mgI/mL
-    ve::F32     # extracellular volume, mL (0 = none)
-    ce::F32
-    ps::F32     # mL/s
-    cl::F32     # clearance from plasma, mL/s
+# Flow fractions: beds as given, central = 1, arteries = sum of what leaves their distal node,
+# veins = sum of what enters their proximal node.
+function _flows(segs)
+    n = length(segs); q = fill(F32(NaN), n)
+    for (i, s) in enumerate(segs)
+        (s.kind === :bed || s.q > 0) && (q[i] = s.q); s.kind === :central && (q[i] = 1.0f0)
+    end
+    out_of(node) = [i for (i, s) in enumerate(segs) if s.from === node]
+    into(node) = [i for (i, s) in enumerate(segs) if s.to === node]
+    for _ in 1:n, (i, s) in enumerate(segs)
+        isnan(q[i]) || continue
+        ks = s.kind === :artery ? out_of(s.to) : s.kind === :vein ? into(s.from) : Int[]
+        (!isempty(ks) && all(!isnan, q[ks])) && (q[i] = sum(q[ks]))
+    end
+    bad = [segs[i].name for i in 1:n if isnan(q[i])]
+    isempty(bad) || error("cannot derive flows for $(bad): every artery must end in beds, every vein start from them")
+    return q
 end
-Tank(v; ve = 0.0f0, ps = 0.0f0, cl = 0.0f0) = Tank(F32(v), 0.0f0, F32(ve), 0.0f0, F32(ps), F32(cl))
 
-# Pure delay of `d` seconds on a concentration signal (ring buffer at the integration step).
-mutable struct Delay
+"""
+    Injection(; site, phases)
+    Injection(; site, conc, volume, rate, saline, saline_rate)
+
+`site` is a node of the circulation (`:antecubital_r`, `:antecubital_l`, `:jugular_r`,
+`:jugular_l`, `:femoral_r`, `:femoral_l`, `:svc_top` for a central line, ...). `phases` is a
+list of (volume mL, rate mL/s, concentration mgI/mL) given in order from t = 0, so a test
+bolus, a biphasic protocol or a saline chaser are all phases. `dead_space` is the volume of the
+connecting tube and cannula between syringe and vein (Medrad low-pressure line 2.78 mL plus
+about 1.2 mL syringe dead space, [cowan2017]; long extension sets about 12 mL), plug flow,
+primed with contrast (`prime = :contrast`, the usual air purge) or saline. Default: iohexol 350, 50 mL at
+5 mL/s, then 40 mL saline (Lee et al. 2022 adenosine CT perfusion protocol), right antecubital
+vein (avoids the left brachiocephalic vein, Tseng et al. 2007).
+"""
+struct Injection
+    site::Symbol
+    phases::Vector{NTuple{3, F32}}
+    dead_space::F32
+    prime::F32
+end
+function Injection(;
+        site = :antecubital_r, phases = nothing, conc = 350, volume = 50, rate = 5, saline = 40, saline_rate = rate,
+        dead_space = 0, prime = :contrast
+    )
+    ph = phases !== nothing ? [F32.(p) for p in phases] : NTuple{3, F32}[(volume, rate, conc)]
+    phases === nothing && saline > 0 && push!(ph, (saline, saline_rate, 0))
+    return Injection(site, ph, F32(dead_space), prime === :contrast ? ph[1][3] : 0.0f0)
+end
+function _inj(j::Injection, t)
+    t0 = 0.0f0
+    for (v, r, c) in j.phases
+        d = v / r
+        t < t0 + d && return (r, c)
+        t0 += d
+    end
+    return (0.0f0, 0.0f0)
+end
+
+# ---- runtime elements
+mutable struct Pipe                      # exact plug flow: a queue of fluid parcels
+    vol::Vector{F32}
+    c::Vector{F32}
+    head::Int
+    V::F32
+end
+function Pipe(V)
+    return Pipe(F32[V], F32[0], 1, F32(V))
+end
+function pass!(p::Pipe, dv::F32, cin::F32)
+    p.V <= 0 && return cin
+    push!(p.vol, dv); push!(p.c, cin)
+    need = dv; m = 0.0f0
+    while need > 0 && p.head <= length(p.vol)
+        take = min(need, p.vol[p.head]); m += take * p.c[p.head]
+        p.vol[p.head] -= take; need -= take
+        p.vol[p.head] <= 1.0f-9 && (p.head += 1)
+    end
+    if p.head > 4096                     # compact the queue now and then
+        deleteat!(p.vol, 1:(p.head - 1)); deleteat!(p.c, 1:(p.head - 1)); p.head = 1
+    end
+    return m / dv
+end
+pipe_mass(p::Pipe) = sum(p.vol[k] * p.c[k] for k in p.head:length(p.vol); init = 0.0f0)
+
+mutable struct Delay                     # pure delay in seconds (ring buffer at the step)
     buf::Vector{F32}
     k::Int
 end
 Delay(d, dt) = Delay(zeros(F32, max(1, round(Int, d / dt))), 1)
-@inline function push!(D::Delay, c::F32)
+function pass!(D::Delay, c::F32)
     out = D.buf[D.k]; D.buf[D.k] = c; D.k = D.k == length(D.buf) ? 1 : D.k + 1
     return out
 end
 
-# advance one step with plasma inflow f (mL/s) at concentration cin
-@inline function step!(T::Tank, f::F32, cin::F32, dt::F32)
-    x = T.ps * (T.c - T.ce)
-    T.c += dt * (f * (cin - T.c) - x - T.cl * T.c) / T.v
-    T.ve > 0 && (T.ce += dt * x / T.ve)
-    return T.c
+mutable struct Run
+    pipe::Pipe
+    delay::Union{Nothing, Delay}
+    c::Vector{F32}                       # stage concentrations
+    vs::Vector{F32}                      # stage volumes (the last one stores infused volume)
+    ce::F32
+    out::F32                             # outflow concentration during the last step
+end
+
+# mixing volume: what plug flow and the pure delay (blood waiting in a chamber) leave of `v`
+_vmix(s::Segment, qn, co) = max(0.0f0, (1 - s.plug) * s.v - qn * co * s.delay)
+function _stages(s::Segment, qn::F32, co::F32)
+    vm = _vmix(s, qn, co)
+    vm <= 0 && return 0
+    T = s.v / (qn * co); τm = vm / (qn * co)
+    return max(1, round(Int, (τm / (s.rd * T))^2))
 end
 
 """
-    simulate(; inj = Injection(), bp = BodyParams(), tmax = 90, dt = 0.005, every = 0.1,
-             coronary = nothing) -> NamedTuple
+    transit_table(C) -> Vector of NamedTuples
 
-Integrates the circulation. Returns sampled times and, for every compartment, the plasma iodine
-concentration (mgI/mL): `arm`, `svc`, `ivc`, `ra`, `rv`, `pa`, `lung` (each stage), `la`, `lv`,
-`aorta` (outflow of the ascending aorta = coronary input), `art` (systemic arteries feeding the
-organs), and organ blood and extracellular curves. `coronary`, if given, is a function
-`t -> plasma concentration leaving the coronary sinus` from the detailed coronary model; by
-default the coronary bed is a single exchanging compartment.
+Nominal flow (mL/s), mean transit time (s), mixing stages and relative dispersion of every
+segment, for checking a circulation against measured transit times.
 """
-function simulate(;
-        inj::Injection = Injection(), bp::BodyParams = BodyParams(), tmax::Real = 90, dt::Real = 0.005,
-        every::Real = 0.1, coronary = nothing
+function transit_table(C::Circulation)
+    return [
+        (;
+                name = s.name, flow = C.q[i] * C.co, mtt = s.v / (C.q[i] * C.co), n = _stages(s, C.q[i], C.co),
+                rd = (n = _stages(s, C.q[i], C.co); n == 0 ? 0.0f0 : _vmix(s, C.q[i], C.co) / sqrt(F32(n)) / s.v),
+            )
+            for (i, s) in enumerate(C.segs)
+    ]
+end
+
+"""
+    simulate(C, inj; tmax = 90, dt = 0.002, every = 0.1, detailed = Dict()) -> NamedTuple
+
+Integrates the bolus. Returns `t` and, per segment name, `out` (outflow blood concentration,
+mgI/mL), `mean` (mean blood concentration inside the segment) and `ecv` (extracellular
+concentration of a bed), plus `injected`, `excreted` and `held` (in the body at `tmax`) iodine, mg. `detailed[name]` replaces
+segment `name` by a model: a function of t giving its outflow blood concentration.
+"""
+function simulate(
+        C::Circulation, inj::Injection = Injection(); tmax::Real = 90, dt::Real = 0.002, every::Real = 0.1,
+        detailed::AbstractDict = Dict{Symbol, Any}()
     )
-    dt = F32(dt); pf = 1.0f0 - bp.hct; Q = bp.co * pf       # plasma cardiac output, mL/s
-    P(v) = v * pf
-    arm = [Tank(P(bp.v_arm / bp.n_arm)) for _ in 1:bp.n_arm]
-    svc = Tank(P(bp.v_svc)); ivc = Tank(P(bp.v_ivc)); ra = Tank(P(bp.v_ra)); rv = Tank(P(bp.v_rv)); pa = Tank(P(bp.v_pa))
-    nl = bp.n_lung; vlung = bp.v_pulm - bp.v_pa
-    lung = [Tank(P((1 - bp.lung_plug) * vlung / nl)) for _ in 1:nl]
-    dlung = Delay(bp.lung_plug * vlung / bp.co, dt); drv = Delay(bp.beat / 2, dt); dlv = Delay(bp.beat / 2, dt)
-    la = Tank(P(bp.v_la)); lv = Tank(P(bp.v_lv)); ao = Tank(P(bp.v_aorta)); art = Tank(P(bp.v_art - bp.v_aorta))
-    # organ shares fill what the coronary flow leaves (at stress the heart takes a larger share)
-    f0 = bp.f_brain + bp.f_kidney + bp.f_hepart + bp.f_portal + bp.f_muscle + bp.f_skin + bp.f_fat + bp.f_bone
-    f_other0 = 1.0f0 - 0.033f0 - f0
-    ks = (1.0f0 - bp.f_cor) / (1.0f0 - 0.033f0)
-    f_other = ks * f_other0
-    fq(f) = (f === bp.f_cor ? f : ks * f) * Q
-    brain = Tank(P(bp.v_brain)); kid = Tank(P(bp.v_kidney); ve = bp.e_kidney, ps = 2fq(bp.f_kidney), cl = bp.gfr)
-    portal = Tank(P(bp.v_portal); ve = bp.e_portal, ps = 2fq(bp.f_portal)); liver = Tank(P(bp.v_liver); ve = bp.e_liver, ps = 2fq(bp.f_hepart + bp.f_portal))
-    mus = Tank(P(bp.v_muscle); ve = bp.e_muscle, ps = bp.ps_muscle); skin = Tank(P(bp.v_skin); ve = bp.e_skin, ps = bp.ps_skin)
-    fat = Tank(P(bp.v_fat); ve = bp.e_fat, ps = bp.ps_fat); bone = Tank(P(bp.v_bone); ve = bp.e_bone, ps = bp.ps_bone)
-    oth = Tank(P(bp.v_other); ve = bp.e_other, ps = bp.ps_other); cor = Tank(P(bp.v_cor); ve = 9.0f0, ps = 0.4f0 * fq(bp.f_cor))
-    vup = Tank(P(bp.v_vein_upper)); vlo = Tank(P(bp.v_vein_lower))
-    per = bp.f_muscle + bp.f_skin + bp.f_fat + bp.f_bone + f_other0
-    q_arm = bp.arm_flow * Q
-    nsteps = round(Int, tmax / dt); stride = max(1, round(Int, every / dt))
-    names = (
-        :arm, :svc, :ivc, :ra, :rv, :pa, :la, :lv, :aorta, :art, :brain, :kidney, :portal, :liver, :muscle, :skin, :fat, :bone, :other,
-        :cor, :vein_upper, :vein_lower, :muscle_e, :liver_e, :portal_e, :kidney_e, :fat_e, :skin_e, :bone_e,
-    )
-    ns = nsteps ÷ stride + 1
-    out = Dict{Symbol, Vector{F32}}(k => zeros(F32, ns) for k in names)
-    lungout = zeros(F32, ns, nl); tt = zeros(F32, ns)
-    excreted = 0.0f0; injected = 0.0f0
-    for s in 0:nsteps
-        t = F32(s * dt)
-        if s % stride == 0
-            k = s ÷ stride + 1; tt[k] = t
-            for (nm, T) in (
-                    (:arm, arm[end]), (:svc, svc), (:ivc, ivc), (:ra, ra), (:rv, rv), (:pa, pa), (:la, la), (:lv, lv), (:aorta, ao), (:art, art),
-                    (:brain, brain), (:kidney, kid), (:portal, portal), (:liver, liver), (:muscle, mus), (:skin, skin), (:fat, fat), (:bone, bone),
-                    (:other, oth), (:cor, cor), (:vein_upper, vup), (:vein_lower, vlo),
-                )
-                out[nm][k] = T.c
-            end
-            out[:muscle_e][k] = mus.ce; out[:liver_e][k] = liver.ce; out[:portal_e][k] = portal.ce; out[:kidney_e][k] = kid.ce
-            out[:fat_e][k] = fat.ce; out[:skin_e][k] = skin.ce; out[:bone_e][k] = bone.ce
-            for l in 1:nl
-                lungout[k, l] = lung[l].c
-            end
-        end
-        # injected arm: native arm plasma flow plus the injector
-        ri = F32(inj_rate(inj, t)); ci = F32(inj_conc(inj, t)); injected += dt * ri * ci
-        fa = q_arm + ri
-        cin = (q_arm * vup.c + ri * ci) / fa
-        for T in arm
-            cin = (old = T.c; step!(T, fa, cin, dt); old)
-        end
-        carm = arm[end].c
-        # venous returns (organs at their current outflow concentrations)
-        q_up = fq(bp.f_brain) + bp.upper * fq(per) - q_arm
-        c_up_in = (fq(bp.f_brain) * brain.c + bp.upper * (fq(bp.f_muscle) * mus.c + fq(bp.f_skin) * skin.c + fq(bp.f_fat) * fat.c + fq(bp.f_bone) * bone.c + fq(f_other0) * oth.c)) /
-            (fq(bp.f_brain) + bp.upper * fq(per))
-        q_lo = (1 - bp.upper) * fq(per) + fq(bp.f_kidney) + fq(bp.f_hepart + bp.f_portal)
-        c_lo_in = (
-            (1 - bp.upper) * (fq(bp.f_muscle) * mus.c + fq(bp.f_skin) * skin.c + fq(bp.f_fat) * fat.c + fq(bp.f_bone) * bone.c + fq(f_other0) * oth.c) +
-                fq(bp.f_kidney) * kid.c + fq(bp.f_hepart + bp.f_portal) * liver.c
-        ) / q_lo
-        step!(vup, q_up + q_arm, c_up_in, dt); step!(vlo, q_lo, c_lo_in, dt)
-        fsvc = q_up + fa
-        step!(svc, fsvc, (q_up * vup.c + fa * carm) / fsvc, dt)
-        step!(ivc, q_lo, vlo.c, dt)
-        ccs = coronary === nothing ? cor.c : F32(coronary(t))
-        fra = fsvc + q_lo + fq(bp.f_cor)
-        step!(ra, fra, (fsvc * svc.c + q_lo * ivc.c + fq(bp.f_cor) * ccs) / fra, dt)
-        step!(rv, fra, push!(drv, ra.c), dt); step!(pa, fra, rv.c, dt)
-        c = push!(dlung, pa.c)
-        for T in lung
-            c = (old = T.c; step!(T, fra, c, dt); old)
-        end
-        step!(la, fra, lung[end].c, dt); step!(lv, fra, push!(dlv, la.c), dt); step!(ao, fra, lv.c, dt)
-        fart = fra - fq(bp.f_cor)
-        step!(art, fart, ao.c, dt)
-        step!(cor, fq(bp.f_cor), ao.c, dt)
-        ca = art.c
-        step!(brain, fq(bp.f_brain), ca, dt); step!(kid, fq(bp.f_kidney), ca, dt)
-        excreted += dt * bp.gfr * kid.c
-        step!(portal, fq(bp.f_portal), ca, dt)
-        step!(liver, fq(bp.f_hepart + bp.f_portal), (fq(bp.f_hepart) * ca + fq(bp.f_portal) * portal.c) / fq(bp.f_hepart + bp.f_portal), dt)
-        step!(mus, fq(bp.f_muscle), ca, dt); step!(skin, fq(bp.f_skin), ca, dt); step!(fat, fq(bp.f_fat), ca, dt)
-        step!(bone, fq(bp.f_bone), ca, dt); step!(oth, fq(f_other0), ca, dt)
+    dt = F32(dt); segs = C.segs; ns = length(segs); co = C.co; pf = 1.0f0 - C.hct
+    nodes = unique(vcat([s.from for s in segs], [s.to for s in segs]))
+    inj.site in nodes || error("injection site $(inj.site) is not a node; nodes: $(nodes)")
+    nid = Dict(n => k for (k, n) in enumerate(nodes))
+    from = [nid[s.from] for s in segs]; to = [nid[s.to] for s in segs]
+    # venous path carrying the injected volume: from the site, follow veins to the heart inlet
+    path = Int[]; node = inj.site
+    while node !== C.inlet
+        k = findfirst(i -> segs[i].from === node && segs[i].kind === :vein, 1:ns)
+        k === nothing && break
+        push!(path, k); node = segs[k].to
     end
-    return (; t = tt, out..., lung = lungout, injected, excreted, hct = bp.hct, params = bp, inj)
+    onpath = falses(ns); onpath[path] .= true
+    dvol = zeros(F32, ns)                                 # volume stored in compliant veins, mL
+    line = Pipe(inj.dead_space); line.c[1] = inj.prime
+    R = Run[]
+    for (i, s) in enumerate(segs)
+        n = _stages(s, C.q[i], co); vm = _vmix(s, C.q[i], co)
+        push!(R, Run(Pipe(s.plug * s.v), s.delay > 0 ? Delay(s.delay, dt) : nothing, zeros(F32, n), fill(F32(n == 0 ? 0 : vm / n), n), 0.0f0, 0.0f0))
+    end
+    names = [s.name for s in segs]
+    nt = round(Int, tmax / dt); stride = max(1, round(Int, every / dt)); nk = nt ÷ stride + 1
+    rec_out = zeros(F32, nk, ns); rec_mean = zeros(F32, nk, ns); rec_ecv = zeros(F32, nk, ns); tt = zeros(F32, nk)
+    det = [get(detailed, s.name, nothing) for s in segs]
+    nodemass = zeros(F32, length(nodes)); nodeflow = zeros(F32, length(nodes)); cnode = zeros(F32, length(nodes))
+    qin = zeros(F32, ns); qout = zeros(F32, ns)
+    # a bed takes its share of whatever reaches its inlet node (the liver: hepatic artery + portal vein)
+    beds = [i for i in 1:ns if segs[i].kind === :bed]; others = [i for i in 1:ns if segs[i].kind !== :bed]
+    inc = [[k for k in 1:ns if to[k] == from[i]] for i in 1:ns]
+    share = [C.q[i] / sum(C.q[j] for j in 1:ns if from[j] == from[i]) for i in 1:ns]
+    injected = 0.0f0; excreted = 0.0f0
+    for step in 0:nt
+        t = F32(step * dt)
+        ri, ci = _inj(inj, t); injected += dt * ri * ci
+        ri > 0 && (ci = pass!(line, ri * dt, ci))           # through the connecting tube
+        # the injected flow moves down the venous path; a compliant vein stores part of it
+        extra = ri
+        for i in path
+            s = segs[i]; qin[i] = C.q[i] * co + extra
+            if s.c > 0
+                out = dvol[i] / (s.r * s.c); dvol[i] += dt * (extra - out); extra = out
+            end
+            qout[i] = C.q[i] * co + extra
+        end
+        coe = co + extra                                  # Frank-Starling: output follows return
+        for i in others
+            onpath[i] && continue
+            qin[i] = segs[i].kind === :vein ? C.q[i] * co : C.q[i] * coe
+            qout[i] = qin[i]
+        end
+        for i in beds                                     # beds store the infused volume
+            qin[i] = share[i] * sum(qout[k] for k in inc[i]; init = 0.0f0); qout[i] = C.q[i] * co
+        end
+        if step % stride == 0
+            kk = step ÷ stride + 1; tt[kk] = t
+            for i in 1:ns
+                r = R[i]; m = pipe_mass(r.pipe) + sum(r.c .* r.vs; init = 0.0f0); v = r.pipe.V + sum(r.vs; init = 0.0f0)
+                rec_out[kk, i] = r.out; rec_mean[kk, i] = v > 0 ? m / v : r.out; rec_ecv[kk, i] = r.ce
+            end
+        end
+        # node concentrations from last step's outflows
+        fill!(nodemass, 0.0f0); fill!(nodeflow, 0.0f0)
+        for i in 1:ns
+            nodemass[to[i]] += qout[i] * R[i].out; nodeflow[to[i]] += qout[i]
+        end
+        s0 = nid[inj.site]; nodemass[s0] += ri * ci; nodeflow[s0] += ri
+        for k in eachindex(cnode)
+            cnode[k] = nodeflow[k] > 0 ? nodemass[k] / nodeflow[k] : 0.0f0
+        end
+        for i in 1:ns
+            s = segs[i]; r = R[i]; cin = cnode[from[i]]; f = qin[i]
+            if det[i] !== nothing
+                r.out = F32(det[i](t)); continue
+            end
+            c = pass!(r.pipe, f * dt, cin)
+            r.delay === nothing || (c = pass!(r.delay, c))
+            n = length(r.c)
+            if n == 0
+                r.out = c; continue
+            end
+            psn = s.ps / n; cln = s.cl / n; xs = 0.0f0
+            for k in 1:n
+                old = r.c[k]; x = psn * (old / pf - r.ce)
+                fo = k == n ? qout[i] : f
+                # stage with inflow f, outflow fo: d(cV)/dt = f cin − fo c − exchange − clearance
+                r.c[k] += dt * (f * (c - old) - x - cln * old / pf) / r.vs[k]
+                k == n && (r.vs[k] += dt * (f - fo))
+                excreted += dt * cln * old / pf; xs += x
+                c = old
+            end
+            s.ve > 0 && (r.ce += dt * xs / s.ve)
+            r.out = c
+        end
+    end
+    held = sum(
+        pipe_mass(R[i].pipe) + sum(R[i].c .* R[i].vs; init = 0.0f0) + R[i].ce * segs[i].ve +
+            (R[i].delay === nothing ? 0.0f0 : sum(R[i].delay.buf) * qin[i] * dt) for i in 1:ns
+    )
+    res = Dict{Symbol, Any}(:t => tt, :injected => injected, :excreted => excreted, :held => held, :names => names, :circ => C, :inj => inj)
+    res[:out] = Dict(names[i] => rec_out[:, i] for i in 1:ns)
+    res[:mean] = Dict(names[i] => rec_mean[:, i] for i in 1:ns)
+    res[:ecv] = Dict(names[i] => rec_ecv[:, i] for i in 1:ns)
+    return (; (Symbol(k) => v for (k, v) in res)...)
+end
+
+"""
+    curve(r, name; what = :out) -> Vector{Float32}
+
+Blood concentration (mgI/mL) leaving segment `name` (`what = :out`), inside it (`:mean`), or
+its extracellular concentration (`:ecv`).
+"""
+curve(r, name::Symbol; what::Symbol = :out) = getfield(r, what)[name]
+
+"""
+    aif(r, site) -> (t, c)
+
+Arterial input function at a named site: the outflow of that segment.
+"""
+aif(r, site::Symbol) = (r.t, curve(r, site))
+
+# ---------------------------------------------------------------------------------------------
+"""
+    human_circulation(; kwargs...) -> Circulation
+
+Adult male (ICRP 89 reference, 5.3 L blood) with a named venous tree for every common injection
+site, the four heart chambers, the lungs, the coronary bed, and the systemic organs. All numbers
+are keyword arguments; sources are in `docs` of each block below.
+
+Heart (from the XCAT phantom): `co` 81.6 mL/s (stroke volume 132.2 − 50.6 mL at 60/min),
+chamber volumes `v_ra` 52.0, `v_rv` 85.4, `v_la` 37.6, `v_lv` 95.2 mL, `beat` 1 s. Blood that
+enters a ventricle in diastole leaves at the next systole, so each ventricle adds half a beat of
+pure delay before its mixing volume.
+
+Lungs: `v_pa` 40 mL pulmonary trunk and main branches (plug), `v_lung` 510 mL (ICRP 89: pulmonary
+blood 10.5% of 5.3 L ≈ 550 mL in all), `lung_plug` and `lung_rd` give its transit-time shape.
+
+Veins (lumen volume = area × length, supine; data/reference ids in brackets):
+- arm (antecubital → axilla): basilic 4.4 mm [salinaro2024] over 25 cm (no in vivo length
+  found) = 3.8 mL; axillary 8 mm (between basilic and subclavian; no in vivo series) × 12 cm =
+  6.0 mL; subclavian 9.9 mm [berk2026] × 4 cm = 3.1 mL.
+- brachiocephalic: right 10.9 mm × 38 mm = 3.5 mL, left 12.1 mm × 63 mm = 7.3 mL (cadaver
+  circumference and length [wang2024]; the left crosses the mediastinum).
+- internal jugular: right 96 mm², left 65 mm² [kawalecrutkowska2025] × 12 cm = 11.5 / 7.8 mL.
+- SVC: 70.7 mm long [mahlon2007] × 2.18 cm² (geometric mean of the 5th–95th percentile range
+  1.08–4.42 cm² [lin2009]; cadaver diameter 1.67 cm gives 2.19 cm² [wang2024]) = 15.4 mL.
+- femoral + external iliac, common iliac, IVC (infrarenal, renal → hepatic, hepatic → RA):
+  standard anatomical sizes, no series read yet.
+Large veins are near plug flow (95% plug, relative dispersion 0.04): with the arm compliance
+below, this is what keeps a hand-pushed radionuclide bolus as narrow in the SVC as measured
+(0.60 ± 0.21 s at half height, Dymond et al. 1982, [dymond1982]; the model gives 0.76 s).
+The injected arm's upper-arm veins are compliant (the valves keep the forearm out of it):
+- `arm_c` 0.88 mL/mmHg: forearm venous compliance at ~10 mmHg, β1 + 2β2·P = 0.108 − 2·0.00102·10
+  ≈ 0.088, and 0.071 in the second group, so 0.08 mL per 100 mL per mmHg [halliwill1999; Oue et al.
+  2019 give 0.08–0.11 at 20 mmHg, oue2019], times the upper-arm tissue volume 1.1 L (arm from wrist
+  1.92 L [buffa2015] minus forearm 0.82 L [harvey2014]).
+- `arm_r` 1.76 mmHg·s/mL: arm-vein minus central-vein pressure 2.2 mmHg (spontaneous breathing,
+  [amar2001]; 2.0 mmHg in [coskun2025], 3 mmHg anaesthetised in [munis2001]) over resting brachial
+  flow 74.9 mL/min (304 adults supine, [zhang2025]).
+So a 5 mL/s injection raises arm venous pressure by about 9 mmHg and the arm holds part of the
+dose with τ = r·c ≈ 1.5 s. Set `arm_c = 0` for a rigid path.
+
+Beds (Williams & Leggett 1989 / ICRP 89 flow fractions and blood volumes): brain 0.12 (half per
+side, draining to each internal jugular), kidneys 0.19 (GFR 2 mL/s plasma, Edelson et al. 1984),
+hepatic artery 0.065 and gut + spleen 0.185 (portal → liver), coronary `f_cor` 0.033, and
+peripheral tissue (muscle 0.17, skin 0.05, fat 0.05, bone 0.05, other rest) split by region:
+each arm 5%, each leg 15%, head-neck-thorax 30% (to the brachiocephalic veins and SVC), pelvis and
+lower trunk 30% (to the IVC). Extracellular volumes and PS: muscle 4000 mL / 7 mL/s, skin 1300 /
+1, fat 2000 / 2, bone 1500 / 1, other 1500 / 3 (scaled from EDTA, Levitt 2003); gut, liver and
+kidney exchange is flow-limited; the brain has none. Systemic arteries beyond the aorta (160 mL)
+are each bed's plug part.
+"""
+function human_circulation(;
+        co = 81.6f0, hct = 0.43f0, beat = 1.0f0,
+        v_ra = 52.0f0, v_rv = 85.4f0, v_la = 37.6f0, v_lv = 95.2f0,
+        v_pa = 40.0f0, pa_plug = 0.5f0, pa_rd = 0.2f0, v_lung = 510.0f0, lung_plug = 0.25f0, lung_rd = 0.46f0,
+        v_aortic_root = 25.0f0, v_arch = 35.0f0, v_desc = 100.0f0, v_sys_art = 160.0f0,
+        vein_plug = 0.95f0, vein_rd = 0.04f0, arm_c = 0.88f0, arm_r = 1.76f0,
+        v_arm = 3.8f0, v_axillary = 6.0f0, v_subclavian = 3.1f0, v_bc_r = 3.5f0, v_bc_l = 7.3f0, v_ij_r = 11.5f0, v_ij_l = 7.8f0, v_svc = 15.4f0,
+        v_leg = 17.0f0, v_iliac = 7.7f0, v_ivc_infra = 35.0f0, v_ivc_renal = 27.0f0, v_ivc_hep = 21.0f0,
+        f_cor = 0.033f0, v_cor = 16.0f0, ve_cor = 9.0f0,
+        f_brain = 0.12f0, v_brain = 64.0f0, f_kidney = 0.19f0, v_kidney = 106.0f0, e_kidney = 100.0f0, gfr = 2.0f0,
+        f_hepart = 0.065f0, f_portal = 0.185f0, v_portal = 250.0f0, e_portal = 600.0f0, v_liver = 530.0f0, e_liver = 500.0f0,
+        tissues = (
+            (:muscle, 0.17f0, 742.0f0, 4000.0f0, 7.0f0), (:skin, 0.05f0, 160.0f0, 1300.0f0, 1.0f0), (:fat, 0.05f0, 265.0f0, 2000.0f0, 2.0f0),
+            (:bone, 0.05f0, 370.0f0, 1500.0f0, 1.0f0), (:other, NaN32, 300.0f0, 1500.0f0, 3.0f0),
+        ),
+        regions = ((:arm_r, :antecubital_r, 0.05f0), (:arm_l, :antecubital_l, 0.05f0), (:leg_r, :femoral_r, 0.15f0), (:leg_l, :femoral_l, 0.15f0), (:upper, :svc_top, 0.3f0), (:lower, :ivc_low, 0.3f0)),
+        v_veins_extra = 750.0f0,
+    )
+    F = F32
+    S = Segment[]
+    vein(name, a, b, v) = push!(S, Segment(name, a, b; kind = :vein, v = F(v), plug = F(vein_plug), rd = F(vein_rd)))
+    # heart and lungs
+    push!(S, Segment(:ra, :ra_in, :tv; kind = :central, v = F(v_ra)))
+    push!(S, Segment(:rv, :tv, :pv; kind = :central, v = F(v_rv), delay = F(beat / 2)))
+    push!(S, Segment(:pulm_trunk, :pv, :pa_br; kind = :central, v = F(v_pa), plug = F(pa_plug), rd = F(pa_rd)))
+    push!(S, Segment(:lung, :pa_br, :pulm_vein; kind = :central, v = F(v_lung), plug = F(lung_plug), rd = F(lung_rd)))
+    push!(S, Segment(:la, :pulm_vein, :mv; kind = :central, v = F(v_la)))
+    push!(S, Segment(:lv, :mv, :av; kind = :central, v = F(v_lv), delay = F(beat / 2)))
+    # aorta and beds; the flow fractions of the beds other than the coronary sum to 1 − f_cor
+    fo = f_brain + f_kidney + f_hepart + f_portal + sum(x[2] for x in tissues if !isnan(x[2]))
+    f_other = 1.0f0 - 0.033f0 - fo
+    ks = (1.0f0 - f_cor) / (1.0f0 - 0.033f0)          # at stress the heart takes a larger share
+    push!(S, Segment(:aortic_root, :av, :root; kind = :artery, v = F(v_aortic_root), plug = 0.8f0, rd = 0.1f0))
+    push!(S, Segment(:coronary, :root, :cs; kind = :bed, q = F(f_cor), v = F(v_cor), ve = F(ve_cor), ps = F(0.4f0 * f_cor * co * (1 - hct))))
+    push!(S, Segment(:coronary_sinus, :cs, :ra_in; kind = :vein, v = 3.0f0, plug = 0.8f0, rd = 0.1f0))
+    push!(S, Segment(:arch, :root, :arch_out; kind = :artery, v = F(v_arch), plug = 0.8f0, rd = 0.1f0))
+    push!(S, Segment(:desc_aorta, :arch_out, :abd; kind = :artery, v = F(v_desc), plug = 0.8f0, rd = 0.1f0))
+    ftot = ks * (fo + f_other)                         # all non-coronary beds
+    va(f) = F(v_sys_art * f / ftot)                    # each bed's share of the systemic arteries
+    fres = ks * (f_portal + sum(x[2] for x in tissues if !isnan(x[2])) + f_other)
+    vx(f) = F(v_veins_extra * f / fres)                # unnamed systemic veins: limbs, trunk, splanchnic
+    function bed(name, a, b, f, vb; ve = 0, ps = 0, cl = 0, reservoir = false)
+        v = va(f) + F(vb) + (reservoir ? vx(f) : 0.0f0)
+        return push!(S, Segment(name, a, b; kind = :bed, q = F(f), v, plug = va(f) / v, ve = F(ve), ps = F(ps), cl = F(cl)))
+    end
+    bed(:brain_r, :arch_out, :jugular_r, ks * f_brain / 2, v_brain / 2)
+    bed(:brain_l, :arch_out, :jugular_l, ks * f_brain / 2, v_brain / 2)
+    bed(:kidney, :abd, :ivc_renal, ks * f_kidney, v_kidney; ve = e_kidney, ps = 2 * ks * f_kidney * co * (1 - hct), cl = gfr)
+    bed(:gut, :abd, :portal_in, ks * f_portal, v_portal; ve = e_portal, ps = 2 * ks * f_portal * co * (1 - hct), reservoir = true)
+    push!(S, Segment(:portal_vein, :portal_in, :liver_in; kind = :vein, v = 15.0f0, plug = 0.5f0, rd = 0.3f0))
+    push!(S, Segment(:hepatic_artery, :abd, :liver_in; kind = :artery, q = F(ks * f_hepart), v = 3.0f0, plug = 0.8f0, rd = 0.1f0))
+    v = F(v_liver)
+    push!(S, Segment(:liver, :liver_in, :ivc_hepatic; kind = :bed, q = F(ks * (f_hepart + f_portal)), v, ve = F(e_liver), ps = F(2 * ks * (f_hepart + f_portal) * co * (1 - hct))))
+    for (region, node, share) in regions, (tname, ft, vt, et, pst) in tissues
+        f = ks * (isnan(ft) ? f_other : ft) * share
+        bed(Symbol(tname, :_, region), region in (:arm_r, :arm_l, :upper) ? :arch_out : :abd, node, f, vt * share; ve = et * share, ps = pst * share, reservoir = true)
+    end
+    # named veins
+    armv(name, a, b) = push!(S, Segment(name, a, b; kind = :vein, v = F(v_arm), plug = F(vein_plug), rd = F(vein_rd), c = F(arm_c), r = F(arm_r)))
+    armv(:arm_vein_r, :antecubital_r, :axillary_r_in); vein(:axillary_r, :axillary_r_in, :subclavian_r_in, v_axillary)
+    vein(:subclavian_r, :subclavian_r_in, :bc_r, v_subclavian); vein(:ij_r, :jugular_r, :bc_r, v_ij_r); vein(:brachiocephalic_r, :bc_r, :svc_top, v_bc_r)
+    armv(:arm_vein_l, :antecubital_l, :axillary_l_in); vein(:axillary_l, :axillary_l_in, :subclavian_l_in, v_axillary)
+    vein(:subclavian_l, :subclavian_l_in, :bc_l, v_subclavian); vein(:ij_l, :jugular_l, :bc_l, v_ij_l); vein(:brachiocephalic_l, :bc_l, :svc_top, v_bc_l)
+    vein(:svc, :svc_top, :ra_in, v_svc)
+    vein(:femoral_vein_r, :femoral_r, :iliac_r_in, v_leg); vein(:common_iliac_r, :iliac_r_in, :ivc_low, v_iliac)
+    vein(:femoral_vein_l, :femoral_l, :iliac_l_in, v_leg); vein(:common_iliac_l, :iliac_l_in, :ivc_low, v_iliac)
+    vein(:ivc_infrarenal, :ivc_low, :ivc_renal, v_ivc_infra); vein(:ivc_renal, :ivc_renal, :ivc_hepatic, v_ivc_renal); vein(:ivc_hepatic, :ivc_hepatic, :ra_in, v_ivc_hep)
+    return Circulation(S; co, hct)
+end
+
+"""
+    organ_only(organ::Segment; site = :inlet, delay, mtt, rd, co, hct) -> Circulation
+
+A circulation with no heart or lungs: the injection site feeds one lumped path (pure `delay`
+plus a transit of mean `mtt` and relative dispersion `rd`) that ends at the organ's inlet node,
+and the organ drains to the outlet. Use it for a single-organ study when a whole-body model is not
+wanted; `co` here is the organ's own flow.
+"""
+function organ_only(organ::Segment; site = :inlet, delay = 0.0f0, mtt = 5.0f0, rd = 0.4f0, co, hct = 0.43f0)
+    path = Segment(:path, site, organ.from; kind = :central, v = F32((delay + mtt) * co), delay = F32(delay), rd = F32(rd))
+    o = Segment(organ.name, organ.from, organ.to; kind = :central, v = organ.v, plug = organ.plug, delay = organ.delay, rd = organ.rd, ve = organ.ve, ps = organ.ps, cl = organ.cl)
+    return Circulation(Segment[path, o], F32(co), F32(hct), site, F32[1, 1])
 end
 
 end # module

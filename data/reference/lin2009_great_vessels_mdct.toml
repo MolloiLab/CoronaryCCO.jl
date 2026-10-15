@@ -1,0 +1,36 @@
+[meta]
+id = "lin2009_great_vessels_mdct"
+data_type = "experimental"
+validates = "Normative end-diastolic superior vena cava cross-sectional area (double-oblique short axis, ECG-gated 64-row CT) in healthy, normotensive, non-obese adults"
+species = "human"
+preparation = "103 consecutive adults (43% women, age 51 +/- 14 y), normotensive, non-obese, free of cardiopulmonary or great-vessel disease, arrhythmia or significant CAD; ECG-gated 64-detector-row MDCT; end-diastolic PA diameter and SVC cross-sectional area in double-oblique short axis."
+conditions = "Supine cardiac CT (contrast-enhanced, breath-hold)."
+verification = "abs"
+access = "Abstract only (PubMed E-utilities, PMID 19394871), read 2026-10-15. Full text (Acad Radiol, Elsevier) not accessible; no Wayback capture found."
+notes = """Only the 5th-95th percentile interval is given in the abstract; mean and SD of the SVC area are not.
+The level along the SVC at which area was measured is not stated in the abstract.
+Contrast-phase timing may affect venous filling."""
+use_in_model = """SVC cross-section: healthy-adult range 1.08-4.42 cm2 (5th-95th percentile). With the SVC length from mahlon2007_svc_ct_length (70.7 +/- 14.1 mm) this bounds SVC volume."""
+
+[source]
+authors = ["Lin FY", "Devereux RB", "Roman MJ", "Meng J", "Jow VM", "Simprini L", "Jacobs A", "Weinsaft JW", "Shaw LJ", "Berman DS", "Callister TQ", "Min JK"]
+year = 2009
+title = "The right sided great vessels by cardiac multidetector computed tomography: normative reference values among healthy adults free of cardiopulmonary disease, hypertension, and obesity"
+journal = "Acad Radiol"
+volume = "16"
+issue = "8"
+pages = "981-987"
+doi = "10.1016/j.acra.2009.02.013"
+crossref_verified = "2026-10-15; Crossref main-title match ('The Right Sided Great Vessels by Cardiac Multidetector Computed Tomography'; vol 16, issue 8, 981-987; 12 authors, first Lin, last Min)"
+pmid = "19394871"
+
+[data.svc_area]
+description = "End-diastolic SVC cross-sectional area (double-oblique short axis); PA diameter for context"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "5th to 95th percentile interval; n = 103"
+quantity = ["SVC cross-sectional area", "main PA diameter (end-diastolic)"]
+p5 = [1.08, 1.89]
+p95 = [4.42, 3.03]
+unit = ["cm2", "cm"]
+missing_note = "Mean, SD and SVC length not in the abstract."

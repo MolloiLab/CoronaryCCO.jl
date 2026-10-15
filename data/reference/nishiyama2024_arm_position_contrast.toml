@@ -1,0 +1,46 @@
+[meta]
+id = "nishiyama2024_arm_position_contrast"
+data_type = "experimental"
+validates = "Effect of raised-arm position on contrast flow through the thoracic outlet: frequency of contrast influx into collateral veins from subclavian vein stenosis (SVS), pulmonary-artery and aortic attenuation, and subclavian vein dimensions and costoclavicular distance, conventional raised-arm vs crossed raised-arm (CRA) position"
+species = "human"
+preparation = "Retrospective cohort, 92 participants scanned with contrast-enhanced torso CT in both the conventional raised-arm position and the crossed raised-arm position (paired comparison)."
+conditions = "Contrast-enhanced CT of the torso; injection protocol, side and kV not given in the abstract."
+verification = "abs"
+access = "Abstract only (PubMed XML, PMID 38364708, read 2026-10-15). Full text (Radiography, Elsevier) not accessible."
+notes = """The abstract's results sentence is truncated in the published record ('Contras 27 and 6 patients in the conventional and CRA positions, respectively'); from context it is the number with contrast influx into collateral veins.
+Changes are given only as percentages; absolute HU, diameters and distances are not in the abstract. 'SVS' = subclavian vein stenosis at the costoclavicular space with arms raised."""
+use_in_model = """Segment: axillary/subclavian vein at the thoracic outlet with arms raised. Arm elevation narrows the subclavian vein (crossing the arms enlarged its area by 53.6%), diverts contrast into collaterals in ~29% (27/92) of patients and lowers downstream PA and aortic attenuation by ~7%. Use to set an arms-up scenario with partial diversion/delay in the subclavian segment."""
+
+[source]
+authors = ["Nishiyama Y", "Yabuuchi K", "Nishiyama Y", "Kambara Y", "Ikushima Y", "Enishi T"]
+year = 2024
+title = "Crossed raised arm position improves the flow of contrast medium in torso contrast-enhanced computed tomography"
+journal = "Radiography (Lond)"
+volume = "30"
+issue = "2"
+pages = "681-687"
+doi = "10.1016/j.radi.2024.02.004"
+crossref_verified = "2026-10-15; Crossref title exact match (Radiography vol 30, issue 2, 681-687; authors Nishiyama, Yabuuchi, Nishiyama, Kambara, Ikushima, Enishi)"
+pmid = "38364708"
+
+[data.collateral_influx]
+description = "Patients with contrast influx into collateral veins (subclavian vein stenosis), conventional vs crossed raised-arm position"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "counts of 92 participants; risk ratio (95% CI)"
+position = ["conventional raised arms", "crossed raised arms"]
+n_influx = [27, 6]
+n_total = 92
+risk_ratio_cra_vs_conventional = 0.22
+risk_ratio_ci95 = [0.10, 0.51]
+missing_note = "The abstract sentence is truncated ('Contras 27 and 6 patients'); interpretation as influx counts is from context."
+
+[data.relative_changes_cra_vs_conventional]
+description = "Percent change in the crossed raised-arm position relative to the conventional raised-arm position"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "median CT value change (%) or dimension change (%)"
+quantity = ["pulmonary artery CT value", "descending aorta CT value", "spleen CT value", "subclavian vein major diameter", "subclavian vein minor diameter", "subclavian vein area", "costoclavicular distance"]
+change_pct = [7.0, 7.4, 9.8, 19.3, 28.1, 53.6, 30.0]
+p_value = ["< .001", "< .001", "< .001", "< .001", "< .001", "not stated", "< .001"]
+missing_note = "Absolute values not in the abstract. No p value printed for subclavian vein area."

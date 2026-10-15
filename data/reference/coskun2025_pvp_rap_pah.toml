@@ -1,0 +1,51 @@
+[meta]
+id = "coskun2025_pvp_rap_pah"
+data_type = "experimental"
+validates = "Resting upper-extremity peripheral venous pressure (PVP) vs simultaneously obtained invasive right atrial pressure (RAP) in awake, spontaneously breathing, supine patients at right heart catheterization; the PVP-RAP offset that drives venous return from the arm"
+species = "human"
+preparation = "138 consecutive patients with WHO group 1 pulmonary arterial hypertension (PAH) undergoing right heart catheterization, single tertiary centre (Oct 2021 - Sep 2023). PVP via a 16-gauge IV cannula in the upper extremity connected directly to a TruWave transducer zeroed at the phlebostatic axis, arm kept parallel so the IV sat at mid-chest level. RAP by standard RHC transducer zeroed at the phlebostatic axis, end-expiration. Cardiac output by Fick."
+conditions = "Rest, supine (catheterization laboratory), awake, spontaneous ventilation. Mean age 43.0 +/- 17.8 y; 69.6% female; heart rate 87.0 +/- 15.4 bpm."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC12091662 (Medicine, open access), read 2026-10-15; Tables 1-2 read from the XML table markup."
+notes = """PATIENTS WITH PAH (elevated RAP, many with edema), not healthy adults; mean RAP 8.7 mmHg is higher than a typical healthy supine CVP.
+The exact upper-extremity site (antecubital, forearm or hand) is not stated; only 'upper extremity'.
+The paper reports the two means and SDs and Pearson R = 0.839 between PVP and RAP; it does not report a Bland-Altman bias or limits of agreement in the text read, so no mean paired difference is stored (the difference of the two means is not a paired statistic and is not computed here).
+Cutoffs: PVP 8.5 mmHg discriminated RAP < 8 (AUC 0.91, sens 72%, spec 94%); PVP 12.5 mmHg discriminated RAP >= 12 (AUC 0.92, sens 82%, spec 89%)."""
+use_in_model = """Sets the resting pressure of the arm venous reservoir relative to the central venous pressure: upper-extremity PVP sits above RAP by roughly the gap between the means (PVP 10.7 vs RAP 8.7 mmHg at the phlebostatic level) with the two tightly correlated. Use R = (PVP - CVP) / Q_arm with Q_arm from zhang2025_limb_basal_arterial_flow, keeping in mind this cohort's RAP is elevated; for a healthy supine subject use a lower CVP with a similar small positive offset (compare amar2001_pvp_cvp_surgical, munis2001_pvp_cvp_neurosurgical)."""
+
+[source]
+authors = ["Coşkun M", "Yildirim A", "Çetin AE", "Paçaci E", "Sezici E", "Coşkun H", "Gürsoy MO", "Kurt İH", "Evlice M"]
+year = 2025
+title = "Peripheral venous pressure measurements to evaluate congestion in pulmonary arterial hypertension"
+journal = "Medicine (Baltimore)"
+volume = "104"
+issue = "20"
+pages = "e42422"
+doi = "10.1097/MD.0000000000042422"
+crossref_verified = "2026-10-15; Crossref title exact match ('Peripheral venous pressure measurements to evaluate congestion in pulmonary arterial hypertension'; vol 104, issue 20, e42422; first author Coşkun)"
+pmid = "40388731"
+pmcid = "PMC12091662"
+
+[data.pvp_vs_rap]
+description = "Mean RAP and upper-extremity PVP measured at the same catheterization, and their correlation"
+location = "Abstract; Results"
+provenance = "FT"
+statistic = "mean +/- SD; n = patients"
+quantity = ["right atrial pressure (RHC)", "peripheral venous pressure (16 G upper-extremity IV)"]
+mean_mmHg = [8.7, 10.7]
+sd_mmHg = [4.2, 4.3]
+n = 138
+pearson_r = 0.839
+missing_note = "No paired bias or limits of agreement reported in the text read. Cannula site within the upper extremity not specified."
+
+[data.hemodynamics]
+description = "Other invasive hemodynamics of the cohort"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD"
+variable = ["pulmonary arterial wedge pressure", "systolic pulmonary artery pressure", "diastolic pulmonary artery pressure", "mean pulmonary artery pressure", "systolic systemic blood pressure", "diastolic systemic blood pressure"]
+mean_mmHg = [11.8, 85.7, 33.7, 53.5, 130.5, 71.5]
+sd_mmHg = [4.1, 31.0, 17.1, 21.6, 25.9, 15.8]
+pvr_mean_wood_units = 8.97
+pvr_sd_wood_units = 6.54
+missing_note = "Cardiac output values are not in the tables read."

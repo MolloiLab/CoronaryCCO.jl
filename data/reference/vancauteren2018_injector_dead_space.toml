@@ -1,0 +1,50 @@
+[meta]
+id = "vancauteren2018_injector_dead_space"
+data_type = "experimental"
+validates = "Injector-to-venous-port tubing dead space used to size the saline chaser (12 mL), and a cited estimate of the contrast volume held in the arm-to-SVC venous path (20-30 mL)"
+species = "minipig (dead-space statement concerns the injection set-up); venous-path statement is a citation about humans"
+preparation = "4 minipigs with a surgically implanted port-a-cath (Power PAC II, 1.9 mm, Smiths Medical) in the left shoulder connected to the superior vena cava; dual-head injector (Nemoto-Kyorindo); 64-slice MDCT dynamic scans for 120 s. Contrast at constant iodine delivery rate 0.64 gI/s and total iodine dose 320 mgI/kg, concentrations 120-370 mgI/mL (injection rates 2.1-5.3 mL/s)."
+conditions = "Contrast at 20 degC. Each contrast injection was followed, at the same rate, by a 12-mL saline chaser 'which equals the exact volume of the dead space of the tubing from the injector to the PAC'."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC6269421 (Sci Rep, open access), read 2026-10-15."
+notes = """The 12 mL figure is the dead space of THIS set-up (injector tubing to an implanted port), not a generic CT patient line.
+The Discussion states, citing Awai et al. (Radiology 2004;233:682), that a volume of injected contrast 'is retained between the brachial vein and the superior vena cava' and that 'this venous space can contain 20-30 mL of the injected CM'. This is a secondary statement; the Awai full text was not accessible and the basis of the 20-30 mL estimate was not checked.
+Main study result (not about the venous path): at constant IDR and dose, lower-concentration contrast gave higher aortic peak enhancement and longer peak width (e.g. 245 HU and 9.2 s at 320 mgI/mL vs 291 HU and 16.1 s at 160 mgI/mL)."""
+use_in_model = """Injection line: a 12-mL tubing dead space (injector to venous access) delays the contrast front and must be flushed by the saline chaser; compare with the ~2.8 mL of a standard low-pressure connecting tube (cowan2017_injector_tubing_volume). Arm-to-SVC venous path: the cited 20-30 mL is an order-of-magnitude check for the model's peripheral venous volume (antecubital/brachial to SVC); treat it as unverified."""
+
+[source]
+authors = ["Van Cauteren T", "Van Gompel G", "Nieboer KH", "Willekens I", "Evans P", "Macholl S", "Droogmans S", "de Mey J", "Buls N"]
+year = 2018
+title = "Improved enhancement in CT angiography with reduced contrast media iodine concentrations at constant iodine dose"
+journal = "Sci Rep"
+volume = "8"
+issue = "1"
+pages = "17493"
+doi = "10.1038/s41598-018-35918-y"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 8, article 17493; authors Van Cauteren ... Buls)"
+pmid = "30504863"
+pmcid = "PMC6269421"
+
+[data.dead_space]
+description = "Dead-space volumes stated in the paper"
+location = "Methods (contrast injection paragraph); Discussion (venous dead-space paragraph)"
+provenance = "mixed"
+provenance_per_value = ["FT", "secondary"]
+statistic = "stated values"
+segment = ["injector tubing to implanted port (this set-up)", "arm venous path, brachial vein to SVC (cited from Awai 2004)"]
+volume_min_mL = [12.0, 20.0]
+volume_max_mL = [12.0, 30.0]
+saline_chaser_mL = 12.0
+missing_note = "Tubing length and inner diameter not stated. The 20-30 mL venous estimate is quoted from Awai et al. 2004 (not read; basis unknown)."
+
+[data.injection_protocols]
+description = "Injection protocols at constant IDR 0.64 gI/s and dose 320 mgI/kg"
+location = "Table 4"
+provenance = "FT"
+statistic = "protocol values; viscosity and pressure mean (SD)"
+concentration_mgI_per_mL = [120.0, 160.0, 200.0, 270.0, 300.0]
+injection_volume_mL_per_kg = [2.67, 2.00, 1.60, 1.20, 1.10]
+injection_rate_mL_per_s = [5.3, 4.0, 3.2, 2.4, 2.1]
+viscosity_mPa_s = [1.42, 1.91, 2.58, 14.0, 21.2]
+injection_pressure_psi = [193.6, 170.1, 135.3, 148.5, 125.0]
+missing_note = "Rows for 320 and 370 mgI/mL are truncated in the text extracted here and are not stored."

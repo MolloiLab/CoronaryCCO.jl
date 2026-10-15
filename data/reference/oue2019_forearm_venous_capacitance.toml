@@ -1,0 +1,60 @@
+[meta]
+id = "oue2019_forearm_venous_capacitance"
+data_type = "experimental"
+validates = "Forearm (and calf) venous capacitance (volume stored at 60 mmHg), venous outflow on cuff release, and forearm venous compliance at 20 mmHg by sex, in healthy young adults (supine strain-gauge plethysmography, Halliwill cuff-deflation protocol)"
+species = "human"
+preparation = "26 healthy young volunteers (10 women, 16 men), randomized to continuous training (C-TRA, n = 8), interval training (I-TRA, n = 9) or control (CONT, n = 9); ages 20.1-22.1 y by group. Mercury strain gauge at the site of maximal forearm (and calf) girth; collecting cuff on the left upper arm (and thigh)."
+conditions = "Supine >= 20 min, left forearm slightly above heart level, supported at the wrist. Cuff held at 60 mmHg for 8 min, then deflated to 0 mmHg at 1 mmHg/s. Capacitance = limb volume change from before inflation to 8 min at 60 mmHg. Outflow = rate of volume change over the 1-min deflation from 60 to 0 mmHg. Compliance = numerical derivative (V_i - V_(i-5))/(P_i - P_(i-5)), 15 <= i <= 60 mmHg. Pre-training values are the baseline healthy data."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC6739508 (Physiol Rep, CC BY open access), read 2026-10-15; Tables 1-2 read from the XML table markup."
+notes = """Compliance-vs-pressure curves are shown only in Fig. 2 (not digitized). The only numeric compliance values are the sex comparison at 20 mmHg in the Discussion (pooled over groups; the time point is not stated, most likely pre-training).
+Table values are mean +/- SE. The SE convention for the 20-mmHg compliance values is not restated; they are stored as printed.
+Repeatability (pilot, 9 subjects): forearm CV 5.9% within day, 5.3% between days.
+'Venous outflow' here is the volume-change rate during a 1-min cuff deflation (ml/dl/min), not resting forearm blood flow."""
+use_in_model = """Cross-check of the per-100-ml forearm venous reservoir: total volume stored at 60 mmHg (capacitance ~2.3-3.5 ml/dl after 8 min, includes some filtration) and the compliance at 20 mmHg (men ~0.11, women ~0.08 ml/dl/mmHg as printed) bound C of the arm reservoir; scale to whole-limb mL with a measured limb volume (buffa2015_upper_limb_volume).
+The deflation outflow rate (~2.6-3.3 ml/dl/min from 60 to 0 mmHg over 1 min) is a lower bound on how fast distended forearm veins empty."""
+
+[source]
+authors = ["Oue A", "Saito M", "Iimura Y"]
+year = 2019
+title = "Effect of short-term endurance training on venous compliance in the calf and forearm differs between continuous and interval exercise in humans"
+journal = "Physiol Rep"
+volume = "7"
+issue = "17"
+pages = "e14211"
+doi = "10.14814/phy2.14211"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 7, issue 17; authors Oue, Saito, Iimura)"
+pmid = "31512395"
+pmcid = "PMC6739508"
+
+[data.baseline_capacitance_outflow]
+description = "Pre-training venous capacitance and deflation outflow in the forearm and calf, by group"
+location = "Table 2 (Pre columns)"
+provenance = "FT"
+statistic = "mean +/- SE"
+group = ["C-TRA", "I-TRA", "CONT"]
+n = [8, 9, 9]
+forearm_capacitance_mL_per_dL = [2.31, 2.45, 3.47]
+forearm_capacitance_se_mL_per_dL = [0.17, 0.17, 0.39]
+forearm_outflow_mL_per_dL_per_min = [2.62, 2.81, 3.31]
+forearm_outflow_se_mL_per_dL_per_min = [0.21, 0.17, 0.31]
+calf_capacitance_mL_per_dL = [2.74, 3.40, 3.16]
+calf_capacitance_se_mL_per_dL = [0.25, 0.31, 0.35]
+calf_outflow_mL_per_dL_per_min = [3.08, 3.76, 3.29]
+calf_outflow_se_mL_per_dL_per_min = [0.17, 0.32, 0.30]
+age_mean_years = [21.5, 20.1, 22.1]
+age_se_years = [0.8, 0.2, 0.3]
+weight_mean_kg = [63.7, 60.0, 57.2]
+missing_note = "Forearm values did not change with training (Post columns not stored). No pooled baseline mean is printed."
+
+[data.forearm_compliance_by_sex]
+description = "Forearm venous compliance at a cuff pressure of 20 mmHg, men vs women"
+location = "Discussion"
+provenance = "FT"
+statistic = "mean +/- (SE, per Table convention; not restated)"
+sex = ["men", "women"]
+n = [16, 10]
+compliance_at_20mmHg_mL_per_dL_per_mmHg = [0.111, 0.076]
+compliance_at_20mmHg_err_mL_per_dL_per_mmHg = [0.008, 0.004]
+p_value = "< 0.05"
+missing_note = "n per sex taken from the cohort totals (16 men, 10 women); the paper does not restate n for this comparison or the time point (pre- vs post-training)."

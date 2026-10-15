@@ -1,0 +1,35 @@
+[meta]
+id = "mahlon2007_svc_ct_length"
+data_type = "experimental"
+validates = "Length of the superior vena cava (origin at the brachiocephalic confluence to the cavoatrial junction) on CT angiography in adults, and its position relative to the carina and right tracheobronchial angle"
+species = "human"
+preparation = "Retrospective review of 112 pulmonary CT angiograms: 7 men and 7 women from each decade of life, 20-99 years."
+conditions = "Clinical pulmonary CTA (supine, typically breath-hold inspiration)."
+verification = "abs"
+access = "Abstract only (PubMed E-utilities, PMID 17804772; abstract also on a Wayback capture 20221012134818 of the ScienceDirect page), read 2026-10-15. Full text not accessible."
+notes = """SVC diameter or cross-sectional area is not reported in the abstract.
+Length was measured from the SVC origin to the cavoatrial junction; the method (straight-line vs centreline, axial vs MPR) is not in the abstract.
+The authors recommend a catheter tip ~4 cm below the carina for the cavoatrial junction (consistent with carina-to-CAJ 40.3 mm)."""
+use_in_model = """SVC segment length: 70.7 +/- 14.1 mm. Combine with an SVC cross-section (lin2009_great_vessels_mdct: end-diastolic SVC area 1.08-4.42 cm2, 5th-95th percentile) to set SVC volume and plug-flow transit."""
+
+[source]
+authors = ["Mahlon MA", "Yoon HC"]
+year = 2007
+title = "CT angiography of the superior vena cava: normative values and implications for central venous catheter position"
+journal = "J Vasc Interv Radiol"
+volume = "18"
+issue = "9"
+pages = "1106-1110"
+doi = "10.1016/j.jvir.2007.06.002"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 18, issue 9, 1106-1110; authors Mahlon, Yoon)"
+pmid = "17804772"
+
+[data.svc_landmarks]
+description = "SVC length and landmark distances"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD; n = 112 CT angiograms"
+quantity = ["SVC length (origin to cavoatrial junction)", "SVC superior margin to carina", "carina to cavoatrial junction", "SVC superior margin to right tracheobronchial angle", "right tracheobronchial angle to cavoatrial junction"]
+mean_mm = [70.7, 30.4, 40.3, 21.7, 49.0]
+sd_mm = [14.1, 11.2, 13.6, 10.8, 13.6]
+missing_note = "SVC diameter/area and sex- or age-specific values are not in the abstract."

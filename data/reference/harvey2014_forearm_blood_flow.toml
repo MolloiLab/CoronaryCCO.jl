@@ -1,0 +1,43 @@
+[meta]
+id = "harvey2014_forearm_blood_flow"
+data_type = "experimental"
+validates = "Resting forearm blood flow (venous occlusion plethysmography, hand excluded) and forearm volume (water displacement) in healthy supine women, so that tissue-normalized flow can be converted to absolute forearm flow"
+species = "human"
+preparation = "25 healthy non-smoking women: young premenopausal (n = 13, 26 +/- 1 y) and postmenopausal (n = 12, 61 +/- 2 y), Mayo Clinic Clinical Research Unit. Mercury-in-silastic strain-gauge venous occlusion plethysmography (Hokanson) with a wrist cuff at suprasystolic pressure to exclude the hand and an upper-arm cuff cycled to 50 mmHg; forearm volume by water displacement. Brachial artery 20 G catheter in the nondominant arm for pressure and drug infusion."
+conditions = "Supine throughout, overnight fast, no alcohol, caffeine or exercise for 24 h; arm at heart level. Baseline before isoproterenol infusion."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC4208635 (Physiol Rep, open access), read 2026-10-15; Table 1 read from the XML table markup."
+notes = """All group data are mean +/- SEM (Methods), not SD. Women only.
+Plethysmographic forearm blood flow excludes the hand (wrist cuff), so absolute forearm flow (FBF x forearm volume / 100) is smaller than the brachial flow at the antecubital fossa, which also supplies the hand. That product is not computed here."""
+use_in_model = """Alternative Q for the forearm segment of the arm venous reservoir: 3.7 mL/100 mL/min x ~823 mL forearm (young women) gives the forearm (without hand) inflow scale; compare with zhang2025_limb_basal_arterial_flow (brachial, forearm + hand, ~75 mL/min). Forearm volume also scales a per-100-mL venous compliance to whole-forearm mL/mmHg."""
+
+[source]
+authors = ["Harvey RE", "Barnes JN", "Charkoudian N", "Curry TB", "Eisenach JH", "Hart EC", "Joyner MJ"]
+year = 2014
+title = "Forearm vasodilator responses to a beta-adrenergic receptor agonist in premenopausal and postmenopausal women"
+journal = "Physiol Rep"
+volume = "2"
+issue = "6"
+pages = "e12032"
+doi = "10.14814/phy2.12032"
+crossref_verified = "2026-10-15; Crossref title exact match ('Forearm vasodilator responses to a β-adrenergic receptor agonist in premenopausal and postmenopausal women'; vol 2, issue 6, e12032; authors Harvey ... Joyner)"
+pmid = "24907296"
+pmcid = "PMC4208635"
+
+[data.baseline_forearm]
+description = "Baseline forearm blood flow and forearm volume by group"
+location = "Abstract (FBF); Table 1 (forearm volume, demographics)"
+provenance = "FT"
+statistic = "mean +/- SEM (min-max for forearm volume)"
+group = ["young premenopausal women", "postmenopausal women"]
+n = [13, 12]
+age_mean_years = [26.0, 61.0]
+forearm_blood_flow_mean_mL_per_100mL_per_min = [3.7, 2.9]
+forearm_blood_flow_sem_mL_per_100mL_per_min = [0.5, 0.4]
+forearm_volume_mean_mL = [823.0, 740.0]
+forearm_volume_sem_mL = [22.0, 21.0]
+forearm_volume_min_mL = [700.0, 650.0]
+forearm_volume_max_mL = [980.0, 840.0]
+mean_arterial_pressure_mean_mmHg = [92.0, 95.0]
+mean_arterial_pressure_sem_mmHg = [2.0, 2.0]
+missing_note = "SEM, not SD. Forearm volume differs between groups (P < 0.05); baseline FBF does not (P > 0.05). No venous pressure measured."

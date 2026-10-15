@@ -1,0 +1,47 @@
+[meta]
+id = "hazirolan2009_test_bolus_pa_aorta"
+data_type = "experimental"
+validates = "Test-bolus time-enhancement curves measured simultaneously in the main pulmonary artery, ascending aorta and descending aorta (single slice at the main PA level) after a 20 mL antecubital bolus: peak enhancement above baseline at 120 kV, duration above 100 HU (curve width), time to reach 100 HU and time to peak; effect of warming the contrast to 37 C"
+species = "human"
+preparation = "64 consecutive patients referred for coronary CTA (42 men; mean age 56 y, range 37-75), randomized to warmed (37 C, group 1, n = 32) or room-temperature (24 C, group 2, n = 32) contrast and saline. Group 1: age 59.9 +/- 9.3 y, weight 80.5 +/- 13.6 kg, height 169.8 +/- 8.7 cm; group 2: 52 +/- 10.4 y, 79.4 +/- 14.1 kg, 170 +/- 10.4 cm. Dual-source CT (Siemens Somatom Definition). No beta-blocker. EF 65 +/- 4% (group 1) and 66 +/- 3.5% (group 2); patients with EF < 60% were to be excluded."
+conditions = "Test bolus: 20 mL iohexol 350 mgI/mL at 5 mL/s through an 18-gauge needle in the RIGHT antecubital vein, then 20 mL saline at 5 mL/s. 30 non-incremental images at the main pulmonary artery level, 120 kV, 45 mA, 0.75 s scan time, 10 mm slice. ROI 3 cm2 centred in the AA, main PA and DA. Baseline HU subtracted. Heart rate during scans 71 (group 1) and 67 (group 2) bpm."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC2651444 (Korean J Radiol, open access), read 2026-10-15. Table 2 (test-bolus analysis) is an image in the XML and could not be retrieved (PMC/KJR image URLs blocked); all stored values are from the Results text."
+notes = """Peak values are baseline-subtracted enhancement (Delta HU) at 120 kV.
+'Time to peak' is defined in the paper as 'the time required to reach the maximum enhancement value from zero HU', i.e. measured from the onset of enhancement, NOT from injection start. The values (about 4-5 s) are therefore an upslope duration, not a bolus arrival-to-peak from injection.
+'Time required to reach 100 HU' is likewise not referenced to injection start in the text; its zero is not defined. Reported as medians.
+The image interval is not stated explicitly. 30 images with 0.75 s scan time were taken, but the temporal sampling (every beat, every second?) is not given.
+Plateau time = duration of enhancement above 100 HU, a width measure of the bolus at a fixed threshold.
+Warming raised peak enhancement significantly (p = 0.005) but did not change plateau or time to peak; the curves shifted left and upward."""
+use_in_model = """Pulmonary-artery vs aortic test-bolus shape after a 20 mL / 5 mL/s right-antecubital bolus with 20 mL saline: model peak Delta-HU at 120 kV should be ~280-320 in the main PA and ~175-210 in the ascending aorta (PA/AA peak ratio ~1.6-1.8, reflecting pulmonary-plus-left-heart dilution).
+Width above 100 HU: ~5.3-6.0 s in the PA and ~5.9-6.6 s in the AA. Use the width ratio as a dispersion check of the pulmonary+left-heart segment. Use the PA peak to constrain dispersion through the peripheral vein + right heart."""
+
+[source]
+authors = ["Hazirolan T", "Turkbey B", "Akpinar E", "Canyigit M", "Karcaaltincaba M", "Peynircioglu B", "Balkanci ZD", "Akata D"]
+year = 2009
+title = "The impact of warmed intravenous contrast material on the bolus geometry of coronary CT angiography applications"
+journal = "Korean J Radiol"
+volume = "10"
+issue = "2"
+pages = "150-155"
+doi = "10.3348/kjr.2009.10.2.150"
+crossref_verified = "2026-10-15; Crossref title exact match ('The Impact of Warmed Intravenous Contrast Material on the Bolus Geometry of Coronary CT Angiography Applications'; vol 10, issue 2, 150; first authors Hazirolan, Turkbey, Akpinar, Canyigit)"
+pmid = "19270861"
+pmcid = "PMC2651444"
+
+[data.test_bolus_curves]
+description = "Test-bolus curve parameters per vessel and group (Results text)"
+location = "Results (p. 152-153); Table 2 (not retrieved)"
+provenance = "FT"
+statistic = "mean +/- SD for peak and plateau; mean for time to peak (SD in Table 2, not retrieved); median for time to 100 HU; n = 32 per group"
+vessel = ["ascending aorta", "ascending aorta", "descending aorta", "descending aorta", "main pulmonary artery", "main pulmonary artery"]
+group = ["warmed 37 C", "room temperature 24 C", "warmed 37 C", "room temperature 24 C", "warmed 37 C", "room temperature 24 C"]
+peak_enhancement_HU = [210.0, 178.0, 205.0, 174.0, 318.0, 283.0]
+peak_enhancement_sd_HU = [25.0, 21.0, 22.0, 19.0, 30.0, 27.0]
+duration_above_100HU_s = [6.6, 5.9, 6.7, 5.8, 6.0, 5.3]
+duration_above_100HU_sd_s = [1.51, 2.2, 1.48, 2.11, 1.25, 1.21]
+time_to_peak_from_enhancement_onset_s = [4.26, 4.28, 4.03, 4.12, 5.16, 5.20]
+time_to_peak_sd_s = [nan, nan, nan, nan, nan, nan]
+time_to_100HU_median_s = [1.50, 2.25, 1.50, 1.87, 2.62, 2.50]
+tube_voltage_kVp = 120
+missing_note = "SDs of time to peak and IQRs of time to 100 HU are in Table 2 (image, not retrieved). Neither time is referenced to injection start (see notes). Absolute arrival time from injection is not reported. p for peak warmed vs room temperature = 0.005 (all three vessels); plateau p = 0.187 (AA), 0.063 (DA), 0.187 (PA); time to 100 HU in AA p = 0.034."

@@ -1,0 +1,48 @@
+[meta]
+id = "sakai2010_cardiac_function_aortic_peak"
+data_type = "experimental"
+validates = "Scaling of the main-bolus aortic time-enhancement curve with cardiac output: descending-aorta peak time (APT) and peak enhancement (APE) during coronary CTA versus thermodilution cardiac output and cardiac index"
+species = "human"
+preparation = "29 patients (21 men, 8 women; age 64.4 +/- 13.4 y; weight 59.4 +/- 10.3 kg) with thermodilution cardiac output measured within 2 weeks of coronary CTA; cardiac index from body surface area. Descending-aorta attenuation measured every 3 s during coronary CTA. Test-bolus injection also performed."
+conditions = "Coronary CTA main bolus; contrast agent, volume, rate, injection site and kVp are not given in the abstract."
+verification = "abs"
+access = "Abstract only (PubMed E-utilities, PMID 19442467, read 2026-10-15). Full text (Elsevier) not accessed."
+notes = """APT and APE refer to the main coronary-CTA bolus in the descending aorta, sampled every 3 s; the time origin (presumably injection start) is not stated in the abstract.
+APE is presumably absolute or baseline-subtracted HU; not stated in the abstract. Tube voltage not stated.
+The abstract also reports significant correlations of body weight with APT and APE, and of the test-bolus APT/APE with the CTA APT/APE (no coefficients given)."""
+use_in_model = """Cardiac-output scaling of the whole path: in the model, lowering CO should lengthen the aortic peak time and raise the peak, with correlation strengths of the order seen here (APT vs CI r = -0.698; APE vs CI r = -0.573). The cohort range (CO 1.55-10.46 L/min, APT 25-51 s, APE 273-598 HU) gives the spread a model swept over CO should cover for a coronary-CTA bolus."""
+
+[source]
+authors = ["Sakai S", "Yabuuchi H", "Chishaki A", "Okafuji T", "Matsuo Y", "Kamitani T", "Setoguchi T", "Honda H"]
+year = 2010
+title = "Effect of cardiac function on aortic peak time and peak enhancement during coronary CT angiography"
+journal = "Eur J Radiol"
+volume = "75"
+issue = "2"
+pages = "173-177"
+doi = "10.1016/j.ejrad.2009.04.022"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 75, issue 2, 173-177; authors Sakai, Yabuuchi, Chishaki, Okafuji, Matsuo, Kamitani, Setoguchi, Honda)"
+pmid = "19442467"
+
+[data.cohort_and_curve]
+description = "Range and mean of cardiac output, cardiac index, descending-aorta peak time and peak enhancement"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD (range); n = 29 patients"
+quantity = ["cardiac output", "cardiac index", "aortic peak time", "aortic peak enhancement"]
+unit = ["L/min", "L/min/m2", "s", "HU"]
+mean = [4.77, 3.28, 38.3, 390.4]
+sd = [2.13, 1.08, 7.5, 72.1]
+min = [1.55, 1.11, 25.0, 273.1]
+max = [10.46, 5.30, 51.0, 598.1]
+missing_note = "Protocol (contrast dose, rate, kVp, site) not in the abstract."
+
+[data.correlations_with_cardiac_index]
+description = "Pearson correlation of aortic peak time and peak enhancement with cardiac index"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "Pearson r; n = 29"
+outcome = ["aortic peak time", "aortic peak enhancement"]
+r_vs_cardiac_index = [-0.698, -0.573]
+p_value = ["< 0.0001", "0.0009"]
+missing_note = "Correlations with cardiac output (not indexed) and regression slopes not given in the abstract."

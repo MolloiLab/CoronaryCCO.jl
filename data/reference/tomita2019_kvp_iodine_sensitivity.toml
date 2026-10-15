@@ -1,0 +1,38 @@
+[meta]
+id = "tomita2019_kvp_iodine_sensitivity"
+data_type = "experimental"
+validates = "Relative CT number of diluted iodinated contrast (5-20 mgI/mL) at 70, 80, 100, 120 and 140 kVp on a clinical dual-source scanner, normalized to 120 kVp; used to convert iodine-concentration-to-HU between tube voltages"
+species = "phantom"
+preparation = "Siemens SOMATOM Definition Flash. Diluted contrast media of 5, 10, 15 and 20 mgI/mL scanned with conventional (single-energy) scans at each tube voltage. The study's flow phantom is a 200 mm water-filled acrylic cylinder with acrylic tubes (Nemoto human blood-flow phantom); the exact geometry used for the Table 1 measurements is not described separately."
+conditions = "Static diluted-contrast measurements; no flow."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC6463575 (Radiol Res Pract, open access), read 2026-10-15; Table 1 read from the XML table markup."
+notes = """Only ratios to 120 kVp are printed (1 decimal), not absolute HU per mgI/mL. The ratio is independent of concentration over 5-20 mgI/mL (80 kVp 1.6, 100 kVp 1.2), consistent with a linear HU-concentration relation at each kVp.
+Combine with an absolute 120 kVp slope (e.g. bae2010: 26.18 HU per mgI/mL) to get absolute slopes at other kVp for this scanner type."""
+use_in_model = """kVp conversion of model blood iodine concentration to HU: relative sensitivity 80 kVp 1.6, 100 kVp 1.2, 120 kVp 1.0 (140 kVp 0.8-0.9, 70 kVp 1.9-2.0) for a Siemens dual-source scanner. Cross-check of the bae2010 slopes (41.12 / 31.74 / 26.18 HU per mgI/mL)."""
+
+[source]
+authors = ["Tomita H", "Shibata K"]
+year = 2019
+title = "Verification of the dose reduction effect via diluted injection in dual-energy computed tomography using a human blood flow phantom"
+journal = "Radiol Res Pract"
+volume = "2019"
+issue = ""
+pages = "3512126"
+doi = "10.1155/2019/3512126"
+crossref_verified = "2026-10-15; Crossref title exact match (Radiology Research and Practice 2019, article 3512126; authors Tomita, Shibata)"
+pmid = "31057968"
+pmcid = "PMC6463575"
+
+[data.relative_sensitivity]
+description = "CT number of diluted contrast at each tube voltage divided by that at 120 kVp"
+location = "Table 1"
+provenance = "FT"
+statistic = "single measurements (no dispersion), printed to 1 decimal"
+iodine_mgI_per_mL = [5.0, 10.0, 15.0, 20.0]
+ratio_70kVp = [1.9, 1.9, 2.0, 2.0]
+ratio_80kVp = [1.6, 1.6, 1.6, 1.6]
+ratio_100kVp = [1.2, 1.2, 1.2, 1.2]
+ratio_120kVp = [1.0, 1.0, 1.0, 1.0]
+ratio_140kVp = [0.9, 0.9, 0.9, 0.8]
+missing_note = "Absolute CT numbers and phantom size for this measurement not given in the text read."

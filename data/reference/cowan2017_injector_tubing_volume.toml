@@ -1,0 +1,35 @@
+[meta]
+id = "cowan2017_injector_tubing_volume"
+data_type = "device specification (patent text)"
+validates = "Fluid volume of a standard Medrad low-pressure connecting tube (LPCT) between a CT power-injector syringe and the patient, and the residual air/dead space of a prefilled syringe, as programmed into the injector's auto-fill/auto-prime"
+species = "none (device)"
+preparation = "Bayer/Medrad patent 'Medical injector system' describing auto-fill and auto-prime features of a front-loading power injector."
+conditions = "Example values given in the patent description."
+verification = "FT"
+access = "Patent full text on Google Patents (https://patents.google.com/patent/US9694131B2/en), read 2026-10-15."
+notes = """The patent says 'a 60′ low pressure connecting tubing (LPCT) provided by Medrad, Inc. ... typically holds approximately 2.78 ml of fluid'. The prime symbol is printed as feet; whether 60 inches was meant is not stated, so the length is stored as printed.
+This is a manufacturer's example value in a patent, not an independent measurement; actual tube volumes vary by product (check the specific IFU).
+Auto-fill example: a 150 mL fill becomes 152.78 mL aspirated. Prefilled-syringe example: about 1.2 mL of air or 'dead space' in the syringe plus 2.78 mL of tubing gives about 3.97 mL primed (as printed)."""
+use_in_model = """Injection line before the cannula: about 2.8 mL of tubing between injector and patient. At 4-6 mL/s this delays the contrast front by under 1 s and is cleared by any saline chaser; it matters only for small test boluses or low rates. A larger set-up (12 mL, vancauteren2018_injector_dead_space) shows the range."""
+
+[source]
+authors = ["Cowan KP", "Haury JA"]
+year = 2017
+title = "Medical injector system"
+journal = "US Patent US9694131B2 (assignee Bayer HealthCare LLC)"
+volume = ""
+issue = ""
+pages = ""
+doi = ""
+crossref_verified = "n/a (patent; no DOI). Bibliographic data from Google Patents: filed 2010-02-22, priority 2003-11-25, published 2017-07-04."
+pmid = ""
+
+[data.tubing_volume]
+description = "Connecting-tube and syringe dead-space volumes stated in the patent"
+location = "Description, 'auto fill' and 'auto prime' paragraphs"
+provenance = "FT"
+statistic = "stated example values"
+item = ["Medrad low pressure connecting tubing ('60′ LPCT')", "prefilled syringe residual air / dead space", "total primed (syringe + LPCT)"]
+volume_mL = [2.78, 1.2, 3.97]
+length_as_printed = ["60′", "", ""]
+missing_note = "Tube inner diameter not stated. The printed total 3.97 mL is kept as printed (1.2 + 2.78 = 3.98)."

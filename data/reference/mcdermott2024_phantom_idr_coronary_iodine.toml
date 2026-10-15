@@ -1,0 +1,45 @@
+[meta]
+id = "mcdermott2024_phantom_idr_coronary_iodine"
+data_type = "experimental"
+validates = "Peak iodine concentration reaching the coronary arteries vs injected iodine delivery rate (IDR) for 10-s injections at a fixed cardiac output of 4.8 L/min in a pulsatile circulation phantom; the 120 kVp HU conversion factor the authors assume (25 HU per mgI/mL)"
+species = "phantom (water-filled physiological circulation phantom)"
+preparation = "Third-generation cardiovascular circulation phantom (United Biologics, Santa Ana, CA) with heart model and coronary branching vessels; electromechanical pump (ViVitro SuperPump); room-temperature water at heart rate 60 bpm and stroke volume 80 mL (cardiac output 4.8 L/min); internal pressure 120/80 mmHg. Iodine concentration entering the coronaries measured with a Coriolis flow meter (MicroMotion 5700) during the injection and the following 60 s; peak recorded and averaged over 5 repeated trials per IDR."
+conditions = "Contrast 370 mgI/mL at 0.81-8.1 mL/s (IDR 0.3-3.0 gI/s), volume adjusted for a constant 10-s injection duration. Injection site within the phantom not stated in the text read. CT part of the study (photon-counting CT, VMI 45-190 keV) used static titrated solutions and is not stored here."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC11460796 (Invest Radiol, CC BY-NC-ND open access), read 2026-10-15; Table 1 read from the XML table markup."
+notes = """The 120 kVp attenuations in Table 1 are CALCULATED with an assumed conversion factor of 25 HU per mgI/mL ('using conversion factor of 25 HU/mg I/mL'); they are not measured at 120 kVp. The factor is stated without a source in the text read.
+Measured peak coronary concentration is linear in IDR (R^2 = 0.997).
+The phantom circulates water (no blood, no hematocrit) at a fixed cardiac output. Whether it has a pulmonary circuit, its total volume and its recirculation behaviour are not described in the text read (ref 21-22 of the paper).
+Not a human measurement: use as a check of the dilution physics of a bolus model, not of human transit times."""
+use_in_model = """Whole-path dilution check: run the model with CO = 4.8 L/min, 370 mgI/mL, 10-s injections at 0.81-8.1 mL/s, and compare peak coronary-inlet iodine concentration with peak_coronary_iodine (about 8.1 mgI/mL per gI/s). The ratio to the undispersed plug value (IDR / CO) measures how much the phantom's heart chambers and vessels flatten a 10-s bolus.
+The 25 HU per mgI/mL factor is a nominal 120 kVp conversion; prefer measured kVp-specific factors (bae2010_ct_contrast_timing_review, tomita2019_kvp_iodine_sensitivity) when converting human HU."""
+
+[source]
+authors = ["McDermott MC", "Sartoretti T", "Stammen L", "Martens B", "Jost G", "Pietsch H", "Gutjahr R", "Schmidt B", "Flohr TG", "Alkadhi H", "Wildberger JE"]
+year = 2024
+title = "Countering calcium blooming with personalized contrast media injection protocols: the 1-2-3 rule for photon-counting detector CCTA"
+journal = "Invest Radiol"
+volume = "59"
+issue = "10"
+pages = "684-690"
+doi = "10.1097/RLI.0000000000001078"
+crossref_verified = "2026-10-15; Crossref main-title match ('Countering Calcium Blooming With Personalized Contrast Media Injection Protocols'; subtitle from the article; vol 59, issue 10, 684-690; authors McDermott ... Wildberger)"
+pmid = "38742928"
+pmcid = "PMC11460796"
+
+[data.peak_coronary_iodine]
+description = "Peak iodine concentration entering the coronary arteries vs injected iodine delivery rate (10-s injections, CO 4.8 L/min), with the authors' calculated 120 kVp attenuation"
+location = "Table 1; Results first paragraph"
+provenance = "FT"
+statistic = "mean +/- SD over 5 repeated trials (Coriolis meter); titration concentration single value; HU calculated"
+iodine_delivery_rate_gI_per_s = [3.0, 2.5, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3]
+injection_rate_mL_per_s = [nan, nan, nan, nan, nan, nan, nan, nan]
+peak_coronary_iodine_mean_mgI_per_mL = [24.17, 20.20, 16.24, 12.27, 8.31, 6.33, 4.34, 2.76]
+peak_coronary_iodine_sd_mgI_per_mL = [0.14, 0.12, 0.11, 0.09, 0.05, 0.06, 0.09, 0.13]
+titration_concentration_mgI_per_mL = [24.23, 20.30, 16.34, 12.18, 8.33, 6.35, 4.34, 2.76]
+calculated_attenuation_120kVp_HU = [604.0, 505.0, 406.0, 307.0, 208.0, 158.0, 109.0, 69.0]
+hu_per_mgI_per_mL_assumed_120kVp = 25.0
+injection_duration_s = 10.0
+contrast_concentration_mgI_per_mL = 370.0
+cardiac_output_L_per_min = 4.8
+missing_note = "Per-IDR injection rates are not tabulated (text: 0.81-8.1 mL/s over the IDR range at 370 mgI/mL); stored as nan rather than computed. Time to peak and curve width at the coronary inlet are not reported. Last titration value printed as 2.76 in the table (2.7... truncated in the running text)."

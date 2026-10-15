@@ -1,0 +1,102 @@
+[meta]
+id = "bae2010_ct_contrast_timing_review"
+data_type = "experimental (review summary)"
+validates = "Whole-path contrast-bolus behaviour for a generic injection-to-measurement model: CT enhancement per mgI/mL at 80, 100 and 120 kVp; normal bolus arrival times from an antecubital injection to the pulmonary artery, ascending and abdominal aorta and liver; shifts for forearm and central-venous injection; injection-site-to-aorta and aorta-to-pedal transit ranges; recirculation timing and share; saline-flush effects; time-to-peak rules versus injection duration; direction of the cardiac-output and injection-rate effects"
+species = "human"
+preparation = "State-of-the-art review (Radiology). Quantitative statements are the author's summary of the cited literature and of his own physiologically based pharmacokinetic (PBPK) model. The model curves in Figs. 2, 6, 7, 9 and 10 are simulations for a 30-y, 70-kg, 170-cm male and are not stored here."
+conditions = "Mixed; per statement. Default context: antecubital venous injection, 350 mgI/mL, 3-5 mL/s, adult."
+verification = "FT"
+access = "Full text HTML read from Wayback Machine capture 20130806094556 of http://radiology.rsna.org:80/content/256/1/32.full (Radiology free full text at that time). Figures not downloaded; the Fig. 1 values are in its legend."
+notes = """Provenance is the review's text: these are secondary statements, not checked against each primary paper. The reference numbers in the captured text could not be reliably matched to the reference list (the list layout was flattened), so primary citations are not named per value, except the Fig. 1 iodine-to-HU relation, which the text links to ref 2 (Bae, Heiken & Brink, Radiology 1998;207:647, PBPK computer model).
+The review also states that the HU-per-mgI/mL relation varies among scanners and is 'typically in the range of 25-30 HU per milligram of iodine per milliliter at 100-120 kVp', and that 1 mgI/mL corresponds to about 30 HU at 100 kVp and about 40 HU at 80 kVp.
+Timing statements:
+- Arrival time T_ARR is inversely proportional to cardiac output (lower CO -> later arrival). Arrival and time to peak in all organs are 'highly correlated with, and linearly proportional to, the reduction in cardiac output'. Peak enhancement rises when CO falls.
+- Timing is largely independent of body weight, because blood volume and CO scale together. Peak magnitude falls about in proportion to weight.
+- For short injections (test bolus, injection duration T_ID < 15 s): T_PEAK = T_ARR + T_ID/2 (formula used for MR angiography).
+- For T_ID >= 15 s: T_PEAK = T_ID + fractional T_ARR, and T_PEAK becomes shorter than T_ID + T_ARR because of recirculation and hemodynamic perturbation.
+- A short injection (< 15 s) gives a near-Gaussian aortic peak with small recirculation contribution. A longer injection gives rise, gradual increase, peak and decline, with recirculation contributing 10-20% of peak arterial enhancement.
+- Recirculation transit 15-40 s depending on path (cerebral faster than portal).
+Injection-rate statements (no human numbers): with fixed volume, faster injection raises and narrows the aortic peak and shortens time to peak; peak aortic enhancement rises steeply with rate up to < 10 mL/s.
+Injection site: forearm injection delays enhancement 2-4 s and central venous injection advances it 4-6 s versus antecubital. Left-arm injection may show more dispersion and delay from brachiocephalic-vein narrowing. Sites other than antecubital are usually injected more slowly, with more dispersion and lower enhancement.
+Saline flush: does NOT change initial arrival or the initial rise; increases peak arterial enhancement by 5-10% and prolongs time to peak; extended peak duration 3-10 s. Contrast that can be replaced by saline without losing enhancement: 12, 15, 18, 20, 40 or 50 mL in different studies.
+Bolus tracking: monitoring starts 5-10 s after injection start, every 1-3 s; aortic thresholds 50-150 HU; a 50 HU threshold triggers about 2 s earlier than 100 HU.
+Beta-blocker (cited study): coronary enhancement +10% and delayed by 4 s."""
+use_in_model = """Segment-level checks for a generic bolus model (antecubital injection, normal CO): arrival in the pulmonary artery 7-10 s, ascending aorta 12-15 s, abdominal aorta 15-18 s (normal_arrival_times).
+Injection-site shifts constrain the peripheral-venous segment: forearm +2-4 s, central venous -4-6 s.
+Use the kVp table to convert model iodine concentration (mgI/mL) in blood to HU enhancement: 41.12 (80 kVp), 31.74 (100 kVp), 26.18 (120 kVp) HU per mgI/mL, scanner-dependent by roughly 25-30 HU/(mgI/mL) at 100-120 kVp.
+The T_PEAK rules and the recirculation share (10-20% for injections > 15 s; small for < 15 s) are qualitative/semi-quantitative checks of the whole-body loop."""
+
+[source]
+authors = ["Bae KT"]
+year = 2010
+title = "Intravenous contrast medium administration and scan timing at CT: considerations and approaches"
+journal = "Radiology"
+volume = "256"
+issue = "1"
+pages = "32-61"
+doi = "10.1148/radiol.10090908"
+crossref_verified = "2026-10-15; Crossref title exact match ('Intravenous Contrast Medium Administration and Scan Timing at CT: Considerations and Approaches'; vol 256, issue 1, 32-61; author Bae)"
+pmid = "20574084"
+
+[data.hu_per_mgI_by_kvp]
+description = "CT enhancement per 1 mgI/mL increase in iodine concentration at three tube voltages"
+location = "Figure 1 legend and text (section 'Contrast Medium Pharmacokinetics and Mathematical Modeling')"
+provenance = "secondary"
+statistic = "slope of a linear fit (no dispersion given)"
+tube_voltage_kVp = [80, 100, 120]
+hu_per_mgI_per_mL = [41.12, 31.74, 26.18]
+approximate_text_value_hu_per_mgI_per_mL = [40.0, 30.0, 26.0]
+typical_range_100_120kVp_hu_per_mgI_per_mL = [25.0, 30.0]
+missing_note = "Scanner, phantom size and medium for the Fig. 1 measurement are not stated in the text read (the text cites refs 2 and 5). The text adds that the slope varies among scanners."
+
+[data.normal_arrival_times]
+description = "Normal contrast arrival time T_ARR after an antecubital injection, by target"
+location = "Text, section 'CT Scanning Factors' (scan timing / test bolus)"
+provenance = "secondary"
+statistic = "range"
+target = ["pulmonary artery", "ascending aorta", "abdominal aorta", "hepatic parenchyma"]
+arrival_time_min_s = [7.0, 12.0, 15.0, 30.0]
+arrival_time_max_s = [10.0, 15.0, 18.0, 40.0]
+missing_note = "No n or dispersion. Hepatic parenchyma arrival is about twice that of the aorta because of the portal circulation (text)."
+
+[data.injection_site_shift]
+description = "Shift in enhancement timing relative to an antecubital injection"
+location = "Text, section 'Patient Factors' (venous access paragraph)"
+provenance = "secondary"
+statistic = "range"
+injection_site = ["forearm", "central venous"]
+timing_shift_min_s = [2.0, -6.0]
+timing_shift_max_s = [4.0, -4.0]
+sign_convention = "positive = later than antecubital"
+missing_note = "No n or dispersion. Left-arm dispersion/delay stated qualitatively only."
+
+[data.peripheral_cta_transit]
+description = "Reported bolus transit ranges in peripheral (run-off) CT angiography"
+location = "Text, section 'Patient Factors' (cardiac output and circulation paragraphs)"
+provenance = "secondary"
+statistic = "range (median)"
+path = ["injection site to aorta", "aorta to pedal arteries"]
+transit_min_s = [14.0, 6.0]
+transit_max_s = [32.0, 39.0]
+transit_median_s = [18.0, 15.0]
+missing_note = "Primary study not identified reliably from the captured reference list; n not given in the review."
+
+[data.recirculation_and_saline]
+description = "Recirculation timing and share, and saline-flush effects"
+location = "Text, sections 'Contrast Medium Pharmacokinetics and Mathematical Modeling' (recirculation) and 'Contrast Medium Factors' (saline flush)"
+provenance = "secondary"
+statistic = "ranges as stated"
+quantity = ["recirculation transit time s", "recirculation share of peak arterial enhancement, injection > 15 s, %", "saline flush increase in peak arterial enhancement %", "saline flush extended peak duration s", "contrast volume replaceable by saline mL"]
+value_min = [15.0, 10.0, 5.0, 3.0, 12.0]
+value_max = [40.0, 20.0, 10.0, 10.0, 50.0]
+missing_note = "Saline flush does not change arrival time or initial rise (text). No dispersion values."
+
+[data.bolus_tracking]
+description = "Bolus-tracking parameters"
+location = "Text, section 'CT Scanning Factors' (bolus tracking)"
+provenance = "secondary"
+statistic = "as stated"
+quantity = ["first monitoring scan after injection start s", "monitoring interval s", "aortic trigger threshold HU", "earlier trigger with 50 HU vs 100 HU threshold s"]
+value_min = [5.0, 1.0, 50.0, 2.0]
+value_max = [10.0, 3.0, 150.0, 2.0]
+missing_note = "Thresholds are enhancement above baseline or absolute HU as used clinically; not specified."

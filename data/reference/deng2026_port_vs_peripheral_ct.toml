@@ -1,0 +1,62 @@
+[meta]
+id = "deng2026_port_vs_peripheral_ct"
+data_type = "experimental"
+validates = "Effect of injection site (central venous power port with tip at the SVC-RA junction vs peripheral arm cannula) on arterial-phase aortic attenuation, subclavian/SVC stasis artifacts and IVC/hepatic-vein reflux at identical contrast dose and rate, same patients"
+species = "human"
+preparation = "195 oncology patients, each scanned twice (fixed order): first via a 20-gauge peripheral cannula (right arm 183, left arm 12), then via a totally implantable venous power port (Bard 6F ChronoFlex, inserted via right internal jugular or right subclavian vein, tip at SVC-RA junction; all ports right-sided). Interval 131.0 +/- 26.2 days. Siemens SOMATOM Force dual-source CT, chest arterial phase, automatic kV selection and tube-current modulation."
+conditions = "Ioversol 350 mgI/mL, 1.0-1.2 mL/kg (60-90 mL), same dose and rate in both exams: 3.29 +/- 0.40 mL/s (peripheral) vs 3.27 +/- 0.34 mL/s (port), range 2.5-4.0 mL/s; 30 mL saline at the same rate. Bolus tracking in the thoracic aorta, scan 5 s after 100 HU."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC13458198 (open access), read 2026-10-15; Tables 1-5 read from the XML table markup."
+notes = """Retrospective, nonrandomized fixed-order before-after design (peripheral always first); the authors flag possible temporal confounding (disease course, ~4 months apart).
+Automatic kV selection: the tube voltage per exam is not reported, so absolute HU differences may partly reflect kV differences.
+Bolus-tracking acquisition: neither arrival time nor time to peak is reported, so the effect of injection site on timing cannot be extracted.
+SVC and right-atrium artifacts did not differ between routes; subclavian-artery streak artifacts (from the dense contrast column in the ipsilateral subclavian vein) were present in 98% of peripheral exams and 0% of port exams.
+Arterial-phase IVC/hepatic-vein reflux: 4.6% peripheral vs 9.2% port (P = 0.073), i.e. injecting at the SVC-RA junction did not reduce, and may increase, retrograde IVC reflux."""
+use_in_model = """Segment: arm vein -> subclavian -> brachiocephalic -> SVC (injection-site effect). Bypassing the arm and subclavian veins (port tip at SVC-RA junction) raised arterial-phase aortic attenuation by about 12% (medians 363.5 -> 405.5 HU; right-arm subgroup means 379.9 -> 426.3 HU) at the same iodine dose and rate.
+A model should produce a modestly higher, not grossly different, aortic peak when the injection point moves from an antecubital vein to the SVC, consistent with some loss of bolus compactness (pooling/dispersion) in the arm and subclavian veins. Use the reflux rates as a check on RA -> IVC retrograde mixing."""
+
+[source]
+authors = ["Deng H", "Xu Y", "Peng Y", "Wang Y", "Feng S", "Zeng J", "Tang X", "Liu Y", "Lai B", "Su Y", "Yang Z"]
+year = 2026
+title = "High-pressure-resistant totally implantable venous power ports for improving image quality in contrast-enhanced computed tomography"
+journal = "Quant Imaging Med Surg"
+volume = "16"
+issue = "8"
+pages = "643"
+doi = "10.21037/qims-2026-1-0241"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 16, issue 8, page 643; authors Deng, Xu, Peng, Wang, ...)"
+pmid = "42582834"
+pmcid = "PMC13458198"
+
+[data.aortic_attenuation_by_route]
+description = "Arterial-phase thoracic aortic attenuation, peripheral cannula vs central port, same patients"
+location = "Table 3 (all patients); Results 'Subgroup analysis' (right-arm peripheral subgroup)"
+provenance = "FT"
+statistic = "all patients: median (IQR); right-arm subgroup: mean +/- SD"
+route = ["peripheral arm cannula", "central venous power port (tip at SVC-RA junction)"]
+aorta_all_median_HU = [363.50, 405.50]
+aorta_all_q1_HU = [311.50, 349.83]
+aorta_all_q3_HU = [422.98, 478.40]
+n_all = 195
+aorta_right_arm_subgroup_mean_HU = [379.9, 426.3]
+aorta_right_arm_subgroup_sd_HU = [98.8, 111.7]
+n_right_arm_subgroup = 183
+snr_median = [26.45, 28.32]
+cnr_median = [21.24, 25.83]
+injection_rate_mean_mL_per_s = [3.29, 3.27]
+injection_rate_sd_mL_per_s = [0.40, 0.34]
+p_value_aorta = "< 0.001 (both comparisons)"
+missing_note = "kV per exam not reported (automatic selection). No timing (arrival, time to peak) reported."
+
+[data.artifacts_and_reflux]
+description = "Venous-stasis artifacts and reflux by route"
+location = "Table 5"
+provenance = "FT"
+statistic = "n (%) of 195 exams"
+finding = ["subclavian artery artifact affecting or preventing observation (score 1-2)", "SVC artifact present (score 3)", "right atrial artifact present (score 3)", "periprosthetic (shoulder collateral) vascular reflux", "arterial-phase IVC and hepatic vein regurgitation"]
+peripheral_n = [194, 9, 179, 1, 9]
+peripheral_pct = [99.5, 4.6, 91.8, 0.5, 4.6]
+port_n = [0, 4, 175, 0, 18]
+port_pct = [0.0, 2.1, 89.7, 0.0, 9.2]
+p_value = ["< 0.001", "0.259", "0.484", "> 0.999", "0.073"]
+missing_note = "Subclavian artery artifacts were scored on the injection side for peripheral exams and on the right for ports. Extravasation: 6 (3.1%) peripheral vs 0 port (P = 0.030)."

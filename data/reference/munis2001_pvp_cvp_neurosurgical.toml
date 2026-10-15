@@ -1,0 +1,36 @@
+[meta]
+id = "munis2001_pvp_cvp_neurosurgical"
+data_type = "experimental"
+validates = "Peripheral venous pressure (PVP) vs central venous pressure (CVP) trends during craniotomy (supine) and spine surgery (prone); mean PVP-CVP offset; PVP vs mean systemic (circulatory arrest) pressure"
+species = "human"
+preparation = "15 neurosurgical patients (craniotomy supine, n = 8; complex spine surgery prone, n = 7), 1,026 paired PVP-CVP measurements, Cleveland Clinic; plus measurements during planned circulatory arrest."
+conditions = "General anesthesia, mechanical ventilation; supine or prone. Peripheral cannula site not stated in the abstract."
+verification = "abs"
+access = "Abstract only (PubMed E-utilities, PMID 11133622, read 2026-10-15). Full text (Anesth Analg) not accessible."
+notes = """The abstract gives only the mean offset ('a mean offset of 3 mm Hg (PVP > CVP)') without SD, and correlations: r = 0.82 overall, 0.885 with blood loss > 1000 mL, 0.923 when SD of CVP > 2.
+During planned circulatory arrest, PVP approximated mean systemic (arrest) pressure (values not in the abstract)."""
+use_in_model = """Second estimate of the resting arm-to-central venous pressure offset (~3 mmHg, PVP > CVP) for the arm venous outflow resistance R = dP/Q; anesthetized and partly prone, so weight it below amar2001_pvp_cvp_surgical (spontaneous breathing group)."""
+
+[source]
+authors = ["Munis JR", "Bhatia S", "Lozada LJ"]
+year = 2001
+title = "Peripheral venous pressure as a hemodynamic variable in neurosurgical patients"
+journal = "Anesth Analg"
+volume = "92"
+issue = "1"
+pages = "172-179"
+doi = "10.1097/00000539-200101000-00033"
+crossref_verified = "2026-10-15; Crossref title exact match ('Peripheral Venous Pressure as a Hemodynamic Variable in Neurosurgical Patients'; vol 92, issue 1, 172-179; authors Munis, Bhatia, Lozada)"
+pmid = "11133622"
+
+[data.pvp_cvp_offset]
+description = "Mean offset between PVP and CVP and correlation"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean offset (no dispersion given); Pearson r"
+subset = ["all (1,026 pairs, 15 patients)", "estimated blood loss > 1000 mL", "SD of CVP > 2 (hemodynamic instability)"]
+pearson_r = [0.82, 0.885, 0.923]
+mean_offset_pvp_minus_cvp_mmHg = [3.0, nan, nan]
+mean_offset_sd_mmHg = [nan, nan, nan]
+n_patients = [15, nan, nan]
+missing_note = "SD of the offset, absolute pressure levels and subgroup sizes not in the abstract."

@@ -1,0 +1,80 @@
+[meta]
+id = "dymond1982_svc_bolus_fwhm"
+data_type = "experimental"
+validates = "Width (FWHM) of a small radionuclide bolus in the superior vena cava after hand injection into a medial basilic (antecubital) vein with a rapid 20-mL saline flush; its test-retest variability; right vs left arm; effect of SVC bolus width on RV-to-LV pulmonary transit time"
+species = "human"
+preparation = "32 cardiac patients (27 men, 5 women; 39-67 y, mean 53 y) in sinus rhythm with suitable veins in both arms and no clinical RV failure. 18-gauge cannula in a medial basilic vein (cephalic vein avoided because it 'may lead to loss of bolus integrity'). High-specific-activity Tc-99m pertechnetate (10 mCi study 1, 15 mCi study 2) injected with a rapid 20-mL saline flush; multicrystal gamma camera (Baird System 77), 20 frames/s for 50 s. Randomized right vs left arm and RAO vs LAO; two sequential studies 15 min apart on each of 2 days."
+conditions = "Resting, supine under the camera. Injection by hand (no injector rate stated); bolus volume of the radionuclide not stated. Bolus integrity = FWHM of the SVC time-activity curve (ROI over the SVC)."
+verification = "FT"
+access = "Publisher PDF (Circulation 65:311-322) read from Wayback Machine capture 20180723040420 of http://circ.ahajournals.org/content/circulationaha/65/2/311.full.pdf, text extracted with pdftotext; Tables 3 and 4 read from 150 dpi page renders (pp. 317, 319). Abstract also read via PubMed E-utilities (PMID 7053889)."
+notes = """These are patients with suspected or known heart disease, not healthy volunteers.
+The SVC FWHM includes the injection duration (hand push, rate not stated), arm-vein dispersion from the basilic vein to the SVC, and the frame interval (0.05 s acquisition; transit curves analysed at 0.20 s per frame).
+Studies with 'obvious sticking or splitting of the bolus in the path toward the heart' were excluded from the reproducibility series, so the stored FWHM values describe acceptable injections only.
+Pulmonary transit time here = difference of mean transit times of the RV and LV curves (monoexponential stripping); values are 8-10 s in this patient group (Table 2 and text), longer than in healthy subjects.
+Abstract wording for the sequential FWHM difference in the small-variation group is 0.28 +/- 0.29 s; the Results text and Table 4 print 0.29 +/- 0.28 s. Table value stored."""
+use_in_model = """Arm-vein + SVC dispersion target for a small, fast hand bolus from a basilic (antecubital) vein: typical SVC FWHM 0.2-1.0 s (good injections, mean ~0.6 s), with poor injections up to ~3 s. A model of the antecubital -> SVC path driven by a short (<1 s) bolus plus a fast saline flush should give an SVC curve FWHM of this order; widths of several seconds indicate too much venous mixing volume.
+Right vs left arm made no difference to RV-to-LV transit time (8.78 vs 8.54 s), so for a small flushed bolus the left brachiocephalic route adds no measurable delay in this study."""
+
+[source]
+authors = ["Dymond DS", "Elliott A", "Stone D", "Hendrix G", "Spurrell R"]
+year = 1982
+title = "Factors that affect the reproducibility of measurements of left ventricular function from first-pass radionuclide ventriculograms"
+journal = "Circulation"
+volume = "65"
+issue = "2"
+pages = "311-322"
+doi = "10.1161/01.CIR.65.2.311"
+crossref_verified = "2026-10-15; Crossref title exact match ('Factors that affect the reproducibility of measurements of left ventricular function from first-pass radionuclide ventriculograms.'; vol 65, issue 2, 311-322; authors Dymond, Elliott, Stone, Hendrix, Spurrell)"
+pmid = "7053889"
+
+[data.svc_fwhm_interobserver_sample]
+description = "SVC bolus FWHM in a sample of 20 studies, grouped by the interobserver difference in pulmonary transit time (< 2.0 s vs > 2.0 s)"
+location = "Table 3 (p. 317); Results 'Bolus Integrity'"
+provenance = "FT"
+statistic = "individual studies; group mean +/- SD"
+group = ["ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_lt2s", "ptt_interobserver_diff_gt2s", "ptt_interobserver_diff_gt2s", "ptt_interobserver_diff_gt2s", "ptt_interobserver_diff_gt2s", "ptt_interobserver_diff_gt2s", "ptt_interobserver_diff_gt2s", "ptt_interobserver_diff_gt2s", "ptt_interobserver_diff_gt2s"]
+ptt_interobserver_difference_s = [0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 1.5, 1.5, 1.5, 1.6, 1.8, 2.40, 2.90, 2.90, 3.00, 3.70, 4.20, 5.10, 8.60]
+svc_fwhm_s = [0.45, 0.20, 0.60, 0.75, 1.00, 0.65, 0.75, 0.70, 0.30, 0.50, 0.60, 0.80, 3.00, 1.10, 0.60, 1.00, 0.80, 2.60, 1.60, 1.70]
+group_mean_fwhm_s = [0.60, 1.55]
+group_sd_fwhm_s = [0.21, 0.86]
+group_n = [12, 8]
+group_mean_note = "[ptt diff < 2.0 s, ptt diff > 2.0 s]; p < 0.005"
+missing_note = "Injection rate and radionuclide bolus volume not stated (hand injection, rapid 20-mL saline flush). Arm side per study not given in the table."
+
+[data.svc_fwhm_sequential_pairs]
+description = "SVC bolus FWHM in sequential studies (15 min apart, same arm and projection) in 20 patients, grouped by the sequential difference in pulmonary transit time"
+location = "Table 4 (p. 319); Results 'Intraobserver Data'"
+provenance = "FT"
+statistic = "individual patients; mean +/- SD of FWHM differences"
+group = ["seq_ptt_diff_lt2s", "seq_ptt_diff_lt2s", "seq_ptt_diff_lt2s", "seq_ptt_diff_lt2s", "seq_ptt_diff_lt2s", "seq_ptt_diff_lt2s", "seq_ptt_diff_lt2s", "seq_ptt_diff_lt2s", "seq_ptt_diff_lt2s", "seq_ptt_diff_lt2s", "seq_ptt_diff_gt2s", "seq_ptt_diff_gt2s", "seq_ptt_diff_gt2s", "seq_ptt_diff_gt2s", "seq_ptt_diff_gt2s", "seq_ptt_diff_gt2s", "seq_ptt_diff_gt2s", "seq_ptt_diff_gt2s", "seq_ptt_diff_gt2s", "seq_ptt_diff_gt2s"]
+ptt_sequential_difference_s = [0.4, 0.1, 0.0, 0.0, 0.0, 0.8, 0.4, 1.7, 0.6, 0.1, 3.20, 7.90, 3.90, 4.70, 3.10, 4.40, 2.10, 8.10, 4.70, 3.30]
+svc_fwhm_study1_s = [0.75, 0.85, 1.10, 0.80, 0.75, 0.70, 0.65, 1.70, 0.20, 1.00, 1.35, 0.55, 0.55, 2.60, 0.95, 0.80, 3.00, 2.80, 2.60, 2.60]
+svc_fwhm_study2_s = [0.75, 0.75, 0.90, 1.15, 1.10, 0.50, 1.15, 0.75, 0.50, 1.00, 0.95, 1.70, 0.60, 1.55, 1.75, 1.15, 1.00, 0.80, 1.00, 1.55]
+svc_fwhm_difference_s = [0.0, 0.10, 0.20, 0.35, 0.35, 0.20, 0.50, 0.95, 0.30, 0.0, 0.40, 1.15, 0.05, 1.05, 0.80, 0.35, 2.00, 2.00, 1.60, 1.05]
+group_mean_fwhm_difference_s = [0.29, 1.04]
+group_sd_fwhm_difference_s = [0.28, 0.67]
+group_n = [10, 10]
+missing_note = "Values read from the 150 dpi table render. Group-mean FWHM per study is not printed (only the mean of the differences)."
+
+[data.svc_fwhm_ef_sample]
+description = "SVC bolus FWHM in studies grouped by interobserver difference in LV ejection fraction"
+location = "Results 'Bolus Integrity' under ejection fraction"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["ef_interobserver_diff_ge10pct", "ef_interobserver_diff_le5pct"]
+n_studies = [5, 20]
+svc_fwhm_mean_s = [0.59, 0.55]
+svc_fwhm_sd_s = [0.32, 0.38]
+missing_note = "NS between groups."
+
+[data.arm_side_transit]
+description = "RV-to-LV pulmonary transit time with right- vs left-arm injection (8 patients who changed injection arm between days, same projection)"
+location = "Results 'Changing Injection Site'"
+provenance = "FT"
+statistic = "mean +/- SD; n = 8 patients"
+arm = ["right", "left"]
+pulmonary_transit_time_mean_s = [8.78, 8.54]
+pulmonary_transit_time_sd_s = [2.18, 1.51]
+example_svc_fwhm_compact_s = 0.20
+example_svc_fwhm_poor_s = 1.55
+missing_note = "NS. SVC FWHM by arm side not reported. Example compact and poor bolus curves are from Fig. 6."

@@ -1,0 +1,56 @@
+[meta]
+id = "zhang2025_limb_basal_arterial_flow"
+data_type = "experimental"
+validates = "Resting (basal) volumetric blood flow, lumen diameter and time-averaged velocity in the brachial artery (1 cm above its bifurcation at the antecubital fossa), radial and ulnar arteries, and lower-limb arteries, supine, by Doppler ultrasound in a large adult health-check cohort; BSA/BMI regression for brachial flow"
+species = "human"
+preparation = "304 adults (146 male, 158 female; 18-65 y, mean 41.68 +/- 11.28 y) from 623 health-check attendees screened at the PLA General Hospital Fourth Medical Center (2024). Mindray M9 portable Doppler, L12-4s linear probe, two board-certified sonographers. Pulse-wave Doppler, sample volume at mid-lumen (1/2-2/3 of diameter), angle < 60 deg; three consecutive measurements of diameter, time-averaged velocity and volume flow averaged per vessel."
+conditions = "Room 23-25 C. 20 min seated rest, then supine; arm extended flat, palm up, at heart level, ~15 cm lateral to the body. Brachial site 1 cm proximal to its bifurcation in the antecubital fossa; radial/ulnar 2 cm proximal to the wrist crease."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC12343593 (Front Med, open access), read 2026-10-15; Tables 1-2 read from the XML table markup."
+notes = """Cohort is a health-check population, not screened to be disease-free: the regression analysis includes hypertension, diabetes and hyperlipidemia ('three-high') as covariates; their prevalence was not found in the text read.
+The brachial flow is measured at the antecubital fossa, so it is the arterial inflow to the forearm and hand, i.e. the flow that must drain through the antecubital/forearm veins (not whole-arm flow including upper-arm muscle).
+Radial + ulnar flows (35.7 and 36.8 mL/min) are each about half the brachial value, consistent with the brachial site being just above the bifurcation.
+Regression (Table 2): brachial flow (mL/min) = -27.937 + 105.908 x BSA (m^2) - 3.527 x BMI (kg/m^2), R^2 = 0.858, SEE 8.49 mL/min. BSA by 71.3989 x H^0.7437 x W^0.4040 / 10,000."""
+use_in_model = """Sets Q in the arm venous outflow resistance R = (P_peripheral_vein - P_central) / Q: resting forearm+hand inflow ~75 mL/min (1.25 mL/s) at rest, supine. With dP of ~2 mmHg (amar2001_pvp_cvp_surgical, coskun2025_pvp_rap_pah) this gives the order of magnitude of R for the antecubital-to-central venous path; tau = R*C then needs the venous compliance from a separate source."""
+
+[source]
+authors = ["Zhang R", "Wang H", "Shi J", "Gao M", "Li J", "Zhang J"]
+year = 2025
+title = "Clinical study on basal blood perfusion in the major arteries of the limbs"
+journal = "Front Med (Lausanne)"
+volume = "12"
+issue = ""
+pages = "1597404"
+doi = "10.3389/fmed.2025.1597404"
+crossref_verified = "2026-10-15; Crossref title exact match ('Clinical study on basal blood perfusion in the major arteries of the limbs'; vol 12, article 1597404; authors Zhang, Wang, Shi, Gao, Li, Zhang)"
+pmid = "40809425"
+pmcid = "PMC12343593"
+
+[data.basal_arterial_flow]
+description = "Lumen diameter, time-averaged flow velocity and volumetric blood flow per artery, supine rest"
+location = "Table 1; Abstract; Results 'Baseline data'"
+provenance = "FT"
+statistic = "diameter and flow mean +/- SD; velocity median (Q1, Q3); n = 304 subjects per artery"
+artery = ["brachial", "ulnar", "radial", "popliteal", "dorsalis pedis", "posterior tibial"]
+diameter_mean_cm = [0.36, 0.27, 0.28, 0.47, 0.27, 0.32]
+diameter_sd_cm = [0.06, 0.05, 0.06, 0.08, 0.05, 0.06]
+velocity_median_cm_per_s = [12.5, 10.1, 10.1, 10.9, 15.1, 11.9]
+velocity_q1_cm_per_s = [8.8, 6.9, 6.7, 8.3, 10.8, 8.5]
+velocity_q3_cm_per_s = [17.2, 14.8, 14.5, 15.3, 22.5, 16.9]
+flow_mean_mL_per_min = [74.9, 35.7, 36.8, 114.1, 53.3, 59.2]
+flow_sd_mL_per_min = [22.5, 12.6, 13.5, 34.2, 18.1, 21.0]
+n = 304
+missing_note = "Sex-specific means not stored. Side (left/right) measured is not stated in the text read."
+
+[data.brachial_flow_regression]
+description = "Multiple linear regression of brachial artery flow on BSA and BMI"
+location = "Table 2"
+provenance = "FT"
+statistic = "unstandardized coefficient B (95% CI as printed)"
+term = ["constant", "BSA", "BMI"]
+coefficient = [-27.937, 105.908, -3.527]
+unit = ["mL/min", "mL/min per m^2", "mL/min per kg/m^2"]
+r_squared = 0.858
+adjusted_r_squared = 0.857
+see_mL_per_min = 8.49
+missing_note = "The printed 95% CI for the constant (0.440, 56.315) does not bracket the coefficient (-27.937); stored coefficient only."

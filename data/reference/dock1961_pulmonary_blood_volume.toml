@@ -1,0 +1,68 @@
+[meta]
+id = "dock1961_pulmonary_blood_volume"
+data_type = "experimental"
+validates = "Pulmonary mean transit time (pulmonary artery -> left atrium) and pulmonary blood volume (mL/m2) by double-indicator dilution in man; mean transit and volume from left atrium to brachial artery (LA + LV + aorta + arm arteries)"
+species = "human"
+preparation = "45 adults (22-60 y, mean 41; 19 men) at combined right and left heart catheterization for suspected valve disease, no shunts; 4 had 'normal circulatory dynamics' (final diagnoses: coronary disease 1, restrictive pleuritis 1, no cardiac or pulmonary abnormality 2). Simultaneous 3 mL injections: Evans blue (T-1824) into the main pulmonary artery just beyond the bifurcation, and I-131 albumin into the left atrium (percutaneous paravertebral needle); sampling from the left brachial artery into a fraction collector, 2-s samples. Stewart-Hamilton cardiac output and MTT with semilog extrapolation of the downslope; collecting-system delay subtracted. PBV = CO x (MTT PA->BA - MTT LA->BA)."
+conditions = "Fasting, supine during indicator studies (prone for LA puncture), premedication secobarbital 100 mg oral and meperidine 50-75 mg IM (some morphine 8 mg)."
+verification = "FT"
+access = "Scanned PMC PDF (PMC290725, jcinvest00301-0161.pdf) retrieved from Wayback Machine capture 20240921083850 of the www.ncbi.nlm.nih.gov PMC PDF URL; text by pdftotext; Table I (rotated) read from a 300 dpi page render."
+notes = """These are PATIENTS (mostly mitral or aortic valve disease); only 4 had normal hemodynamics, so the normal-group values rest on n = 4. Patient initials printed in Table I are not stored.
+Text: PA -> LA MTT whole group 3.2-28.0 s (1.9-15.2 s per m2), mean 9.1 s (5.6 per m2); normal-dynamics group mean 5.3 s (3.5 per m2). PBV whole group 172-634 mL/m2, mean 322; normal-dynamics group mean 246 mL/m2.
+LA -> BA MTT ranged 3.1-14.8 s overall (excluding 5 severe MR outliers); 4.3-8.1 s in the normal-dynamics group.
+Cardiac outputs from the PA and LA injections agreed (mean ratio 0.98, SD 0.15).
+PBV did not correlate with cardiac output; it correlated with PA -> LA MTT (R = +0.769); log PA -> LA MTT correlated inversely with cardiac index (R = -0.742).
+The PA injection site is beyond the pulmonary trunk bifurcation; PBV therefore excludes part of the main PA and includes pulmonary veins and part of the LA up to the LA injection point.
+No dispersion statistics (variance, width) are reported."""
+use_in_model = """Constrains the PA -> LA pulmonary segment volume and mean transit: in the 4 subjects with normal hemodynamics, PBV 219-269 mL/m2 (text mean 246) and MTT 3.6-7.8 s (text mean 5.3 s) at cardiac index 2.1-4.0 L/min/m2. Indicator-dilution PBV is the classical anchor for the pulmonary compartment volume (compare MRI: nelsson2021_pulmonary_transit_time). LA -> brachial artery MTT 4.3-8.1 s bounds the LA + LV + arterial path."""
+
+[source]
+authors = ["Dock DS", "Kraus WL", "McGuire LB", "Hyland JW", "Haynes FW", "Dexter L"]
+year = 1961
+title = "The pulmonary blood volume in man"
+journal = "J Clin Invest"
+volume = "40"
+issue = "2"
+pages = "317-328"
+doi = "10.1172/JCI104259"
+crossref_verified = "2026-10-15; Crossref title match ('THE PULMONARY BLOOD VOLUME IN MAN*'; vol 40, issue 2, 317-328; authors Dock, Kraus, McGuire, Hyland, Haynes, Dexter)"
+pmid = "13723317"
+pmcid = "PMC290725"
+
+[data.normal_dynamics_subjects]
+description = "Individual values for the 4 subjects with normal circulatory dynamics"
+location = "Table I ('Normal circulatory dynamics' rows, p. 320)"
+provenance = "FT"
+statistic = "individual subjects"
+subject = [1, 2, 3, 4]
+age_years = [42, 54, 44, 60]
+sex = ["F", "M", "M", "M"]
+bsa_m2 = [1.68, 1.76, 1.99, 1.98]
+cardiac_output_pa_injection_L_per_min = [5.2, 6.3, 6.2, nan]
+cardiac_output_la_injection_L_per_min = [4.1, 7.7, 6.5, 4.1]
+cardiac_index_avg_L_per_min_per_m2 = [2.7, 4.0, 3.2, 2.1]
+mtt_pa_to_ba_s = [9.1, 9.8, 12.9, 15.0]
+mtt_la_to_ba_s = [4.3, 6.2, 8.1, 7.2]
+mtt_pa_to_la_s = [4.8, 3.6, 4.8, 7.8]
+blood_volume_pa_to_ba_mL_per_m2 = [415.0, 648.0, 691.0, 518.0]
+blood_volume_la_to_ba_mL_per_m2 = [196.0, 411.0, 434.0, 248.0]
+pulmonary_blood_volume_mL_per_m2 = [219.0, 239.0, 257.0, 269.0]
+mean_pa_pressure_mmHg = [14.0, 16.0, 16.0, 20.0]
+mean_la_pressure_mmHg = [7.0, 6.0, 8.0, 6.0]
+pvr_dyn_s_per_cm5 = [122.0, 114.0, 100.0, 273.0]
+left_atrial_size_xray = ["N", "N", "1+", "N"]
+missing_note = "PA-injection cardiac output is blank in Table I for subject 4 (Methods: in a few cases part of an indicator was lost from the syringe; which cases is not stated). Patient initials omitted."
+
+[data.group_summary]
+description = "Group means stated in the Results text"
+location = "Results ('Mean transit time', 'Pulmonary blood volume'), p. 319-321"
+provenance = "FT"
+statistic = "group mean (range where given)"
+group = ["all patients", "mitral stenosis", "mitral regurgitation", "combined mitral and aortic", "aortic valve disease", "normal circulatory dynamics"]
+n = [45, 15, 13, 3, 10, 4]
+mtt_pa_to_la_mean_s = [9.1, 10.7, 9.2, 9.6, 7.8, 5.3]
+mtt_pa_to_la_mean_s_per_m2 = [5.6, 6.4, 5.9, 6.2, 4.8, 3.5]
+pbv_mean_mL_per_m2 = [322.0, 335.0, 335.0, 298.0, 323.0, 246.0]
+pbv_range_all_mL_per_m2 = [172.0, 634.0]
+mtt_pa_to_la_range_all_s = [3.2, 28.0]
+missing_note = "No SDs reported. Aortic group n = 10 (7 AS + 3 AR) as classified in Methods; 'all patients with mitral disease' mean PBV 331 mL/m2."

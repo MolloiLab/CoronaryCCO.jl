@@ -1,0 +1,42 @@
+[meta]
+id = "claussen1984_bolus_geometry"
+data_type = "experimental"
+validates = "Direction of the effects of injection site (peripheral vein vs catheter in the vena cava), injection speed (4 to 8 mL/s and above), contrast volume, saline chaser and pulse rate on arterial bolus peak time, FWHM and maximum enhancement after intravenous contrast"
+species = "human"
+preparation = "Fast digital recording of x-ray attenuation profiles on a CT scanner ('Chronogram' mode) after intravenous contrast injection, for DSA and dynamic-CT protocol optimization."
+conditions = "Varied: injection site, injection speed, contrast volume, saline after contrast. Number of subjects and measurement site not stated in the abstract."
+verification = "abs"
+access = "Abstract only (PubMed E-utilities, PMID 6484168), read 2026-10-15. Radiology full text not accessible (RSNA blocked; no Wayback capture found)."
+notes = """Qualitative findings only (abstract):
+- A catheter positioned in the vena cava reduced peak time and increased enhancement compared with peripheral injection.
+- Higher injection speed shortened peak time. Raising speed from 4 to 8 mL/s gave markedly higher enhancement; further increases did not add significantly.
+- At a given speed, larger contrast volume increased enhancement and delayed the peak.
+- A saline injection after contrast did not change results significantly.
+- Faster pulse rate correlated with shorter peak time.
+No numbers are given in the abstract; all numeric arrays are placeholders."""
+use_in_model = """Qualitative checks for the peripheral venous segment: moving the injection from an arm vein to the vena cava must shorten the arterial peak time and raise peak enhancement; enhancement should saturate above ~8 mL/s for a fixed volume. Use with numeric sources (bae2010 central-venous shift of 4-6 s; deng2026 port vs arm HU)."""
+
+[source]
+authors = ["Claussen CD", "Banzer D", "Pfretzschner C", "Kalender WA", "Schorner W"]
+year = 1984
+title = "Bolus geometry and dynamics after intravenous contrast medium injection"
+journal = "Radiology"
+volume = "153"
+issue = "2"
+pages = "365-368"
+doi = "10.1148/radiology.153.2.6484168"
+crossref_verified = "2026-10-15; Crossref title exact match ('Bolus geometry and dynamics after intravenous contrast medium injection.'; vol 153, issue 2, 365-368; authors Claussen, Banzer, Pfretzschner, Kalender, Schorner)"
+pmid = "6484168"
+
+[data.injection_effects]
+description = "Reported direction of effects on arterial bolus peak time, FWHM and maximum enhancement"
+location = "Abstract"
+provenance = "abs"
+statistic = "qualitative"
+factor = ["injection site: vena cava catheter vs peripheral vein", "injection speed 4 -> 8 mL/s", "injection speed above 8 mL/s", "larger contrast volume at fixed speed", "saline after contrast", "faster pulse rate"]
+effect_peak_time = ["shorter", "shorter", "not stated", "later", "no significant change", "shorter (significant correlation)"]
+effect_enhancement = ["higher", "markedly higher", "no significant further increase", "higher", "no significant change", "not stated"]
+effect_fwhm = ["not stated", "not stated", "not stated", "not stated", "not stated", "not stated"]
+peak_time_s = [nan, nan, nan, nan, nan, nan]
+fwhm_s = [nan, nan, nan, nan, nan, nan]
+missing_note = "FWHM was recorded in the study but its results are not in the abstract. No n, no numeric values, no measurement site stated."

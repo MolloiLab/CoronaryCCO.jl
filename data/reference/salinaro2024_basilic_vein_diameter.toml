@@ -1,0 +1,42 @@
+[meta]
+id = "salinaro2024_basilic_vein_diameter"
+data_type = "experimental"
+validates = "Upper-arm basilic vein lumen diameter and Doppler flow velocity in healthy adults at rest (spontaneous breathing), and their change with 10 cmH2O CPAP"
+species = "human"
+preparation = "28 healthy volunteers (hospital workers; age 34 +/- 8.5 y, 10 women, BMI 23.3 +/- 2.7). Sonosite Edge II with a 5-10 MHz linear probe. Basilic vein diameter in short axis at mid-arm (midpoint between axillary fold and medial humeral epicondyle); min and max venous velocity by pulsed Doppler in long axis over >= 10 s; each value the average of 3 observations."
+conditions = "Semi-recumbent: head of bed elevated 30 degrees (NOT flat supine). FiO2 0.21. Three 5-min steps: spontaneous breathing; CPAP helmet 10 cmH2O PEEP with armpit straps; CPAP 10 cmH2O with straps attached to the bed."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC11075407 (J Vasc Access, open access), read 2026-10-15; Tables 1-2 read from the XML table markup."
+notes = """Diameter is a single short-axis lumen diameter at mid-upper-arm; it is not stated whether it was the maximal or anteroposterior diameter.
+Venous flow velocity (Doppler) is peak velocity across the respiratory cycle; volume flow is not reported.
+The arm side (right/left) per volunteer is not stated in the text read; all volunteers were right-handed.
+Flow velocities: complete data in 25 of 28 (valves or a too-small vein prevented Doppler in 3).
+Posture is 30-degree head-up; supine diameters are likely somewhat larger (raised central venous pressure under CPAP increased diameter by ~20%)."""
+use_in_model = """Basilic (upper-arm) segment of the injection path: lumen diameter ~4.4 mm sets the segment's cross-section (area ~15 mm2) and, with the measured resting velocities (~5-11 cm/s), the native-flow contribution to transit through the upper arm. Combine with a segment length (antecubital fossa to axilla, not given here) to get segment volume."""
+
+[source]
+authors = ["Salinaro G", "Pirrone M", "Cardone C", "Cova M", "Abbruzzese C", "Galazzi A"]
+year = 2024
+title = "Effects of positive airway pressure on basilic vein diameter and venous flow velocity in healthy volunteers"
+journal = "J Vasc Access"
+volume = "25"
+issue = "3"
+pages = "928-934"
+doi = "10.1177/11297298221124405"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 25, issue 3, 928-934; authors Salinaro, Pirrone, Cardone, Cova, Abbruzzese, Galazzi; online 2022-12-16)"
+pmid = "36527186"
+pmcid = "PMC11075407"
+
+[data.basilic_vein]
+description = "Mid-upper-arm basilic vein diameter and Doppler venous flow velocity"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD; n = 28 volunteers (velocity: complete in 25)"
+condition = ["spontaneous breathing", "CPAP 10 cmH2O, no armpit straps", "CPAP 10 cmH2O, armpit straps"]
+diameter_mean_mm = [4.4, 5.3, 5.4]
+diameter_sd_mm = [1.4, 1.4, 1.4]
+min_velocity_mean_cm_per_s = [5.2, 3.4, 3.3]
+min_velocity_sd_cm_per_s = [2.8, 1.4, 1.8]
+max_velocity_mean_cm_per_s = [11.1, 9.7, 7.2]
+max_velocity_sd_cm_per_s = [4.6, 3.5, 2.9]
+missing_note = "Table 2 column order is as printed (A spontaneous, B PEEP no armpit straps, C PEEP armpit straps). rANOVA p < 0.001 for all rows. Vein length and cross-sectional area not reported."

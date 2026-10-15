@@ -1,0 +1,54 @@
+[meta]
+id = "buffa2015_upper_limb_volume"
+data_type = "experimental"
+validates = "Human arm tissue volume (wrist crease to 60% of the acromion-olecranon distance, hand excluded) by water displacement in healthy adults; arm length and upper-arm circumference by sex"
+species = "human"
+preparation = "30 adults (15 men, 15 women), 19-60 y, university staff and students (convenience sample). Right arm. Water-displacement volumeter (PVC tank 90 x 14 cm, ~11 L, overflow weighed; verified with a 351.2 mL iron cylinder, measured 351.0 mL, CV 0.228%). Arm volume = (immersion to the upper-arm mark) minus (immersion to the wrist mark). Also measured with a Kinect structured-light scanner (SkanLab) for validation."
+conditions = "Standing immersion of the arm; marks at the wrist crease distal to the styloid (minimum wrist circumference) and at 60% of the acromion-olecranon distance. Water 20-25 degC."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC4507693 (Sensors, CC BY open access), read 2026-10-15; Tables 4 and 6 read from the XML table markup."
+notes = """Volume excludes the hand and the proximal 40% of the upper arm (above the 60% acromion-olecranon mark); it covers the forearm plus distal upper arm.
+Volumes are pooled over men and women (no sex split printed). Replicate values from two raters agree within ~10 mL.
+Not a venous measure: tissue volume only, used to scale per-100-ml plethysmographic compliance to whole-segment mL/mmHg."""
+use_in_model = """Scale factor for the arm venous reservoir: C_arm [mL/mmHg] = C_per_100ml [ml/dl/mmHg] x V_arm/100, with V_arm ~1.9 L (wrist to distal upper arm). Note the plethysmographic compliance is measured at the forearm gauge site; applying it to this whole segment assumes uniform venous compliance per tissue volume."""
+
+[source]
+authors = ["Buffa R", "Mereu E", "Lussu P", "Succa V", "Pisanu T", "Buffa F", "Marini E"]
+year = 2015
+title = "A new, effective and low-cost three-dimensional approach for the estimation of upper-limb volume"
+journal = "Sensors (Basel)"
+volume = "15"
+issue = "6"
+pages = "12342-12357"
+doi = "10.3390/s150612342"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 15, issue 6, 12342-12357; authors Buffa, Mereu, Lussu, Succa, Pisanu, Buffa, Marini)"
+pmid = "26016917"
+pmcid = "PMC4507693"
+
+[data.arm_volume_water_displacement]
+description = "Right arm volume (wrist to 60% acromion-olecranon) by water displacement, two raters x two replicates"
+location = "Table 6"
+provenance = "FT"
+statistic = "mean +/- SD across 30 subjects"
+rater_replicate = ["rater1_rep1", "rater1_rep2", "rater2_rep1", "rater2_rep2"]
+arm_volume_mean_mL = [1927.7, 1922.2, 1919.2, 1920.2]
+arm_volume_sd_mL = [491.9, 495.7, 489.9, 497.4]
+n = 30
+intra_rater_sem_mL = [9.79, 9.79, 12.95, 12.95]
+missing_note = "No sex-specific volumes printed; no forearm-only or upper-arm-only volumes."
+
+[data.anthropometry]
+description = "Anthropometric descriptors by sex"
+location = "Table 4"
+provenance = "FT"
+statistic = "mean +/- SD; n = 15 per sex"
+sex = ["women", "men"]
+height_mean_cm = [157.9, 171.2]
+height_sd_cm = [7.2, 7.1]
+weight_mean_kg = [57.1, 69.6]
+weight_sd_kg = [12.5, 11.8]
+total_arm_length_mean_cm = [34.2, 37.6]
+total_arm_length_sd_cm = [1.6, 1.9]
+upper_arm_circumference_mean_cm = [28.8, 30.9]
+upper_arm_circumference_sd_cm = [4.2, 3.1]
+missing_note = "'Total arm length' is as printed; its landmarks are not restated in the table (likely wrist mark to the 60% upper-arm mark). Upper-arm circumference at 60% of acromion-olecranon distance."

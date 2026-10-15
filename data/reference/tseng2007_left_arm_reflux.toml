@@ -1,0 +1,40 @@
+[meta]
+id = "tseng2007_left_arm_reflux"
+data_type = "experimental"
+validates = "Retrograde reflux of contrast into the major neck veins with left- vs right-arm injection during carotid CTA, and its dependence on the retrosternal space available to the left brachiocephalic vein"
+species = "human"
+preparation = "364 patients undergoing 4-section carotid CTA with right-arm (n = 183) or left-arm (n = 181) injection; refluxed contrast volume calculated; retrosternal distance (shortest sternum-to-arch/branch distance) measured. 9 patients re-scanned weeks later with the other arm."
+conditions = "Carotid CT angiography; injection rate and volume not given in the abstract."
+verification = "abs"
+access = "Abstract only (PubMed, PMID 17538279, read 2026-10-15). Full text (J Comput Assist Tomogr) not accessible; no Wayback capture found."
+notes = """Refluxed volume was greater with left-arm injection (P < 0.001) and correlated with retrosternal distance for left-arm injection (r = -0.514, P < 0.001, independent of age and sex).
+Crossover: of 9 patients injected in both arms, 5 had no reflux with either arm and 4 had obvious reflux after left-arm but not right-arm injection.
+Mechanism proposed: normal compression of the left brachiocephalic vein in a narrow retrosternal space."""
+use_in_model = """Segment: left brachiocephalic vein. Represent left-arm injection with a partial-obstruction element (compression between sternum and aortic arch branches) that diverts part of the bolus retrogradely into the jugular/neck veins, with a stronger effect for a small retrosternal distance. Right-arm injection: no such branch."""
+
+[source]
+authors = ["Tseng YC", "Hsu HL", "Lee TH", "Chen CJ"]
+year = 2007
+title = "Venous reflux on carotid computed tomography angiography: relationship with left-arm injection"
+journal = "J Comput Assist Tomogr"
+volume = "31"
+issue = "3"
+pages = "360-364"
+doi = "10.1097/01.rct.0000243445.95491.f2"
+crossref_verified = "2026-10-15; Crossref main-title match ('Venous Reflux on Carotid Computed Tomography Angiography'; subtitle not in Crossref title field; vol 31, issue 3, 360-364; authors Tseng, Hsu, Lee, Chen)"
+pmid = "17538279"
+
+[data.reflux_by_arm]
+description = "Left- vs right-arm injection and neck-vein reflux"
+location = "Abstract (Methods, Results)"
+provenance = "abs"
+statistic = "counts; correlation coefficient"
+arm = ["right", "left"]
+n_patients = [183, 181]
+refluxed_volume_mL = [nan, nan]
+r_reflux_vs_retrosternal_distance = [nan, -0.514]
+crossover_n = 9
+crossover_no_reflux_either_arm_n = 5
+crossover_reflux_left_only_n = 4
+p_value_left_vs_right = "< 0.001"
+missing_note = "Refluxed volumes, retrosternal distances and the injection protocol are in the full text only."

@@ -1,0 +1,36 @@
+[meta]
+id = "kim2008_ijv_subclavian_csa"
+data_type = "experimental"
+validates = "Ultrasound cross-sectional area of the internal jugular vein and subclavian vein in supine awake healthy adults, and its change with Trendelenburg, reverse Trendelenburg and passive leg elevation"
+species = "human"
+preparation = "20 healthy male volunteers, awake; ultrasound CSA of the IJV and subclavian vein (SCV)."
+conditions = "Supine (control); Trendelenburg 15 degrees; reverse Trendelenburg 15 degrees; passive leg elevation 50 degrees."
+verification = "abs"
+access = "Abstract only (PubMed E-utilities, PMID 18326134), read 2026-10-15. Full text (Anaesth Intensive Care, SAGE) not accessible."
+notes = """Side (right/left), measurement level, probe and respiratory phase are not stated in the abstract.
+The IJV is very posture-sensitive (CSA x0.34 head-up to x1.5 head-down); the SCV hardly changes (0.86-0.98 cm2), consistent with its tethering to the clavicle and first rib."""
+use_in_model = """Supine CSA for the subclavian segment (0.92 cm2) and for the internal jugular vein (1.12 cm2, relevant if modelling reflux into the neck or a jugular CVC injection). Multiply by a segment length to get a volume."""
+
+[source]
+authors = ["Kim JT", "Kim HS", "Lim YJ", "Bahk JH", "Lee KH", "Kim CS", "Kim SD", "Jeon Y"]
+year = 2008
+title = "The influence of passive leg elevation on the cross-sectional area of the internal jugular vein and the subclavian vein in awake adults"
+journal = "Anaesth Intensive Care"
+volume = "36"
+issue = "1"
+pages = "65-68"
+doi = "10.1177/0310057X0803600111"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 36, issue 1, 65-68; authors Kim, Kim, Lim, Bahk, Lee, Kim ...)"
+pmid = "18326134"
+
+[data.csa_by_position]
+description = "IJV and SCV cross-sectional area by body position"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD; n = 20 healthy men"
+position = ["supine (control)", "Trendelenburg 15 deg", "reverse Trendelenburg 15 deg", "passive leg elevation 50 deg"]
+ijv_csa_mean_cm2 = [1.12, 1.66, 0.38, 1.40]
+ijv_csa_sd_cm2 = [0.57, 0.67, 0.23, 0.64]
+scv_csa_mean_cm2 = [0.92, 0.98, 0.86, 0.93]
+scv_csa_sd_cm2 = [0.23, 0.17, 0.21, 0.18]
+missing_note = "IJV changes vs control P < 0.0001 for all three manoeuvres; SCV changes not significant. Side and level of measurement not in the abstract."

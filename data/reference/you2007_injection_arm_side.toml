@@ -1,0 +1,38 @@
+[meta]
+id = "you2007_injection_arm_side"
+data_type = "experimental"
+validates = "Right vs left antecubital injection: carotid artery and internal jugular vein attenuation, time to peak, diagnostic-window duration, and retrograde flow of contrast from the subclavian/brachiocephalic vein (randomized)"
+species = "human"
+preparation = "60 patients randomized to right (n = 30) or left (n = 30) antecubital injection; head and neck CT with repeated measurements of carotid artery (CA) and internal jugular vein (IJV) attenuation at 1.5-s intervals."
+conditions = "80 mL of 300 mgI/mL contrast at 2 mL/s (40-s injection)."
+verification = "abs"
+access = "Abstract only (PubMed, PMID 17895776, read 2026-10-15). Full text (J Comput Assist Tomogr, Wolters Kluwer) not accessible; no Wayback capture found."
+notes = """The abstract gives only significance statements, no numeric attenuations or times.
+Findings: CA and IJV attenuation slightly higher with right-arm injection (P = 0.06 and 0.07); right-arm injection significantly reduced perivenous artifacts and retrograde flow of the contrast column from the subclavian or brachiocephalic vein; no significant difference in time to peak attenuation or diagnostic-window duration."""
+use_in_model = """Segment: left vs right brachiocephalic vein. A left-arm path (longer brachiocephalic vein crossing behind the sternum) should NOT shift arterial time to peak appreciably at 2 mL/s, but should allow retrograde reflux into neck veins. Model the left path with similar transit and a reflux/stasis branch, not a large delay."""
+
+[source]
+authors = ["You SY", "Yoon DY", "Choi CS", "Chang SK", "Yun EJ", "Seo YL", "Lee YJ", "Moon JH"]
+year = 2007
+title = "Effects of right- versus left-arm injections of contrast material on computed tomography of the head and neck"
+journal = "J Comput Assist Tomogr"
+volume = "31"
+issue = "5"
+pages = "677-681"
+doi = "10.1097/RCT.0b013e318038d8fb"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 31, issue 5, 677-681; authors You, Yoon, Choi, Chang, Yun, Seo, Lee, Moon)"
+pmid = "17895776"
+
+[data.arm_side_comparison]
+description = "Right- vs left-arm injection outcomes (significance only)"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "group comparison; n = 30 per arm"
+outcome = ["CA mean attenuation", "IJV mean attenuation", "time to peak attenuation", "diagnostic window duration (CA and IJV > 150 HU)", "perivenous artifacts", "retrograde flow of contrast column from subclavian/brachiocephalic vein"]
+direction = ["right slightly higher", "right slightly higher", "no significant difference", "no significant difference", "fewer with right arm", "less with right arm"]
+p_value = ["0.06", "0.07", "not significant", "not significant", "significant", "significant"]
+n_right = 30
+n_left = 30
+value_right = [nan, nan, nan, nan, nan, nan]
+value_left = [nan, nan, nan, nan, nan, nan]
+missing_note = "Numeric values are in the full text only (not accessible)."
