@@ -4,8 +4,9 @@
 module Territory
 
 import AcceleratedKernels as AK
+using Random
 
-export nearest_terminal, territory_shares
+export nearest_terminal, territory_shares, demand_field
 
 const F32 = Float32
 
@@ -120,6 +121,82 @@ function territory_shares(tpts::Matrix{F32}, q::Matrix{F32}; voxel_ml::Real = 1.
         terr[i] += f * F32(voxel_ml)
     end
     return terr, pairs
+end
+
+"""
+    demand_field(pos, vol; rd1g = 0.15, D = 1.2, seed = 1) -> Vector{Float32}
+
+Relative O₂ demand (mean 1, volume-weighted) at points `pos` (3 × n, mm) holding tissue volumes
+`vol`. Local O₂ use in the heart is uneven and stable, and local flow follows it
+(Bassingthwaighte, Beard & Li 2001; Deussen 2001); its spread falls with piece mass as the flow
+spread does, RD(m) = RD(1 g)·m^(1−D) (Bassingthwaighte et al. 1989: D = 1.2, RD = 15% at 1 g).
+
+The field is lognormal, exp(z), with z a sum of white noise smoothed at octave scales 2–32 mm.
+The fractal law was measured on pieces of 0.1–10 g (Bassingthwaighte et al. 1989); below ≈ 2 mm
+(≈ 10 mg) the field is smooth rather than extrapolated, so single terminals do not get
+unphysical extremes of demand.
+Each octave's variance scales as σ^(6(1−D)), so the variance of a cube average falls as
+L^(6(1−D)) with cube side L, as RD ∝ m^(1−D) requires. The amplitude is set so cubes of 1 cm³
+(≈ 1 g) have relative dispersion `rd1g`.
+"""
+function demand_field(pos::AbstractMatrix, vol::AbstractVector; rd1g::Real = 0.15, D::Real = 1.2, seed::Integer = 1)
+    n = size(pos, 2)
+    lo = floor.(Int, vec(minimum(pos; dims = 2))) .- 2; hi = ceil.(Int, vec(maximum(pos; dims = 2))) .+ 2
+    dims = Tuple(hi .- lo .+ 1)
+    rng = Xoshiro(seed)
+    # RD ∝ m^(1−D) means Var(cube average) ∝ L^(6(1−D)) for side L (m ∝ L³); octave components of
+    # correlation length σ with variance ∝ σ^(6(1−D)) give that.
+    α = 6 * (1 - D)
+    z = zeros(Float32, dims)
+    for σ in (2.0, 4.0, 8.0, 16.0, 32.0)
+        f = randn(rng, Float32, dims)
+        _blur!(f, Float32(σ))
+        f ./= sqrt(sum(abs2, f) / length(f))
+        z .+= Float32(σ^(α / 2)) .* f
+    end
+    zp = Vector{Float32}(undef, n)
+    for k in 1:n
+        I = CartesianIndex(Tuple(clamp.(round.(Int, pos[:, k]) .- lo .+ 1, 1, collect(dims))))
+        zp[k] = z[I]
+    end
+    zp .-= sum(zp .* vol) / sum(vol)
+    # amplitude: relative dispersion of 1 cm³ cubes equals rd1g
+    cube = [Tuple(floor.(Int, pos[:, k] ./ 10)) for k in 1:n]
+    function rd(a)
+        m = exp.(a .* zp); m ./= sum(m .* vol) / sum(vol)
+        acc = Dict{NTuple{3, Int}, Tuple{Float64, Float64}}()
+        for k in 1:n
+            s, w = get(acc, cube[k], (0.0, 0.0)); acc[cube[k]] = (s + m[k] * vol[k], w + vol[k])
+        end
+        wt = [w for (s, w) in values(acc)]; mv = [s / w for (s, w) in values(acc)]
+        μ = sum(mv .* wt) / sum(wt)
+        return sqrt(sum(wt .* (mv .- μ) .^ 2) / sum(wt)) / μ, m
+    end
+    a0, a1 = 0.0, 10.0
+    for _ in 1:40
+        am = (a0 + a1) / 2
+        rd(am)[1] < rd1g ? (a0 = am) : (a1 = am)
+    end
+    return Float32.(rd((a0 + a1) / 2)[2])
+end
+
+# separable Gaussian blur, σ in grid cells
+function _blur!(f::Array{Float32, 3}, σ::Float32)
+    r = max(1, ceil(Int, 3σ)); w = Float32[exp(-(i / σ)^2 / 2) for i in -r:r]; w ./= sum(w)
+    for d in 1:3
+        g = similar(f); n = size(f, d)
+        Threads.@threads for I in CartesianIndices(f)
+            i = I[d]; s = 0.0f0
+            for o in -r:r
+                ii = clamp(i + o, 1, n)
+                J = Base.setindex(Tuple(I), ii, d)
+                s += w[o + r + 1] * f[CartesianIndex(J)]
+            end
+            g[I] = s
+        end
+        f .= g
+    end
+    return f
 end
 
 end # module

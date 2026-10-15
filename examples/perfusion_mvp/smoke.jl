@@ -39,8 +39,8 @@ end
 @printf("territories: %d voxels → %d terminals in %.2f s (empty %d)\n", length(idx), length(terms), tv, count(==(0), terr))
 terr .= max.(terr, 1.0f-4)
 
-for (label, mbf) in (("rest", 1.0f0), ("stress", 3.5f0))
-    tc = @elapsed C = circuit(tree, terr; phys = Physiology(mbf = mbf))
+for label in ("rest", "stress")
+    tc = @elapsed C = circuit(tree, terr; state = Symbol(label))
     inp = gamma_input()
     times = 0.0f0:1.0f0:30.0f0
     tf = @elapsed art, ven, tis = frame_masses(C, inp, times)
@@ -56,8 +56,8 @@ for (label, mbf) in (("rest", 1.0f0), ("stress", 3.5f0))
         vo.blood, vo.art_resolved, vo.art_unresolved, vo.capillary, vo.ven_resolved, vo.ven_unresolved
     )
     @printf(
-        "%s: mass %.1f g, Q %.2f mL/s, ΔP needed %.1f mmHg (art %.0f%% cap %.0f%% ven %.0f%%), venous scale %.2f\n",
-        label, C.mass_g, qp / (1 - C.phys.hd), C.resist.total_mmHg, 100C.resist.art_share, 100C.resist.cap_share, 100C.resist.ven_share, C.venous_scale
+        "%s: mass %.1f g, Q %.2f mL/s (MBF %.2f mL/min/g) (art %.0f%% cap %.0f%% ven %.0f%%), venous scale %.2f\n",
+        label, C.mass_g, qp / (1 - C.phys.hd), C.resist.mbf, 100C.resist.art_share, 100C.resist.cap_share, 100C.resist.ven_share, C.venous_scale
     )
     ta = [C.t_end[j] for j in C.terminals]; sa = [C.offset[i] - C.t_end[C.terminals[i]] - C.ta[i] for i in eachindex(C.terminals)]
     @printf(

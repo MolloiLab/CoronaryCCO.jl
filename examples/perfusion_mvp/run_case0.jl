@@ -39,9 +39,9 @@ Cb(t) = (1 - hd) * (t <= 0 ? 0.0f0 : inp.c[min(length(inp.c), Int(floor(t / inp.
 scan_times = Float32[0, 6, 8, 10, 12, 14]
 truth_times = 0.0f0:0.25f0:30.0f0
 
-for (state, mbf) in (("rest", 1.0f0), ("stress", 3.5f0))
+for state in ("rest", "stress")
     dir = joinpath(@__DIR__, "out", "case0_$(n)_$(state)"); mkpath(dir)
-    C = circuit(tree, terr; phys = Physiology(mbf = mbf))
+    C = circuit(tree, terr; state = Symbol(state))
     t1 = @elapsed art, ven, tis = frame_masses(C, inp, truth_times)
     out = sinus_outflow(C, inp, truth_times)
     m_in = [sum(@view tis[f, :]) + sum(@view(art[f, inside])) + sum(@view(ven[f, inside])) for f in eachindex(truth_times)]
@@ -69,7 +69,7 @@ for (state, mbf) in (("rest", 1.0f0), ("stress", 3.5f0))
     end
     write_meta(dir, g, scan_times, files)
     truth = Dict(
-        "state" => state, "mbf_ml_min_g" => Float64(mbf), "myocardial_mass_g" => Float64(C.mass_g),
+        "state" => state, "mbf_ml_min_g" => Float64(C.resist.mbf), "myocardial_mass_g" => Float64(C.mass_g),
         "flow_ml_s" => Float64(qp / (1 - hd)), "hematocrit" => Float64(hd),
         "vascular_mtt_s" => Float64((sum(C.vp_a) + sum(C.vp_v) + sum(C.fp .* (C.ta .+ C.tc .+ C.tv))) / qp),
         "input" => Dict("kind" => "gamma variate at the coronary ostia", "t0_s" => 2.0, "tpeak_s" => 10.0, "peak_blood_mg_ml" => 12.0),

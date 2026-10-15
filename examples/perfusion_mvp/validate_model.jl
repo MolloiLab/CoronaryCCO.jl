@@ -6,8 +6,9 @@
 # mask: omitted → case0 sample; or a directory holding heart_labels_1mm.u8 + grid.txt (XCAT prep),
 # whose labels 1 (LV myocardium) and 2 (RV myocardium) form the perfused domain.
 # veins.bin: a grown venous tree (each terminal drains into its nearest venous terminal); omitted →
-# companion veins. Flow is pressure-driven: stress = maximal vasodilation, rest = autoregulated.
-using Vasculature, Printf
+# companion veins. Flow is pressure-driven: stress = maximal vasodilation, rest = autoregulated
+# arteriolar diameters (myogenic, shear and metabolic tone).
+using Vasculature, Printf, Serialization
 include("flow.jl"); include("territory.jl"); include("coupling.jl")
 using .Flow, .Territory
 
@@ -29,7 +30,7 @@ end
 terr, tshare = territory_shares(tree.b[:, terms], q)
 terr .= max.(terr, 1.0f-7)
 veins = length(ARGS) >= 4 ? load_vtree(ARGS[4]) : nothing
-vleaf = veins === nothing ? nothing : (
+vleaf = veins === nothing ? nothing : haskey(ENV, "CIRC") ? deserialize(ENV["CIRC"]).Cr.vleaf : (
         vn = zeros(Int, length(veins.r)); foreach(p -> p > 0 && (vn[p] += 1), veins.parent);
         couple_veins(tree, terr, veins, terms, findall(==(0), vn))[1]
     )
@@ -76,21 +77,30 @@ function binstats(x, y, edges; w = ones(length(x)))
 end
 
 res = Dict{String, Any}("n" => n, "segments" => ns, "terminals" => length(terms), "coverage" => coverage)
+# maximal dilation first: its microvascular scale κ is shared by the rest state
+Cstress = haskey(ENV, "CIRC") ? nothing : circuit(tree, terr; state = :stress, veins, vleaf, phys = Physiology(radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))))
 for (st, state) in (("rest", :rest), ("stress", :stress))
-    rcv = parse(Float32, get(ENV, "RADIUS_CV", "0.12")); C = circuit(tree, terr; state, veins, vleaf, phys = Physiology(radius_cv = rcv))
+    rcv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))
+    C = if haskey(ENV, "CIRC")                 # solved circuits (; Cs, Cr) from an earlier run on the same inputs
+        (cc = deserialize(ENV["CIRC"]); state === :rest ? cc.Cr : cc.Cs)
+    else
+        state === :rest ? circuit(tree, terr; state, veins, vleaf, phys = Physiology(radius_cv = rcv), kappa = Cstress.resist.kappa) : Cstress
+    end
     hd = C.phys.hd
     d_um = 2000 .* tree.r
     pd = C.pa                                                     # mmHg at each segment's distal end
-    vel = C.q ./ (Float32(π) .* (tree.r ./ 10) .^ 2)              # cm/s
+    vel = C.q ./ (Float32(π) .* (tree.r .* C.xd ./ 10) .^ 2)      # cm/s, at the solved diameters
     e = logbins(8, 4000, 18)
     # regional flow heterogeneity: flow per gram in cubes of side L (Bassingthwaighte et al. 1989)
     fvox = zeros(Float64, size(q, 2))                                # flow per voxel (mL/s per mm³)
+    dvox = zeros(Float64, size(q, 2))                                # relative O₂ demand per voxel
     for (v, i, fr) in tshare
         fvox[v] += fr * C.q[C.terminals[i]] / (terr[i] * 1.0f3)
+        dvox[v] += fr * C.demand[i] / (terr[i] * 1.0f3)
     end
     # pieces: 1 mm voxels, then Voronoi cells of K random voxel seeds (equal mean volume; they
     # follow the thin wall, unlike cubes). RD is mass-weighted.
-    rd = []
+    rd = []; rdd = []
     nv = length(vidx)
     for target_mm3 in (1, 8, 27, 64, 216, 1000, 4000, 16000)
         if target_mm3 == 1
@@ -100,13 +110,15 @@ for (st, state) in (("rest", :rest), ("stress", :stress))
             seeds = q[:, round.(Int, range(1, nv, length = K))] .+ 0.1f0 .* randn(Float32, 3, K)
             lab = nearest_terminal(seeds, q; h = 4.0f0)
         end
-        fsum = zeros(Float64, K); msum = zeros(Float64, K)
-        for v in 1:nv
-            fsum[lab[v]] += fvox[v]; msum[lab[v]] += 1
+        for (vox, out) in ((fvox, rd), (dvox, rdd))
+            fsum = zeros(Float64, K); msum = zeros(Float64, K)
+            for v in 1:nv
+                fsum[lab[v]] += vox[v]; msum[lab[v]] += 1
+            end
+            ok = msum .> 0; f = fsum[ok] ./ msum[ok]; m = msum[ok]
+            fm = sum(f .* m) / sum(m)
+            push!(out, Dict("mass_g" => 1.05e-3 * sum(m) / length(m), "rd" => sqrt(sum(m .* (f .- fm) .^ 2) / sum(m)) / fm, "pieces" => length(m)))
         end
-        ok = msum .> 0; f = fsum[ok] ./ msum[ok]; m = msum[ok]
-        fm = sum(f .* m) / sum(m)
-        push!(rd, Dict("mass_g" => 1.05e-3 * sum(m) / length(m), "rd" => sqrt(sum(m .* (f .- fm) .^ 2) / sum(m)) / fm, "pieces" => length(m)))
     end
     # impulse response at the coronary sinus: a 0.02 s pulse at the ostia
     pulse = Float32[t < 0.02f0 ? 50.0f0 : 0.0f0 for t in 0.0f0:0.005f0:150.0f0]
@@ -118,10 +130,7 @@ for (st, state) in (("rest", :rest), ("stress", :stress))
     appear = tm[findfirst(>(0.05 * maximum(h)), h)]
     tpeak = tm[argmax(h)]
     # intravascular tracer (no extraction), as in labelled-red-cell / albumin indicator dilution
-    C0 = circuit(
-        tree, terr; state, veins, vleaf, phys = Physiology(extraction = 0.0f0, radius_cv = rcv), kappa = C.resist.kappa,
-        demand = state === :rest ? C.demand : nothing
-    )
+    C0 = with_extraction(C, 0)
     cum0 = sinus_outflow(C0, inp, tt); h0 = diff(cum0) ./ step(tt) ./ cum0[end]
     mtt0 = sum(tm .* h0) * step(tt); appear0 = tm[findfirst(>(0.05 * maximum(h0)), h0)]
     # vascular volumes and the central-volume MTT
@@ -146,7 +155,7 @@ for (st, state) in (("rest", :rest), ("stress", :stress))
         "flow_vs_diameter" => binstats(d_um, C.q .* 60, e),
         "velocity_vs_diameter" => binstats(d_um, vel, e),
         "flow_scatter" => [[d_um[j], C.q[j] * 60] for j in 1:max(1, ns ÷ 4000):ns],
-        "rd_vs_size" => rd,
+        "rd_vs_size" => rd, "rd_demand_vs_size" => rdd,
         "impulse" => Dict(
             "t" => tm[1:4:min(end, 600)], "h" => h[1:4:min(end, 600)], "mtt_s" => mtt_out, "appear_s" => appear,
             "peak_s" => tpeak, "appear_over_mtt" => appear / mtt_out,
@@ -156,7 +165,9 @@ for (st, state) in (("rest", :rest), ("stress", :stress))
         "volumes_ml_per_100g" => Dict(k => v / C.mass_g * 100 for (k, v) in pairs(C.volumes)),
         "blood_fraction" => vblood / (C.mass_g / 1.05f0),
         "ostium_to_distal_base_s" => tdist, "tip_arrival_by_root" => tip_arrival, "root_velocity_cm_s" => vel[root], "root_diameter_mm" => 2tree.r[root],
-        "resistance_share" => Dict("art" => C.resist.art_share, "cap" => C.resist.cap_share, "ven" => C.resist.ven_share, "tone" => C.resist.tone_share),
+        "resistance_share" => Dict("art" => C.resist.art_share, "cap" => C.resist.cap_share, "ven" => C.resist.ven_share),
+        "so2_sinus" => C.resist.so2_sinus, "mean_activation" => C.resist.mean_act, "ctone" => C.ctone,
+        "diameter_ratio_vs_d0" => binstats(d_um[C.xd .< 1], C.xd[C.xd .< 1], logbins(5, 260, 12)),
         "capillary_transit_s" => Dict("median" => sort(C.tc)[end ÷ 2], "p10" => sort(C.tc)[end ÷ 10], "p90" => sort(C.tc)[9end ÷ 10]),
         "terminal_flow_cv" => (f = C.q[C.terminals] ./ terr; sqrt(sum((f .- sum(f) / length(f)) .^ 2) / length(f)) / (sum(f) / length(f))),
     )
