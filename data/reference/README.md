@@ -160,6 +160,7 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `nickander2019_cmr_myocardial_blood_volume.toml` | Human MBV and MBF at rest and adenosine stress (MBV/MBF gives the mean transit time) | Human, healthy | FT |
 | `yang2024_cmr_myocardial_transit_time.toml` | Human aortic-root-to-coronary-sinus arrival delay on CMR | Human, rest | FT |
 | `chatzantonis2020_cmr_myocardial_transit_time.toml` | The same MyoTT measure in controls | Human, rest | abs |
+| `canty1991_contrast_extraction.toml` | First-pass extraction of nonionic contrast (ioversol) 33 ± 2% at vasodilated flow vs 50 ± 3% at ~half flow; intravascular-emulsion blood volume and appearance times. Flow only as circumflex mL/min (rest 20, vasodilated 123, stenotic 67), no per-gram flow or PS | Dog, closed chest, carbocromen vasodilation, fast CT | mixed (text and Table 1 FT; stenotic appearance times fig) |
 
 ## Caveats that matter for comparisons
 

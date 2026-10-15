@@ -1,0 +1,91 @@
+[meta]
+id = "canty1991_contrast_extraction"
+data_type = "experimental"
+validates = "First-pass myocardial extraction of a nonionic iodinated contrast agent (ioversol) vs an intravascular emulsion (ethiodol) during pharmacological vasodilation, in normally perfused and stenotic (flow ~halved) regions; effect on CT-derived intramyocardial blood volume and mean appearance time"
+species = "dog"
+preparation = "8 mongrel dogs, chronically instrumented (>= 1 week recovery): transit-time ultrasonic flow probe (Transonics) and hydraulic occluder on the proximal circumflex, catheter distal to the occluder for circumflex pressure, left atrial and aortic catheters. Study day: pentobarbital 30 mg/kg IV anesthesia, controlled ventilation, 8F pigtail in the ascending aorta via the left carotid. Picker/Imatron FASTRAC fast CT (electron beam): end-diastolic tomograms at 4 contiguous levels every beat or every other beat for 20 cycles, ~50 ms aperture, ~1.4 x 1.4 mm pixels, 8 mm slices; myocardial curves from level 4 (~3 cm below the ostia), aortic input from level 1."
+conditions = "Maximal vasodilation with carbocromen (chromonar) 7.5 mg/kg IV; then circumflex flow reduced by ~50% with the occluder before scanning. Bolus aortic-root injections: ioversol 320 mgI/mL (n = 7) or iohexol 365 mgI/mL (n = 1), 8-10 mL/s for 2-3 s, followed by ethiodol emulsion (237 mgI/mL, particles < 3 um). Normal region = anterior free wall and septum (non-circumflex, normal coronary pressure); stenotic region = circumflex territory. Full-thickness myocardial ROIs."
+verification = "mixed"
+access = "Publisher PDF (Circulation 84:2071-2078) read from Wayback Machine capture 20180723113357 of http://circ.ahajournals.org/content/circulationaha/84/5/2071.full.pdf, text extracted with pdftotext; Table 1 and the Results flow sentence checked against 200 dpi page renders; Fig. 6 stenotic bars digitized from a 300 dpi render. Abstract also read via PubMed E-utilities (PMID 1657448)."
+notes = """NO PER-GRAM FLOWS: flow was measured only as absolute circumflex volumetric flow (mL/min) by the transit-time probe. No microspheres, no perfused mass, no myocardial flow in mL/min/g.
+The normal (anterior/septal, LAD-supplied) region had no flow measurement at all; it was at normal coronary pressure under full carbocromen vasodilation. The stenotic circumflex region was at ~46 mmHg distal pressure with flow ~half the vasodilated value (still ~3x resting).
+Hematocrit is not reported. No PS or capillary permeability values are reported, and none can be derived without per-gram flow: PS = -F_plasma ln(1 - E) needs F_plasma in mL/min/g.
+The paper's text gives only the extraction ratio between regions (33% vs 50%) and the circumflex flow ratio (~0.5). Any PS estimate needs an assumed circumflex perfused mass and hematocrit; those would be assumptions, not data from this paper.
+Extraction is from residue curves, E = (R_ioversol - R_ethiodol)/(1 - R_ethiodol), with R = fraction of peak CT intensity at the onset of recirculation (method of Guller et al.). The authors note two biases: back-diffusion makes it an underestimate; peak truncation at high flow makes it an overestimate; they judge these small or cancelling.
+Stenosis effect: circumflex flow 67 +/- 12 (ioversol) vs 70 +/- 11 (ethiodol) mL/min in Table 1; the Results text prints 70 +/- 12 for ethiodol. Table value stored.
+Retention/extraction n: one of the 8 dogs could not be analysed (acquisition ended before recirculation), so those values are most likely n = 7; the paper does not restate n.
+CT calibration: CT number = 23 x iodine (mg/mL) + 32 (n = 9 phantom concentrations, r = 0.998), 0-1,000 HU range.
+Blood volume is end-diastolic, ml per 100 ml myocardium (the Discussion also writes ~16 ml/100 g)."""
+use_in_model = """Extraction targets for an iodine exchange model at hyperemic flow: E ~ 0.33 at full vasodilated flow and ~0.50 at half that flow (same dog, same contrast bolus). Use the RATIO between the regions to check the flow dependence of E (E rises as flow falls, as in E = 1 - exp(-PS/F)).
+To get PS you must assume hyperemic myocardial flow (mL/min/g) and hematocrit; this paper does not supply them. Vascular blood volume from the intravascular emulsion (16.4 +/- 2.7 normal vs 12.5 +/- 1.8 ml/100 ml stenotic) is a target for model diastolic blood volume during vasodilation."""
+
+[source]
+authors = ["Canty JM Jr", "Judd RM", "Brody AS", "Klocke FJ"]
+year = 1991
+title = "First-pass entry of nonionic contrast agent into the myocardial extravascular space. Effects on radiographic estimates of transit time and blood volume"
+journal = "Circulation"
+volume = "84"
+issue = "5"
+pages = "2071-2078"
+doi = "10.1161/01.CIR.84.5.2071"
+crossref_verified = "2026-10-15; Crossref title exact match ('First-pass entry of nonionic contrast agent into the myocardial extravascular space. Effects on radiographic estimates of transit time and blood volume.'; vol 84, issue 5, 2071-2078; authors Canty, Judd, Brody, Klocke)"
+pmid = "1657448"
+
+[data.circumflex_flow]
+description = "Absolute circumflex coronary flow (transit-time ultrasonic probe) at rest, after carbocromen vasodilation, and with the occluder inflated during each contrast injection"
+location = "Results first paragraph (p. 2073); Table 1 (p. 2074)"
+provenance = "FT"
+statistic = "mean +/- SEM; n = 7 dogs for circumflex flow (Table 1 footnote)"
+condition = ["rest (before vasodilation)", "carbocromen vasodilation, no stenosis", "vasodilation + stenosis, during ioversol injection", "vasodilation + stenosis, during ethiodol injection"]
+flow_mL_per_min = [20.0, 123.0, 67.0, 70.0]
+flow_sem_mL_per_min = [3.0, 11.0, 12.0, 11.0]
+flow_per_gram_mL_per_min_per_g = [nan, nan, nan, nan]
+missing_note = "Per-gram flow not measured (no microspheres, no perfused mass). Results text gives the ethiodol-injection flow as 70 +/- 12; Table 1 prints 70 +/- 11 (stored). Stenotic/ vasodilated ratio ~0.54-0.57 ('reduced by ~50%'). The normal (non-circumflex) region's flow was not measured."
+
+[data.hemodynamics_during_injections]
+description = "Systemic and circumflex hemodynamics during the paired contrast injections (stenosis applied)"
+location = "Table 1 (p. 2074)"
+provenance = "FT"
+statistic = "mean +/- SEM; circumflex pressure n = 5, circumflex flow n = 7"
+variable = ["heart_rate_bpm", "aortic_pressure_mmHg", "circumflex_pressure_mmHg", "circumflex_flow_mL_per_min"]
+ioversol_mean = [122.0, 102.0, 46.0, 67.0]
+ioversol_sem = [13.0, 6.0, 8.0, 12.0]
+ethiodol_mean = [120.0, 101.0, 47.0, 70.0]
+ethiodol_sem = [14.0, 7.0, 8.0, 11.0]
+missing_note = "Hematocrit and blood gases not reported. Circumflex flow differs between injections (p < 0.05)."
+
+[data.retention_and_extraction]
+description = "Residual CT intensity at the onset of recirculation (% of peak) for each agent, and first-pass extraction of ioversol, in normal and stenotic regions during vasodilation"
+location = "Abstract; Results 'Ioversol Retention and First-Pass Estimates of Extraction' (p. 2074-2075); Figs. 3 and 4"
+provenance = "FT"
+statistic = "mean +/- SEM; most likely n = 7 dogs (1 of 8 not analysable)"
+region = ["normal (anterior wall and septum)", "stenotic (circumflex, flow ~halved)"]
+ethiodol_residual_pct_of_peak = [5.0, 10.0]
+ethiodol_residual_sem_pct = [1.0, 4.0]
+ioversol_residual_pct_of_peak = [36.0, 54.0]
+ioversol_residual_sem_pct = [2.0, 4.0]
+ioversol_first_pass_extraction_pct = [33.0, 50.0]
+ioversol_first_pass_extraction_sem_pct = [2.0, 3.0]
+extraction_formula = "E = (R_ioversol - R_ethiodol) / (1 - R_ethiodol), R = fraction of peak at the onset of recirculation"
+p_values = "ethiodol normal vs stenotic NS; ioversol residual normal vs stenotic p < 0.01; extraction normal vs stenotic p < 0.01"
+missing_note = "No flow in mL/min/g at which E was measured (see circumflex_flow). No PS reported."
+
+[data.blood_volume_and_appearance_time]
+description = "Intramyocardial blood volume (area ratio, gamma-variate fits) and mean myocardial appearance time (first-moment difference) for each agent and region during vasodilation"
+location = "Results 'Effect of Extraction...' (p. 2075); Figs. 5 and 6"
+provenance = "mixed"
+provenance_per_value = "blood volume: FT (all four values in the text); appearance time: normal region FT (text), stenotic region fig (Fig. 6)"
+figure = "Fig. 6"
+digitization_error = "stenotic appearance-time means about +/-0.1 s; SEM bars about +/-0.1 s (300 dpi render; calibration reproduces the text values 1.1 and 1.9 s to within 0.05 s, but the normal ioversol SEM reads ~0.2 vs 0.3 in the text)"
+statistic = "mean +/- SEM"
+region = ["normal", "stenotic"]
+blood_volume_ethiodol_mL_per_100mL = [16.4, 12.5]
+blood_volume_ethiodol_sem_mL_per_100mL = [2.7, 1.8]
+blood_volume_ioversol_mL_per_100mL = [23.1, 14.3]
+blood_volume_ioversol_sem_mL_per_100mL = [3.6, 2.9]
+appearance_time_ethiodol_s = [1.1, 2.8]
+appearance_time_ethiodol_sem_s = [0.2, 0.5]
+appearance_time_ioversol_s = [1.9, 3.9]
+appearance_time_ioversol_sem_s = [0.3, 0.3]
+p_values = "BV ethiodol vs ioversol normal p < 0.001; BV ethiodol normal vs stenotic p < 0.06; BV ioversol normal vs stenotic p < 0.01; appearance time ethiodol vs ioversol normal p < 0.005, stenotic NS"
+missing_note = "Stenotic appearance times are digitized from Fig. 6 (not given in the text). Blood volume is end-diastolic and per 100 ml of myocardium."
