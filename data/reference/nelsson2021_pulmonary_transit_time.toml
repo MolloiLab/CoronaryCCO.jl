@@ -1,0 +1,118 @@
+[meta]
+id = "nelsson2021_pulmonary_transit_time"
+data_type = "experimental"
+validates = "Pulmonary transit time (PTT) of an intravenous contrast bolus and pulmonary blood volume (PBV = CO x PTT) by CMR: PA -> LA centre-of-gravity reference, and RVOT -> basal LV first-pass-perfusion methods (transit beats, peak-to-peak, centre of gravity) that also include the LA volume"
+species = "human"
+preparation = "58 participants (64 +/- 11 y, 24 women): 21 healthy controls and 37 patients referred for clinical CMR (ischemic heart disease, idiopathic HF, HFpEF, transplant, DCM, others); no severe valvular lesions. 1.5 T Siemens MAGNETOM Aera. CO from through-plane phase-contrast flow in the pulmonary trunk. Gadoteric acid 0.5 mmol/mL (Dotarem or Clariscan) at 4 mL/s followed by 20 mL saline in the same arm. Reference CoG(PA-LA): 2 mL bolus, saturation-recovery single-shot bSSFP in a plane through the main PA and LA, temporal resolution 100 ms. FPP: 0.05 mmol/kg bolus, basal short-axis slice through RVOT and LV, 1 image per heartbeat."
+conditions = "Rest (both PTT sequences acquired at rest, at least 2 min apart; 55 of 58 also had adenosine stress perfusion, not used for PTT). Retrospective ECG gating."
+verification = "FT"
+access = "Europe PMC open-access full-text XML (PMC8554972), retrieved 2026-10-15 via the Europe PMC REST API; Tables 1-4 read from the XML."
+notes = """PTT is reported only for all 58 participants pooled (Table 3); Table 2 splits PBV and PBVI by healthy vs patients but gives no group PTT.
+CoG(PA-LA) is the validated reference (flow phantom, Ugander et al.); its PBV excludes the LA volume. The FPP methods measure RVOT -> basal LV and so include the LA volume; subtracting LAVmean (n = 50) removes most of their bias.
+PTB(FPP) PBV = transit beats x RV stroke volume (RVSV 84.5 +/- 16.7 mL from PA flow); peak-peak(FPP) and CoG(FPP) PBV = PTT (s) x CO (mL/s).
+CO by PA flow: 93.4 +/- 22.5 mL/s for all participants (Table 3); 5.5 +/- 1.2 L/min controls and 5.7 +/- 1.4 L/min patients (Table 1; Table 1 does not state which method gave this CO).
+Injection arm (left or right) is not stated.
+Statistic: mean +/- SD throughout; group differences by Mann-Whitney U."""
+use_in_model = """Compare the model's pulmonary transit (main PA -> LA) centre-of-gravity delay with ptt_all.CoG(PA-LA) = 5.7 +/- 1.4 s, and its
+pulmonary blood volume (PA + pulmonary capillaries + pulmonary veins, excluding LA) with 541 +/- 111 mL (healthy 526 +/- 87 mL; 282 +/- 43 mL/m2).
+If the model is sampled RV(outflow) -> LV instead, compare with the FPP rows (about 7.1 s), which include LA volume and the LA/LV mixing delay.
+Note the MRI bolus here is small (2 mL Gd at 4 mL/s) and CO ~ 93 mL/s; scale by the model CO (PBV = CO x PTT)."""
+
+[source]
+authors = ["Nelsson A", "Kanski M", "Engblom H", "Ugander M", "Carlsson M", "Arheden H"]
+year = 2021
+title = "Pulmonary blood volume measured by cardiovascular magnetic resonance: influence of pulmonary transit time methods and left atrial volume"
+journal = "J Cardiovasc Magn Reson"
+volume = "23"
+issue = "1"
+pages = "123"
+doi = "10.1186/s12968-021-00809-1"
+crossref_verified = "2026-10-15; Crossref title exact match ('Pulmonary blood volume measured by cardiovascular magnetic resonance: influence of pulmonary transit time methods and left atrial volume'); vol 23, issue 1, article 123"
+pmid = "34706735"
+pmcid = "PMC8554972"
+
+[data.ptt_all]
+description = "Pulmonary transit time, cardiac output, PBV and PBVI for all participants, by PTT method"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SD; n = 58 participants (LAV-corrected columns n = 50)"
+method = ["CoG(PA-LA)", "PTB(FPP)", "peak-peak(FPP)", "CoG(FPP)"]
+path = ["main PA -> LA (centre of gravity)", "RVOT -> basal LV (peak, counted in beats)", "RVOT -> basal LV (peak to peak)", "RVOT -> basal LV (centre of gravity)"]
+ptt_mean_s = [5.7, nan, 7.1, 7.1]
+ptt_sd_s = [1.4, nan, 1.8, 1.5]
+transit_beats_mean = [nan, 8.0, nan, nan]
+transit_beats_sd = [nan, 2.0, nan, nan]
+cardiac_output_mean_mL_per_s = [93.4, nan, 93.4, 93.4]
+cardiac_output_sd_mL_per_s = [22.5, nan, 22.5, 22.5]
+rvsv_mean_mL = [nan, 84.5, nan, nan]
+rvsv_sd_mL = [nan, 16.7, nan, nan]
+pbv_mean_mL = [541.0, 631.0, 644.0, 651.0]
+pbv_sd_mL = [111.0, 150.0, 151.0, 145.0]
+pbvi_mean_mL_per_m2 = [280.0, 322.0, 330.0, 334.0]
+pbvi_sd_mL_per_m2 = [48.0, 70.0, 70.0, 64.0]
+pbv_minus_lav_mean_mL = [nan, 552.0, 567.0, 573.0]
+pbv_minus_lav_sd_mL = [nan, 140.0, 139.0, 131.0]
+pbvi_minus_lav_mean_mL_per_m2 = [nan, 276.0, 283.0, 286.0]
+pbvi_minus_lav_sd_mL_per_m2 = [nan, 78.0, 78.0, 73.0]
+missing_note = "PTB(FPP) is a beat count, so it has no PTT in seconds; it uses RVSV, not CO. CoG(PA-LA) has no LAV-corrected value because it already excludes the LA. PTT is not reported separately for healthy controls vs patients."
+
+[data.pbv_by_group]
+description = "PBV and PBVI for healthy controls vs patients, by PTT method"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD; controls n = 21, patients n = 37; P by Mann-Whitney U (PBV/PBVI)"
+method = ["CoG(PA-LA)", "PTB(FPP)", "PTB(FPP)-LAVmean", "peak-peak(FPP)", "peak-peak(FPP)-LAVmean", "CoG(FPP)", "CoG(FPP)-LAVmean"]
+pbv_controls_mean_mL = [526.0, 587.0, 522.0, 607.0, 544.0, 615.0, 551.0]
+pbv_controls_sd_mL = [87.0, 110.0, 110.0, 112.0, 107.0, 115.0, 115.0]
+pbv_patients_mean_mL = [549.0, 656.0, 572.0, 668.0, 589.0, 672.0, 590.0]
+pbv_patients_sd_mL = [123.0, 164.0, 155.0, 165.0, 154.0, 159.0, 143.0]
+pbvi_controls_mean_mL_per_m2 = [282.0, 314.0, 280.0, 324.0, 291.0, 329.0, 295.0]
+pbvi_controls_sd_mL_per_m2 = [43.0, 57.0, 58.0, 55.0, 54.0, 56.0, 58.0]
+pbvi_patients_mean_mL_per_m2 = [270.0, 323.0, 282.0, 328.0, 288.0, 330.0, 291.0]
+pbvi_patients_sd_mL_per_m2 = [53.0, 77.0, 75.0, 76.0, 75.0, 70.0, 66.0]
+p_value_pbv = [0.35, 0.046, 0.14, 0.08, 0.17, 0.06, 0.18]
+p_value_pbvi = [0.18, 0.82, 0.87, 0.77, 0.84, 0.96, 0.88]
+missing_note = "The LAV-corrected rows use the 50 participants with LA short-axis cines; the per-group n for those rows is not stated."
+
+[data.cohort]
+description = "Participant characteristics and CMR anatomy, healthy controls vs patients"
+location = "Table 1; Methods"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["healthy_controls", "patients"]
+n = [21, 37]
+n_female = [13, 11]
+n_male = [8, 26]
+age_mean_years = [61.0, 65.0]
+age_sd_years = [8.0, 13.0]
+bsa_mean_m2 = [1.9, 2.0]
+bsa_sd_m2 = [0.2, 0.2]
+lv_edv_mean_mL = [147.0, 191.0]
+lv_edv_sd_mL = [21.0, 49.0]
+lv_esv_mean_mL = [56.0, 97.0]
+lv_esv_sd_mL = [13.0, 44.0]
+lv_sv_mean_mL = [89.0, 94.0]
+lv_sv_sd_mL = [14.0, 19.0]
+lv_ef_mean_pct = [61.0, 51.0]
+lv_ef_sd_pct = [6.0, 11.0]
+cardiac_output_mean_L_per_min = [5.5, 5.7]
+cardiac_output_sd_L_per_min = [1.2, 1.4]
+la_max_volume_mean_mL = [92.0, 116.0]
+la_max_volume_sd_mL = [21.0, 29.0]
+la_min_volume_mean_mL = [43.0, 67.0]
+la_min_volume_sd_mL = [21.0, 27.0]
+la_mean_volume_mean_mL = [68.0, 91.0]
+la_mean_volume_sd_mL = [20.0, 27.0]
+missing_note = "Patient LV volumetry available in 36 of 37 (EF by echocardiography in one). Whole-cohort age 64 +/- 11 y with 24 women (Abstract)."
+
+[data.injection_protocol]
+description = "Contrast injections for the two PTT sequences"
+location = "Methods, Pulmonary transit time and pulmonary blood volume"
+provenance = "FT"
+sequence = ["CoG(PA-LA)", "FPP"]
+contrast_agent = "gadoteric acid 0.5 mmol/mL (Dotarem or Clariscan)"
+contrast_dose = ["2 mL bolus", "0.05 mmol/kg"]
+injection_rate_mL_per_s = [4.0, 4.0]
+saline_flush_mL = [20.0, 20.0]
+temporal_resolution = ["100 ms", "1 image per heartbeat"]
+missing_note = "Injection site (arm, vein) is not stated beyond 'in the same arm'."

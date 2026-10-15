@@ -18,7 +18,7 @@ d["data"]["rca_elements"]["diameter_mean_um"]
 
 - `[meta]` describes the study:
   - `id`: the file stem.
-  - `data_type`: `experimental`, `model` or `morphometry-derived ...`.
+  - `data_type`: `experimental`, `experimental (review summary)`, `model` or `morphometry-derived ...`.
   - `validates`, `species`, `preparation` and `conditions`.
   - `verification`: the overall flag.
   - `access`: how the text was actually read.
@@ -95,6 +95,34 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 |---|---|---|---|
 | `gibson1996_timi_frame_count.toml` | TIMI frame count per artery in normal flow (LAD 36.2 ± 2.6, RCA 20.4 ± 3.0, LCx 22.2 ± 4.1 frames at 30 fps), CTFC and the 1.7 LAD correction, landmarks | Human, normal arteries | FT (full text via Web Archive) |
 | `abaci1999_tfc_confounders.toml` | Sensitivity of frame count to injection rate, catheter size, nitrate, heart rate and phase | Human | FT |
+
+### Contrast transit (whole-body bolus, CT and MRI)
+
+| File | What it validates | Species / conditions | Status |
+|---|---|---|---|
+| `leiknes2023_test_bolus_ccta.toml` | Ascending-aorta test-bolus time to peak (18.3 ± 2.6 s) and peak (194 ± 62 HU), main-scan aortic HU, contrast and saline volumes, MRI cardiac output (5.05 ± 1.13 L/min); Table S1 injection protocol (6 mL/s; test bolus 20 mL + 40 mL saline, 12-s delay, 2-s sampling); one digitized test-bolus curve | Human, 40 CCTA patients, iohexol 350, 100 kV; injection arm not stated | FT (Table 1, Table S1; Fig. S1 fig) |
+| `borges2022_bolus_arrival_times.toml` | Arrival times (+50 HU) arm → SVC → pulmonary trunk → ascending aorta; PT→AA vs cardiac index | Human, n = 43; right antecubital, 4 mL/s, 1.5 mL/kg of 350 mgI/mL + 30 mL saline | FT |
+| `nelsson2021_pulmonary_transit_time.toml` | Pulmonary transit time and pulmonary blood volume (PA→LA and RV→LV methods) | Human, CMR, n = 58 (21 healthy), rest | FT |
+| `pelgrim2017_ctp_timing.toml` | Delay from aortic peak to non-ischemic myocardial peak; ischemia contrast window | Human, adenosine dynamic CTP | abs |
+| `lee2022_dynamic_ctp.toml` | Dynamic CTP injection protocol and timing; stress myocardial HU (non-ischemic vs ischemic); CT MBF | Human, adenosine, 50 mL iohexol 350 at 5 mL/s + 30 mL saline, 100 kVp | FT |
+
+### Flow regulation, autoregulation and oxygen use
+
+| File | What it validates | Species / conditions | Status |
+|---|---|---|---|
+| `smith1993_coronary_autoregulation.toml` | Circumflex pressure–flow autoregulation: lower break point (45 ± 3 mmHg; 61 ± 2 after L-NAME), closed-loop gain (0.84 ± 0.09; 0.78 ± 0.07), slope below the break point, reactive hyperemia | Dog, conscious, paced | FT |
+| `gould1974_critical_stenosis.toml` | Resting flow held to 85–90% diameter stenosis; hyperemic flow falls from about 50% | Reproduced figure caption (species not verified) | secondary |
+| `kanatsuka1989_adenosine_microvessels.toml` | Size range of arterial microvessel dilation: pacing 40–380 µm (inverse to size) vs adenosine/dipyridamole < 150 µm only | Dog, beating heart, matched perfusion | FT |
+| `mccommis2010_myocardial_oxygenation.toml` | Global OEF, MBF, MBV and MVO2 at rest and adenosine hyperemia | Human, healthy, CMR | FT |
+| `bassingthwaighte2001_metabolic_heterogeneity.toml` | Flow heterogeneity summary, temporal stability of regional flow, regional O2 use rising with regional flow | Review of baboon, sheep, dog, rabbit and human data | FT (review summary) |
+
+### Vessel-wall and regulation model parameters (model input, not data)
+
+| File | What it provides | Species / conditions | Status |
+|---|---|---|---|
+| `fry2013_vessel_wall_parameters.toml` | Passive, active, myogenic, shear and conducted-metabolic parameters as functions of passive diameter D0; reference-state boundary conditions | Hamster cremaster network model | FT (Table 1) |
+| `carlson2008_autoregulation_model.toml` | Large- and small-arteriole wall and tone parameters; control state (activation 0.5, M0 8.28); predicted flow-increase factors | Generic arteriole model | FT |
+| `zhao2021_regulation_parameters.toml` | Collateral and arteriole wall parameters; ATP release and conducted-response constants; O2 transport and remodeling constants; autoregulation ratios | Rat hindlimb model (author manuscript) | FT |
 
 ### Flow heterogeneity
 

@@ -1,0 +1,90 @@
+[meta]
+id = "zhao2021_regulation_parameters"
+data_type = "model"
+validates = "Model input, not data: per-compartment vessel-wall mechanics parameters (collateral, large arteriole, small arteriole), RBC ATP-release and conducted-response parameters, O2-transport constants, and chronic remodeling/angiogenesis constants; model-predicted autoregulation ratios before and after a major arterial occlusion"
+species = "rat (hindlimb model)"
+preparation = "Theoretical compartmental (electrical-circuit) model of the rat hindlimb: central iliac artery, external+femoral artery branch, internal iliac branch, one collateral artery (COL), calf microcirculation of LA, SA, C, SV, LV compartments. Acute regulation by myogenic (wall tension), shear and conducted metabolic (RBC ATP release, upstream conducted signal) responses in COL, LA and SA; chronic arteriogenesis (passive diameter growth) and angiogenesis (capillary number growth). Krogh-cylinder O2 transport."
+conditions = "Control state: M0 = 8.28 cm3 O2/100 cm3/min (moderate activity), no occlusion, aortic inflow pressure 140 mmHg, venous pressure 0. Occlusion: external/femoral artery diameter set to zero."
+verification = "FT"
+access = "NIH author manuscript NIHMS1756593 (PMC9128362) full-text XML via NCBI E-utilities efetch (db=pmc), read 2026-10-15. Europe PMC fullTextXML endpoint returned an error for this record. Tables read from the XML table markup; displayed equations are MathML in the XML."
+notes = """Author manuscript, not the typeset version; numbers could differ from the final Microcirculation article if changed at proof.
+Table 2 shading (acute-model parameters taken from Zhao et al. 2021 ref [10] vs new chronic parameters) is not preserved in the XML; the split below follows the text:
+c0, HD, M0, HT, kd, Cback, S(0), C(0), R0, R1, L0 and the SCR geometry come from ref [10]; k0, beta, eta_i, kN, Nmax, Scrit are new.
+Eq. 11: ATP release rate R(S) = R0*(1 - R1*S). Eq. 10 degradation term kd*pi*D*(C - Cback).
+The conducted signal decays upstream with length constant L0 = 1 cm; it splits 0.5/0.5 between COL and the EF branch at xbif.
+k0 and kN are printed with unit 's' in Table 2 although they enter Eqs. 12 and 14 as rates; kept as printed.
+Nmax = 2.9e6 is stated in the text as 1.7x the control capillary number nc = 1.7e6 (a ~70% capillary-density increase after ligation).
+Scrit = 0.33 corresponds to PO2 = 20 mmHg (text).
+In Table 1, the LA values of Cact, C'act, C''act and Cmyo equal Carlson et al. 2008 Table 1 large-arteriole values; Cpass, D0 and C''tone differ."""
+use_in_model = """Use Table 1 per-compartment values as an alternative parameter set for actively regulated arterioles (D0 = 60.6 um SA, 140 um LA, 266 um collateral),
+and Table 2 values (R0, R1, kd, Cback, L0, Cmeta = 30) for an ATP-based conducted metabolic signal. The autoregulation ratios (flow at Pa+100 mmHg / flow at Pa)
+are model predictions for rat calf, useful only as a sanity check that a tone-regulated model gives a ratio near 1.25 over a 100 mmHg step."""
+
+[source]
+authors = ["Zhao E", "Barber J", "Sen CK", "Arciero J"]
+year = 2021
+title = "Modeling acute and chronic vascular responses to a major arterial occlusion"
+journal = "Microcirculation"
+volume = "29"
+issue = "1"
+pages = "e12738"
+doi = "10.1111/micc.12738"
+crossref_verified = "2026-10-15; Crossref title exact match ('Modeling acute and chronic vascular responses to a major arterial occlusion'; Microcirculation vol 29 issue 1, article e12738; published online 2021-11-26; authors Zhao, Barber, Sen, Arciero)"
+pmid = "34779082"
+pmcid = "PMC9128362"
+
+[data.wall_mechanics_by_compartment]
+description = "Vessel wall mechanics parameters per vasoactive compartment"
+location = "Table 1 ('Parameter values for vessel wall mechanics model')"
+provenance = "FT"
+statistic = "model parameter (no uncertainty)"
+compartment = ["COL", "LA", "SA"]
+compartment_note = "COL = collateral artery; LA = large arterioles; SA = small arterioles (calf)"
+C_pass_dyn_per_cm = [1773.1, 933.1, 403.8]
+C_pass_prime = [8.293, 8.293, 10.88]
+C_act_dyn_per_cm = [2075.19, 1596.3, 564.7]
+C_act_prime = [0.7484, 0.6804, 0.7373]
+C_act_double_prime = [0.2905, 0.2905, 0.3665]
+C_myo_cm_per_dyn = [0.0101, 0.0101, 0.0226]
+C_shear_cm2_per_dyn = [0.0258, 0.0258, 0.0258]
+C_meta_per_uM_per_cm = [30.0, 30.0, 30.0]
+D0_um = [266.03, 140.00, 60.59]
+C_tone_double_prime = [4.783, 13.31, 19.39]
+missing_note = "C''tone is set by the control-state condition A = 0.99 (COL) and A = 0.5 (LA, SA); values are as printed."
+
+[data.transport_and_chronic_parameters]
+description = "O2 transport, ATP release, conducted response, time constants, and chronic adaptation parameters"
+location = "Table 2 ('Parameter values for oxygen transport, ATP release, conducted response, and differential equations')"
+provenance = "FT"
+statistic = "model parameter; ranges given as value_min/value_max"
+parameter = ["c0", "HD", "M0", "HT", "kd", "Cback", "S0", "C0_ATP", "R0", "R1", "L0", "x_end", "x_bif", "x_COL", "x_LA", "x_SA", "tau_d", "tau_a", "k0", "beta", "eta_COL", "eta_LA", "eta_SA", "kN", "Nmax", "Scrit"]
+description_printed = ["Oxygen capacity of RBCs", "Discharge hematocrit", "Oxygen demand", "Tube hematocrit", "Rate of ATP degradation", "Background level of ATP", "Initial saturation", "Initial ATP concentration", "Maximal rate of ATP release", "Effect of Sx on ATP release", "Length constant for SCR", "Endpoint for SCR", "Bifurcation point for SCR", "COL midpoint", "LA midpoint", "SA midpoint", "Time constant for acute diameter", "Time constant for activation", "Time constant for chronic diameter", "Growth rate of passive diameter", "COL D0,chronic growth constant", "LA D0,chronic growth constant", "SA D0,chronic growth constant", "Rate of angiogenesis", "Maximum number of capillaries", "Critical oxygen saturation"]
+value_min = [0.5, 0.4, 1.0, 0.3, 2.0e-4, 0.5, 0.97, 0.5, 1.234, 1.026, 1.0, 6.016, 2.0, 1.0, 2.571, 3.542, 1.0, 60.0, 2.2e-6, 1.3, 42.31, 19.94, 6.498, 9.0e-6, 2.9e6, 0.33]
+value_max = [0.5, 0.4, 20.0, 0.3, 2.0e-4, 0.5, 0.97, 0.5, 1.234, 1.026, 1.0, 6.016, 2.0, 1.0, 2.571, 3.542, 1.0, 60.0, 2.2e-6, 1.3, 42.31, 19.94, 6.498, 9.0e-6, 2.9e6, 0.33]
+unit_as_printed = ["cm3 O2/cm3", "dimensionless", "cm3 O2/100 cm3/min", "dimensionless", "cm/s", "uM", "dimensionless", "uM", "nmol/cm3/s", "dimensionless", "cm", "cm", "cm", "cm", "cm", "cm", "s", "s", "s", "dimensionless", "um", "um", "um", "s", "capillaries", "dimensionless"]
+source_model = ["acute", "acute", "acute", "acute", "acute", "acute", "acute", "acute", "acute", "acute", "acute", "acute", "acute", "acute", "acute", "acute", "acute", "acute", "chronic", "chronic", "chronic", "chronic", "chronic", "chronic", "chronic", "chronic"]
+missing_note = "Units of k0 and kN printed as 's' (they act as rates in Eqs. 12 and 14). source_model split inferred from the text (shading lost in XML). M0 range 1-20 is the simulated range; the control value is 8.28."
+
+[data.control_state]
+description = "Control (reference) state assumptions"
+location = "Section 2.2 'Control state and model simulations'"
+provenance = "FT"
+statistic = "model setting"
+quantity = ["M0_control", "krogh_cylinder_width", "aortic_inflow_pressure_Pa", "venous_pressure_Pv", "P1_over_Pa", "Pdistal_over_Pa", "P2_over_Pa", "P3_pct_of_femoral_pressure", "P4_pct_of_femoral_pressure", "D_CIA", "D_IIA", "D_EF", "D_capillary", "activation_LA_SA", "activation_COL", "wall_shear_LA_SA_C", "wall_shear_SV_LV", "wall_shear_COL_control", "capillary_number_calf_nc", "capillary_density_N", "length_CIA", "length_COL", "SCR_length_constant"]
+value = [8.28, 17.5, 140.0, 0.0, 0.96, 0.90, 0.93, 75.0, 28.0, 1109.0, 511.0, 550.0, 8.0, 0.5, 0.99, 55.0, 10.0, 9.87, 1.7e6, 500.0, 7.0, 2.0, 1.0]
+unit = ["cm3 O2/100 cm3/min", "um", "mmHg", "mmHg", "fraction", "fraction", "fraction", "%", "%", "um", "um", "um", "um", "dimensionless", "dimensionless", "dyn/cm2", "dyn/cm2", "dyn/cm2", "count", "1/mm2", "cm", "cm", "cm"]
+missing_note = "Full list of control-state values is deferred to Zhao et al. (ref [10]) and not reproduced in this paper."
+
+[data.autoregulation_ratios]
+description = "Model-predicted total calf blood flow at two arterial pressures 100 mmHg apart, and their ratio Q2/Q1"
+location = "Table 3; Results text (Fig. 5A)"
+provenance = "FT"
+statistic = "model output"
+case = ["non_occluded", "occluded_acute_low", "occluded_acute_plateau", "occluded_full_low", "occluded_full_plateau"]
+Pa1_mmHg = [50.0, 50.0, 220.0, 50.0, 155.0]
+Q1_mL_per_min = [3.587, 0.373, 3.602, 0.5916, 3.532]
+Pa2_mmHg = [150.0, 150.0, 320.0, 150.0, 255.0]
+Q2_mL_per_min = [4.468, 2.133, 4.504, 3.443, 4.543]
+ratio_Q2_over_Q1 = [1.2456, 5.7185, 1.2504, 5.8198, 1.2862]
+plateau_range_note = "Text: non-occluded plateau about 50-200 mmHg; occluded acute-only 220-270 mmHg; occluded with chronic responses 155-205 mmHg."
+missing_note = ""

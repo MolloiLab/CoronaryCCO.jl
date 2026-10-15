@@ -1,0 +1,81 @@
+[meta]
+id = "kanatsuka1989_adenosine_microvessels"
+data_type = "experimental"
+validates = "Which arterial microvessel sizes dilate for a metabolic stimulus (rapid pacing doubling MVO2) vs adenosine or dipyridamole at matched myocardial perfusion: size range of dilation (40-380 um with pacing; < 150 um only with adenosine/dipyridamole), inverse relation of % dilation to control diameter; hemodynamics, perfusion and MVO2 per group"
+species = "dog"
+preparation = "40 small mongrel dogs (3-10 kg), ketamine 20 mg/kg + isopromazine 0.2 mg/kg IM, alpha-chloralose 50 mg/kg + sodium borate 50 mg/kg IV; open chest, high-frequency jet ventilation, sinus node suppressed with formaldehyde and atrioventricular sequential pacing (AV interval 50 ms), aortic snare for pressure control. Anterior LV free wall partially restrained with 4-5 22-gauge needles. Subepicardial arterial microvessels imaged at end diastole by stroboscopic epi-illumination intravital microscopy (Leitz x6 and x10 objectives; resolution 8 and 5 um); arterial vs venous identified with FITC-dextran. Perfusion by 15-um radioactive microspheres; MVO2 from arterial and coronary sinus O2 saturation, hemoglobin and perfusion."
+conditions = "Group 1 (n = 15): control vs rapid pacing 300 bpm. Group 2 (n = 15): control vs IV adenosine (0.1-0.4 mg/kg/min tested; mean dose 0.21 +/- 0.03 mg/kg/min). Group 3 (n = 10): control vs IV dipyridamole bolus (0.2-0.3 mg/kg; mean 0.23 +/- 0.02 mg/kg), doses chosen to match the pacing-induced perfusion increase. Large-dose arms: adenosine 1.1 mg/kg/min (n = 6) and dipyridamole 1.0 mg/kg (n = 5), giving 5- to 7-fold perfusion increases. Mean aortic pressure held within 10 mmHg of control. Measurements 5-15 min after each intervention."
+verification = "FT"
+access = "Publisher PDF (Circ Res 65:1296-1305) read from Wayback Machine capture 20220710031222 of https://www.ahajournals.org/doi/pdf/10.1161/01.RES.65.5.1296?download=true, text extracted with pdftotext; Table 1 checked against a 200 dpi page render (p. 1299). Abstract also read via PubMed E-utilities (PMID 2805245)."
+notes = """All values mean +/- SEM.
+Main findings (FT, Abstract, Results and Discussion):
+(1) Rapid pacing (MVO2 about doubled) dilated nearly all arterial microvessels over 40-380 um; dilation was heterogeneous and inversely related to control diameter (smaller vessels dilated more), and vessels > 150 um still dilated significantly. Hindrance fell in all observed vessels.
+(2) Adenosine and dipyridamole at doses matching the pacing flow increase did not change MVO2 and dilated only arterial microvessels < 150 um; vessels > 150 um showed no significant diameter change. Hindrance changes were restricted to vessels < 150 um.
+(3) Even large doses (adenosine 1.1 mg/kg/min, dipyridamole 1.0 mg/kg; 5-7-fold perfusion) dilated only vessels < 150 um.
+The authors note that the absence of dilation in vessels > 150 um does not prove that their tone did not fall, because their distending pressure probably fell with the higher flow.
+Cyclic diameter change (end diastole vs midsystole) was -1.1 +/- 0.9% (n = 13) at HR < 150 bpm and 0.1 +/- 0.7% (n = 13) at 270-300 bpm in Results; the Discussion prints 1.1 +/- 0.9% and 0.1 +/- 0.6%.
+Hindrance change (%) = (1/rx^4 - 1/rc^4)/(1/rc^4) x 100 as described in Methods (rc control, rx intervention radius).
+Per-vessel % diameter changes (Figs 4, 6, 7, 8) and small/large class means (Figs 5, 9) are given only as figures and are not digitized here.
+Regional perfusion and CVR in the restrained vs non-restrained wall (Table 2) are not transcribed."""
+use_in_model = """Qualitative check for a size-dependent regulation model: a metabolic signal should dilate arterial segments across ~40-380 um with larger % dilation in smaller vessels, while an adenosine-like vasodilator acting at matched flow should dilate only segments < 150 um. Use group_hemodynamics to set the matched perfusion levels (roughly 1.6- to 1.9-fold rest) and MVO2 (pacing ~2.2-fold, adenosine/dipyridamole unchanged)."""
+
+[source]
+authors = ["Kanatsuka H", "Lamping KG", "Eastham CL", "Dellsperger KC", "Marcus ML"]
+year = 1989
+title = "Comparison of the effects of increased myocardial oxygen consumption and adenosine on the coronary microvascular resistance"
+journal = "Circ Res"
+volume = "65"
+issue = "5"
+pages = "1296-1305"
+doi = "10.1161/01.RES.65.5.1296"
+crossref_verified = "2026-10-15; Crossref title exact match ('Comparison of the effects of increased myocardial oxygen consumption and adenosine on the coronary microvascular resistance.'; vol 65, issue 5, 1296-1305; authors Kanatsuka, Lamping, Eastham, Dellsperger, Marcus)"
+pmid = "2805245"
+
+[data.dilation_size_ranges]
+description = "Arterial microvessel size ranges that dilated with each stimulus at matched myocardial perfusion"
+location = "Abstract; Results; Discussion (first paragraph)"
+provenance = "FT"
+statistic = "range of control diameters observed / size threshold stated by the authors"
+stimulus = ["rapid pacing 300 bpm", "adenosine IV", "dipyridamole IV", "adenosine 1.1 mg/kg/min", "dipyridamole 1.0 mg/kg"]
+dilated_min_diameter_um = [40.0, nan, nan, nan, nan]
+dilated_max_diameter_um = [380.0, 150.0, 150.0, 150.0, 150.0]
+upper_limit_is_threshold = [false, true, true, true, true]
+inverse_size_relation = ["stated (Abstract, Discussion)", "not stated in text (described as heterogeneous)", "not stated in text (described as heterogeneous)", "not stated in text (described as heterogeneous)", "not stated in text (described as heterogeneous)"]
+n_dogs = [15, 15, 10, 6, 5]
+finding = "Pacing dilated vessels over the whole observed range (40-380 um), more in smaller vessels; adenosine and dipyridamole (matched or large doses) dilated only arterial microvessels smaller than 150 um."
+missing_note = "For adenosine and dipyridamole the paper states only the upper threshold (< 150 um); the smallest vessel observed is not stated in the text, stored as nan. 'Heterogeneous' dilation for adenosine/dipyridamole is stated; any size dependence within the < 150 um class is shown only in Figs 6-8 (not digitized). n for the large-dose dipyridamole arm is from Methods (1.0 mg/kg, n = 5); Fig 9 shows n = 7 and 10 per vessel class (vessels, not dogs)."
+
+[data.group_hemodynamics]
+description = "Blood gases, hemoglobin, hemodynamics, myocardial perfusion and MVO2 per group, control vs intervention"
+location = "Table 1 (p. 1299)"
+provenance = "FT"
+statistic = "mean +/- SEM; n = dogs"
+group = ["group1_control", "group1_rapid_pacing", "group2_control", "group2_adenosine", "group3_control", "group3_dipyridamole"]
+n_dogs = [15, 15, 15, 15, 10, 10]
+heart_rate_bpm = [130.0, 300.0, 127.0, 127.0, 136.0, 136.0]
+heart_rate_se_bpm = [4.0, nan, 2.0, 2.0, 3.0, 3.0]
+systolic_pressure_mmHg = [114.0, 110.0, 111.0, 117.0, 103.0, 104.0]
+systolic_pressure_se_mmHg = [4.0, 4.0, 5.0, 5.0, 5.0, 5.0]
+diastolic_pressure_mmHg = [82.0, 88.0, 87.0, 85.0, 80.0, 81.0]
+diastolic_pressure_se_mmHg = [4.0, 4.0, 5.0, 4.0, 4.0, 4.0]
+mean_pressure_mmHg = [97.0, 97.0, 98.0, 99.0, 91.0, 93.0]
+mean_pressure_se_mmHg = [3.0, 4.0, 5.0, 5.0, 4.0, 4.0]
+myocardial_perfusion_ml_per_100g_per_min = [93.0, 176.0, 106.0, 169.0, 124.0, 194.0]
+myocardial_perfusion_se_ml_per_100g_per_min = [8.0, 11.0, 10.0, 20.0, 12.0, 13.0]
+endo_epi_ratio = [1.32, 1.31, 1.32, 1.25, 1.24, 1.13]
+endo_epi_ratio_se = [0.06, 0.05, 0.08, 0.08, 0.09, 0.07]
+arterial_o2_saturation_pct = [93.2, 92.7, 92.5, 92.7, 91.2, 94.2]
+arterial_o2_saturation_se_pct = [0.7, 0.08, 1.0, 1.0, 1.4, 1.1]
+coronary_sinus_o2_saturation_pct = [38.4, 31.3, 36.5, 50.9, 34.0, 48.6]
+coronary_sinus_o2_saturation_se_pct = [2.2, 1.7, 2.5, 3.1, 1.3, 2.6]
+mvo2_ml_per_100g_per_min = [8.6, 18.6, 8.8, 9.6, 10.5, 11.3]
+mvo2_se_ml_per_100g_per_min = [0.8, 0.9, 0.8, 1.0, 1.4, 1.8]
+pH = [7.36, 7.36, 7.38, 7.38, 7.31, 7.31]
+pH_se = [0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+po2_mmHg = [92.0, 92.0, 99.0, 99.0, 97.0, 97.0]
+po2_se_mmHg = [3.0, 3.0, 3.0, 3.0, 3.0, 3.0]
+pco2_mmHg = [31.0, 31.0, 32.0, 32.0, 36.0, 36.0]
+pco2_se_mmHg = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+hemoglobin_g_per_dl = [12.9, 12.9, 12.2, 12.2, 10.8, 10.8]
+hemoglobin_se_g_per_dl = [0.6, 0.6, 0.9, 0.9, 0.7, 0.7]
+missing_note = "Pacing HR is fixed at 300 (no SEM). Blood gases and hemoglobin are printed once per group (spanning both columns) and are repeated here for both columns. Group 1 rapid-pacing arterial saturation SEM is printed as 0.08 (kept as printed). Significance: perfusion P < 0.01 vs control in all groups; CS saturation P < 0.025 (pacing) and P < 0.01 (adenosine, dipyridamole) vs control; MVO2 P < 0.025 vs control for pacing only; group 3 hemoglobin P < 0.01 vs group 1."

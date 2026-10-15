@@ -1,0 +1,77 @@
+[meta]
+id = "pelgrim2017_ctp_timing"
+data_type = "experimental"
+validates = "Timing of myocardial vs aortic enhancement in adenosine-stress dynamic CT myocardial perfusion: delay from ascending- and descending-aorta peak to peak non-ischemic myocardial enhancement; duration of the ischemic vs non-ischemic contrast window; delays from aortic HU thresholds (150, 250 HU) to a 15 HU ischemic/non-ischemic difference"
+species = "human"
+preparation = "25 patients (59 +/- 8.4 y, 14 male) undergoing adenosine-stress dynamic CT myocardial perfusion on a second-generation dual-source CT in shuttle mode (30 s at 100 kV and 300 mAs). Stress perfusion MRI as reference for ischemic vs non-ischemic segments (ischemia in 10 patients, 56.3 +/- 9.0 y, 8 male). LV wall segmented manually (AHA 16-segment model); HU monitored over time in myocardial segments, ascending aorta (AA) and descending aorta (AD)."
+conditions = "Adenosine stress. Contrast agent, volume, rate and injection site are not given in the abstract."
+verification = "abs"
+access = "Abstract only (Europe PMC / PubMed record, PMID 28027752, retrieved 2026-10-15). Full text (Elsevier) not accessible; no PMC copy."
+notes = """The abstract gives delays as a value with a bracketed range, e.g. 2.8 s [2.2-4.3]; it does not say whether the bracket is an IQR or a range,
+nor whether the central value is a median. They are recorded as printed with statistic = 'central value [bracketed interval], type not stated'.
+The 8.6 +/- 3.8 s window is printed as mean +/- (presumably SD).
+The AA-peak -> myocardium delay (2.8 s) and AD-peak -> myocardium delay (0.0 s) imply that the AD peaks after the AA, but the AA -> AD peak delay itself is NOT reported and is not stored here.
+Shuttle-mode sampling interval (two table positions) is not given in the abstract; the delays are quantized by it (several values are multiples of about 2.2-2.8 s)."""
+use_in_model = """In a simulated adenosine-stress dynamic CTP (100 kV), the non-ischemic myocardial time-attenuation curve should peak about 2.8 s after the ascending-aorta
+peak and at roughly the same time as the descending-aorta peak (0.0 s [0.0-2.8]). The ischemic/non-ischemic contrast (>= 15 HU difference) should last
+about 8.6 +/- 3.8 s. Use the threshold delays to place a single static frame after aortic bolus-tracking triggers."""
+
+[source]
+authors = ["Pelgrim GJ", "Nieuwenhuis ER", "Duguay TM", "van der Geest RJ", "Varga-Szemes A", "Slump CH", "Fuller SR", "Oudkerk M", "Schoepf UJ", "Vliegenthart R"]
+year = 2017
+title = "Optimal timing of image acquisition for arterial first pass CT myocardial perfusion imaging"
+journal = "Eur J Radiol"
+volume = "86"
+issue = ""
+pages = "227-233"
+doi = "10.1016/j.ejrad.2016.11.024"
+crossref_verified = "2026-10-15; Crossref title exact match ('Optimal timing of image acquisition for arterial first pass CT myocardial perfusion imaging'); vol 86, pages 227-233; no issue number in Crossref"
+pmid = "28027752"
+
+[data.peak_delays]
+description = "Delay from the maximum HU in the aorta to the maximum HU in non-ischemic myocardial segments"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "central value [bracketed interval], type not stated (likely median [IQR]); n = 25 patients"
+reference_vessel = ["ascending_aorta", "descending_aorta"]
+delay_to_nonischemic_myocardial_peak_s = [2.8, 0.0]
+delay_interval_low_s = [2.2, 0.0]
+delay_interval_high_s = [4.3, 2.8]
+missing_note = "Ischemic-segment peak delays, absolute peak times from injection, and peak HU values are not in the abstract."
+
+[data.discrimination_window]
+description = "Duration of the time window in which ischemic and non-ischemic myocardium differ by >= 15 HU"
+location = "Abstract (Results, Conclusion)"
+provenance = "abs"
+statistic = "mean +/- SD (as printed, '8.6 +/- 3.8 s')"
+window_mean_s = 8.6
+window_sd_s = 3.8
+difference_threshold_HU = 15.0
+missing_note = "n behind this value (patients or segments) is not stated in the abstract; ischemia was present in 10 of 25 patients."
+
+[data.trigger_delays]
+description = "Delay from an aortic HU threshold being reached to the first 15 HU ischemic/non-ischemic difference"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "central value [bracketed interval], type not stated"
+trigger_vessel = ["ascending_aorta", "ascending_aorta", "descending_aorta", "descending_aorta"]
+threshold_HU = [150.0, 250.0, 150.0, 250.0]
+delay_s = [4.5, 2.2, 2.4, 0.0]
+delay_interval_low_s = [2.2, 0.0, 0.0, -2.2]
+delay_interval_high_s = [5.6, 2.8, 4.8, 2.6]
+missing_note = "Printed as 4.5 s [2.2-5.6], 2.2 s [0-2.8], 2.4 s [0.0-4.8] and 0.0 s [-2.2-2.6]."
+
+[data.cohort]
+description = "Study population and scan protocol"
+location = "Abstract (Methods, Results)"
+provenance = "abs"
+statistic = "mean +/- SD"
+group = ["all", "ischemic_by_mri"]
+n = [25, 10]
+n_male = [14, 8]
+age_mean_years = [59.0, 56.3]
+age_sd_years = [8.4, 9.0]
+scan_duration_s = 30.0
+tube_voltage_kV = 100.0
+tube_current_time_mAs = 300.0
+missing_note = "Contrast protocol, heart rate, adenosine dose and shuttle-mode sampling interval are not in the abstract."

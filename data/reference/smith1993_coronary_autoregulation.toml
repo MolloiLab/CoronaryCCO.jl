@@ -1,0 +1,92 @@
+[meta]
+id = "smith1993_coronary_autoregulation"
+data_type = "experimental"
+validates = "Steady-state coronary pressure-flow autoregulation in the circumflex bed: closed-loop autoregulatory gain over the plateau, lower autoregulatory break point, pressure-flow slope below the break point, with and without nitric oxide synthesis (L-NAME); reactive hyperemia and pacing-induced metabolic flow recruitment"
+species = "dog"
+preparation = "19 chronically instrumented mongrel dogs (28 +/- 1 kg, mean +/- SEM), studied conscious at least 10 days after thoracotomy. Proximal left circumflex: transit-time ultrasonic flow probe, hydraulic occluder and distal coronary catheter (distal coronary pressure). LV micromanometer, left atrial and aortic catheters, RV outflow pacing leads. Superficial epicardial anastomoses (LAD-LCx, distal RCA-LCx) ligated to limit unmeasured collateral flow. Group 1 (n = 10): intracoronary acetylcholine and steady-state autoregulation; detailed autoregulatory relations analyzed in 8 (2 excluded because peripheral coronary pressure during total occlusion exceeded 20 mmHg). Group 2 (n = 9): 30-s occlusion reactive hyperemia and pacing to ~200 bpm."
+conditions = "Conscious, sedated with Innovar-Vet (1-3 mL IM), lying on the right side (group 1) or standing in a sling (group 2). Heart rate held constant by ventricular pacing at the spontaneous rate. Distal circumflex pressure lowered with the occluder in 5-10 mmHg steps over the plateau and smaller steps below the break point; at least 1 min to equilibrate per step; data are 15-s averages (>= 15 beats). Control, then L-NAME 10 mg/kg IV (measurements repeated 30 min after L-NAME, 60 min after restoring pressure). Hematocrit 36 +/- 1%."
+verification = "FT"
+access = "Publisher PDF (scanned, Circ Res 73:232-240) read from Wayback Machine capture 20170706083036 of http://circres.ahajournals.org/content/circresaha/73/2/232.full.pdf, text extracted with pdftotext; Tables 1-2 and the autoregulation paragraph checked against 150 dpi page renders (pp. 235-236). Abstract also read via PubMed E-utilities (PMID 8330372)."
+notes = """All values mean +/- SEM. Flows are absolute circumflex flows in mL/min (the perfused mass was not reported), so convert to per-gram only with an assumed bed mass.
+Closed-loop autoregulatory gain = 1 - (dF/dP)(Pi/Fi), where dF/dP is the slope of the plateau regression, Pi the resting coronary pressure and Fi the resting flow (Fig 1 legend and Methods).
+Plateau regressions used points above 50 mmHg (control) and above 70 mmHg (L-NAME). The ischemic relation used points with flow reduced by at least 20% below the plateau mean. The lower break point is the intersection of the plateau and ischemic regression lines.
+From resting pressure down to the break point, flow fell by 8 +/- 4% (control) and 9 +/- 2% (L-NAME), P = NS.
+Fig 3 (group pressure-flow points) is not digitized here.
+Acetylcholine response: the abstract and Results text give a 31% maximum after L-NAME; the Fig 2 legend says 32%. Both are kept in notes; the table stores 31 +/- 10 from the abstract.
+The zero pressure reference was the dorsal spine (group 1, right lateral decubitus) or mid-chest (group 2, standing)."""
+use_in_model = """Target for an autoregulating coronary model under resting tone: as inlet (distal coronary) pressure is lowered from ~90 mmHg, flow should stay within about 10% of resting until ~45 mmHg (control) and then fall roughly linearly with slope ~1.0 mL/min/mmHg in this circumflex bed. Closed-loop gain over the plateau should be ~0.8. Loss of the NO / flow-dependent (shear) component shifts the break point up to ~61 mmHg and lowers the sub-break-point slope to ~0.58 mL/min/mmHg without changing the plateau gain; use this to test a shear-dependent tone term."""
+
+[source]
+authors = ["Smith TP Jr", "Canty JM Jr"]
+year = 1993
+title = "Modulation of coronary autoregulatory responses by nitric oxide. Evidence for flow-dependent resistance adjustments in conscious dogs"
+journal = "Circ Res"
+volume = "73"
+issue = "2"
+pages = "232-240"
+doi = "10.1161/01.RES.73.2.232"
+crossref_verified = "2026-10-15; Crossref title exact match ('Modulation of coronary autoregulatory responses by nitric oxide. Evidence for flow-dependent resistance adjustments in conscious dogs.'; vol 73, issue 2, 232-240; authors Smith, Canty)"
+pmid = "8330372"
+
+[data.autoregulation]
+description = "Closed-loop autoregulatory gain, lower autoregulatory break point and pressure-flow slope below the break point, control vs L-NAME (group 1)"
+location = "Abstract; Results 'Coronary Autoregulatory Responses' (p. 235); Fig 3"
+provenance = "FT"
+statistic = "mean +/- SEM; n = 8 dogs with detailed autoregulatory relations"
+condition = ["control", "L-NAME"]
+autoregulatory_gain = [0.84, 0.78]
+autoregulatory_gain_se = [0.09, 0.07]
+lower_break_point_mmHg = [45.0, 61.0]
+lower_break_point_se_mmHg = [3.0, 2.0]
+slope_below_break_point_mL_per_min_per_mmHg = [1.0, 0.58]
+slope_below_break_point_se_mL_per_min_per_mmHg = [0.20, 0.09]
+slope_correlation_coefficient = [0.99, 0.98]
+slope_correlation_coefficient_se = [0.01, 0.01]
+flow_drop_resting_to_break_point_pct = [8.0, 9.0]
+flow_drop_resting_to_break_point_se_pct = [4.0, 2.0]
+n_dogs = 8
+p_values = "gain P = NS; break point P < .001; slope P < .05; flow drop P = NS"
+missing_note = "The individual-dog pressure-flow points of Fig 3 are not digitized. The abstract prints the control slope as 1.0 +/- 0.2; the Results print 1.0 +/- 0.20."
+
+[data.hemodynamics_group1]
+description = "Systemic and coronary hemodynamics at rest, group 1 (paced at spontaneous rate)"
+location = "Table 1 (p. 235)"
+provenance = "FT"
+statistic = "mean +/- SEM"
+variable = ["heart rate bpm", "mean aortic pressure mmHg", "LV systolic pressure mmHg", "LV end-diastolic pressure mmHg", "circumflex coronary flow mL/min"]
+control_value = [107.0, 92.0, 114.0, 8.0, 29.0]
+control_se = [7.0, 4.0, 5.0, 1.0, 4.0]
+lname_value = [107.0, 124.0, 140.0, 7.0, 26.0]
+lname_se = [7.0, 4.0, 4.0, 1.0, 3.0]
+missing_note = "n for Table 1 is not printed in the table (group 1 has 10 dogs). Mean aortic and LV systolic pressure P < .001 vs control. Mean left atrial pressure at the start of experiments 6.5 +/- 1 mmHg (Results text)."
+
+[data.hemodynamics_group2]
+description = "Systemic and coronary hemodynamics at rest and during ventricular pacing tachycardia, group 2"
+location = "Table 2 (p. 236)"
+provenance = "FT"
+statistic = "mean +/- SEM (n = 9)"
+variable = ["heart rate bpm", "mean aortic pressure mmHg", "LV systolic pressure mmHg", "LV end-diastolic pressure mmHg", "circumflex coronary flow mL/min"]
+rest_control_value = [93.0, 100.0, 119.0, 9.0, 42.0]
+rest_control_se = [3.0, 4.0, 5.0, 1.0, 4.0]
+rest_lname_value = [86.0, 130.0, 144.0, 7.0, 41.0]
+rest_lname_se = [2.0, 2.0, 3.0, 1.0, 4.0]
+tachycardia_control_value = [200.0, 103.0, 115.0, 4.0, 74.0]
+tachycardia_control_se = [3.0, 4.0, 5.0, 1.0, 8.0]
+tachycardia_lname_value = [197.0, 128.0, 135.0, 3.0, 73.0]
+tachycardia_lname_se = [4.0, 2.0, 3.0, 1.0, 8.0]
+n_dogs = 9
+missing_note = "Mean aortic pressure P < .001 and LV systolic pressure P < .05 vs control. Pacing flow control vs L-NAME P = NS."
+
+[data.reactive_hyperemia_and_vasodilation]
+description = "Peak reactive hyperemic flow after a 30-s occlusion, flow repayment/debt, and the acetylcholine (100 ug/min IC) response, control vs L-NAME"
+location = "Abstract; Results 'Vasodilation to Intracoronary Acetylcholine' and 'Myocardial Reactive Hyperemia' (pp. 235-236)"
+provenance = "FT"
+statistic = "mean +/- SEM"
+quantity = ["peak reactive hyperemic flow mL/min (group 2)", "flow repayment/debt % (group 2)", "acetylcholine flow increase % above rest (group 1)", "acetylcholine flow mL/min (group 2)"]
+control_value = [200.0, 548.0, 143.0, 108.0]
+control_se = [22.0, 102.0, 20.0, 13.0]
+lname_value = [166.0, 240.0, 31.0, 56.0]
+lname_se = [24.0, 30.0, 10.0, 6.0]
+peak_reactive_hyperemia_increase_control_pct = [510.0, 36.0]
+peak_reactive_hyperemia_increase_note = "[mean, SEM] increase in flow above resting on release of the occlusion, control (group 2)"
+missing_note = "Fig 2 legend gives the L-NAME acetylcholine maximum as 32% (text and abstract 31%). P < .01 for peak flow and repayment; P < .001 for acetylcholine."

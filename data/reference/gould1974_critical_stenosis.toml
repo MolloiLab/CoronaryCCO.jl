@@ -1,0 +1,69 @@
+# Gould KL, Lipscomb K, Hamilton GW (1974), Am J Cardiol 33:87-94, and Gould KL, Lipscomb K (1974),
+# Am J Cardiol 34:48-55. Both original full texts are paywalled (ScienceDirect returned HTTP 403) and
+# PubMed has no abstract for either. The numbers below come from an open-access later review that
+# reproduces the Gould & Lipscomb 1974 (34:48) rest/hyperemia flow-vs-stenosis figure.
+
+[meta]
+id = "gould1974_critical_stenosis"
+data_type = "experimental"
+validates = "Resting and hyperemic coronary flow vs percent diameter stenosis: resting flow stays at normal levels until a severe stenosis because of autoregulation, while hyperemic flow (flow reserve) starts to fall at about 50% diameter stenosis"
+species = "not verified (original full text not accessible; usually cited as dog experiments)"
+preparation = "Not verified (original full texts not accessible). The figure reproduced by Kaul et al. 2020 is credited to Gould & Lipscomb 1974 (Am J Cardiol 34:48-55); the caption does not state species, n or the hyperemic stimulus."
+conditions = "Rest vs hyperemia across graded proximal stenoses (from the secondary figure caption). Details not verified."
+verification = "secondary"
+access = "Primary full texts not accessible (ScienceDirect HTTP 403; PubMed records 4808557 and 4835753 have no abstract). Numbers read from the Figure 1 caption of Kaul, Methner & Mishra 2020 (PMC7992506; NCBI efetch db=pmc XML, read 2026-10-15)."
+notes = """Secondary wording (Kaul et al. 2020, Figure 1 caption): 'The resting flow is maintained at normal levels (dotted black line) up to 85-90% stenosis because of autoregulation. During hyperemia, however, increases in flow are attenuated at 50% or greater stenosis, with more severe stenosis resulting in greater attenuation of hyperemia flow.' The figure is 'adapted with permission from Gould et al. [5]', where ref 5 = Gould & Lipscomb 1974, Am J Cardiol 34:48-55.
+The secondary source gives 85-90% for the resting threshold, not a single 85% value. Both bounds are stored.
+The x-axis of the reproduced figure is percent narrowing of coronary artery DIAMETER.
+Gould, Lipscomb & Hamilton 1974 (Am J Cardiol 33:87-94) is the companion paper on instantaneous flow response and regional distribution during hyperemia. No open source reproducing its numbers was found, so it is recorded as a citation only (second_source)."""
+use_in_model = """Stenosis test for the regulated tree: insert a proximal stenosis of increasing % diameter reduction. With autoregulation active, resting flow should stay near baseline up to roughly 85-90% stenosis; with maximal vasodilation (hyperemia), flow should begin to fall at about 50% stenosis and decline progressively beyond. These are curve-shape thresholds from a reproduced figure, not measured means with error."""
+
+[source]
+authors = ["Gould KL", "Lipscomb K"]
+year = 1974
+title = "Effects of coronary stenoses on coronary flow reserve and resistance"
+journal = "Am J Cardiol"
+volume = "34"
+issue = "1"
+pages = "48-55"
+doi = "10.1016/0002-9149(74)90092-7"
+crossref_verified = "2026-10-15; Crossref title exact match ('Effects of coronary stenoses on coronary flow reserve and resistance'; vol 34, issue 1, 48-55; authors Gould, Lipscomb)"
+pmid = "4835753"
+
+[second_source]
+authors = ["Gould KL", "Lipscomb K", "Hamilton GW"]
+year = 1974
+title = "Physiologic basis for assessing critical coronary stenosis. Instantaneous flow response and regional distribution during coronary hyperemia as measures of coronary flow reserve"
+journal = "Am J Cardiol"
+volume = "33"
+issue = "1"
+pages = "87-94"
+doi = "10.1016/0002-9149(74)90743-7"
+crossref_verified = "2026-10-15; Crossref title match on main title ('Physiologic basis for assessing critical coronary stenosis'; Crossref omits the subtitle given by PubMed; vol 33, issue 1, 87-94; authors Gould, Lipscomb, Hamilton)"
+pmid = "4808557"
+role = "Companion paper; cited only. No numbers stored from it."
+
+[secondary_source]
+authors = ["Kaul S", "Methner C", "Mishra A"]
+year = 2020
+title = "The role of pericytes in hyperemia-induced capillary de-recruitment following stenosis"
+journal = "Curr Tissue Microenviron Rep"
+volume = "1"
+issue = "4"
+pages = "163-169"
+doi = "10.1007/s43152-020-00017-6"
+crossref_verified = "2026-10-15; Crossref title match ('The Role of Pericytes in Hyperemia-Induced Capillary De-Recruitment Following Stenosis'; vol 1, issue 4, 163-169; authors Kaul, Methner, Mishra)"
+pmid = "33778770"
+pmcid = "PMC7992506"
+how_it_cites_primary = "Figure 1 is 'Adapted with permission from Gould et al. [5]' (ref 5 = Gould & Lipscomb 1974, Am J Cardiol 34:48-55; Elsevier license noted in the caption). Text: 'In the presence of a non-critical stenosis, the hyperemic response is attenuated without alterations in resting perfusion pressure (Figure 1) [5].'"
+
+[data.stenosis_flow_thresholds]
+description = "Percent diameter stenosis at which resting flow stops being maintained and at which hyperemic flow starts to be attenuated"
+location = "Kaul et al. 2020, Figure 1 caption (reproducing Gould & Lipscomb 1974)"
+provenance = "secondary"
+statistic = "threshold read from the reproduced curve as stated in the caption; no mean or SD"
+condition = ["rest", "hyperemia"]
+threshold_low_pct_diameter_stenosis = [85.0, 50.0]
+threshold_high_pct_diameter_stenosis = [90.0, 50.0]
+finding = ["resting flow maintained at normal levels up to 85-90% stenosis because of autoregulation", "increases in flow attenuated at 50% or greater stenosis, more attenuation with more severe stenosis"]
+missing_note = "Original values, n, species and hyperemic stimulus not verified (paywalled). The caption gives a single 50% threshold for hyperemia (low and high both 50) and a range 85-90% for rest. The underlying curve points are not digitized."

@@ -1,0 +1,107 @@
+[meta]
+id = "fry2013_vessel_wall_parameters"
+data_type = "model"
+validates = "Model input, not data: vessel-wall mechanics and tone-regulation parameters (passive tension, maximally active VSM tension, myogenic, shear and conducted metabolic sensitivities) written as functions of the passive diameter D0, for arterioles down to D0 ~8 um; reference-state boundary conditions of the network model"
+species = "hamster (network geometry and diameters from cremaster muscle, Berg 1995); parameters pooled from earlier fits to several species (Carlson & Secomb 2005; Carlson et al. 2008; Roy et al. 2012)"
+preparation = "Theoretical model. 143-vessel network: 137-segment microvessel network from hamster cremaster maps in control and maximally dilated states (32 arterioles, 93 capillaries, 12 added venules) plus 2 upstream (artery A, large arteriole LA) and 4 downstream segments (LV1, LV2, V1, V2). Poiseuille flow with Pries & Secomb 2008 in vivo viscosity and Pries 1996 phase separation; Green's-function O2 transport; wall-derived metabolic signal proportional to the local O2 deficit (M0 - M), conducted upstream with exponential decay."
+conditions = "Reference state: moderate arteriolar tone, low O2 demand (M0 = 1 cm3 O2/100 cm3/min in the reference figures). Simulations vary M0 from 0.5 to 8 cm3 O2/100 cm3/min. Arterial inflow 100 mmHg, venous outflow 12.91 mmHg."
+verification = "FT"
+access = "Europe PMC REST full-text XML of PMC3770315 (CC BY 2.5 open access), read 2026-10-15. Table 1 cells read from the XML table markup. Displayed equations (1)-(11) are images in the XML and were NOT read; the equation forms below are described from the surrounding text only."
+notes = """Skeletal-muscle (cremaster) model, not coronary. The D0-dependent expressions are the useful part for a coronary tree: they give
+wall parameters for any arteriolar passive diameter, including vessels < 30 um that earlier models did not cover.
+D0 is the passive diameter at an intraluminal pressure of 100 mmHg (text). Table 1 gives D0 in um (range 8 to 20 um in this network);
+the paper does not restate the unit of D0 inside the D0-dependent formulas, so D0 in um is assumed from Table 1 and the Carlson & Secomb 2005 origin.
+Cact = 1.30*D0^1.48 was fitted by the authors to six data sets of Carlson & Secomb 2005 with the smallest mean D0 (four hamster sets),
+weighted by number of vessels (Fig. 3). Cpass and Cmyo are cited to Carlson & Secomb 2005; C'pass, C'act, C''act and Cshear to Carlson et al. 2008;
+Cmeta to Roy et al. 2012. Carlson et al. 2008 itself prints only per-segment values (see carlson2008_autoregulation_model.toml), not these linear formulas.
+Cmeta is printed with unit (1/uM/cm) although the metabolic signal here is an O2-deficit signal (Eq. 8), not ATP; kept as printed.
+C''tone (VSM constant) is printed as a range, -0.908 to 132.1, with no unit; it is set per arteriole from the reference state (Eq. 11).
+Arterioles whose dilated diameter was <= control diameter were given Stone = -1000 (A ~ 0)."""
+use_in_model = """Use as the parameter source if the coronary model adds active tone (Carlson-Secomb wall mechanics) to CCO arterioles.
+Evaluate each coefficient at the segment's passive diameter D0 (um) with the slope/intercept or power-law arrays below.
+Tension in dyn/cm (T = P*D/2), shear stress in dyn/cm2. Fry's D0 range is 8-20 um; extrapolating the linear C' formulas to
+coronary arterioles of 100-300 um stays within the Carlson 2005/2008 fitted range (40-300 um), but Cact = 1.30*D0^1.48 was fitted on small vessels only."""
+
+[source]
+authors = ["Fry BC", "Roy TK", "Secomb TW"]
+year = 2013
+title = "Capillary recruitment in a theoretical model for blood flow regulation in heterogeneous microvessel networks"
+journal = "Physiol Rep"
+volume = "1"
+issue = "3"
+pages = "e00050"
+doi = "10.1002/phy2.50"
+crossref_verified = "2026-10-15; Crossref title exact match ('Capillary recruitment in a theoretical model for blood flow regulation in heterogeneous microvessel networks'; Physiological Reports vol 1 issue 3; authors Fry, Roy, Secomb)"
+pmid = "24040516"
+pmcid = "PMC3770315"
+
+[data.wall_parameters_d0_linear]
+description = "Wall-mechanics parameters printed as linear or reciprocal functions of passive diameter D0: value = slope_per_um * D0 + intercept (C_myo is coefficient / D0)"
+location = "Table 1"
+provenance = "FT"
+statistic = "model parameter (no uncertainty)"
+parameter = ["C_pass", "C_pass_prime", "C_act_prime", "C_act_double_prime"]
+printed_formula = ["6.666·D0", "−0.027·D0 + 12.52", "−0.00059·D0 + 0.773", "−0.00080·D0 + 0.415"]
+description_printed = ["Passive tension strength", "Passive tension sensitivity", "Maximally active VSM length dependence", "Maximally active VSM tension range"]
+unit = ["dyn/cm", "dimensionless", "dimensionless", "dimensionless"]
+slope_per_um = [6.666, -0.027, -0.00059, -0.00080]
+intercept = [0.0, 12.52, 0.773, 0.415]
+cited_origin = ["Carlson and Secomb (2005)", "Carlson et al. (2008)", "Carlson et al. (2008)", "Carlson et al. (2008)"]
+missing_note = "Table 1 leaves the unit cell empty for C'pass, C'act and C''act (stored as dimensionless, consistent with Carlson 2008 Table 2). D0 unit inside formulas not restated (um assumed from Table 1)."
+
+[data.wall_parameters_d0_power]
+description = "Parameters printed as a power law or reciprocal of D0: value = coefficient * D0^exponent"
+location = "Table 1; Fig. 3 (power-law fit for Cact)"
+provenance = "FT"
+statistic = "model parameter (no uncertainty)"
+parameter = ["C_act", "C_myo"]
+printed_formula = ["1.30·D0^1.48", "1.369/D0"]
+description_printed = ["Maximally active VSM peak tension", "VSM activation tension sensitivity"]
+unit = ["dyn/cm", "cm/dyn"]
+coefficient = [1.30, 1.369]
+exponent = [1.48, -1.0]
+cited_origin = ["Carlson and Secomb (2005) data, refit in this paper", "Carlson and Secomb (2005)"]
+missing_note = "No uncertainty reported for the Cact power-law fit."
+
+[data.scalar_parameters]
+description = "Remaining Table 1 parameters (constants or ranges)"
+location = "Table 1; Methods text"
+provenance = "FT"
+statistic = "model parameter; ranges stored as [min, max] via value_min/value_max"
+parameter = ["M0_oxygen_demand", "n_hill", "P50", "tau_d", "tau_a", "C_shear", "C_meta", "C_tone_double_prime", "D0", "F_threshold", "P0_michaelis"]
+value_min = [0.5, 2.55, 26.0, 1.0, 20.0, 0.0258, 5000.0, -0.908, 8.0, 12.5, 1.0]
+value_max = [8.0, 2.55, 26.0, 1.0, 20.0, 0.0258, 5000.0, 132.1, 20.0, 12.5, 1.0]
+unit = ["cm3 O2/100 cm3/min", "dimensionless", "mmHg", "s", "s", "cm2/dyn", "1/uM/cm", "dimensionless", "um", "cells/s", "mmHg"]
+cited_origin = ["", "Klitzman et al. (1988)", "Klitzman et al. (1988)", "Arciero et al. (2008)", "Roy et al. (2012)", "Carlson et al. (2008)", "Roy et al. (2012)", "Carlson and Secomb (2005), Carlson et al. (2008), Roy et al. (2012)", "Berg (1995)", "Berg (1995)", "Secomb et al. (2004)"]
+missing_note = "Hill exponent row has no unit cell in Table 1 (dimensionless). Methods text cites Klitzman et al. 1983 for n and P50 whereas Table 1 cites Klitzman et al. (1988); kept as printed. F_threshold = half the 25 cells/s reporting step of Berg 1995."
+
+[data.reference_state]
+description = "Boundary conditions and fixed choices of the reference (control) state"
+location = "Methods: Reference state; Oxygen transport; Dynamics of arterioles"
+provenance = "FT"
+statistic = "model setting"
+quantity = ["arterial_inflow_pressure", "venous_outflow_pressure", "pressure_drop_artery_A", "pressure_drop_large_venule_LV", "pressure_drop_vein_V", "pressure_at_microvascular_network_inlet", "arterial_inflow_PO2", "venular_inflow_PO2", "tissue_sleeve_width_A_LA", "capillary_density_for_sleeve", "Stone_for_near_maximally_dilated_arterioles", "diameter_RMS_error", "integration_time", "averaging_window_start", "time_steps"]
+value = [100.0, 12.91, 10.0, 1.49, 1.0, 66.0, 100.0, 20.0, 18.8, 500.0, -1000.0, 1.2, 200.0, 100.0, 800.0]
+unit = ["mmHg", "mmHg", "mmHg", "mmHg", "mmHg", "mmHg", "mmHg", "mmHg", "um", "1/mm2", "dimensionless", "um", "s", "s", "count"]
+missing_note = "Pressure drops in the large arteriole and microvessel network are not printed separately; the LA length was adjusted to give 66 mmHg at the network inlet. Non-flowing-in-control arterioles were assigned Dc = 2.9-3.8 um."
+
+[data.network_composition]
+description = "Vessel counts in the simulated network and recruitment results"
+location = "Methods: Network structure, Reference state; Results"
+provenance = "FT"
+statistic = "counts"
+quantity = ["microvessel_segments", "arterioles", "capillaries", "added_venules", "terminal_arterioles", "total_vessels_incl_upstream_downstream", "nonflowing_in_reference_of_125", "flowing_experimental_control", "flowing_experimental_dilated", "flowing_model_M0_1", "flowing_model_M0_8"]
+value = [137, 32, 93, 12, 6, 143, 27, 85, 107, 98, 114]
+missing_note = "Flowing counts at M0 = 1 and 8 cm3 O2/100 cm3/min are from Results text (about 16% increase)."
+
+[data.hypoxic_fraction]
+description = "Fraction of tissue with PO2 < 1 mmHg vs O2 demand, with and without metabolic flow regulation"
+location = "Results text (Fig. 7C)"
+provenance = "FT"
+statistic = "model output"
+M0_cm3_O2_per_100cm3_per_min = [4.0, 8.0]
+no_regulation_variable_HD = [0.031, 0.14]
+no_regulation_constant_HD = [0.028, 0.14]
+regulation_variable_HD = [0.006, 0.06]
+regulation_constant_HD = [0.005, 0.061]
+missing_note = "For M0 <= 2 the hypoxic fraction is < 1% in all cases (text); not tabulated."

@@ -1,0 +1,100 @@
+[meta]
+id = "lee2022_dynamic_ctp"
+data_type = "experimental"
+validates = "Adenosine-stress dynamic CT myocardial perfusion: injection protocol and scan timing; myocardial attenuation (HU) of non-ischemic vs ischemic territories at the frame of maximal contrast (16.1-21.0 s after injection start); dynamic-CTP MBF (maximum-slope) in non-ischemic vs ischemic territories"
+species = "human"
+preparation = "42 patients (59.7 +/- 8.8 y, 31 male; 44 enrolled, 2 without CTP excluded) from 3 Korean tertiary centres, 2016-2018, with >= 40% stenosis on CCTA and scheduled invasive angiography with FFR. Excluded prior MI, stent, CABG or cardiac surgery, NYHA III-IV HF, severe COPD, high-degree AV block, SBP < 90 mmHg. CTP on second-generation dual-source CT (SOMATOM Definition Flash) at all centres."
+conditions = "Adenosine 0.14 mg/kg/min i.v. (antecubital vein) for 3 min. At 2 min 54 s: 50 mL iohexol 350 mgI/mL at 5 mL/s + 30 mL saline into the antecubital vein of the OPPOSITE arm. Dynamic CTP started at 3 min: shuttle mode, systolic (200 ms after R), 30 s acquisition, 73 mm coverage (38 mm detector, 10% overlap), 100 kVp, 330 mAs/rotation, 285 ms rotation, 2 x 64 x 0.6 mm collimation; 10-14 dynamic datasets per patient (12 phases in the Fig. 2 example). Reconstruction 1.5 mm, B23f kernel; analysis on 3 mm / 1.5 mm increment images."
+verification = "FT"
+access = "Europe PMC open-access full-text XML (PMC10980466), retrieved 2026-10-15 via the Europe PMC REST API. Supplemental Digital Content 1 (Table S1 time-attenuation data, CCTA protocol) not read."
+notes = """'Static CTP' is virtual: the seventh dynamic dataset, acquired 16.1-21.0 s after the start of contrast injection, chosen as the frame with maximal normal-vs-ischemic difference in 9 patients (example in Fig. 2: 16.4 s).
+Myocardial attenuation and MBF are per vessel territory, taking the LOWEST segment value in each territory. Ischemic = hemodynamically significant by FFR < 0.8 (or > 90% stenosis on ICA); 20 of 125 assessable territories in 16 of 42 patients. The paper does not state explicitly that the HU and MBF comparison uses these same 20 vs 105 territories.
+MBF is from the vendor maximum-slope method (Syngo VIA), in mL/100 mL/min. Stress only: no rest CTP, so no flow reserve.
+Contrast arm is the one opposite to the adenosine line; left vs right is not stated.
+The LV-lumen time-attenuation curve is shown only graphically (Fig. 2B, one patient).
+Radiation: CTP DLP 687 +/- 123.6 (printed in mGy), effective dose 9.6 +/- 1.7 mSv (k = 0.014)."""
+use_in_model = """Run the model with this injection (50 mL of 350 mgI/mL at 5 mL/s + 30 mL saline, antecubital) under adenosine-stress flow. At 16.1-21.0 s after
+injection start, non-ischemic myocardium at 100 kVp should read about 102 +/- 20 HU (absolute, including the unenhanced myocardium), and maximum-slope MBF
+in non-ischemic territories about 123 +/- 31 mL/100 mL/min. Note these are minimum-segment values per territory, which bias low relative to territory means."""
+
+[source]
+authors = ["Lee JW", "Choe YH", "Kim SM", "Choi JH", "Pak S", "Choo KS", "Kim JS", "Lee CE", "Kim YH"]
+year = 2022
+title = "Comparison of diagnostic performance between dynamic versus static adenosine-stress myocardial CT perfusion to detect hemodynamically significant coronary artery stenosis: A prospective multicenter study"
+journal = "Medicine (Baltimore)"
+volume = "101"
+issue = "36"
+pages = "e30477"
+doi = "10.1097/MD.0000000000030477"
+crossref_verified = "2026-10-15; Crossref title exact match ('Comparison of diagnostic performance between dynamic versus static adenosine-stress myocardial CT perfusion to detect hemodynamically significant coronary artery stenosis: A prospective multicenter study'); vol 101, issue 36, e30477"
+pmid = "36086714"
+pmcid = "PMC10980466"
+
+[data.stress_myocardium]
+description = "Stress myocardial CT attenuation (static frame, 16.1-21.0 s after injection start) and dynamic-CTP MBF in non-ischemic vs ischemic territories"
+location = "Results 3.3 (CTP analysis)"
+provenance = "FT"
+statistic = "mean +/- SD; per vessel territory (lowest segment value); n per group not stated explicitly"
+territory = ["nonischemic", "ischemic"]
+attenuation_mean_HU = [102.3, 86.8]
+attenuation_sd_HU = [20.1, 23.9]
+attenuation_p_value = 0.003
+mbf_mean_mL_per_100mL_per_min = [123.3, 90.4]
+mbf_sd_mL_per_100mL_per_min = [30.9, 39.1]
+mbf_p_value = 0.001
+mbf_p_value_note = "printed as P < .001"
+n_territories = [nan, nan]
+tube_voltage_kVp = 100.0
+frame_time_after_injection_start_s = [16.1, 21.0]
+frame_time_note = "seventh dynamic dataset; the range across patients is 16.1-21.0 s"
+missing_note = "n per group is not stated for this comparison (by FFR classification there are 20 significant and 105 non-significant assessable territories; not assumed here). Unenhanced myocardial HU and LV-blood-pool HU are not reported numerically."
+
+[data.cutoffs]
+description = "Per-vessel diagnostic cut-offs and AUCs for detecting FFR-significant stenosis"
+location = "Results 3.3; Table 2; Fig. 3"
+provenance = "FT"
+parameter = ["myocardial_attenuation", "mbf"]
+cutoff = [82.0, 101.0]
+cutoff_unit = ["HU (<=)", "mL/100 mL/min (<=)"]
+auc = [0.66, 0.76]
+auc_ci_low = [0.57, 0.67]
+auc_ci_high = [0.75, 0.83]
+missing_note = "Table 2 gives the same AUCs to 3 decimals as 0.663 (attenuation) and 0.765 (MBF)."
+
+[data.injection_protocol]
+description = "Adenosine and contrast administration and CTP acquisition"
+location = "Methods 2.2.2 (CTP scan)"
+provenance = "FT"
+adenosine_dose_mg_per_kg_per_min = 0.14
+adenosine_duration_s = 180.0
+contrast_agent = "iohexol 350 mgI/mL"
+contrast_concentration_mgI_per_mL = 350.0
+contrast_volume_mL = 50.0
+injection_rate_mL_per_s = 5.0
+saline_volume_mL = 30.0
+injection_site = "antecubital vein, arm opposite to the adenosine infusion"
+contrast_start_after_adenosine_start_s = 174.0
+scan_start_after_adenosine_start_s = 180.0
+scan_duration_s = 30.0
+tube_voltage_kVp = 100.0
+tube_current_mAs_per_rotation = 330.0
+rotation_time_ms = 285.0
+coverage_mm = 73.0
+trigger = "systolic, 200 ms after R peak"
+n_dynamic_datasets_range = [10, 14]
+missing_note = "Saline injection rate not stated. 'contrast_start_after_adenosine_start_s' converts the printed '2 minutes 54 seconds'."
+
+[data.cohort]
+description = "Patient characteristics (Table 1)"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD"
+variable = ["age_years", "height_cm", "weight_kg", "bmi_kg_per_m2", "hr_during_ccta_bpm", "hr_during_ctp_bpm", "calcium_score"]
+value_mean = [59.7, 166.0, 69.7, 25.2, 72.3, 63.5, 282.4]
+value_sd = [8.8, 8.1, 11.4, 3.0, 14.1, 10.6, 432.7]
+n_total = 42
+n_male = 31
+n_patients_fs_stenosis = 16
+n_territories_assessable = 125
+n_territories_fs_stenosis = 20
+missing_note = "Heart rate during CTP is under adenosine stress. Blood pressure and cardiac output are not reported."

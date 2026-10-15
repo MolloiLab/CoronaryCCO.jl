@@ -1,0 +1,87 @@
+[meta]
+id = "borges2022_bolus_arrival_times"
+data_type = "experimental"
+validates = "Contrast-bolus arrival times along the venous-to-arterial path in CT: antecubital injection -> superior vena cava -> pulmonary trunk -> ascending aorta (first arrival, +50 HU over unenhanced blood); correlation of pulmonary-trunk-to-aorta time with cardiac index, heart rate, LVEF and stroke volume"
+species = "human"
+preparation = "43 adult outpatients (retrospective, Dec 2017 - Apr 2019) undergoing coronary CTA, mostly for CAD screening; excluded heart failure, valvular or lung disease, LVEF < 55%, and indexed LV EDV > 100 mL/m2 or ESV > 50 mL/m2. 64-slice Philips Brilliance. Ioversol 350 (Optiray 350) via an 18 G catheter in the RIGHT antecubital vein at 4 mL/s, volume 1.5 mL/kg, followed by 30 mL saline at 4 mL/s. Bolus-tracking monitoring slice at the level of the pulmonary trunk (ROI in descending aorta, trigger 150 HU), imaged once per second from the start of injection; the same slice shows the SVC, pulmonary trunk and ascending aorta. Cardiac output by the geometric (Simpson) method from the 10-phase CTA."
+conditions = "Resting, clinical coronary CTA. Monitoring scans typically 100 kVp and 50 mAs. Arrival in each ROI = first image with attenuation >= 50 HU above unenhanced blood. Times are resolved at the 1-s image interval."
+verification = "FT"
+access = "Europe PMC open-access full-text XML (PMC9254703), retrieved 2026-10-15 via the Europe PMC REST API; tables read from the XML."
+notes = """Times are FIRST-ARRIVAL times (+50 HU threshold), not peak or centre-of-gravity times, and are quantized by the 1-s sampling.
+The English abstract states '3.0 s from the superior vena cava to the pulmonary trunk', but the Results give 3.0 +/- 2.4 s for injection -> SVC and 2.9 +/- 1.4 s for SVC -> pulmonary trunk; the Results values are recorded (the abstract appears to have shifted the label).
+Injection -> ascending aorta is printed as 13.1 +/- 2.56 s (abstract: 13.1 s).
+Only the pulmonary-trunk -> ascending-aorta time was tested for normality (D'Agostino-Pearson: normal).
+Correlation of PT -> AA time with cardiac index: r = -0.2938, P = 0.055 (Table 3; text and Fig. 2 give r = -0.29).
+The paper compares its 7.2 s PT -> AA time with control-group values of 6.6 s (Davarpanah et al.) and about 6.4 s (Skrok et al.); these are cited, not measured here."""
+use_in_model = """Inject the model bolus in the right antecubital vein at 4 mL/s (1.5 mL/kg of 350 mgI/mL, then 30 mL saline at 4 mL/s) and sample the
+SVC, pulmonary trunk and ascending aorta every 1 s. Detect arrival as the first sample >= 50 HU above baseline and compare the segment times
+(arm -> SVC, SVC -> PT, PT -> AA) and the total (injection -> AA) with arrival_times. Convert concentration to HU with the scanner-specific
+slope used elsewhere in the project; the monitoring scan here is at about 100 kVp. Check that PT -> AA time falls (weakly) with cardiac index."""
+
+[source]
+authors = ["Borges RR", "Morato TN", "Bezerra ASA", "Dias BA", "Reinaux JCF", "Monte GU", "Farage L"]
+year = 2022
+title = "Evaluation of intravascular contrast media transit times in coronary computed tomography angiography"
+journal = "Radiol Bras"
+volume = "55"
+issue = "3"
+pages = "161-166"
+doi = "10.1590/0100-3984.2021.0063"
+crossref_verified = "2026-10-15; Crossref DOI resolves to Radiologia Brasileira 55(3):161-166, authors Borges, Morato, Bezerra, Dias, Reinaux, Monte, Farage; Crossref holds the Portuguese title ('Avaliacao de diferentes tempos de transito do meio de contraste intravascular em exames de tomografia computadorizada coronariana'); the English title above is from the PMC full text"
+pmid = "35795606"
+pmcid = "PMC9254703"
+
+[data.arrival_times]
+description = "Contrast first-arrival times between injection site and thoracic vessels (arrival = >= 50 HU above unenhanced blood, 1-s sampling)"
+location = "Results text; Abstract"
+provenance = "FT"
+statistic = "mean +/- SD; n = 43 patients"
+segment = ["injection_to_svc", "svc_to_pulmonary_trunk", "pulmonary_trunk_to_ascending_aorta", "injection_to_ascending_aorta"]
+time_mean_s = [3.0, 2.9, 7.2, 13.1]
+time_sd_s = [2.4, 1.4, 2.2, 2.56]
+n = [43, 43, 43, 43]
+sampling_interval_s = 1.0
+arrival_threshold_HU = 50.0
+missing_note = "Medians, ranges and per-patient values are not given (Fig. 2 plots PT -> AA vs cardiac index only)."
+
+[data.injection_protocol]
+description = "Contrast injection used for all patients"
+location = "Materials and Methods, Image acquisition"
+provenance = "FT"
+contrast_agent = "ioversol 350 mgI/mL (Optiray 350)"
+contrast_concentration_mgI_per_mL = 350.0
+injection_site = "right antecubital vein, 18 G catheter"
+injection_rate_mL_per_s = 4.0
+contrast_volume_mL_per_kg = 1.5
+saline_volume_mL = 30.0
+saline_rate_mL_per_s = 4.0
+monitoring_kVp_typical = 100.0
+monitoring_mAs_typical = 50.0
+bolus_tracking_trigger_HU = 150.0
+bolus_tracking_roi = "descending aorta at the level of the pulmonary trunk"
+missing_note = "Absolute contrast volume per patient is not reported (1.5 mL/kg x weight 76.2 +/- 15.7 kg; not computed here). The monitoring kVp/mAs are given as 'typically' 100 kVp and 50 mAs."
+
+[data.cohort]
+description = "Demographics and CT geometric function (Tables 1 and 2)"
+location = "Tables 1 and 2; Results text"
+provenance = "FT"
+statistic = "mean +/- SD; n = 43"
+variable = ["age_years", "weight_kg", "height_cm", "heart_rate_bpm", "lv_edv_index_mL_per_m2", "lv_esv_index_mL_per_m2", "stroke_volume_index_mL_per_m2", "lvef_pct", "myocardial_mass_g", "cardiac_index_L_per_min_per_m2"]
+value_mean = [56.2, 76.2, 163.7, 59.0, 69.0, 25.7, 44.0, 63.0, 112.0, 2.6]
+value_sd = [12.9, 15.7, 7.3, 5.4, 12.8, 7.1, 7.7, 5.9, 31.0, 0.461]
+n_male = 22
+n_total = 43
+age_range_years = [30.0, 78.0]
+lvef_range_pct = [56.0, 77.0]
+cardiac_index_range_L_per_min_per_m2 = [2.0, 3.9]
+missing_note = "Cardiac index SD is 0.461 in Table 2 and 0.46 in the text. Absolute cardiac output (L/min) and BSA are not reported."
+
+[data.pt_aa_correlations]
+description = "Pearson correlation of the pulmonary-trunk -> ascending-aorta arrival time with other variables"
+location = "Table 3"
+provenance = "FT"
+statistic = "Pearson r, two-sided P; n = 43"
+variable = ["heart_rate", "lvef", "stroke_volume", "cardiac_index"]
+r = [0.3621, -0.3686, -0.3027, -0.2938]
+p_value = [0.017, 0.015, 0.048, 0.055]
+missing_note = "No regression slope is given. Correlations for the other segments are not reported."

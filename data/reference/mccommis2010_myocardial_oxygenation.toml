@@ -1,0 +1,65 @@
+[meta]
+id = "mccommis2010_myocardial_oxygenation"
+data_type = "experimental"
+validates = "Global LV oxygen extraction fraction (OEF), myocardial blood flow (MBF), myocardial blood volume (MBV) and O2 consumption (MVO2) at rest and during adenosine hyperemia in healthy humans; used to check that a flow-metabolism model lowers OEF from ~0.7 to ~0.4 when flow rises ~3-fold at a modest MVO2 increase"
+species = "human"
+preparation = "6 healthy volunteers (32 +/- 5 y, 4 male). 1.5 T Siemens Sonata CMR. OEF from T2 (T2-prepared gradient-echo, TE 24-72 ms) with a two-compartment BOLD model: resting OEF measured in the coronary sinus (taken as global LV OEF), hyperemic OEF from myocardial T2. MBF and MBV from first-pass perfusion (Multihance 0.02 mmol/kg) with model-free Consolidated-basis deconvolution, global ring ROI over ~75% of the LV wall. MVO2 = 1.39 x 0.14 g Hb/mL x 44.658 umol/mL x 0.95 (arterial saturation) x OEF x MBF. Capillary hematocrit assumed 20% (half of a 40% coronary sinus value)."
+conditions = "Rest, and IV adenosine 0.14 mg/kg/min for 6 min (T2 imaging from 2 min, perfusion 4-6 min after start). Breath-hold at end expiration. Coronary sinus not imaged during adenosine."
+verification = "FT"
+access = "Open-access full text (CC BY 2.0), Europe PMC fullTextXML for PMC2890683, read 2026-10-15."
+notes = """All values mean +/- SD (n = 6).
+The resting OEF is a coronary-sinus measurement; the hyperemic OEF is a myocardial-tissue (BOLD) estimate. They are not the same measurement site.
+Resting OEF is printed 0.73 +/- 0.05 in the Abstract, Results text and Table 4, but 0.73 +/- 0.03 in Table 3. The value from Table 4 / text is stored.
+MBV: text gives 5.5 +/- 1.8 mL/100 g (rest) and 9.9 +/- 2.4 mL/100 g (adenosine); Table 4 rounds to 0.06 (0.02) and 0.10 (0.02) mL/g. The text values are stored; the hyperemic SD differs between text (2.4 mL/100 g) and table (0.02 mL/g).
+Resting MVO2 also given as 0.116 +/- 0.038 mL O2/g/min. Resting coronary sinus T2 62 +/- 4 ms.
+Adenosine raised MBF by 220 +/- 152%, MBV by 65 +/- 53%, MVO2 by about 88 +/- 75%; myocardial OEF fell 47 +/- 21%; RPP rose ~70% (text also says 71%).
+TSE comparison method: hyperemic OEF 0.41 +/- 0.14, hyperemic MVO2 10.4 +/- 5.1 umol/g/min (one TSE scan failed; n not restated).
+Model fitting parameters (Table 1) and phantom T2 data (Table 2) are not stored."""
+use_in_model = """Global flow-metabolism target for healthy human myocardium: rest MBF ~0.9 mL/g/min with OEF ~0.73 and MVO2 ~5.2 umol/g/min; adenosine hyperemia MBF ~3.0 mL/g/min with OEF ~0.37 and MVO2 ~9.2 umol/g/min. MBV/MBF gives a mean transit time check alongside nickander2019_cmr_myocardial_blood_volume."""
+
+[source]
+authors = ["McCommis KS", "O'Connor R", "Lesniak D", "Lyons M", "Woodard PK", "Gropler RJ", "Zheng J"]
+year = 2010
+title = "Quantification of global myocardial oxygenation in humans: initial experience"
+journal = "J Cardiovasc Magn Reson"
+volume = "12"
+issue = "1"
+pages = "34"
+doi = "10.1186/1532-429X-12-34"
+crossref_verified = "2026-10-15; Crossref title exact match ('Quantification of global myocardial oxygenation in humans: initial experience'; vol 12, article 34; authors McCommis, O'Connor, Lesniak, Lyons, Woodard, Gropler, Zheng)"
+pmid = "20525217"
+pmcid = "PMC2890683"
+
+[data.global_oxygenation]
+description = "Global LV MBF, MBV, OEF and MVO2 at rest and during adenosine, T2prep method"
+location = "Abstract; Table 4; Results text"
+provenance = "FT"
+statistic = "mean +/- SD; n = 6 volunteers"
+condition = ["rest", "adenosine"]
+mbf_mL_per_g_per_min = [0.89, 2.97]
+mbf_sd_mL_per_g_per_min = [0.36, 0.75]
+mbv_mL_per_100g = [5.5, 9.9]
+mbv_sd_mL_per_100g = [1.8, 2.4]
+oef = [0.73, 0.37]
+oef_sd = [0.05, 0.05]
+oef_site = ["coronary sinus", "myocardium (BOLD model)"]
+mvo2_umol_per_g_per_min = [5.2, 9.2]
+mvo2_sd_umol_per_g_per_min = [1.7, 2.4]
+myocardial_t2_ms = [44.0, 49.0]
+myocardial_t2_sd_ms = [6.0, 5.0]
+n = 6
+missing_note = "Rest vs adenosine: P < 0.01 for MBF, MBV, OEF and T2; P < 0.05 for MVO2 (T2prep). Table 3 prints resting OEF SD as 0.03."
+
+[data.hemodynamics]
+description = "Heart rate, systolic pressure and rate-pressure product at rest and during adenosine"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SD; n = 6"
+condition = ["rest", "adenosine"]
+heart_rate_bpm = [72.0, 110.0]
+heart_rate_sd_bpm = [11.0, 16.0]
+systolic_pressure_mmHg = [113.0, 120.0]
+systolic_pressure_sd_mmHg = [6.0, 13.0]
+rate_pressure_product_bpm_mmHg = [8102.0, 13878.0]
+rate_pressure_product_sd_bpm_mmHg = [1273.0, 1201.0]
+missing_note = "HR and RPP P < 0.001 rest vs adenosine. Diastolic pressure not reported."

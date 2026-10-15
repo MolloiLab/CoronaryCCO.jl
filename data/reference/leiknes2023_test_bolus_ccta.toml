@@ -1,0 +1,104 @@
+[meta]
+id = "leiknes2023_test_bolus_ccta"
+data_type = "experimental"
+validates = "Whole-body contrast transit to the ascending aorta: test-bolus time to peak and peak attenuation, main-scan aortic attenuation, injection protocol (rate, contrast and saline volumes, scan delay), with MRI cardiac output and body size of the same patients"
+species = "human"
+preparation = "40 consecutive patients referred for clinically indicated CCTA (suspected myocardial ischemia; excluded prior MI, heart failure, myocarditis, pericarditis, valvulopathy). Siemens Somatom Definition Flash dual-source CT; Omnipaque 350 mgI/mL (iohexol). Test-bolus images acquired sequentially at 2-s intervals over the aorta; central ROI about two-thirds of the aortic diameter in the ascending aorta. Cardiac MRI (Philips Intera 1.5 T, short-axis cine stack) immediately after CCTA for volumetric cardiac output, averaged over two readers."
+conditions = "Resting. Beta-blockers to a target pulse of about 60 bpm (35 of 40 patients); sublingual nitroglycerin 2 x 0.4 mg immediately before the main CCTA scan and before MRI (39 of 40). Pulse during CCTA 59.24 (SD 8.98) bpm, during MRI 57.4 (SD 8.49) bpm."
+verification = "FT"
+access = "Publisher PDF (Frontiers, open access) and the Supplementary Material (Table S1 as 'Table 1.DOCX', the MRI sequence table as 'Table 2.DOCX', Supplementary Figure S1 as 'Image 1.png') supplied locally by the project lead; PDF read with pdftotext (layout and raw modes); DOCX read from word/document.xml; Fig. S1 read from the PNG."
+notes = """The aim of the paper is cardiac-output estimation from the test-bolus curve (Bae-type compartment model vs Stewart-Hamilton); the injection and enhancement numbers are the useful part here.
+Of the 40 included patients, 1 was excluded (MRI quality) and 2 as outliers (simulated vs measured TDC); the Results say Table 1 gives 'the demographics of the included participants', so Table 1 most likely describes 37 patients, but n is not printed in the table.
+Table 1 labels the rows only by name. 'Attenuation in test-bolus (HU)' is taken to be the test-bolus peak attenuation in the ascending aorta and 'Attenuation in the aorta (HU)' the main-scan aortic attenuation; the paper does not define them further. 'Change in attenuation' and 'Simulated attenuation' are not defined in the text.
+Several '95% CI' columns in Table 1 are far wider than a CI of the mean (e.g. CO_SH 4.25-15.36, ejection fraction 51.60-75.00); they are stored as printed.
+Gender-difference column: positive = men higher than women (text: men 15.58 cm taller, 19.24 kg heavier, CO_MR 0.92 L/min higher). The text says women received 0.25 ml/kg more contrast (Sect. 4.6; Sect. 3 writes '0.25 mg CM less per kilogram' for men) with p = 0.01, while Table 1 prints p < 0.01.
+Injection site (arm, vein, cannula size) is NOT stated in the paper or the supplement.
+Test-bolus imaging starts 12 s after injection start (Table S1), so the early part of each curve is unsampled; the authors note the baseline is unknown in several patients and some curves end before washout.
+Contrast concentration: 350 mgI/mL; 80 mL at 6 mL/s is a 13.3 s injection (worked example in Table S1 footnote)."""
+use_in_model = """Simulate the Table S1 test bolus (20 mL of 350 mgI/mL at 6 mL/s, then 40 mL saline at 6 mL/s; t = 0 at injection start) through the whole-body circulation at CO about 5 L/min,
+and compare ascending-aorta time to peak (18.3 +/- 2.6 s) and peak enhancement (about 194 +/- 62 HU at 100 kV, absolute HU) with the cohort; sample the simulated curve every 2 s from 12 s to mimic the acquisition.
+For the main bolus (80 mL at 6 mL/s + 80-100 mL saline) compare aortic attenuation (579 +/- 195 HU). The injection arm is not stated; use the project's chosen arm and note it.
+Supplementary Fig. S1 gives one patient's measured test-bolus curve (fig provenance) for a shape check."""
+
+[source]
+authors = ["Leiknes JB", "Hiorth A", "Havnen J", "Greve OJ", "Kurz KD", "Larsen AI"]
+year = 2023
+title = "Estimating cardiac output from coronary CT angiography: an individualized compartment model in comparison to the Stewart-Hamilton method"
+journal = "Front Cardiovasc Med"
+volume = "10"
+issue = ""
+pages = "1156332"
+doi = "10.3389/fcvm.2023.1156332"
+crossref_verified = "2026-10-15; Crossref title exact match ('Estimating cardiac output from coronary CT angiography: an individualized compartment model in comparison to the Stewart–Hamilton method'; vol 10, article 1156332; authors Leiknes, Hiorth, Havnen, Greve, Kurz, Larsen)"
+pmid = "38054087"
+pmcid = "PMC10694230"
+
+[data.cohort_table1]
+description = "Baseline demographics and measurements of the included participants (Table 1), as printed"
+location = "Table 1 (p. 4)"
+provenance = "FT"
+statistic = "mean, median, SD and '95% CI' as printed; distribution = Kolmogorov-Smirnov normality call by the authors; n not printed (most likely 37, see meta.notes)"
+variable = ["age_years", "systolic_bp_mmHg", "diastolic_bp_mmHg", "pulse_bpm", "height_cm", "weight_kg", "bsa_m2", "bmi_kg_per_m2", "test_bolus_time_to_peak_s", "test_bolus_attenuation_HU", "simulated_attenuation_HU", "change_in_attenuation_HU", "main_scan_aorta_attenuation_HU", "contrast_volume_mL", "saline_volume_mL", "contrast_dose_per_body_weight_mL_per_kg", "cardiac_output_MRI_L_per_min", "cardiac_output_compartment_model_L_per_min", "cardiac_output_stewart_hamilton_L_per_min", "ejection_fraction_pct"]
+distribution = ["non-normal", "non-normal", "non-normal", "normal", "non-normal", "non-normal", "non-normal", "non-normal", "normal", "non-normal", "normal", "non-normal", "non-normal", "normal", "normal", "non-normal", "normal", "non-normal", "non-normal", "non-normal"]
+mean = [53.16, 138.03, 81.73, 59.24, 172.89, 84.16, 1.97, 27.93, 18.32, 193.51, 243.65, 196.11, 578.57, 78.51, 83.46, 0.98, 5.05, 3.24, 9.16, 63.76]
+median = [51.50, 137.50, 79.50, 56.50, 172.00, 83.50, 1.98, 27.60, 18.00, 176.50, 214.50, 177.50, 532.50, 80.00, 80.00, 0.95, 4.80, 3.30, 9.06, 65.00]
+sd = [13.54, 19.00, 10.93, 8.98, 10.28, 19.83, 0.27, 5.15, 2.60, 62.35, 85.23, 59.53, 194.57, 13.53, 12.00, 0.24, 1.13, 1.25, 2.82, 7.41]
+ci95_low = [48.65, 131.69, 78.09, 56.25, 169.46, 77.55, 1.88, 26.22, 17.46, 172.73, 215.23, 176.26, 513.70, 74.00, 79.46, 0.89, 4.67, 1.54, 4.25, 51.60]
+ci95_high = [57.68, 144.36, 85.37, 62.24, 176.32, 90.77, 2.06, 29.65, 19.19, 214.30, 272.06, 215.96, 643.44, 83.03, 87.46, 1.06, 5.42, 5.51, 15.36, 75.00]
+gender_difference = [nan, nan, nan, nan, 15.58, 19.24, 0.33, nan, nan, -51.94, -111.76, -46.92, -146.73, nan, nan, -0.25, 0.92, 1.80, 2.76, nan]
+gender_difference_p = ["not signif.", "not signif.", "not signif.", "not signif.", "p < 0.01", "p < 0.01", "p < 0.01", "not signif.", "not signif.", "p < 0.01", "p < 0.01", "p = 0.02", "p = 0.02", "not signif.", "not signif.", "p < 0.01", "p = 0.01", "p < 0.01", "p < 0.01", "not signif."]
+gender_difference_se = [nan, nan, nan, nan, 2.21, 5.78, 0.07, nan, nan, 18.92, 22.57, 18.27, 60.18, nan, nan, 0.07, 0.34, 0.29, 0.80, nan]
+gender_difference_ci95_low = [nan, nan, nan, nan, 11.09, 7.50, 0.19, nan, nan, -90.35, -158.64, -84.01, -268.91, nan, nan, -0.39, 0.23, 1.22, 1.14, nan]
+gender_difference_ci95_high = [nan, nan, nan, nan, 20.07, 30.97, 0.47, nan, nan, -13.52, -64.88, -9.83, -24.55, nan, nan, -0.11, 1.62, 2.38, 4.38, nan]
+units_note = "Units are in each variable name. HU are absolute attenuation values at the tube voltage used (test bolus 100 kV; main scan 100 kV, or 120 kV above 90 kg for prospective/retrospective scans)."
+missing_note = "Gender-difference entries are nan where Table 1 prints 'Not signif.' without a value. Sign convention: men minus women (inferred from the text, which states men were taller/heavier and had higher CO_MR). eGFR and hemoglobin are mentioned in the text but not tabulated. Table 1 does not print n."
+
+[data.test_bolus_timing]
+description = "Ascending-aorta test-bolus time to peak and peak attenuation (summary of Table 1 rows used for model validation)"
+location = "Table 1 (p. 4); acquisition in Sect. 2.3.1 and Table S1"
+provenance = "FT"
+statistic = "mean +/- SD (median); n most likely 37"
+quantity = ["time_to_peak", "peak_attenuation"]
+mean = [18.32, 193.51]
+sd = [2.60, 62.35]
+median = [18.00, 176.50]
+unit = ["s", "HU"]
+time_reference = "Time from start of test-bolus injection (Table S1 start delay of 12 s, images every 2 s); the paper does not state the time origin explicitly"
+sampling_interval_s = 2.0
+first_image_s = 12.0
+missing_note = "Arrival time, peak width and individual curves are not reported (one example curve in Fig. S1, see test_bolus_example_curve). With 2-s sampling, TTP is quantized to 2 s per patient."
+
+[data.injection_protocol]
+description = "Supplementary Table S1: scan and injection parameters per acquisition technique"
+location = "Supplementary Material, Table S1 ('Table 1.DOCX'); contrast agent and test-bolus sampling in Sect. 2.3.1"
+provenance = "FT"
+statistic = "protocol values"
+technique = ["test_bolus", "single_heartbeat", "prospective", "retrospective"]
+tube_voltage = ["100 kV", "100 kV", "< 90 kg: 100 kV; > 90 kg: 120 kV", "< 90 kg: 100 kV; > 90 kg: 120 kV"]
+tube_current_time_product_mAs = [45.0, 270.0, 230.0, 200.0]
+rotation_time_s = [0.28, 0.28, 0.28, 0.28]
+slice_collimation = ["single 10 mm slice", "3 mm, 0.6 mm collimation", "3 mm, 0.6 mm collimation", "3 mm, 0.6 mm collimation"]
+pitch = [nan, 34.5, 34.5, 0.17]
+injection_rate_mL_per_s = [6.0, 6.0, 6.0, 6.0]
+contrast_volume_mL = [20.0, 80.0, nan, nan]
+saline_volume_min_mL = [40.0, 80.0, nan, nan]
+saline_volume_max_mL = [40.0, 100.0, nan, nan]
+start_delay = ["12 s", "time to peak of test bolus + 5 s", "time to peak of test bolus + 2 s", "time to peak of test bolus + 2 s"]
+contrast_agent = "Omnipaque 350 mgI/mL (iohexol), GE Healthcare"
+contrast_concentration_mgI_per_mL = 350.0
+test_bolus_image_interval_s = 2.0
+prospective_volume_rule = "Contrast + saline volume chosen to cover the whole scan time; example: 80 mL contrast at 6 mL/s (13.3 s) + 100 mL saline at 6 mL/s (16.7 s) = 30 s"
+retrospective_volume_rule = "Contrast = 6 mL/s x scan time + 10 mL (example: 8 s -> 58 mL); injection at least 10 s; saline flush 4:1 relative to contrast dose (as printed)"
+injection_site = "not stated"
+missing_note = "Test-bolus pitch printed as 'None'. Prospective and retrospective contrast/saline volumes are rules, not fixed values (see *_volume_rule). Injection site, cannula size and saline rate are not stated (rate column applies to the injection overall). The cohort-average volumes actually given are in cohort_table1 (contrast 78.51 +/- 13.53 mL, saline 83.46 +/- 12.00 mL)."
+
+[data.test_bolus_example_curve]
+description = "One patient's normalized test-bolus enhancement in the ascending aorta (patient 6, female; CO_MR 3.25, CO_Model 3.74 L/min), shown with the compartment-model fit"
+location = "Supplementary Figure S1 ('Image 1.png'), star markers"
+provenance = "fig"
+figure = "Supplementary Figure S1"
+digitization_error = "about +/-0.1 s and +/-3 HU (marker centres on a 2000 x 1580 px render; 1 HU = 4.7 px)"
+statistic = "individual patient"
+time_s = [0.0, 12.0, 14.0, 16.0, 18.0, 20.0]
+enhancement_HU = [0.0, 83.0, 218.0, 231.0, 164.0, 90.0]
+missing_note = "Labelled 'normalized data' (baseline-subtracted); the t = 0 point sits on the axis and appears to be the baseline. The fitted model curve (orange) is not digitized."

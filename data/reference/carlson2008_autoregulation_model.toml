@@ -1,0 +1,74 @@
+[meta]
+id = "carlson2008_autoregulation_model"
+data_type = "model"
+validates = "Model input and benchmark, not data: large- and small-arteriole wall-mechanics and tone parameters (myogenic, shear, conducted metabolic); control-state assumptions; model-predicted flow-increase factors over 80->130 and 50->150 mmHg with each regulatory mechanism switched on or off"
+species = "generic (parameters fitted to isolated arterioles: Sun et al. for the large arteriole, Davis & Sikes for the small arteriole; O2 demand from rat cortex)"
+preparation = "Theoretical representative-segment model: seven compartments in series (upstream arteries, large arterioles, small arterioles, capillaries, small venules, large venules, veins); only LA and SA are vasoactive. Wall tension = passive (exponential in D/D0) + activation x maximal active (Gaussian in D/D0); activation is a sigmoid of Stone = Cmyo*T - Cshear*tau_wall - Cmeta*SCR + C''tone. Metabolic signal from RBC ATP release conducted upstream (Arciero et al. 2008)."
+conditions = "Control state: input arterial pressure 100 mmHg; activation ALA = ASA = 0.5 (Stone = 0); O2 demand 8.28 cm3 O2/100 cm3/min. MAP varied 20-200 mmHg."
+verification = "FT"
+access = "PMC HTML of PMC2593503 (publisher version, free in PMC, not open-access licensed), read 2026-10-15. Europe PMC fullTextXML and NCBI efetch returned no body for this record; the journals.physiology.org page was blocked (HTTP 403). Displayed equations are images on the PMC page and were NOT read; equation forms are described from the text."
+notes = """Abstract rounds the constant-activation (A = 0.5) flow increase to 'fivefold'; Table 3 gives 5.29.
+Table 1 prints the Cmeta unit as '1 uM/cm' while Table 2 gives 1/(uM*cm); stored as 1/(uM*cm).
+C'tone is refit to the four-flow pressure-diameter data of Sun et al. (differs from Carlson & Secomb 2005). C''tone is set so that Stone = 0 in the control state.
+Cmyo and Cact were taken from linear regressions on reference diameter (Carlson & Secomb 2005); Cpass and C'pass taken directly from that paper.
+Cshear for the small arteriole was set equal to the large-arteriole value (no small-arteriole shear data).
+The text states the control flow as '70.9 cm3 O2*100 cm-3*min-1 (MAP = 100 mmHg)'; this unit is as printed and is likely a typesetting error (a flow, not an O2 rate).
+O2 demand 8.28 is justified by rat cortex consumption 6.3-8.3, while the Limitations paragraph says results are 'for steady-state conditions in skeletal muscle'; kept as printed.
+Single-vessel pressure-diameter fits used time constants of 1 s for diameter and activation."""
+use_in_model = """Per-segment parameter set for two vasoactive arteriole classes (D0 = 156.49 um and 38.99 um). The team's quoted 'activation 0.5' and 'M0 8.28' control
+assumptions are confirmed here. Use flow_increase_factors as a qualitative target: with myogenic + shear + metabolic regulation the model gives 1.18x flow for
+an 80->130 mmHg step (1.44x for 50->150), vs 5.29x at fixed A = 0.5."""
+
+[source]
+authors = ["Carlson BE", "Arciero JC", "Secomb TW"]
+year = 2008
+title = "Theoretical model of blood flow autoregulation: roles of myogenic, shear-dependent, and metabolic responses"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "295"
+issue = "4"
+pages = "H1572-H1579"
+doi = "10.1152/ajpheart.00262.2008"
+crossref_verified = "2026-10-15; Crossref title exact match ('Theoretical model of blood flow autoregulation: roles of myogenic, shear-dependent, and metabolic responses'; vol 295 issue 4, H1572-H1579; authors Carlson, Arciero, Secomb)"
+pmid = "18723769"
+pmcid = "PMC2593503"
+
+[data.arteriole_parameters]
+description = "Parameter values defining arteriolar activation and diameter, large vs small arteriole"
+location = "Table 1; units from Table 2"
+provenance = "FT"
+statistic = "model parameter (no uncertainty)"
+segment = ["large_arteriole", "small_arteriole"]
+C_myo_cm_per_dyn = [0.0101, 0.0359]
+C_shear_cm2_per_dyn = [0.0258, 0.0258]
+C_meta_per_uM_per_cm = [30.0, 30.0]
+C_tone_prime = [-2.22, -0.53]
+C_tone_double_prime = [10.11, 10.66]
+C_pass_dyn_per_cm = [1042.99, 259.90]
+C_pass_prime = [8.293, 11.467]
+C_act_dyn_per_cm = [1596.3, 274.193]
+C_act_prime = [0.6804, 0.750]
+C_act_double_prime = [0.2905, 0.384]
+D0_um = [156.49, 38.99]
+missing_note = "No D0-dependent formulas are printed in this paper (the linear C' formulas that Fry et al. 2013 attribute to 'Carlson et al. 2008' do not appear here)."
+
+[data.control_state]
+description = "Control-state assumptions of the representative segment model"
+location = "Methods: Determination of control state; Evaluation of parameters; Simulation procedure"
+provenance = "FT"
+statistic = "model setting"
+quantity = ["input_arterial_pressure", "pressure_drop_upstream_artery", "pressure_drop_large_arteriole", "pressure_drop_small_arteriole", "pressure_drop_capillary", "wall_shear_artery_LA_SA_capillary", "wall_shear_venules_veins", "activation_LA_SA", "Stone_control", "oxygen_demand_M0", "rat_cortex_O2_consumption_min", "rat_cortex_O2_consumption_max", "MAP_range_min", "MAP_range_max", "tau_single_vessel_fit"]
+value = [100.0, 10.0, 15.0, 40.0, 15.0, 55.0, 10.0, 0.5, 0.0, 8.28, 6.3, 8.3, 20.0, 200.0, 1.0]
+unit = ["mmHg", "mmHg", "mmHg", "mmHg", "mmHg", "dyn/cm2", "dyn/cm2", "dimensionless", "dimensionless", "cm3 O2/100 cm3/min", "cm3 O2/100 cm3/min", "cm3 O2/100 cm3/min", "mmHg", "mmHg", "s"]
+missing_note = "Control flow is printed as 70.9 with a unit of cm3 O2*100 cm-3*min-1 (as printed; not stored as a flow). Vessel numbers, lengths and diameters of the non-vasoactive segments are deferred to Arciero et al. 2008 (ref 1)."
+
+[data.flow_increase_factors]
+description = "Factor by which blood flow increases for a pressure step, by active mechanism"
+location = "Table 3; Results text; Abstract"
+provenance = "FT"
+statistic = "model output"
+mechanisms = ["control_A_0.5_no_response", "myogenic", "myogenic_shear", "myogenic_shear_metabolic", "metabolic", "metabolic_shear", "metabolic_myogenic"]
+factor_130_over_80 = [5.29, 1.66, 2.43, 1.18, 1.18, 1.28, 1.09]
+factor_150_over_50 = [122.99, 3.55, 12.24, 1.44, 1.43, 1.66, 1.23]
+pressure_ratio_130_over_80 = 1.625
+pressure_ratio_150_over_50 = 3.00
+missing_note = ""
