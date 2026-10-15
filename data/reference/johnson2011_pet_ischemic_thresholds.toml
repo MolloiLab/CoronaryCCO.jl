@@ -1,0 +1,99 @@
+[meta]
+id = "johnson2011_pet_ischemic_thresholds"
+data_type = "experimental"
+validates = "Low-flow thresholds of ischemia during dipyridamole PET: worst-pixel stress perfusion (cc/min/g) and CFR separating definite ischemia, indeterminate (1 of 3 ischemic features) and no ischemia; frequency of myocardial steal (worst CFR < 1) in each group. These are the ischemic cutoffs used in the 2012 coronary flow capacity map."
+species = "human"
+preparation = "1,674 sequential rest-dipyridamole PET studies in 1,370 patients (whole CAD spectrum). Most studies: GE Discovery ST PET-CT (2D mode), 35-50 mCi Rb-82, March 2007 - July 2010. Minority: 538 studies (Feb 1993 - May 1997) on the University of Texas cesium-fluoride scanner with 15-20 mCi N-13 ammonia, and 56 studies (Sept 2006 - Apr 2010) on a Positron mPower scanner. Flow by the group's radionuclide-specific integrative model; 21 slices x 64 radial pixels, smoothed with a 5 x 5 pixel average; 4 basal and 2 apical slices excluded."
+conditions = "Dipyridamole 142 ug/kg/min for 4 min; caffeine, theophylline and cigarettes withheld 24 h. Definite ischemia = new or worse stress perfusion defect plus significant (> 1 mm) ST depression and/or severe angina needing IV aminophylline, sublingual nitroglycerin and/or IV metoprolol. Indeterminate = only 1 of these 3 abnormalities. No ischemia = no prior MI and no angina or ECG change after dipyridamole."
+verification = "FT"
+access = "Full text HTML (JACC: Cardiovascular Imaging, Elsevier open archive) read from Wayback Machine capture 20200113012440 of http://imaging.onlinejacc.org:80/content/4/9/990; Table 1 from capture of .../content/4/9/990/T1. Abstract also in the capture."
+notes = """'Worst' stress flow and 'worst' CFR are the single worst pixel values (after 5 x 5 smoothing) recorded by software; the worst CFR pixel need not coincide with the worst stress-flow pixel.
+Cutoffs were chosen to match sensitivity and specificity. Normalizing to a pressure-rate product (7,000 rest, 10,000 stress) did not improve the AUC (worst stress-flow cutoff 0.89 ml/min/g at PRP 10,000, AUC 0.99; worst CFR cutoff 1.75 at PRP 10,000/7,000, AUC 0.91).
+Results were similar when the 2 scanners that account for > 96% of studies were analysed separately. The Results text says 302 indeterminate studies (Abstract and Table 1: 301).
+Mean PRP 7,351 +/- 1,869 at rest and 10,861 +/- 2,504 mmHg/min at peak dipyridamole; PRP vs whole-LV flow r^2 = 0.22 at rest, 0.08 at stress.
+Of all 1,674 studies, 339 (20%) showed only scar and are excluded from the three-way comparison.
+The abstract states that when the worst vasodilator stress flow exceeds 1.12 ml/min/g, ischemic manifestations occur rarely. The paper gives no CFR equivalent of that sentence; the 2.03 CFR value is the cutoff separating indeterminate from no ischemia.
+The thresholds were derived with a mix of Rb-82 (majority) and N-13 ammonia; the paper presents this as evidence of independence from scanner and radionuclide."""
+use_in_model = """Use cutoffs as the 'definite ischemia' (stress < 0.91 cc/min/g, CFR < 1.74) and 'moderately reduced' (stress < 1.12, CFR < 2.03) boundaries of the 2012 CFC map. Compare the model's worst-voxel hyperemic flow and CFR distal to a simulated severe stenosis or occlusion with worst_values_by_group.
+Steal frequency: a model with collateral-supplied myocardium distal to an occlusion should be able to produce CFR < 1 (seen in 40% of definite-ischemia studies, 1.4% of nonischemic studies)."""
+
+[source]
+authors = ["Johnson NP", "Gould KL"]
+year = 2011
+title = "Physiological basis for angina and ST-segment change: PET-verified thresholds of quantitative stress myocardial perfusion and coronary flow reserve"
+journal = "JACC Cardiovasc Imaging"
+volume = "4"
+issue = "9"
+pages = "990-998"
+doi = "10.1016/j.jcmg.2011.06.015"
+crossref_verified = "2026-10-15; Crossref bibliographic search match ('Physiological Basis for Angina and ST-Segment Change'; vol 4, 990-998; authors Johnson, Gould)"
+pmid = "21920337"
+
+[data.thresholds]
+description = "Optimal cutoffs (sensitivity = specificity) of worst-pixel dipyridamole stress flow and worst CFR"
+location = "Abstract; Results (p. 993)"
+provenance = "FT"
+statistic = "ROC cutoff and AUC"
+comparison = ["definite ischemia vs no ischemia", "indeterminate vs no ischemia", "definite ischemia vs indeterminate"]
+stress_flow_cutoff_mL_per_min_per_g = [0.91, 1.12, 0.52]
+stress_flow_auc = [0.98, 0.86, 0.74]
+cfr_cutoff = [1.74, 2.03, 1.36]
+cfr_auc = [0.91, 0.77, 0.72]
+misclassification_note = "9.8% of the definite-ischemia group had worst stress flow above 0.91; 9.5% of the no-ischemia group had flow below it."
+missing_note = "Sensitivity and specificity values are not stored (not captured in the text read)."
+
+[data.worst_values_by_group]
+description = "Worst-pixel stress flow and CFR, and the frequency of myocardial steal (worst CFR < 1), by clinical group"
+location = "Results (p. 993); Table 1 for group sizes"
+provenance = "FT"
+statistic = "mean +/- SD; counts n (%)"
+group = ["no ischemia", "indeterminate clinical features", "definite ischemia"]
+n_studies = [840, 301, 194]
+pct_of_all_studies = [50, 18, 12]
+worst_stress_flow_mean_mL_per_min_per_g = [1.56, 0.81, 0.47]
+worst_stress_flow_sd_mL_per_min_per_g = [0.54, 0.47, 0.26]
+worst_cfr_mean = [2.47, 1.72, 1.21]
+worst_cfr_sd = [0.77, 0.70, 0.57]
+steal_n = [12, 43, 77]
+steal_pct = [1.4, 14.3, 40.0]
+steal_definition = "worst CFR < 1"
+missing_note = "p < 0.001 for indeterminate and definite vs no ischemia for worst stress flow and worst CFR."
+
+[data.clinical_features_table1]
+description = "Selected baseline and dipyridamole-stress features by group"
+location = "Table 1"
+provenance = "FT"
+statistic = "n (%) or mean +/- SD"
+group = ["no ischemia", "indeterminate clinical features", "definite ischemia"]
+severe_angina_pct = [0, 19, 77]
+st_depression_pct = [0, 16, 68]
+stress_induced_defect_pct = [0, 71, 100]
+rest_sbp_mean_mmHg = [116.0, 123.0, 127.0]
+rest_sbp_sd_mmHg = [17.0, 18.0, 18.0]
+rest_hr_mean_bpm = [61.0, 61.0, 62.0]
+rest_hr_sd_bpm = [11.0, 12.0, 12.0]
+stress_sbp_mean_mmHg = [118.0, 125.0, 131.0]
+stress_sbp_sd_mmHg = [16.0, 18.0, 21.0]
+stress_hr_mean_bpm = [90.0, 87.0, 87.0]
+stress_hr_sd_bpm = [15.0, 15.0, 14.0]
+age_mean_years = [53.0, 62.0, 64.0]
+age_sd_years = [17.0, 11.0, 9.0]
+male_pct = [78, 80, 88]
+prior_pci_pct = [14, 37, 26]
+prior_cabg_pct = [5, 20, 34]
+missing_note = "Risk-factor rows of Table 1 are not stored."
+
+[data.pci_pilot]
+description = "Small pilot of studies before (<= 40 days) and after (<= 100 days) PCI"
+location = "Results (p. 994)"
+provenance = "FT"
+statistic = "mean +/- SD; median (IQR)"
+quantity = ["average stress flow mL/min/g", "average CFR", "relative stress defect <60% of max, % LV (median)"]
+before = [0.98, 1.77, 26.0]
+before_spread = [0.47, 0.99, nan]
+after = [1.43, 2.79, 5.0]
+after_spread = [0.36, 0.81, nan]
+defect_before_iqr_pct_lv = [16.0, 45.0]
+defect_after_iqr_pct_lv = [1.0, 13.0]
+p_value = [0.018, 0.005, 0.009]
+missing_note = "The number of patients in the pilot is not stored (not captured in the text read; ST depression resolved in 3 of 5 cases, so at least 5). defect_*_iqr arrays are [q1, q3] for the relative-defect row."

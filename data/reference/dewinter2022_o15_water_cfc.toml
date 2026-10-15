@@ -1,0 +1,114 @@
+[meta]
+id = "dewinter2022_o15_water_cfc"
+data_type = "experimental"
+validates = "Coronary flow capacity thresholds adapted to [15O]H2O PET (hyperemic MBF in mL/min/g and CFR): myocardial steal, severely, moderately and minimally reduced CFC, normal flow; the normal-reference hMBF and CFR they are built on; distributions of vessels and patients across the categories"
+species = "human"
+preparation = "de Winter 2022: 314 stable-CAD patients with [15O]H2O PET before and after revascularization (415 revascularized vessels), Amsterdam UMC; parametric MBF by Cardiac VUer; vessel-specific (3 vascular territories) hMBF and CFR. de Winter 2023: 1,300 patients with known or suspected CAD (Amsterdam UMC and Turku), parametric MBF by Cardiac VUer or Carimas with a basis-function single-tissue compartment model; per patient, the vascular region with the lowest CFR."
+conditions = "Rest, then adenosine 140 ug/kg/min with simultaneous [15O]H2O injection (2023 Methods); low-dose CT for attenuation correction."
+verification = "FT"
+access = "de Winter 2022: Europe PMC fullTextXML of PMC9159743 (open access), read 2026-10-15. de Winter 2023: Europe PMC fullTextXML of PMC10510823 (open access), read 2026-10-15. Tables in the 2023 paper are images in the XML and were not read."
+notes = """O-15 WATER-SPECIFIC thresholds; do not mix with the Rb-82 cutoffs of Johnson & Gould.
+Ischemic cutoffs (hMBF 2.3 mL/min/g, CFR 2.5) are cited from Danad et al. (J Nucl Med 2013). Severe cutoffs are hMBF <= 1.5 and CFR <= 1.5.
+The normal reference is 155 patients from the Driessen cohort with obstructive CAD ruled out (calcium score 0 and no obstructive lesion on CCTA): hMBF 3.66 +/- 1.30 mL/min/g, CFR 3.69 +/- 1.48. The minimal/normal boundary is set 0.5 SD below these means (3.01, 2.95; the paper states these values).
+There is no separate 'mildly reduced' class: the O-15 scheme has 5 classes (steal, severe, moderate, minimal, normal).
+Combination rule (printed explicitly in 2023, Methods):
+  myocardial steal = CFR < 1;
+  severe = hMBF <= 1.50 AND 1.00 < CFR <= 1.50;
+  moderate = (1.50 < hMBF <= 2.30 AND CFR <= 2.50) OR (hMBF <= 2.30 AND 1.50 < CFR <= 2.50);
+  minimal = (2.30 < hMBF <= 3.01 AND CFR <= 2.95) OR (hMBF <= 3.01 AND 2.5 < CFR <= 2.95);
+  normal = hMBF > 3.01 OR CFR > 2.95.
+This is the nested-rectangle rule (a class needs BOTH values at or below its bounds; one value above a bound lifts the pixel to the less severe class), except that steal is CFR < 1 at ANY hMBF.
+2022 wording: severe = 'hMBF <= 1.5 and CFR <= 1.5'; moderate = 'hMBF <= 2.3 and CFR <= 2.5, yet with either hMBF > 1.5 or CFR > 1.5'; normal = 'either hMBF > 3.01 or CFR > 2.95'. In 2022, only 7 of 415 baseline vessels (2%) had BOTH hMBF and CFR above the normal thresholds."""
+use_in_model = """If the model's hyperemic flow is compared with O-15 water PET (closest to true tissue flow, freely diffusible tracer), classify per territory with category_thresholds_o15 and compare a healthy model heart with the normal reference (hMBF 3.66 +/- 1.30, CFR 3.69 +/- 1.48 in patients with obstructive CAD ruled out).
+A healthy model heart should be 'normal' (hMBF > 3.01 or CFR > 2.95) in all territories."""
+
+[source]
+authors = ["de Winter RW", "Jukema RA", "van Diemen PA", "Schumacher SP", "Driessen RS", "Stuijfzand WJ", "Everaars H", "Bom MJ", "van Rossum AC", "van de Ven PM", "Verouden NJ", "Nap A", "Raijmakers PG", "Danad I", "Knaapen P"]
+year = 2022
+title = "The impact of coronary revascularization on vessel-specific coronary flow capacity and long-term outcomes: a serial [15O]H2O positron emission tomography perfusion imaging study"
+journal = "Eur Heart J Cardiovasc Imaging"
+volume = "23"
+issue = "6"
+pages = "743-752"
+doi = "10.1093/ehjci/jeab263"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 23, issue 6, 743-752; first authors de Winter, Jukema, van Diemen, Schumacher)"
+pmid = "34878102"
+pmcid = "PMC9159743"
+
+[second_source]
+authors = ["de Winter RW", "Jukema RA", "van Diemen PA", "Schumacher SP", "Somsen YBO", "van de Hoef TP", "van Rossum AC", "Twisk JWR", "Maaniitty T", "Knuuti J", "Saraste A", "Nap A", "Raijmakers PG", "Danad I", "Knaapen P"]
+year = 2023
+title = "Prognostic value of modified coronary flow capacity derived from [15O]H2O positron emission tomography perfusion imaging"
+journal = "Circ Cardiovasc Imaging"
+volume = "16"
+issue = "9"
+pages = "e014845"
+doi = "10.1161/CIRCIMAGING.122.014845"
+crossref_verified = "2026-10-15; Crossref title match (vol 16, issue 9; first authors de Winter, Jukema, van Diemen, Schumacher)"
+pmid = "37725672"
+pmcid = "PMC10510823"
+role = "Prints the same thresholds as explicit Boolean rules (citing the 2022 paper) and gives the category distribution in 1,300 patients."
+
+[data.category_thresholds_o15]
+description = "[15O]H2O CFC class bounds. Each class lies inside its own rectangle (hMBF <= hmbf_upper AND CFR <= cfr_upper) and outside the next more severe one; steal is CFR < 1 at any hMBF."
+location = "de Winter 2023 Methods (explicit Boolean form); de Winter 2022 Methods ('[15O]H2O PET thresholds for coronary flow capacity')"
+provenance = "FT"
+statistic = "thresholds (no dispersion)"
+category = ["normal", "minimally_reduced", "moderately_reduced", "severely_reduced", "myocardial_steal"]
+hmbf_upper_inclusive_mL_per_min_per_g = [nan, 3.01, 2.30, 1.50, nan]
+cfr_upper_inclusive = [nan, 2.95, 2.50, 1.50, 1.0]
+cfr_lower_exclusive_severe = 1.0
+basis = ["above 0.5 SD below the normal-reference means (either value)", "below normal but either value above the ischemic cutoffs", "Danad 2013 ischemic cutoffs: hMBF 2.3 mL/min/g, CFR 2.5", "hMBF <= 1.5 and CFR <= 1.5 (within the ischemic range)", "CFR < 1: hyperemic MBF below resting MBF"]
+rule = "normal = hMBF > 3.01 OR CFR > 2.95; otherwise the most severe class whose hMBF and CFR bounds both contain the point; steal = CFR < 1 (any hMBF); severe requires 1.00 < CFR <= 1.50."
+missing_note = "Steal is CFR < 1 strictly; the 2023 text writes 'CFR<1' for steal and '1.00<CFR' for severe. Normal has no upper bound (nan)."
+
+[data.normal_reference]
+description = "hMBF and CFR in patients with obstructive CAD ruled out (calcium score 0 and CCTA without obstructive lesions), used to set the normal-flow thresholds"
+location = "de Winter 2022 Methods"
+provenance = "FT"
+statistic = "mean +/- SD; n = patients"
+quantity = ["hyperemic MBF", "CFR"]
+mean = [3.66, 3.69]
+sd = [1.30, 1.48]
+unit = ["mL/min/g", "unitless"]
+n = 155
+threshold_at_minus_half_sd = [3.01, 2.95]
+missing_note = "Rest MBF of this reference group is not given in the text read. Cohort described in Driessen et al. (not read)."
+
+[data.vessel_distribution_2022]
+description = "Vessel-specific CFC class of 415 revascularized vessels before and after revascularization (de Winter 2022)"
+location = "de Winter 2022 Results ('The impact of revascularization on regional CFC') and Table 3"
+provenance = "FT"
+statistic = "counts n (% of 415 vessels); perfusion mean +/- SD per baseline class"
+category = ["myocardial_steal", "severely_reduced", "moderately_reduced", "minimally_reduced", "normal"]
+baseline_n = [4, 76, 211, 69, 55]
+baseline_pct = [1, 18, 51, 17, 13]
+post_revascularization_n = [3, 13, 119, 100, 180]
+post_revascularization_pct = [1, 3, 29, 24, 43]
+baseline_hmbf_mean_mL_per_min_per_g = [0.88, 1.12, 1.62, 2.21, 2.53]
+baseline_hmbf_sd_mL_per_min_per_g = [0.26, 0.21, 0.34, 0.37, 0.62]
+followup_hmbf_mean_mL_per_min_per_g = [1.78, 2.05, 2.41, 2.70, 2.82]
+followup_hmbf_sd_mL_per_min_per_g = [0.89, 0.72, 0.82, 0.62, 0.83]
+delta_hmbf_mean_mL_per_min_per_g = [0.90, 0.93, 0.79, 0.48, 0.29]
+delta_hmbf_sd_mL_per_min_per_g = [0.74, 0.65, 0.74, 0.61, 0.66]
+baseline_cfr_mean = [0.89, 1.29, 1.91, 2.52, 3.43]
+baseline_cfr_sd = [0.07, 0.13, 0.30, 0.32, 0.49]
+followup_cfr_mean = [1.91, 2.28, 2.78, 3.18, 3.43]
+followup_cfr_sd = [0.94, 0.69, 0.86, 1.01, 0.95]
+delta_cfr_mean = [1.01, 0.99, 0.87, 0.66, -0.001]
+delta_cfr_sd = [0.88, 0.69, 0.88, 0.91, 1.06]
+both_values_above_normal_baseline_n = 7
+missing_note = "Rows grouped by BASELINE class (Table 3). Normal-class delta CFR is -0.001 in Table 3 and -0.01 in the Abstract; Table 3 value stored. Changes in class: 243 (59%) improved, 144 (35%) unchanged, 28 (7%) worsened. These are diseased, revascularized vessels: the 'normal' class here (baseline hMBF 2.53) is not a healthy reference."
+
+[data.patient_distribution_2023]
+description = "Patient-level modified CFC (region with the lowest CFR) in 1,300 patients with known or suspected CAD (de Winter 2023)"
+location = "de Winter 2023 Abstract and Results"
+provenance = "FT"
+statistic = "counts n (% of 1,300 patients)"
+category = ["myocardial_steal", "severely_reduced", "moderately_reduced", "minimally_reduced", "normal"]
+n = [38, 141, 394, 245, 482]
+pct = [3, 11, 30, 19, 37]
+adjusted_hazard_ratio_death_mi_vs_normal = [6.70, 2.35, 1.95, nan, 1.0]
+hr_ci95_low = [3.21, 1.16, 1.11, nan, nan]
+hr_ci95_high = [13.99, 4.78, 3.41, nan, nan]
+missing_note = "HR for minimally reduced CFC not given in the text read (not significant). Normal flow is the reference (HR 1)."

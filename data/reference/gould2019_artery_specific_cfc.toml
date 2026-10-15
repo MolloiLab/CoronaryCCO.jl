@@ -1,0 +1,69 @@
+[meta]
+id = "gould2019_artery_specific_cfc"
+data_type = "experimental"
+validates = "Prevalence and size of severely reduced coronary flow capacity (pixels with CFR <= 1.27 and stress perfusion <= 0.83 cc/min/g) in a large stable-CAD PET cohort; minimum-quadrant and global stress flow and CFR; outcome association (death, MI, stroke) with and without revascularization"
+species = "human"
+preparation = "3,774 sequential rest-stress Rb-82 PET scans (prospective cohort, Weatherhead PET Center, Houston), stable CAD or risk factors; GE Discovery ST 16-slice PET-CT in 2D mode, 30-50 mCi Rb-82; CFR per pixel for 1,344 pixels; FDA-cleared CFC software (K171303). Follow-up up to 9 y (mean 3.0 +/- 2.3 y) for 95% of scans."
+conditions = "Standard vasodilator stress, primarily dipyridamole. Groups: revascularization (PCI or CABG) within 90 d after PET (n = 134) vs none (n = 3,640)."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC6424226 (open access), read 2026-10-15; tables read from the XML table markup. Supplemental Figure 1 (full CFC color-bar definition) not read."
+notes = """Only the severe (blue) threshold is printed in the text; the full category definitions are in Supplemental Figure 1 (not read). The full revised set is in gould2018_cfc_revised_thresholds.toml.
+CFCsevere = any pixels with BOTH CFR <= 1.27 AND stress perfusion <= 0.83 cc/min/g, expressed as % of LV.
+Table 1 'Mild CFC > 15% of LV' and 'Moderate CFC > 15% of LV' are counts of scans with that category over 15% of the LV, as printed.
+Abstract: severely reduced CFC associated with a 60% increased hazard of MACE and a 30% increased hazard of death/MI/stroke (DMS); revascularization within 90 d was associated with a 54% lower DMS hazard (P = 0.0369); up to 19% of the cohort had CFC severity associated with reduced DMS after revascularization, depending on the statistical-certainty threshold.
+The Cox tables (Tables 2-5) are not stored: they are outcome models, and the coding of the CFC-severe covariate (printed HR 0.65 in Table 2, next to HR 0.552 for PCI/CABG within 90 d) is not explained in the text read."""
+use_in_model = """Expected burden of severe CFC: in a stable-CAD/risk-factor population without early revascularization, 17% of scans have any severe pixels and the mean severe area is 2 +/- 8% of LV. A model heart with a single severe proximal stenosis should produce a contiguous severe region in that artery's territory, as in the revascularized group (mean 18 +/- 21% of LV, median 12%)."""
+
+[source]
+authors = ["Gould KL", "Johnson NP", "Roby AE", "Nguyen T", "Kirkeeide R", "Haynie M", "Lai D", "Zhu H", "Patel MB", "Smalling R", "et al."]
+year = 2019
+title = "Regional, artery-specific thresholds of quantitative myocardial perfusion by PET associated with reduced myocardial infarction and death after revascularization in stable coronary artery disease"
+journal = "J Nucl Med"
+volume = "60"
+issue = "3"
+pages = "410-417"
+doi = "10.2967/jnumed.118.211953"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 60, issue 3, 410-417; first authors Gould, Johnson, Roby, Nguyen)"
+pmid = "30115688"
+pmcid = "PMC6424226"
+
+[data.pet_metrics_by_revascularization]
+description = "PET metrics in scans followed by revascularization within 90 d vs not"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD unless noted; counts n (%)"
+group = ["revascularization within 90 d", "no revascularization within 90 d"]
+n_scans = [134, 3640]
+pct_of_scans = [3.6, 96.4]
+age_mean_years = [66.2, 62.0]
+age_sd_years = [9.9, 11.9]
+cfc_severe_pct_lv_mean = [18.0, 2.0]
+cfc_severe_pct_lv_sd = [21.0, 8.0]
+cfc_severe_pct_lv_median = [12.0, 0.0]
+any_severe_cfc_n = [108, 616]
+any_severe_cfc_pct = [81, 17]
+mild_cfc_gt15pct_lv_n = [116, 1556]
+mild_cfc_gt15pct_lv_pct = [87, 43]
+moderate_cfc_gt15pct_lv_n = [37, 222]
+moderate_cfc_gt15pct_lv_pct = [28, 6]
+relative_rest_defect_lt60_pct_lv_mean = [7.0, 4.0]
+relative_rest_defect_lt60_pct_lv_sd = [10.0, 10.0]
+relative_stress_defect_lt60_pct_lv_mean = [28.0, 5.0]
+relative_stress_defect_lt60_pct_lv_sd = [18.0, 10.0]
+min_quadrant_cfr_mean = [1.436, 2.39]
+min_quadrant_cfr_sd = [0.592, 0.69]
+min_quadrant_stress_flow_mean_mL_per_min_per_g = [0.968, 1.84]
+min_quadrant_stress_flow_sd_mL_per_min_per_g = [0.463, 0.66]
+min_quadrant_cfr_lt2_n = [109, 1055]
+min_quadrant_cfr_lt2_pct = [81, 29]
+global_cfr_mean = [1.91, 2.60]
+global_cfr_sd = [0.63, 0.70]
+global_stress_flow_mean_mL_per_min_per_g = [1.36, 2.05]
+global_stress_flow_sd_mL_per_min_per_g = [0.50, 0.66]
+max_stress_flow_mean_mL_per_min_per_g = [2.25, 2.73]
+max_stress_flow_sd_mL_per_min_per_g = [0.65, 0.76]
+max_cfr_mean = [3.20, 3.65]
+max_cfr_sd = [0.98, 1.00]
+p_value_note = "P <= 0.001 for all PET rows (most < 0.00001)"
+missing_note = "No IQR printed for the severe-area medians. 'Mild/moderate CFC > 15% of LV' thresholds as printed."
+

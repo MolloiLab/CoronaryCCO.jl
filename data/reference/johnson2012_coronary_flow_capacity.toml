@@ -1,0 +1,136 @@
+[meta]
+id = "johnson2012_coronary_flow_capacity"
+data_type = "experimental"
+validates = "Coronary flow capacity (CFC) classification of each LV pixel or region from absolute stress perfusion (cc/min/g) and CFR: the ORIGINAL 2012 thresholds (normal, minimally reduced, mildly reduced, moderately reduced, definite ischemia, myocardial steal, transmural scar), the classification geometry, and the per-group distribution of CFC categories (% of LV) including 241 scans of young healthy volunteers"
+species = "human"
+preparation = "1,500 rest-stress cardiac PET studies in 1,249 subjects (April 2007 - June 2011), Weatherhead PET Center, Houston: young asymptomatic volunteers plus clinical patients across the whole CAD spectrum. Rb-82, PET with 16-slice CT for attenuation correction. 21 short-axis slices x 64 radial pixels; rest flow, stress flow and CFR per pixel; flow from the Yoshida/Mullani/Gould simple integrative model. 4 basal and 2 apical slices excluded from relative-uptake endpoints."
+conditions = "Rest, then intravenous dipyridamole hyperemia. Rb-82. Thresholds for ischemia are from Johnson & Gould 2011 (dipyridamole, mostly Rb-82; see johnson2011_pet_ischemic_thresholds.toml); normal limits from young volunteers (Sdringola 2011)."
+verification = "mixed"
+access = "Full text HTML (JACC: Cardiovascular Imaging, Elsevier open archive) read from Wayback Machine capture 20200131224211 of http://imaging.onlinejacc.org:80/content/5/4/430; Table 1 and Table 2 from captures of .../content/5/4/430/T1 and /T2; Figure 1 from capture 20200729191709 of .../content/jimg/5/4/430/F1.medium.gif (440 x 363 px), viewed upscaled."
+notes = """THE ORIGINAL (2012) CFC MAP. Axes: x = absolute stress flow (cc/min/g), y = CFR. Rest flow = stress/CFR, so lines through the origin are iso-rest-flow lines.
+Classification geometry (Fig. 1, confirmed visually): the categories are NESTED RECTANGLES anchored at the origin. A point is in a given reduced category only if BOTH CFR and stress flow are below that category's upper bounds; it takes the most severe rectangle that contains it.
+Equivalently: classify CFR and stress flow separately and take the LESS severe of the two classes. Example: CFR 1.5 with stress flow 2.0 is 'mildly reduced', not 'definite ischemia'.
+Normal (red) = CFR > 3.37 OR stress flow > 2.39 (everything outside the orange rectangle), within the clinically observed rest-flow band.
+Myocardial steal (dark purple/navy) = CFR < 1 inside the definite-ischemia stress-flow column (stress < 0.91). In Fig. 1 the dashed CFR = 1 line spans only that column. Points with CFR < 1 but stress flow >= 0.91 are drawn in the green/yellow columns, which extend down to the upper rest-flow boundary.
+Transmural scar (black) = rest flow below the lowest iso-rest-flow line. The text lists the thick dashed iso-rest-flow lines as 0.2, 0.5, 1 and 2 cc/min/g, and says the lowest marks scar (>3 SD below mean rest flow in young volunteers) and the highest marks the upper limit of clinically observed rest flow. Fig. 1 shows the white dashed scar line reaching CFR 5 at stress flow ~1.0 (i.e. 0.2) and the black dashed upper line reaching CFR 2.5 at stress 5 (i.e. 2.0).
+Nontransmural infarction is a separate overlay: relative uptake < 60% of maximum at both rest and stress, over a contiguous region >= 5% of the LV.
+The 2012 normal limit is the young-volunteer mean minus 1 SD (CFR 3.37, stress 2.39). The minimal/mild split (CFR 2.70, stress 1.76) divides the band between normal and the moderately reduced thresholds.
+LATER (2018 onward) Gould/Johnson papers use DIFFERENT cutoffs (normal CFR > 2.9 and stress > 2.17; minimal > 2.38 / > 1.82; mild > 1.6 / > 1.09; moderate > 1.27 / > 0.83; severe <= 1.27 / <= 0.83; steal CFR < 1; scar rest and stress <= 0.3). They are stored in gould2018_cfc_revised_thresholds.toml; do not mix the two sets.
+The thresholds are empirical for Rb-82 with dipyridamole and the Gould flow model; the authors argue the concept transfers to other modalities, but O-15 water uses its own cutoffs (dewinter2022_o15_water_cfc.toml).
+Case counts in Table 1 are scans, not unique subjects (repeat scans included)."""
+use_in_model = """For a simulated heart, compute per-voxel (or per-segment) rest flow, hyperemic flow and CFR = stress/rest, then classify each voxel with category_thresholds_2012 using the nested-rectangle rule
+(category = least severe of the CFR class and the stress-flow class), and report % of LV per category. A healthy model heart should resemble group 1 of cfc_distribution_by_group (young volunteers: median 99% normal, IQR 87-100; minimally reduced median 1%, IQR 0-12; no moderate, ischemic or steal pixels).
+Whole-LV averages for the volunteers (rest 0.70 +/- 0.15, stress 2.71 +/- 0.58 cc/min/g, CFR 4.02 +/- 0.85) are the matching global targets. Model flows are true tissue flow; PET Rb-82 flows depend on the extraction model, so compare categories with that caveat."""
+
+[source]
+authors = ["Johnson NP", "Gould KL"]
+year = 2012
+title = "Integrating noninvasive absolute flow, coronary flow reserve, and ischemic thresholds into a comprehensive map of physiological severity"
+journal = "JACC Cardiovasc Imaging"
+volume = "5"
+issue = "4"
+pages = "430-440"
+doi = "10.1016/j.jcmg.2011.12.014"
+crossref_verified = "2026-10-15; Crossref title exact match ('Integrating Noninvasive Absolute Flow, Coronary Flow Reserve, and Ischemic Thresholds Into a Comprehensive Map of Physiological Severity'; vol 5, issue 4, 430-440; authors Johnson, Gould)"
+pmid = "22498334"
+
+[data.category_thresholds_2012]
+description = "Original CFC category bounds on the CFR-vs-stress-flow plot. Each reduced category is the region inside its own rectangle (CFR below cfr_upper AND stress flow below stress_upper) but outside the next more severe rectangle."
+location = "Text, 'Integrating absolute flow with its thresholds' (p. 431-432); Figure 1"
+provenance = "FT"
+statistic = "thresholds (no dispersion)"
+category = ["normal", "minimally_reduced", "mildly_reduced", "moderately_reduced", "definite_ischemia", "myocardial_steal"]
+color = ["red", "orange", "yellow", "dark green", "dark blue", "dark purple"]
+cfr_upper = [nan, 3.37, 2.70, 2.03, 1.74, 1.0]
+stress_flow_upper_mL_per_min_per_g = [nan, 2.39, 1.76, 1.12, 0.91, 0.91]
+basis = ["young asymptomatic volunteers; limit = mean - 1 SD (CFR 3.37, stress 2.39)", "upper half of the band between the normal limit and the moderately reduced thresholds; 'minimally reduced perfusion but no ischemia'", "lower half of that band (split at CFR 2.70, stress 1.76); 'mildly reduced perfusion but no ischemia'", "Johnson & Gould 2011 thresholds for indeterminate ischemia (only 1 of 3 ischemic features): CFR 2.03, stress 1.12", "Johnson & Gould 2011 thresholds for definite ischemia: CFR 1.74, stress 0.91", "CFR < 1: 'hyperemic' flow below basal flow"]
+rule = "Nested rectangles anchored at the origin: severe category requires BOTH CFR < cfr_upper AND stress < stress_upper; a point takes the most severe rectangle containing it. Normal = outside the minimally-reduced rectangle (CFR > 3.37 OR stress > 2.39)."
+rest_flow_scar_boundary_mL_per_min_per_g = 0.2
+rest_flow_upper_clinical_boundary_mL_per_min_per_g = 2.0
+rest_flow_boundary_note = "The text lists the thick dashed iso-rest-flow lines as 0.2, 0.5, 1 and 2 cc/min/g and says the normal rest range lies between the scar and upper boundaries, containing the 0.5 and 1 lines; which value is which boundary is read from Fig. 1 (scar line white, upper line black)."
+missing_note = "The text does not state whether boundaries are inclusive (< vs <=). Steal is drawn only within the stress < 0.91 column (Fig. 1); the text defines it only as CFR < 1. Normal has no upper bound (nan)."
+
+[data.cfc_distribution_by_group]
+description = "Flow groupings of 1,500 scans and their CFC category burden (% of LV), quantitative flows and relative uptake (Table 1). Group 1 = all young asymptomatic volunteers (by enrollment, not by flow). Groups 2-6 are clinical patients assigned by their CFC map (see group_definition)."
+location = "Table 1 ('Clinical Features by Flow Group'); group definitions in text 'Representative groupings'"
+provenance = "FT"
+statistic = "flows mean +/- SD; % of LV as median (IQR); counts n (%)"
+group = [1, 2, 3, 4, 5, 6]
+group_label = ["volunteers (red)", "clinical patients, normal flow capacity (red)", "minimally reduced (orange)", "mildly reduced (yellow)", "some ischemia (green/blue/purple/black), <10% LV relative stress defect", "large ischemia, >=10% LV relative stress defect"]
+group_definition = ["all young asymptomatic normal volunteers (Sdringola 2011) plus 9 later scans in 5 volunteers", ">= 80% of LV normal (red) and < 1% in moderately reduced, ischemic or transmural infarct zones", "normal + minimally reduced territory larger than mildly reduced territory, and < 10% in ischemic or transmural infarct zones", "minimally + mildly reduced territory larger than normal territory, and < 10% in ischemic or transmural infarct zones", ">= 10% of LV moderately reduced, definitely ischemic or transmural infarct, with < 10% of LV relative stress defect < 60% of maximum", "as group 5 but >= 10% of LV relative stress defect < 60% of maximum"]
+n_studies = [241, 258, 610, 108, 163, 120]
+pct_of_all_studies = [16, 17, 41, 7, 11, 8]
+age_mean_years = [28.0, 56.0, 63.0, 65.0, 68.0, 67.0]
+age_sd_years = [5.0, 11.0, 10.0, 10.0, 10.0, 10.0]
+rest_flow_whole_lv_mean_mL_per_min_per_g = [0.70, 0.75, 0.72, 0.69, 0.62, 0.64]
+rest_flow_whole_lv_sd_mL_per_min_per_g = [0.15, 0.24, 0.20, 0.16, 0.14, 0.18]
+stress_flow_whole_lv_mean_mL_per_min_per_g = [2.71, 2.78, 1.99, 1.51, 1.18, 1.23]
+stress_flow_whole_lv_sd_mL_per_min_per_g = [0.58, 0.59, 0.34, 0.16, 0.26, 0.37]
+cfr_whole_lv_mean = [4.02, 3.94, 2.91, 2.26, 1.93, 1.97]
+cfr_whole_lv_sd = [0.85, 0.77, 0.51, 0.30, 0.40, 0.59]
+rest_flow_min_quadrant_mean_mL_per_min_per_g = [0.65, 0.69, 0.65, 0.64, 0.54, 0.56]
+rest_flow_min_quadrant_sd_mL_per_min_per_g = [0.14, 0.22, 0.19, 0.15, 0.14, 0.17]
+stress_flow_min_quadrant_mean_mL_per_min_per_g = [2.55, 2.58, 1.80, 1.36, 0.97, 0.85]
+stress_flow_min_quadrant_sd_mL_per_min_per_g = [0.56, 0.57, 0.35, 0.16, 0.25, 0.32]
+cfr_min_quadrant_mean = [3.79, 3.69, 2.69, 2.10, 1.71, 1.46]
+cfr_min_quadrant_sd = [0.81, 0.73, 0.49, 0.29, 0.35, 0.50]
+normal_pct_lv_median = [99.0, 96.0, 33.0, 0.0, 0.0, 2.0]
+normal_pct_lv_q1 = [87.0, 89.0, 14.0, 0.0, 0.0, 0.0]
+normal_pct_lv_q3 = [100.0, 99.0, 59.0, 2.0, 0.0, 15.0]
+minimally_reduced_pct_lv_median = [1.0, 4.0, 50.0, 30.0, 5.0, 19.0]
+minimally_reduced_pct_lv_q1 = [0.0, 1.0, 35.0, 16.0, 1.0, 8.0]
+minimally_reduced_pct_lv_q3 = [12.0, 10.0, 62.0, 39.0, 16.0, 31.0]
+mildly_reduced_pct_lv_median = [0.0, 0.0, 10.0, 65.0, 50.0, 28.0]
+mildly_reduced_pct_lv_q1 = [0.0, 0.0, 3.0, 57.0, 35.0, 17.0]
+mildly_reduced_pct_lv_q3 = [0.0, 0.0, 23.0, 77.0, 67.0, 41.0]
+moderately_reduced_pct_lv_median = [0.0, 0.0, 0.0, 3.0, 18.0, 10.0]
+moderately_reduced_pct_lv_q1 = [0.0, 0.0, 0.0, 1.0, 11.0, 7.0]
+moderately_reduced_pct_lv_q3 = [0.0, 0.0, 0.0, 5.0, 26.0, 16.0]
+definite_ischemia_pct_lv_median = [0.0, 0.0, 0.0, 0.0, 10.0, 14.0]
+definite_ischemia_pct_lv_q1 = [0.0, 0.0, 0.0, 0.0, 4.0, 9.0]
+definite_ischemia_pct_lv_q3 = [0.0, 0.0, 0.0, 0.0, 22.0, 23.0]
+myocardial_steal_pct_lv_median = [0.0, 0.0, 0.0, 0.0, 0.0, 7.0]
+myocardial_steal_pct_lv_q1 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+myocardial_steal_pct_lv_q3 = [0.0, 0.0, 0.0, 0.0, 1.0, 19.0]
+largest_definite_ischemia_area_pct_lv_median = [0.0, 0.0, 0.0, 0.0, 7.0, 22.0]
+largest_definite_ischemia_area_pct_lv_q1 = [0.0, 0.0, 0.0, 0.0, 3.0, 10.0]
+largest_definite_ischemia_area_pct_lv_q3 = [0.0, 0.0, 0.0, 0.0, 19.0, 41.0]
+nontransmural_infarct_n = [0, 0, 24, 1, 38, 38]
+nontransmural_infarct_pct = [0, 0, 4, 1, 23, 31]
+transmural_infarct_n = [0, 2, 10, 2, 26, 15]
+transmural_infarct_pct = [0, 1, 2, 2, 16, 12]
+relative_stress_defect_lt60_pct_lv_median = [0.0, 0.0, 0.0, 0.0, 5.0, 29.0]
+relative_stress_defect_lt60_pct_lv_q1 = [0.0, 0.0, 0.0, 0.0, 1.0, 20.0]
+relative_stress_defect_lt60_pct_lv_q3 = [0.0, 0.0, 3.0, 1.0, 13.0, 39.0]
+angina_during_pet_pct = [0, 1, 3, 2, 9, 39]
+st_depression_during_pet_pct = [0, 2, 4, 4, 7, 40]
+ejection_fraction_mean_pct = [nan, 72.0, 70.0, 71.0, 66.0, 61.0]
+ejection_fraction_sd_pct = [nan, 8.0, 9.0, 9.0, 12.0, 11.0]
+p_value_all_rows = "< 0.001 across groups for all rows above (male sex p = 0.06, not stored)"
+missing_note = "Volunteers had no gated scan, so EF is nan. Group 1 per-volunteer flows are not given here (see Sdringola 2011, J Am Coll Cardiol Img 4:402, not read). Table 1 'Number of studies' gives n (% of 1,500); percentages are as printed and do not sum to 100 exactly."
+
+[data.stress_flow_vs_cfr_discordance]
+description = "Concordance of worst-quadrant stress flow and CFR against the 2011 ischemic thresholds (stress < 0.91 cc/min/g, CFR < 1.74) in the 1,500 scans, and the share with definite ischemia (stress-induced PET defect plus significant ST depression and/or severe angina)"
+location = "Text, 'Necessity of considering rest flow' (p. 434)"
+provenance = "FT"
+statistic = "counts of scans"
+group = ["both preserved", "both ischemic", "ischemic CFR, preserved stress flow", "preserved CFR, ischemic stress flow"]
+n_scans = [1271, 112, 92, 25]
+n_definite_ischemia = [15, 53, 13, 2]
+pct_definite_ischemia = [1, 47, 14, 8]
+concordant_pct_of_all = 92
+missing_note = "The text also gives: among ischemic stress flow, 18% have preserved CFR; among preserved stress flow, 7% have ischemic CFR; definite ischemia frequency does not differ between the two discordant groups (Fisher p = 0.52)."
+
+[data.whole_lv_flow_all_studies]
+description = "Whole-LV average rest and stress flow over all 1,500 studies, and pressure-rate-product (PRP) correlations"
+location = "Text, 'Necessity of considering rest flow' (p. 433)"
+provenance = "FT"
+statistic = "mean +/- SD (range); COV = SD as % of mean"
+quantity = ["rest flow", "PRP-adjusted rest flow (rest flow / baseline PRP x 10,000)", "stress flow"]
+mean_mL_per_min_per_g = [0.70, 0.99, 2.06]
+sd_mL_per_min_per_g = [0.20, 0.22, 0.71]
+min_mL_per_min_per_g = [0.33, 0.48, 0.30]
+max_mL_per_min_per_g = [1.82, 2.06, 5.91]
+cov_pct = [28, 22, 34]
+r_with_prp = [0.63, nan, 0.50]
+missing_note = "PRP-adjusted rest flow is printed without units (index); stored in the same column for compactness. r with PRP not given for the adjusted value."

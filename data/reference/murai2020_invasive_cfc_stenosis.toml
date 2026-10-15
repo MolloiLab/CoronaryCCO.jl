@@ -1,0 +1,74 @@
+[meta]
+id = "murai2020_invasive_cfc_stenosis"
+data_type = "experimental"
+validates = "Relation between invasive (Doppler-wire) coronary flow capacity grade and anatomic / pressure stenosis severity: percent diameter stenosis (QCA), minimal lumen diameter, FFR, iFR, hyperemic APV and CFR per CFC grade, before and after PCI; invasive CFC thresholds"
+species = "human"
+preparation = "133 vessels with intracoronary Doppler flow velocity and pressure measured before and after PCI, pooled from DEFINE FLOW (>= 50% diameter stenosis) and an international database incl. IDEAL (40-70% visual diameter stenosis); pooled database from Amsterdam UMC, Imperial College London and Hospital Clinico San Carlos. QCA for diameter stenosis."
+conditions = "Hyperemia by intracoronary adenosine (20-150 ug) or IV adenosine 140 ug/kg/min (central or peripheral vein). Rest and hyperemic distal pressure and average peak velocity (APV) recorded simultaneously."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC7660740 (open access), read 2026-10-15; Table 1 read from the XML table markup."
+notes = """This is an INVASIVE, velocity-based CFC (hyperemic APV in cm/s instead of PET stress perfusion in mL/min/g). Thresholds are from van de Hoef et al. JACC Cardiovasc Interv 2015;8:1670 (ref 12, not read).
+Grades: normal CFR >= 2.8 with hAPV >= 49.0 cm/s; mildly reduced 2.1 < CFR < 2.8 with 33.0 < hAPV < 49.0; moderately reduced 1.7 < CFR <= 2.1 with 26.0 < hAPV <= 33.0; severely reduced CFR <= 1.7 with hAPV <= 26.0. 'Ischemic' CFC = moderately or severely reduced. Each grade is printed with 'and corresponding hAPV'; the rule for vessels with CFR and hAPV in different grades is not printed here.
+Pre-PCI QCA diameter stenosis rises across CFC grades (median 49.1% normal to 66.0% severe), but the IQRs overlap widely (moderate grade 44.0-72.0%). FFR is similar across normal-to-moderate grades (medians 0.73-0.79) and lower only in the severe grade (0.56). So % stenosis and FFR map only loosely onto CFC grade.
+No percent-stenosis or FFR mapping to PET CFC categories was found in Gould 2013, Kaul 2020 (PMC7992506) or the other Gould CFC papers read; Gould 2013 reports ~40% discordance between FFR and CFR."""
+use_in_model = """For simulated stenoses of known % diameter reduction in the model tree, compare the distal-territory CFC grade with the pre-PCI %DS and FFR distribution per grade here (loose relation expected; severe CFC typically ~66% DS with FFR ~0.56). For a velocity-based comparison use the model's proximal-segment hyperemic mean velocity against hAPV only with care: APV is Doppler average peak velocity, not mean velocity."""
+
+[source]
+authors = ["Murai T", "Stegehuis VE", "van de Hoef TP", "Wijntjens GWM", "Hoshino M", "Kanaji Y", "Sugiyama T", "Hamaya R", "Nijjer SS", "de Waard GA", "et al."]
+year = 2020
+title = "Coronary flow capacity to identify stenosis associated with coronary flow improvement after revascularization: a combined analysis from DEFINE FLOW and IDEAL"
+journal = "J Am Heart Assoc"
+volume = "9"
+issue = "14"
+pages = "e016130"
+doi = "10.1161/JAHA.120.016130"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 9, issue 14, e016130; first authors Murai, Stegehuis, van de Hoef, Wijntjens)"
+pmid = "32660310"
+pmcid = "PMC7660740"
+
+[data.invasive_cfc_thresholds]
+description = "Doppler-wire CFC grade bounds (CFR and hyperemic average peak velocity)"
+location = "Methods ('Data Analysis')"
+provenance = "FT"
+statistic = "thresholds"
+grade = ["normal", "mildly_reduced", "moderately_reduced", "severely_reduced"]
+cfr_lower = [2.8, 2.1, 1.7, nan]
+cfr_upper = [nan, 2.8, 2.1, 1.7]
+hapv_lower_cm_per_s = [49.0, 33.0, 26.0, nan]
+hapv_upper_cm_per_s = [nan, 49.0, 33.0, 26.0]
+printed_definition = ["CFR >= 2.8 with corresponding hAPV >= 49.0 cm/s", "CFR < 2.8 and > 2.1 and corresponding hAPV < 49.0 and > 33.0 cm/s", "CFR <= 2.1 and > 1.7 with corresponding hAPV <= 33.0 and > 26.0 cm/s", "CFR <= 1.7 and corresponding hAPV <= 26.0 cm/s"]
+missing_note = "Inclusive/exclusive ends as printed in printed_definition; the numeric arrays carry the bounds only."
+
+[data.stenosis_and_pressure_by_grade]
+description = "Pre- and post-PCI anatomy and physiology by pre-PCI CFC grade"
+location = "Table 1"
+provenance = "FT"
+statistic = "median (Q1-Q3) unless noted; MLD mean +/- SD"
+grade = ["all", "normal", "mildly_reduced", "moderately_reduced", "severely_reduced"]
+n_vessels = [133, 14, 40, 31, 48]
+pre_pci_diameter_stenosis_median_pct = [58.5, 49.1, 55.7, 62.8, 66.0]
+pre_pci_diameter_stenosis_q1_pct = [48.9, 44.5, 48.6, 44.0, 54.7]
+pre_pci_diameter_stenosis_q3_pct = [68.3, 58.5, 62.2, 72.0, 71.5]
+pre_pci_mld_mean_mm = [1.00, 1.20, 1.06, 0.95, 0.92]
+pre_pci_mld_sd_mm = [0.35, 0.27, 0.37, 0.37, 0.31]
+pre_pci_reference_diameter_median_mm = [2.60, 2.35, 2.65, 2.43, 2.61]
+pre_pci_ffr_median = [0.70, 0.79, 0.75, 0.73, 0.56]
+pre_pci_ffr_q1 = [0.55, 0.70, 0.68, 0.59, 0.45]
+pre_pci_ffr_q3 = [0.80, 0.82, 0.82, 0.79, 0.73]
+pre_pci_ifr_median = [0.82, 0.86, 0.88, 0.82, 0.57]
+pre_pci_ifr_q1 = [0.61, 0.80, 0.81, 0.68, 0.37]
+pre_pci_ifr_q3 = [0.90, 0.95, 0.92, 0.91, 0.85]
+pre_pci_cfr_median = [1.6, 2.2, 2.2, 1.7, 1.3]
+pre_pci_cfr_q1 = [1.3, 1.7, 1.7, 1.4, 1.0]
+pre_pci_cfr_q3 = [2.1, 3.6, 2.4, 1.9, 1.5]
+pre_pci_hapv_median_cm_per_s = [26.8, 57.4, 37.6, 27.4, 18.3]
+pre_pci_hapv_q1_cm_per_s = [18.6, 51.9, 31.5, 20.6, 12.7]
+pre_pci_hapv_q3_cm_per_s = [38.2, 81.0, 41.6, 30.1, 22.7]
+pre_pci_basal_apv_median_cm_per_s = [16.4, 27.2, 18.1, 17.6, 13.7]
+post_pci_diameter_stenosis_median_pct = [13.1, 14.5, 13.0, 13.8, 12.0]
+post_pci_ffr_median = [0.90, 0.89, 0.90, 0.90, 0.90]
+post_pci_cfr_median = [2.3, 2.6, 2.5, 2.2, 2.2]
+post_pci_hapv_median_cm_per_s = [42.6, 59.3, 43.5, 39.5, 41.1]
+p_value_pre_pci_ds = 0.006
+p_value_pre_pci_ffr = "< 0.001"
+missing_note = "Pairwise-significance symbols omitted. Pre-PCI CFR in the normal grade has a median of 2.2 (IQR 1.7-3.6) although the normal grade requires CFR >= 2.8 by the printed definition; stored as printed. Together with the normal-grade hAPV median of 57.4 cm/s this is consistent with a vessel being graded normal when hAPV >= 49 even if CFR < 2.8 (the nested-rectangle reading), but the paper does not state the rule. Median percent increase in hyperemic flow after PCI by grade (Abstract): 4.2%, 25.9%, 50.1%, 145.5% (normal to severe)."

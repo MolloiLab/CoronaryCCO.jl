@@ -1,0 +1,75 @@
+[meta]
+id = "gould2018_cfc_revised_thresholds"
+data_type = "experimental"
+validates = "CURRENT (2018 onward) coronary flow capacity category thresholds of the Houston (Gould/Johnson) group for Rb-82 dipyridamole PET: per-pixel CFR and stress perfusion (cc/min/g) ranges for normal, minimally reduced, mildly reduced, moderately reduced, severely reduced (definite ischemia) and myocardial steal; scar definition; the clinical group that defines each range"
+species = "human"
+preparation = "Thresholds summarized in a short review (Circ Res 2018) and restated, with acquisition details, in Gould et al. Eur Heart J 2024 (6,979 CAD subjects): Rb-82 30-50 mCi on a GE Discovery ST 16-slice PET-CT (2D) or a United Imaging solid-state 3D PET-CT; per-pixel rest and stress perfusion and CFR; FDA-cleared software (K171303 per Gould 2019 J Nucl Med)."
+conditions = "Dipyridamole 0.142 mg/kg/min over 4 min, 4-min wait to peak vasodilation before the stress Rb-82 injection (EHJ 2024 Methods)."
+verification = "FT"
+access = "Circ Res 2018 full text: Europe PMC fullTextXML of PMC6221383 (Viewpoint, CC BY-NC-ND open access), read 2026-10-15. Eur Heart J 2024: Europe PMC fullTextXML of PMC10787661 (open access), read 2026-10-15. Severe-threshold wording also checked in Gould 2019 J Nucl Med (PMC6424226) and the CENTURY trial, Eur Heart J 2025 (PMC12401582)."
+notes = """These cutoffs REPLACE the 2012 set in johnson2012_coronary_flow_capacity.toml (2012: normal CFR > 3.37 / stress > 2.39; minimal/mild split 2.70 / 1.76; moderate < 2.03 / < 1.12; definite ischemia < 1.74 / < 0.91).
+The texts read do not explain why the numbers changed. Circ Res 2018 says the 5 categories were set 'by receiver operating curve analysis in 6000 patients' with test-retest precision of +/-10%, citing refs incl. Johnson & Gould 2012 and Kitkungvan 2017 (not read).
+How CFR and stress combine: each category is printed as a pair of ranges joined by 'and'. The papers state the severe category explicitly as pixels with BOTH CFR <= 1.27 AND stress <= 0.83 (J Nucl Med 2019; CENTURY 2025: 'CFC maps with any pixels having both CFR <= 1.27 and stress perfusion <= 0.83 mL/min/g are defined as severely reduced').
+EHJ 2024 says percent of LV is computed 'for each range of combined both CFR and stress' values. This matches the nested-rectangle geometry drawn in the 2012 map (a pixel needs both values in or below a range to be classed that severe; otherwise it takes the less severe class).
+The papers do not print the rule for pixels whose CFR and stress fall in different ranges. Apply the nested-rectangle rule as in 2012, and note it as an inference for the revised set.
+Myocardial steal is defined only as CFR < 1.0 (Circ Res 2018: 'stress perfusion falling below rest perfusion'); whether a stress-flow bound also applies is not printed.
+EHJ 2024 relabels red as 'Excellent' and orange as 'Adequate'. Circ Res 2018 calls orange 'typical or minimally reduced'. CENTURY 2025 calls them normal and minimally reduced.
+Severe CFC in the J Nucl Med 2019 cohort (3,774 scans): see gould2019_artery_specific_cfc.toml."""
+use_in_model = """Classify each simulated LV voxel with category_thresholds_revised (nested-rectangle rule; steal = CFR < 1), using model hyperemic flow and CFR. A healthy model heart at rest-and-adenosine-like hyperemia should be red: the normal range is defined from 125 healthy young volunteers < 40 y with no risk factors.
+Use either this set or the 2012 set consistently. Thresholds are Rb-82 / dipyridamole specific (O-15 water: dewinter2022_o15_water_cfc.toml)."""
+
+[source]
+authors = ["Gould KL"]
+year = 2018
+title = "Experimental to clinical coronary physiology"
+journal = "Circ Res"
+volume = "123"
+issue = "10"
+pages = "1124-1126"
+doi = "10.1161/CIRCRESAHA.118.313892"
+crossref_verified = "2026-10-15; Crossref title exact match ('Experimental to Clinical Coronary Physiology'; vol 123, issue 10, 1124-1126; author Gould)"
+pmid = "30359188"
+pmcid = "PMC6221383"
+
+[secondary_source]
+authors = ["Gould KL", "Johnson NP", "Roby AE", "Bui L", "Kitkungvan D", "Patel MB", "Nguyen T", "Kirkeeide R", "Haynie M", "Arain SA", "et al."]
+year = 2024
+title = "Coronary flow capacity and survival prediction after revascularization: physiological basis and clinical implications"
+journal = "Eur Heart J"
+volume = "45"
+issue = "3"
+pages = "181-194"
+doi = "10.1093/eurheartj/ehad579"
+crossref_verified = "2026-10-15; Crossref title exact match ('Coronary flow capacity and survival prediction after revascularization: physiological basis and clinical implications'; vol 45, issue 3, 181-194)"
+pmid = "37634192"
+pmcid = "PMC10787661"
+role = "Restates the identical cutoffs (Methods), adds the scar definition, the Rb-82/dipyridamole protocol and the 'Excellent/Adequate' labels."
+
+[data.category_thresholds_revised]
+description = "Per-pixel CFC ranges. A range 'CFR > a to b' means a < CFR <= b as printed ('>1.6 to 2.38'). Upper bounds of the normal class are open."
+location = "Circ Res 2018, paragraph 'Precision Clinical Coronary Physiology' (p. 1124-1125); identical numbers in EHJ 2024 Methods ('Coronary flow capacity')"
+provenance = "FT"
+statistic = "thresholds (no dispersion)"
+category = ["normal", "minimally_reduced", "mildly_reduced", "moderately_reduced", "severely_reduced_definite_ischemia", "myocardial_steal"]
+color = ["red", "orange", "yellow", "green", "blue", "dark blue"]
+cfr_lower_exclusive = [2.9, 2.38, 1.6, 1.27, 1.0, nan]
+cfr_upper_inclusive = [nan, 2.9, 2.38, 1.6, 1.27, 1.0]
+stress_flow_lower_exclusive_mL_per_min_per_g = [2.17, 1.82, 1.09, 0.83, nan, nan]
+stress_flow_upper_inclusive_mL_per_min_per_g = [nan, 2.17, 1.82, 1.09, 0.83, nan]
+printed_range = ["CFR > 2.9 and stress perfusion > 2.17 cc/min/g", "CFR > 2.38-2.9 and stress perfusion > 1.82-2.17", "CFR > 1.6-2.38 and stress perfusion > 1.09-1.82", "CFR > 1.27-1.6 and stress perfusion > 0.83-1.09", "CFR 1.0-1.27 and stress perfusion <= 0.83", "CFR < 1.0 (stress perfusion falling below rest perfusion)"]
+defining_population_circres2018 = ["125 healthy young volunteers < 40 y with no risk factors", "people with risk factors only, no known or clinically manifest CAD", "documented stable CAD without angina or ST depression during dipyridamole stress", "angina or ST depression >= 1 mm with a relative stress defect ('possible ischemia')", "angina AND ST depression >= 1 mm AND a relative stress defect ('definite ischemia')", "nearly always with angina and ST depression >= 1 mm"]
+defining_population_ehj2024 = ["healthy young volunteers", "asymptomatic patients with risk factors without known CAD", "known CAD without symptoms of ischaemia", "either a regional stress defect or angina or ST depression >= 1 mm during dipyridamole stress", "two of these three manifestations of ischaemia", "defined as CFR < 1.0"]
+scar_definition = "fixed resting and stress perfusion <= 0.3 mL/min/g, expressed as % of LV (EHJ 2024; grey hatch marks)"
+combination_rule = "Severe stated explicitly as BOTH CFR <= 1.27 AND stress <= 0.83 (J Nucl Med 2019; CENTURY 2025). For the other classes, 'and' between the two ranges; the rule for mixed pixels is not printed (nested rectangles as in the 2012 map is the consistent reading)."
+missing_note = "Lower bound of the severe class's CFR (1.0) separates it from steal; the stress-flow range for steal is not printed. Inclusive/exclusive ends follow the printed '>' and '<=' only where printed; the normal class has no upper bound (nan)."
+
+[data.severe_threshold_confirmations]
+description = "Independent printings of the severe (blue) threshold"
+location = "J Nucl Med 2019 Abstract and Methods (PMC6424226); CENTURY trial EHJ 2025 Methods (PMC12401582)"
+provenance = "FT"
+statistic = "thresholds"
+source_paper = ["Gould KL et al. J Nucl Med 2019;60:410-417", "Gould KL et al. Eur Heart J 2025;46:3273-3286 (CENTURY)"]
+cfr_upper_inclusive = [1.27, 1.27]
+stress_flow_upper_inclusive_mL_per_min_per_g = [0.83, 0.83]
+wording = ["severely reduced CFC (coronary flow reserve <= 1.27 and stress perfusion <= 0.83 cc/min/g); CFC maps with any pixels coded blue defined as both CFR <= 1.27 and stress perfusion <= 0.83", "pixels with CFR <= 1.27 and stress perfusion <= 0.83 mL/min/g; CFC maps with any pixels having both CFR <= 1.27 and stress perfusion <= 0.83 mL/min/g are defined as severely reduced CFC"]
+missing_note = ""

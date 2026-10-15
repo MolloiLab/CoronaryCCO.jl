@@ -1,0 +1,61 @@
+[meta]
+id = "gould2013_anatomic_vs_physiologic"
+data_type = "experimental (review summary)"
+validates = "Literature-pooled PET rest flow, stress flow and CFR by population (normal controls through established CAD), PET ischemic CFR and stress-flow cutoffs by radionuclide, and the qualitative relation between percent stenosis, FFR and coronary flow capacity; definition and mechanism of myocardial steal with collaterals"
+species = "human"
+preparation = "State-of-the-art review (multi-society PET authors). Table 1 pools 14,962 subjects from 252 unique publications (N-13 ammonia 5,541; O-15 water 3,161; Rb-82 6,175) over nearly 25 years, 15 countries, many scanners, stress agents and flow models."
+conditions = "Mixed vasodilator stress agents and radionuclides (per source publication)."
+verification = "FT"
+access = "Full text HTML (J Am Coll Cardiol, Elsevier open archive) read from Wayback Machine capture 20200205145627 of http://www.onlinejacc.org:80/content/62/18/1639; Tables 1 and 2 from captures of .../content/62/18/1639/T1 and /T2 (footnotes included). Online Appendix (per-paper table) not read."
+notes = """Table 1 values are pooled across publications; the paper does not say in the text read whether the +/- values are SDs across studies or pooled subject SDs. The small rest-flow SDs (0.06-0.18) suggest SDs of study means; treat them as such.
+'Normal controls' are as defined by each source paper; the review warns that up to 50% of otherwise 'healthy' volunteers may have unrecognized risk factors.
+CFC map colors in this review: high flow of normal volunteers (red); intermediate flows split into upper (orange) and lower (yellow) halves; mixed signs of ischemia, angina or ECG change but not both (green); at or below the definite ischemic threshold (blue or purple); transmural scar (black). Thresholds as in Johnson & Gould 2011/2012.
+Percent stenosis vs flow: the review states a pronounced curvilinear relation between % stenosis and CFR for idealized experimental stenoses, but wide variability clinically (diffuse disease, multiple stenoses, remodeling). It gives no mapping from % diameter stenosis or FFR to CFC category.
+FFR vs flow: ~40% discordance between FFR and CFR measured invasively (literature). Schematic example: mild diffuse disease lowers absolute CFR from 4.2 (young volunteers) to 2.7 (patients > 40 y with risk factors) with FFR staying high; a discrete stenosis can lower FFR to 0.65 while absolute CFR stays 2.7.
+Myocardial steal: established feature of collateralized myocardium distal to chronic occlusion; stress perfusion falls below rest because high flow in the narrowed feeding artery lowers distal pressure at the collateral origins. With exceptionally well-developed collaterals there may be no steal, only limited CFR; rarely, collaterals give flow capacity comparable to native arteries.
+Table 2 rows: the Danad 2013 O-15 entry (CFR cutoff 2.30, stress 1.86) differs from the Danad cutoffs quoted by de Winter 2022 (hMBF 2.3 mL/min/g, CFR 2.5); stored as printed here."""
+use_in_model = """Global sanity targets for a healthy model heart under vasodilator hyperemia: pooled normal-control rest 0.82, stress 2.86, CFR 3.55 (all tracers pooled). Use tracer-specific references where possible (O-15 water reads higher stress flow than Rb-82). Ischemic cutoffs by tracer (ischemic_thresholds_by_tracer) show the spread a model-derived threshold should fall within."""
+
+[source]
+authors = ["Gould KL", "Johnson NP", "Bateman TM", "Beanlands RS", "Bengel FM", "Bober R", "Camici PG", "Cerqueira MD", "Chow BJW", "Di Carli MF", "et al."]
+year = 2013
+title = "Anatomic versus physiologic assessment of coronary artery disease: role of coronary flow reserve, fractional flow reserve, and positron emission tomography imaging in revascularization decision-making"
+journal = "J Am Coll Cardiol"
+volume = "62"
+issue = "18"
+pages = "1639-1653"
+doi = "10.1016/j.jacc.2013.07.076"
+crossref_verified = "2026-10-15; Crossref title match on main title ('Anatomic Versus Physiologic Assessment of Coronary Artery Disease'; vol 62, issue 18, 1639-1653; 28 authors, first Gould). The subtitle is not in the Crossref title field."
+pmid = "23954338"
+
+[data.pooled_flow_by_population]
+description = "Graded absolute flow and CFR across the spectrum of disease, pooled from the PET literature (N = 14,962)"
+location = "Table 1 and its footnote"
+provenance = "FT"
+statistic = "mean +/- SD as printed (pooled across publications; see notes)"
+population = ["normal controls", "risk factors only", "established CAD", "mixed (risk factors and/or known CAD)", "cardiomyopathy", "hypertrophic cardiomyopathy", "syndrome X", "after cardiac transplant"]
+n = [3484, 3592, 1650, 4765, 594, 345, 348, 184]
+rest_flow_mean_mL_per_min_per_g = [0.82, 0.85, 0.83, 0.97, 0.73, 0.90, 1.06, 1.14]
+rest_flow_sd_mL_per_min_per_g = [0.06, 0.08, 0.10, 0.10, 0.07, 0.10, 0.11, 0.18]
+stress_flow_mean_mL_per_min_per_g = [2.86, 2.25, 1.71, 1.86, 1.47, 1.57, 2.65, 2.44]
+stress_flow_sd_mL_per_min_per_g = [1.29, 1.07, 0.71, 0.58, 0.56, 0.33, 1.31, 1.34]
+cfr_mean = [3.55, 2.80, 2.02, 1.93, 2.02, 1.84, 2.54, 2.29]
+cfr_sd = [1.36, 1.39, 0.70, 0.48, 0.67, 0.36, 1.31, 0.86]
+tracer_mix = "N-13 ammonia 5,541; O-15 water 3,161; Rb-82 6,175 (whole table; not split per row)"
+missing_note = "Per-tracer values per population are in the Online Appendix (not read). The text says 250 unique publications; the table footnote says 252."
+
+[data.ischemic_thresholds_by_tracer]
+description = "Published PET cutoffs for ischemia (CFR and stress flow), as tabulated in the review"
+location = "Table 2"
+provenance = "secondary"
+statistic = "ROC cutoff and AUC as reported in each source"
+first_author = ["Sambuceti", "Muzik", "Nesterov", "Hajjiri", "Kajander", "Johnson", "Morton", "Fiechter", "Danad"]
+citation = ["Am J Cardiol 1993;72:990", "J Am Coll Cardiol 1998;31:534", "Eur J Nucl Med Mol Imaging 2009;36:1594", "J Am Coll Cardiol Img 2009;2:751", "Circulation 2010;122:603", "J Am Coll Cardiol Img 2011;4:990", "J Am Coll Cardiol 2012;60:1546", "J Nucl Med 2012;53:1230", "J Nucl Med 2013;54:55"]
+n = [33, 51, 48, 27, 107, 1674, 41, 73, 120]
+tracer = ["N-13 ammonia", "N-13 ammonia", "O-15 water", "N-13 ammonia", "O-15 water", "Rb-82", "N-13 ammonia", "N-13 ammonia", "O-15 water"]
+reference_standard = ["dipyridamole ST depression", "clinically normal group and cath data", "cath %DS > 50 (plus FFR in half of cohort)", "cath %DS >= 70", "cath %DS >= 50 or FFR <= 0.8", "PET defect, dipyridamole angina/ST", "cath %DS >= 70", "cath %DS >= 50", "cath %DS >= 50 (plus FFR in a third of cohort)"]
+cfr_cutoff = [1.75, 2.74, nan, 2.0, nan, 1.74, 1.44, 2.0, 2.30]
+cfr_auc = [0.59, 0.91, nan, 0.86, nan, 0.91, 0.83, 0.92, 0.81]
+stress_flow_cutoff_mL_per_min_per_g = [1.15, nan, 2.5, 1.85, 2.5, 0.91, 1.48, nan, 1.86]
+stress_flow_auc = [0.6, nan, nan, 0.90, 0.95, 0.98, 0.69, nan, 0.86]
+missing_note = "Blank cells in the printed table are nan. Values are copied from the review's table, not checked against each original paper (provenance secondary). See notes for the Danad discrepancy."

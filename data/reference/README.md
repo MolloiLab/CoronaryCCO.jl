@@ -116,6 +116,18 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `mccommis2010_myocardial_oxygenation.toml` | Global OEF, MBF, MBV and MVO2 at rest and adenosine hyperemia | Human, healthy, CMR | FT |
 | `bassingthwaighte2001_metabolic_heterogeneity.toml` | Flow heterogeneity summary, temporal stability of regional flow, regional O2 use rising with regional flow | Review of baboon, sheep, dog, rabbit and human data | FT (review summary) |
 
+### Coronary flow capacity (PET stress perfusion and CFR categories)
+
+| File | What it validates | Species / conditions | Status |
+|---|---|---|---|
+| `johnson2012_coronary_flow_capacity.toml` | Original CFC map: nested-rectangle categories on CFR vs stress flow (normal > 3.37 / 2.39; minimal, mild, moderate < 2.03 / 1.12; definite ischemia < 1.74 / 0.91; steal CFR < 1; scar rest < 0.2), and % of LV per category by group, including 241 young-volunteer scans (median 99% normal) | Human, 1,500 Rb-82 dipyridamole PET scans | mixed (text and tables FT; geometry from Fig. 1) |
+| `johnson2011_pet_ischemic_thresholds.toml` | Worst-pixel ischemic thresholds (0.91 cc/min/g, CFR 1.74; indeterminate 1.12, 2.03) and steal frequency (CFR < 1 in 40% of definite ischemia) | Human, 1,674 PET studies (mostly Rb-82), dipyridamole | FT |
+| `gould2018_cfc_revised_thresholds.toml` | Current Houston CFC cutoffs (normal > 2.9 / 2.17; minimal > 2.38 / 1.82; mild > 1.6 / 1.09; moderate > 1.27 / 0.83; severe ≤ 1.27 / ≤ 0.83; steal CFR < 1; scar ≤ 0.3) | Human, Rb-82 dipyridamole | FT |
+| `gould2019_artery_specific_cfc.toml` | Prevalence and size of severe CFC; minimum-quadrant and global stress flow and CFR | Human, 3,774 Rb-82 PET scans | FT |
+| `gould2013_anatomic_vs_physiologic.toml` | Literature-pooled rest, stress flow and CFR by population (normal controls 0.82 / 2.86 / 3.55); ischemic cutoffs by tracer; steal with collaterals | Human, 14,962 subjects from 252 papers | FT (Table 2 secondary) |
+| `dewinter2022_o15_water_cfc.toml` | O-15 water CFC cutoffs (normal hMBF > 3.01 or CFR > 2.95; severe ≤ 1.5 / ≤ 1.5; steal CFR < 1), normal reference (hMBF 3.66 ± 1.30, CFR 3.69 ± 1.48), category distributions | Human, [15O]H2O PET, adenosine | FT |
+| `murai2020_invasive_cfc_stenosis.toml` | Invasive Doppler CFC grades vs % diameter stenosis and FFR | Human, 133 vessels, adenosine | FT |
+
 ### Vessel-wall and regulation model parameters (model input, not data)
 
 | File | What it provides | Species / conditions | Status |
