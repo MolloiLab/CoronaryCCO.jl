@@ -131,15 +131,14 @@ Relative O₂ demand (mean 1, volume-weighted) at points `pos` (3 × n, mm) hold
 (Bassingthwaighte, Beard & Li 2001; Deussen 2001); its spread falls with piece mass as the flow
 spread does, RD(m) = RD(1 g)·m^(1−D) (Bassingthwaighte et al. 1989: D = 1.2, RD = 15% at 1 g).
 
-The field is lognormal, exp(z), with z a sum of white noise smoothed at octave scales 2–32 mm.
-The fractal law was measured on pieces of 0.1–10 g (Bassingthwaighte et al. 1989); below ≈ 2 mm
-(≈ 10 mg) the field is smooth rather than extrapolated, so single terminals do not get
-unphysical extremes of demand.
+The field is lognormal, exp(z), with z a sum of white noise smoothed at octave scales
+`octaves` (default 0.5–32 mm, so the fractal law of Bassingthwaighte et al. 1989, measured on
+0.1–10 g pieces, is followed down to the 1 mm voxel).
 Each octave's variance scales as σ^(6(1−D)), so the variance of a cube average falls as
 L^(6(1−D)) with cube side L, as RD ∝ m^(1−D) requires. The amplitude is set so cubes of 1 cm³
 (≈ 1 g) have relative dispersion `rd1g`.
 """
-function demand_field(pos::AbstractMatrix, vol::AbstractVector; rd1g::Real = 0.15, D::Real = 1.2, seed::Integer = 1)
+function demand_field(pos::AbstractMatrix, vol::AbstractVector; rd1g::Real = 0.15, D::Real = 1.2, seed::Integer = 1, octaves = (0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0))
     n = size(pos, 2)
     lo = floor.(Int, vec(minimum(pos; dims = 2))) .- 2; hi = ceil.(Int, vec(maximum(pos; dims = 2))) .+ 2
     dims = Tuple(hi .- lo .+ 1)
@@ -148,7 +147,7 @@ function demand_field(pos::AbstractMatrix, vol::AbstractVector; rd1g::Real = 0.1
     # correlation length σ with variance ∝ σ^(6(1−D)) give that.
     α = 6 * (1 - D)
     z = zeros(Float32, dims)
-    for σ in (2.0, 4.0, 8.0, 16.0, 32.0)
+    for σ in octaves
         f = randn(rng, Float32, dims)
         _blur!(f, Float32(σ))
         f ./= sqrt(sum(abs2, f) / length(f))

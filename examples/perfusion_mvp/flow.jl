@@ -19,8 +19,8 @@
 #   bed, unresolved venules (plug flow), and an interstitial space v_e (its Voronoi territory ×
 #   0.18). The unresolved volumes are the Kassab targets minus what the tree resolves, shared by
 #   territory volume. Capillary exchange follows the adiabatic approximation to the tissue
-#   homogeneity model (St Lawrence & Lee 1998) with PS ∝ F (Caldwell et al. 1994), one global
-#   factor set so first-pass extraction is E = 0.33 (Canty et al. 1991).
+#   homogeneity model (St Lawrence & Lee 1998), with first-pass extraction from a constant
+#   permeability (Renkin–Crone, E = 1 − e^{−PS/F}; Canty et al. 1991).
 # - Iodine moves with plasma. A segment's plasma transit is τ = V(1 − H_T)/(Q(1 − H_D)).
 #   Plug flow through a fixed network is a pure delay per segment, so every iodine mass below is
 #   a closed form of the cumulative input A(t) = ∫ C_p. Nothing is time-stepped.
@@ -138,8 +138,13 @@ Volumes and exchange
 - `cap_length_mm`, `cap_diameter_um`: functional capillary 0.5 mm × 6 µm (Kassab & Fung 1994),
   used for the capillary-bed resistance.
 - `ve`: interstitial volume fraction 0.18 (ECV ≈ 0.25 minus plasma).
-- `extraction`: first-pass extraction E = 0.33 (Canty et al. 1991). PS ∝ F_p keeps E fixed per
-  terminal, so `PS = −ln(1 − E)·F_p`.
+- `ps`: capillary permeability–surface product for iodinated contrast, mL/min per g. Each bed's
+  first-pass extraction follows Renkin–Crone, E = 1 − exp(−PS·m/F_p). Canty et al. (1991)
+  measured E = 0.33 for ioversol in normally perfused muscle at full vasodilation and 0.50 where
+  a stenosis halved the flow, which a constant PS reproduces (0.55); the paper reports flow only
+  as mL/min, so the anchor is the state: PS = −ln(1 − 0.33)·F_p at maximal dilation of the
+  healthy heart (computed by the driver from its own stress circuit; 1.07 mL/min/g for the XCAT
+  forest). At rest E is then ≈ 0.8.
 - `rho`: myocardial density 1.05 g/mL.
 - `radius_cv`: biological diameter variability. CCO sets every radius exactly from its flow;
   real vessels of one order scatter by 10–25% (Kassab et al. 1993, Table 2). Each segment's
@@ -154,6 +159,8 @@ Microvascular resistance at maximal dilation
   measurement: CCO's smallest arterioles are about 2.4× longer than Kassab's (CCO runs each
   terminal to the centre of its territory, where real tissue uses the capillary network), so
   their raw Poiseuille resistance is far too high. Vessels above the cut-offs are pure Poiseuille.
+  This anchors the scaled quantity itself to its own measurement; stress flow and flow reserve
+  stay predictions.
 
 Arteriolar wall mechanics (autoregulation; Carlson, Arciero & Secomb 2008, Arciero et al. 2008)
 - `d_active`: arteries whose passive diameter is below 150 µm carry smooth-muscle tone. In the
@@ -201,7 +208,7 @@ Base.@kwdef struct Physiology
     cap_diameter_um::F32 = 6.0f0
     cap_ht_ratio::F32 = 0.85f0
     ve::F32 = 0.18f0
-    extraction::F32 = 0.33f0
+    ps::F32 = 1.07f0
     rho::F32 = 1.05f0
     plasma_viscosity_mPas::F32 = 1.2f0
     radius_cv::F32 = 0.12f0
@@ -267,6 +274,7 @@ struct Circuit
     tc::Vector{F32}              # capillary plasma transit, s
     tv::Vector{F32}              # unresolved-venule plasma transit, s
     vint::Vector{F32}            # interstitial volume, mL
+    ex::Vector{F32}              # first-pass extraction E of each bed (Renkin–Crone)
     k::Vector{F32}               # ISF→plasma back-flux rate E·F_p/v_e, 1/s
     offset::Vector{F32}          # arrival delay to the sinus, without the capillary and exchange
     rcap::Vector{F32}            # capillary-bed resistance, mmHg·s/mL
@@ -884,7 +892,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     if kappa === nothing
         kappa = 1.0f0
         Wd = _Wall(act, d0)
-        for _ in 1:6
+        for _ in 1:12
             _autoregulate!(S, Wd, F32(kappa), phys, :stress, ctone, true, terr_g, len, mu0, empty(sten), lim, false)   # healthy geometry
             ratio = phys.r_micro_dilated / _micro_resistance(S, mass_g)[1]
             kappa *= ratio
@@ -933,9 +941,8 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
 
     # ---- terminals: capillary bed and interstitium
     fp = Vector{F32}(undef, nt); ta = similar(fp); tc = similar(fp); tv = similar(fp)
-    vint = similar(fp); kk = similar(fp); off = similar(fp)
+    vint = similar(fp); kk = similar(fp); off = similar(fp); ex = similar(fp)
     pf = 1.0f0 - phys.cap_ht_ratio * hd      # plasma fraction of microvascular blood
-    Ex = phys.extraction
     AK.foreachindex(1:nt; min_elems = 4096) do i
         j = terminals[i]
         fp[i] = qt[i] * (1.0f0 - hd)
@@ -943,7 +950,8 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
         tc[i] = w[i] * vcap_total * pf / fp[i]
         tv[i] = w[i] * vv_unres * pf / fp[i]
         vint[i] = phys.ve * F32(territory_ml[i])
-        kk[i] = Ex * fp[i] / vint[i]
+        ex[i] = 1.0f0 - exp(-phys.ps / 60.0f0 * F32(territory_ml[i]) * phys.rho / fp[i])
+        kk[i] = ex[i] * fp[i] / vint[i]
         off[i] = t_end[j] + ta[i] + tv[i] + s_v[vl[i]]
     end
 
@@ -965,7 +973,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     )
     return Circuit(
         t, vt, phys, state, order, terminals, tidx, vl, len, q, qv, pa, pv, tau_a, tau_v, t_end, s_v, vp_a, vp_v,
-        fp, ta, tc, tv, vint, kk, off, rcap .* kappa, so2, dem, xd, av, ctone, s, mass_g,
+        fp, ta, tc, tv, vint, ex, kk, off, rcap .* kappa, so2, dem, xd, av, ctone, s, mass_g,
         (;
             blood = vblood, art_resolved = vart_now, ven_resolved = vven, art_unresolved = va_unres,
             ven_unresolved = vv_unres, capillary = vcap_total,
@@ -976,13 +984,12 @@ end
 """
     with_extraction(c::Circuit, E) -> Circuit
 
-The same steady circuit (flows, diameters, volumes) with capillary first-pass extraction `E`;
+The same steady circuit (flows, diameters, volumes) with first-pass extraction `E` in every bed;
 `E = 0` is an intravascular tracer. Flow does not depend on the tracer, so nothing is re-solved.
 """
 function with_extraction(c::Circuit, E::Real)
-    ph = Physiology(; (k => (k === :extraction ? F32(E) : getfield(c.phys, k)) for k in fieldnames(Physiology))...)
-    k = F32(E) .* c.fp ./ c.vint
-    return Circuit((f === :phys ? ph : f === :k ? k : getfield(c, f) for f in fieldnames(Circuit))...)
+    ex = fill(F32(E), length(c.ex)); k = ex .* c.fp ./ c.vint
+    return Circuit((f === :ex ? ex : f === :k ? k : getfield(c, f) for f in fieldnames(Circuit))...)
 end
 
 # ---------------------------------------------------------------------------------------------
@@ -1116,7 +1123,7 @@ with early exit where iodine has not arrived yet.
 function frame_masses(c::Circuit, inp::InputCurve, times::AbstractVector; to = identity)
     tm = to(F32.(collect(times))); nf = length(times)
     n = nseg(c.tree); nt = length(c.terminals)
-    E = c.phys.extraction; hd = c.phys.hd; dt = inp.dt
+    hd = c.phys.hd; dt = inp.dt; ex = to(c.ex)
     parent = to(c.tree.parent); terminals = to(c.terminals); vparent = to(c.veins.parent); vleaf = to(c.vleaf)
     t_end = to(c.t_end); s_v = to(c.s_v); q = to(c.q); nv = nseg(c.veins)
     fp = to(c.fp); ta = to(c.ta); tc = to(c.tc); tv = to(c.tv); kk = to(c.k); off = to(c.offset)
@@ -1135,14 +1142,14 @@ function frame_masses(c::Circuit, inp::InputCurve, times::AbstractVector; to = i
     AK.foreachindex(fp; min_elems = 1024) do i
         j = terminals[i]
         for f in 1:nf
-            tis[f, i] = _gtissue(A, X, Y, logk, dt, fp[i], ta[i], tc[i], tv[i], kk[i], E, tm[f] - t_end[j])
+            tis[f, i] = _gtissue(A, X, Y, logk, dt, fp[i], ta[i], tc[i], tv[i], kk[i], ex[i], tm[f] - t_end[j])
         end
     end
     # veins: walk each terminal's path to the sinus; the mass of its outflow inside vein j is
     # G(t − O_i + S[j]) − G(t − O_i + S[parent j]). Stop where its iodine has not yet arrived.
     AK.foreachindex(fp; min_elems = 256) do i
         j0 = vleaf[i]
-        f_ = fp[i]; tcap = tc[i]; k = kk[i]; base = off[i]
+        f_ = fp[i]; tcap = tc[i]; k = kk[i]; base = off[i]; E = ex[i]
         for f in 1:nf
             j = j0
             ghi = _gout(A, Y, logk, dt, f_, tcap, k, E, tm[f] - base + s_v[j])
@@ -1165,7 +1172,7 @@ Cumulative iodine (mg) that has left through the coronary sinus by each time.
 """
 function sinus_outflow(c::Circuit, inp::InputCurve, times::AbstractVector; to = identity)
     tm = to(F32.(collect(times))); nf = length(times); nt = length(c.terminals)
-    E = c.phys.extraction; dt = inp.dt
+    dt = inp.dt; ex = to(c.ex)
     fp = to(c.fp); tc = to(c.tc); kk = to(c.k); off = to(c.offset)
     A = to(inp.A); Y = to(inp.Y); logk = to(inp.logk)
     # terminals in chunks, so memory stays (frames × chunk) however many terminals there are
@@ -1177,7 +1184,7 @@ function sinus_outflow(c::Circuit, inp::InputCurve, times::AbstractVector; to = 
         AK.foreachindex(1:m; min_elems = 1024) do ii
             i = c0 + ii - 1
             for f in 1:nf
-                out[f, ii] = _gout(A, Y, logk, dt, fp[i], tc[i], kk[i], E, tm[f] - off[i])
+                out[f, ii] = _gout(A, Y, logk, dt, fp[i], tc[i], kk[i], ex[i], tm[f] - off[i])
             end
         end
         total .+= vec(Array(sum(out; dims = 2)))
