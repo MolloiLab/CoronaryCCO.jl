@@ -1,0 +1,64 @@
+[meta]
+id = "clark2011_capillary_compliance_lung_volume"
+data_type = "model"
+validates = "Model input, not data: dependence of capillary-sheet compliance on transpulmonary pressure (lung volume), human sheet constants, total capillary sheet area and extra-capillary vessel compliance used in a CT-based whole-lung perfusion model."
+species = "human (alpha_C vs Ptp slope from dog data of Glazier et al. 1969, scaled to the human alpha_C 0.127 um/cmH2O)"
+preparation = "Multiscale model: CT-derived arterial and venous trees to ~32,000 acini, ladder acinar model with sheet flow, gravity and tissue deformation."
+conditions = "Supine, prone and upright at FRC; cardiac output 5 l/min, left atrial pressure 5 mmHg."
+verification = "FT"
+access = "Open access full text (PMC3075121, HTML page). Methods text and Table 2 read."
+notes = """Glazier et al. 1969 (J Appl Physiol 26:65, rapidly frozen dog lungs) values are reproduced in the text, so their provenance here is 'secondary'.
+Sheet thickness: H/H0 = alpha_C P_tm + 1 (Eq. 2), valid up to P_tm = 32 cmH2O (cited to Sobin et al. 1979 human abstract), above which the vessel is taken as maximally distended. Note the Table 2 alpha_C is in m/Pa, i.e. used in the additive form.
+Extra-capillary vessels: D/D0 = alpha P_tm + 1 (Eq. 1) with alpha = 1.49e-4 Pa^-1 cited to Krenz & Dawson 2003; 1.49e-4 /Pa x 133.3 Pa/mmHg = 0.0199 /mmHg, consistent with Reeves 2005 (0.02 /mmHg). The reference list mislabels the Krenz & Dawson journal as Am J Respir Crit Care Med.
+Capillary viscosity printed '1.92e-3 Pa/s' (means Pa.s)."""
+use_in_model = """Capillary sheet resistance with lung-volume dependence: H = H0 + alpha_C(Ptp) P_tm with alpha_C = a + b Ptp (human a = 0.165 um/cmH2O, b = -2.58e-3 um/cmH2O^2), H0 = 3.5 um, P_tm capped at 32 cmH2O; Q ~ [H_a^4 - H_v^4]/(4 mu_C f l_C^2 alpha_C) x S A with A = 73 m2 at TLC. Arteries/veins: D = D0 (1 + alpha P_tm), alpha = 1.49e-4 /Pa (~2 %/mmHg)."""
+
+[source]
+authors = ["Clark AR", "Tawhai MH", "Hoffman EA", "Burrowes KS"]
+year = 2011
+title = "The interdependent contributions of gravitational and structural features to perfusion distribution in a multiscale model of the pulmonary circulation"
+journal = "J Appl Physiol"
+volume = "110"
+issue = "4"
+pages = "943-955"
+doi = "10.1152/japplphysiol.00775.2010"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 110, issue 4, 943-955; authors Clark, Tawhai, Hoffman, Burrowes)"
+pmcid = "PMC3075121"
+
+[secondary_source]
+note = "Dog capillary compliance at two lung volumes, reproduced from the original."
+authors = ["Glazier JB", "Hughes JMB", "Maloney JE", "West JB"]
+year = 1969
+title = "Measurements of capillary dimensions and blood volume in rapidly frozen lungs"
+journal = "J Appl Physiol"
+volume = "26"
+pages = "65-76"
+crossref_verified = "not looked up (cited only; values taken from Clark 2011)"
+
+[data.capillary_compliance_vs_Ptp]
+description = "Capillary sheet compliance alpha_C at two transpulmonary pressures (dog), and the linear fit alpha_C = a + b Ptp for dog and scaled to human"
+location = "Methods text ('Capillary sheet' paragraph)"
+provenance = "secondary"
+statistic = "single values as quoted; no spread"
+species_dog_lung_volume = ["~FRC", "~TLC"]
+dog_Ptp_cmH2O = [4.0, 25.0]
+dog_alpha_C_um_per_cmH2O = [0.122, 0.079]
+dog_fit_a_um_per_cmH2O = 0.130
+dog_fit_b_um_per_cmH2O2 = -2.04e-3
+human_alpha_C_um_per_cmH2O = 0.127
+human_alpha_C_assumed_Ptp_cmH2O = 14.5
+human_fit_a_um_per_cmH2O = 0.165
+human_fit_b_um_per_cmH2O2 = -2.58e-3
+missing_note = "Glazier 1969 full text not read; the dog fit and human scaling are Clark's derivations, stored as printed."
+
+[data.model_parameters]
+description = "Model parameters, supine at FRC, with % change in PVR for +10% / -10%"
+location = "Table 2; Eqs. 1-2 text"
+provenance = "FT"
+statistic = "single model input values"
+parameter = ["alpha_vessel_per_Pa", "P_max_cmH2O", "A_total_sheet_area_TLC_m2", "alpha_C_m_per_Pa", "f_friction_factor", "F_zone2_max_collapse", "F_rec_max_collapse_normal", "H0_m", "l_C_m", "S", "sigma_Pa", "sigma_rec_Pa", "mu_C_Pa_s", "mu_blood_Pa_s", "lung_volume_FRC_l"]
+value = [1.49e-4, 32.0, 73.0, 1.30e-9, 21.6, 0.104, 0.65, 3.5e-6, 1186e-6, 0.86, 436.0, 2230.0, 1.92e-3, 3.36e-3, 4.47]
+cited_origin = ["Krenz & Dawson 2003", "Sobin et al. 1979 (Fed Proc abstract, human)", "Gehr et al. 1978", "Fung 1997", "Fung & Sobin 1972", "Fung & Yen 1986", "fitted (see text)", "Fung 1997", "Zhou et al. 2006", "Gehr et al. 1978", "Fung & Yen 1986", "fitted (see text)", "Fung 1997", "Pries, Secomb & Gaehtgens 1996", "MDCT"]
+pvr_sensitivity_plus10_percent = [-6.6, nan, -2.9, -4.4, 3.3, nan, 1.5, -4.7, 6.9, -2.9, nan, 2.1, 3.3, 3.6, 3.0]
+pvr_sensitivity_minus10_percent = [6.2, nan, 3.7, 5.3, -3.3, nan, -1.3, 5.8, -6.3, 3.7, nan, -2.0, -3.3, -1.9, nan]
+missing_note = "nan where the table gives '<1%'."

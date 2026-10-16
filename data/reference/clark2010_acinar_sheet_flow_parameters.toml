@@ -1,0 +1,47 @@
+[meta]
+id = "clark2010_acinar_sheet_flow_parameters"
+data_type = "model"
+validates = "Model input, not data: human acinar perfusion model (ladder of 9 arteriole/venule generations joined by Fung-Sobin capillary sheets) with its sheet-flow constants, sheet height law with an upper pressure bound, zone-2 collapse constants and acinar-vessel elasticity."
+species = "human (sheet constants mainly from Fung's cat-lung work via Fung 1997; areas from Gehr 1978 human morphometry)"
+preparation = "Idealized symmetric acinus coupled to a 16-generation extra-acinar circuit; sensitivity of acinar flow to +/-10% in each parameter."
+conditions = "Steady flow, alveolar pressure 0, supine lung at FRC for the full circuit."
+verification = "FT"
+access = "Open access full text (PMC2867543, HTML page). Table 1, Eqs. 2-7 and Appendix Eq. A1-A2 read from the text."
+notes = """Sheet height law as printed in Eq. 7: H = 0 for P_tm < 0; H = H'(1 + alpha_c P_tm) for 0 <= P_tm < P_CU; H = H_max = H'(1 + alpha_c P_CU) for P_tm >= P_CU. Appendix Eq. A1 instead uses (H' + alpha_C P_tm) with alpha_C in m/Pa: Q = S A / (4 mu_C f l_C^2 alpha_C) [(H' + alpha_C P_tmA)^4 - (H' + alpha_C P_tmV)^4]. The table value 1.30e-9 m/Pa matches the additive form (A1). As a unit check, 1.30e-9 m/Pa x 98.07 Pa/cmH2O = 0.127 um/cmH2O, the human value of Sobin et al. 1979 used by Huang 2011.
+f = 21.6 here is one combined numerical factor (cited to Fung & Sobin 1972, Circ Res 30:451); Huang 2011 lists k = 12 and f = 1.8 separately (12 x 1.8 = 21.6).
+S = 0.86 is the capillary-to-alveolar surface ratio from Gehr 1978 (126 m2 / 146 m2), labelled 'vascular space-to-tissue ratio'. Area A at TLC is 73 m2 in the companion Clark 2011 paper (half of 146 m2 because sheets have two faces).
+P_CU = 15 cmH2O is cited (via Fung 1997) as the human value; the text notes the cat value is 25 cmH2O and earlier human work by the same authors suggests up to 32 cmH2O.
+alpha for acinar arterioles and venules is printed as 1.33e-6 Pa^-1, cited to Dawson 1999, Krenz & Dawson 2003 and Reeves 2005, and the text says alpha may be taken as independent of vessel diameter and species. This printed value is ~100x smaller than the 1.49e-4 Pa^-1 (about 2 %/mmHg) used for the same quantity in Clark 2011 and Ebrahimi 2022 and in Reeves 2005; it may be a typo or a different convention. Store as printed; do not use without checking.
+Apparent viscosity in acinar vessels varies linearly with generation from 4.0e-3 to 1.92e-3 Pa.s (following Fung 1997, p. 379)."""
+use_in_model = """Capillary sheet resistance: R_sheet = (P_a - P_v)/Q with Q from Eq. A1 (flow per unit width ~ H^3 dP/ds, integrated to a fourth-power law in H = H' + alpha_C P_tm), H' = 3.5 um, alpha_C = 1.30e-9 m/Pa, mu_C = 1.92e-3 Pa.s, f = 21.6, l_C = 1186 um, S = 0.86; cap H at P_tm = 15 cmH2O (H_max). Zone-2 collapse via F = 0.104 and sigma = 436 Pa (Fung & Yen 1986)."""
+
+[source]
+authors = ["Clark AR", "Burrowes KS", "Tawhai MH"]
+year = 2010
+title = "Contribution of serial and parallel microperfusion to spatial variability in pulmonary inter- and intra-acinar blood flow"
+journal = "J Appl Physiol"
+volume = "108"
+issue = "5"
+pages = "1116-1126"
+doi = "10.1152/japplphysiol.01177.2009"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 108, issue 5, 1116-1126; authors Clark, Burrowes, Tawhai)"
+pmcid = "PMC2867543"
+
+[data.capillary_sheet_parameters]
+description = "Capillary-sheet and acinar parameters, with the % change in acinar total flow for +10% / -10% in each parameter"
+location = "Table 1; text (Eqs. 2-7, P_CU discussion, viscosity)"
+provenance = "FT"
+statistic = "single model input values"
+parameter = ["alpha_C_m_per_Pa", "f_numerical_factor", "F_max_sheet_collapse", "H_prime_unstrained_sheet_height_m", "l_TLC_arteriole_to_venule_path_m", "S_vascular_space_to_tissue_ratio", "sigma_Pa", "P_CU_upper_bound_Pa", "mu_C_capillary_viscosity_Pa_s", "alpha_arteriole_venule_per_Pa"]
+value = [1.30e-9, 21.6, 0.104, 3.5e-6, 1186e-6, 0.86, 436.0, 1471.0, 1.92e-3, 1.33e-6]
+cited_origin = ["Fung 1997 (Biomechanics: Circulation)", "Fung & Sobin 1972 (Circ Res 30:451)", "Fung & Yen 1986", "Fung 1997", "Zhou et al. 2006 (Biomed Sci Instrum)", "Gehr et al. 1978", "Fung & Yen 1986", "Fung 1997", "Fung 1997; Yen & Sobin 1988", "Dawson 1999; Krenz & Dawson 2003; Reeves 2005 (value as printed, see notes)"]
+sensitivity_plus10_percent = [3.0, -3.0, nan, 5.6, 6.0, 3.0, nan, -2.9, -3.0, nan]
+sensitivity_minus10_percent = [-2.9, 2.7, nan, -5.4, -5.3, -2.7, nan, 2.4, 2.7, nan]
+P_CU_cmH2O = 15.0
+P_CU_cat_cmH2O = 25.0
+P_CU_human_upper_cmH2O = 32.0
+sigma_cmH2O = 4.45
+gehr_alveolar_surface_m2 = 146.0
+gehr_capillary_surface_m2 = 126.0
+mu_acinar_vessel_range_Pa_s = [4.0e-3, 1.92e-3]
+missing_note = "Sensitivity is stored as nan where the table gives '<1%' (F, sigma, alpha_arteriole_venule). Upright-lung area scaling A = A_TLC (V/V_TLC)^(2/3) uses C = 0.1 /cmH2O (text) and is not tabulated. No measured spread for any value."

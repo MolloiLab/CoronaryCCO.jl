@@ -1,0 +1,85 @@
+[meta]
+id = "huang2011_human_sheet_flow_parameters"
+data_type = "model"
+validates = "Model input, not data: the human parameter set of a Fung-Sobin continuum model of the whole pulmonary circulation (fifth-power law in arteries and veins, fourth-power sheet-flow law in the alveolar capillaries). Human capillary-sheet constants h0, alpha, S, A, mu, k, f and path length; per-order compliance of human arteries and veins."
+species = "human (sheet h0, alpha and S from Sobin et al. 1979 postmortem human lung abstract; k, f and viscosity from cat-lung theory and model experiments)"
+preparation = "Continuum model: 16 arterial and 15 venous orders (Huang 1996 casts) in series, same-order vessels in parallel, joined by one capillary sheet. Validated against right-pulmonary-artery balloon occlusion data in 3 normal subjects (Harris 1968)."
+conditions = "Steady flow; zone 3 unless venous pressure < alveolar pressure. Vessel tables at PA - Ppl = 10 cmH2O."
+verification = "FT"
+access = "Open access full text (Tech Science Press PDF, read from a scratch copy; not stored in the repo). Tables 1-4 and Methods text read from the text layer and checked line by line."
+notes = """Sheet-flow law as printed: h = h0 + alpha (P - PA) (Eq. 5); Qdot = const [h_a^4 - h_v^4] with const = S A / (4 mu k f Lbar^2 alpha) (Eqs. 6-7). S is the 'vascular-space-tissue ratio' (VSTR); k and f are dimensionless alveolar-geometry factors.
+Human h0 3.5 um, alpha 0.127 um/cmH2O and S 0.88 are cited to Sobin, Fung, Tremer & Lindal 1979, Fed Proc 38:990 (an abstract on human interalveolar septa; not itself readable). This is the only human sheet-elasticity source found; cat values (Sobin et al. 1972) were not readable.
+Lbar 1188 um is NOT measured in humans: the authors scaled the cat value 556 +/- 286 um (Sobin et al. 1980) by the human/cat alveolar-diameter ratio 250/117. Clark 2010 and Ebrahimi 2022 use 1186 um for the same quantity.
+k = 12 is cited to Fung 1972 (Ann Biomed Eng) and f = 1.8 to Lee 1969 (J Biomech). Clark 2010 instead uses a single factor f = 21.6, which equals the product k*f here (12 x 1.8).
+A = 126 m2 is the Gehr 1978 capillary surface area; Clark 2010 uses A = 73 m2 (half of the 146 m2 alveolar surface, at TLC) with S = 0.86. Do not mix the two conventions.
+Vessel compliance beta: the table header prints no unit. Orders 1-3 are from Yen & Sobin 1988, whose abstract gives the same quantity in %/cmH2O (e.g. venule order 1: 0.992 %/cmH2O; arteriole order 1: 0.682 %/cmH2O); the table values are close but not identical (1.010, 0.698), so the unit is most likely %/cmH2O, i.e. 1e-2 per cmH2O. Orders 4-10 are from Yen, Tai, Rong & Zhang 1990 (book chapter). Values marked '*' in the source are extrapolated from the nearest measured order.
+Sensitivity: halving all vessel compliances raised main PA pressure by 7.4%; x1.5 lowered it by 5.4% (text, Fig. 2)."""
+use_in_model = """Capillary sheet resistance (Fung): flow per unit width scales with h^3 dP, so integrated over the sheet Q = S A / (4 mu k f Lbar^2 alpha) [(h0 + alpha (Pa - PA))^4 - (h0 + alpha (Pv - PA))^4]. Use h0 = 3.5 um, alpha = 0.127 um/cmH2O, S = 0.88, mu = 1.92 cP, k f = 12 x 1.8, Lbar ~ 1188 um. Effective sheet resistance = (Pa - Pv)/Q, which falls as capillary pressure rises. Per-lung or per-acinus area A must be split across terminal sheets.
+Distensible arteries and veins: D = D0 (1 + beta dP) with beta from the order tables (~0.36-1.80 %/cmH2O, assumed unit); Poiseuille then gives Q ~ [(1+beta P_in)^5 - (1+beta P_out)^5] (fifth-power law, Eq. 2)."""
+
+[source]
+authors = ["Huang W", "Zhou Q", "Gao J", "Yen RT"]
+year = 2011
+title = "A continuum model for pressure-flow relationship in human pulmonary circulation"
+journal = "Mol Cell Biomech"
+volume = "8"
+issue = "2"
+pages = "105-122"
+doi = "10.3970/mcb.2011.008.105"
+crossref_verified = "2026-10-15; NOT in Crossref (api.crossref.org returns 404). doi.org/ra shows the DOI is registered with ISTIC and resolves to techscience.com/mcb/v8n2/28516, whose title, authors, volume 8(2), pages 105-122 match. Europe PMC PMID 21608412 matches."
+pmid = "21608412"
+
+[data.capillary_sheet_parameters]
+description = "Morphometry, elasticity and blood viscosity of the human capillary sheet used in the model"
+location = "Table 3; text p. 110-111 (Lbar derivation, viscosity)"
+provenance = "FT"
+statistic = "single model input values; Lbar_cat given as mean +/- SD (n not stated)"
+parameter = ["h0_um", "alpha_um_per_cmH2O", "Lbar_um", "S_vstr", "A_m2", "mu_cP", "k", "f"]
+value = [3.5, 0.127, 1188.0, 0.88, 126.0, 1.92, 12.0, 1.8]
+cited_origin = ["Sobin, Fung, Tremer & Lindal 1979 (Fed Proc abstract, human)", "Sobin, Fung, Tremer & Lindal 1979 (Fed Proc abstract, human)", "scaled from cat 556 um (Sobin 1980) x 250/117 alveolar diameter ratio", "Sobin, Fung, Tremer & Lindal 1979", "Gehr, Bachofen & Weibel 1978 (human capillary surface area)", "Yen & Fung 1973 (model experiment, Hct 30%)", "Fung 1972", "Lee 1969"]
+Lbar_cat_mean_um = 556.0
+Lbar_cat_sd_um = 286.0
+alveolar_diameter_ratio_human_dog_cat = [250.0, 94.0, 117.0]
+mu_large_vessel_cP = 4.0
+missing_note = "No SD or n for any human sheet parameter. The underlying 1979 human abstract (Fed Proc 38:990) was not read; human Lbar is scaled, not measured. No maximum sheet thickness or upper pressure limit is given in this paper."
+
+[data.artery_order_table]
+description = "Human pulmonary arteries per order (order 1 = smallest): number, element diameter and length, apparent viscosity, compliance coefficient beta"
+location = "Table 2"
+provenance = "FT"
+statistic = "model inputs; diameters at PA - Ppl = 10 cmH2O"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+number = [102411624, 28114394, 10203806, 4513692, 1348338, 571544, 172040, 44008, 12450, 3448, 900, 254, 86, 14, 4, 1]
+diameter_cm = [0.0020, 0.0036, 0.0056, 0.0097, 0.0150, 0.022, 0.034, 0.051, 0.077, 0.116, 0.175, 0.271, 0.416, 0.734, 1.480, 3.0]
+length_cm = [0.0220, 0.0260, 0.0360, 0.0450, 0.0680, 0.108, 0.192, 0.281, 0.373, 0.658, 1.235, 1.807, 2.597, 3.569, 2.53, 9.05]
+viscosity_cP = [2.5, 3.0, 3.5, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0]
+beta_as_printed = [0.698, 0.482, 0.361, 0.361, 0.361, 1.135, 0.932, 0.877, 1.238, 1.281, 1.281, 1.281, 1.281, 1.281, 1.281, 1.281]
+beta_origin = ["Yen & Sobin 1988", "Yen & Sobin 1988", "Yen & Sobin 1988", "extrapolated", "extrapolated", "Yen et al. 1990", "Yen et al. 1990", "Yen et al. 1990", "Yen et al. 1990", "Yen et al. 1990", "extrapolated", "extrapolated", "extrapolated", "extrapolated", "extrapolated", "extrapolated"]
+missing_note = "Unit of beta not printed in the table (most likely %/cmH2O, see meta.notes). Order 16 (main PA) diameter and length from Singhal 1973."
+
+[data.vein_order_table]
+description = "Human pulmonary veins per order (order 1 = smallest): number, element diameter and length, apparent viscosity, compliance coefficient beta"
+location = "Table 1"
+provenance = "FT"
+statistic = "model inputs; diameters at PA - Ppl = 10 cmH2O"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+number = [79647106, 16988490, 4332666, 906102, 146050, 31134, 7442, 2134, 870, 286, 126, 62, 22, 8, 4]
+diameter_cm = [0.0018, 0.0031, 0.0067, 0.0130, 0.0230, 0.0380, 0.0620, 0.0900, 0.1420, 0.1990, 0.2880, 0.4000, 0.5860, 0.8650, 1.2970]
+length_cm = [0.0130, 0.0210, 0.0380, 0.1060, 0.1500, 0.2920, 0.4790, 0.6780, 1.1240, 1.4780, 1.7900, 2.6490, 1.9490, 3.4990, 3.5680]
+viscosity_cP = [2.5, 3.0, 3.5, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0]
+beta_as_printed = [1.010, 0.625, 0.433, 1.798, 1.260, 1.260, 0.887, 0.708, 0.708, 0.708, 0.708, 0.708, 0.708, 0.708, 0.708]
+beta_origin = ["Yen & Sobin 1988", "Yen & Sobin 1988", "Yen & Sobin 1988", "Yen et al. 1990", "Yen et al. 1990", "Yen et al. 1990", "Yen et al. 1990", "Yen et al. 1990", "extrapolated", "extrapolated", "extrapolated", "extrapolated", "extrapolated", "extrapolated", "extrapolated"]
+missing_note = "Unit of beta not printed in the table (most likely %/cmH2O, see meta.notes)."
+
+[data.normal_subject_validation]
+description = "Model vs measured mean PAP in 3 normal subjects (Harris 1968), rest/exercise, balloon inflated (I, one lung) or deflated (D)"
+location = "Table 4"
+provenance = "FT"
+statistic = "individual subjects"
+subject = ["N1", "N1", "N1", "N1", "N2", "N2", "N2", "N2", "N3", "N3", "N3", "N3"]
+state = ["R-I", "R-D", "E-I", "E-D", "R-I", "R-D", "E-I", "E-D", "R-I", "R-D", "E-I", "E-D"]
+flow_l_per_min = [7.3, 7.1, 10.2, 10.1, 6.5, 6.9, 10.5, 10.3, 5.8, 5.2, 10.7, 9.8]
+wedge_mmHg = [10.0, 9.0, 12.0, 8.0, 13.0, 12.0, 20.0, 12.0, 9.0, 8.0, 10.0, 8.0]
+mpap_measured_mmHg = [22.0, 17.0, 27.0, 17.0, 27.0, 19.0, 42.0, 25.0, 24.0, 14.0, 36.0, 19.0]
+mpap_model_mmHg = [25.0, 17.8, 30.0, 20.1, 25.5, 19.7, 34.8, 22.7, 22.0, 15.1, 29.7, 19.8]
+missing_note = "Model run with PA = 0, Ppl = -5 cmH2O, Pv = wedge pressure; flow doubled when balloon inflated."

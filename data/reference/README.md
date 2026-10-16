@@ -270,6 +270,11 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `molina2012_lung_weight.toml` | Lung weight at autopsy (right 445 g, left 395 g, with blood) | Human, 232 men 18–35 y | abs |
 | `ochs2004_alveolar_number.toml` | 480 × 10⁶ alveoli (274–790 × 10⁶), ~170 per mm³ parenchyma | Human, 6 lungs, stereology | abs |
 | `haefelibleuer1988_human_acinus.toml` | Acinar volume 187 ± 79 mm³, ~9 intra-acinar generations, path length 8.8 mm | Human, 2 lungs, casts | abs |
+| `huang2011_human_sheet_flow_parameters.toml` | **Model input, not data.** Human sheet-flow constants (h₀ 3.5 µm, α 0.127 µm/cmH₂O, S 0.88, A 126 m², µ 1.92 cP, k 12, f 1.8, L̄ 1188 µm scaled from cat); per-order human arteries/veins; model vs measured mPAP in 3 subjects. DOI registered with ISTIC, not Crossref | Human lung model | FT |
+| `clark2010_acinar_sheet_flow_parameters.toml` | **Model input, not data.** Acinar sheet flow: α_C 1.30 × 10⁻⁹ m/Pa, H′ 3.5 µm, f 21.6 (= k·f), l_C 1186 µm, S 0.86, µ_C 1.92 cP, P_CU 15 cmH₂O; parameter sensitivities | Human lung model | FT |
+| `clark2011_capillary_compliance_lung_volume.toml` | Sheet compliance vs transpulmonary pressure (dog 0.122 → 0.079 µm/cmH₂O, Glazier 1969; human scaled fit); vessel α 1.49 × 10⁻⁴ /Pa (Krenz & Dawson); sheet area 73 m² at TLC | Dog data, human model | FT (Glazier secondary) |
+| `reeves2005_human_pulmonary_distensibility.toml` | Pulmonary vascular distensibility α 0.02 ± 0.002 /mmHg (n = 59 normal), ≈ 2 %/mmHg in isolated arteries; changes with hypoxia | Human, review of RHC data | abs |
+| `yen1988_human_arteriole_venule_elasticity.toml` | Compliance of human arterioles and venules orders 1–3 (0.13–0.25 µm/cmH₂O) | Human, postmortem lungs | abs |
 
 ## Caveats that matter for comparisons
 

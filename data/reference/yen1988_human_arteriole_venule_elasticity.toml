@@ -1,0 +1,38 @@
+[meta]
+id = "yen1988_human_arteriole_venule_elasticity"
+data_type = "experimental"
+validates = "Compliance (distensibility) of the smallest noncapillary pulmonary arterioles and venules (< 100 um, Strahler orders 1-3) in human lung."
+species = "human"
+preparation = "Postmortem human lungs (7-30 h), silicone elastomer selectively filling arterioles or venules; lungs inflated to 10 cmH2O; transmural vascular pressure gradient 0-17 cmH2O from lobe base to apex; airway formaldehyde fixation; histological diameter by order."
+conditions = "Passive (postmortem), lung inflation 10 cmH2O, transmural pressure 0-17 cmH2O."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 3372419). APS full text is behind a bot check."
+notes = """alpha is the slope of diameter vs transmural pressure within an order; the % form is normalised by D0, the diameter at zero transmural pressure.
+Cat juxta-alveolar vessels of similar size: alpha = 0.274 (abstract; unit not restated there, presumably um/cmH2O as for the human values).
+Huang et al. 2011 (huang2011_human_sheet_flow_parameters.toml) reuses these as beta for orders 1-3 (values slightly different: arterioles 0.698/0.482/0.361, venules 1.010/0.625/0.433)."""
+use_in_model = """Distensible-vessel resistance for acinar arterioles and venules: D = D0 (1 + alpha P_tm) with alpha ~ 0.35-0.99 %/cmH2O (about 0.47-1.35 %/mmHg) and P_tm = P_blood - P_alveolar; R ~ 1/D^4. Note these small-vessel values are below the ~2 %/mmHg whole-circulation alpha (Reeves 2005)."""
+
+[source]
+authors = ["Yen RT", "Sobin SS"]
+year = 1988
+title = "Elasticity of arterioles and venules in postmortem human lungs"
+journal = "J Appl Physiol"
+volume = "64"
+issue = "2"
+pages = "611-619"
+doi = "10.1152/jappl.1988.64.2.611"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 64, issue 2, 611-619; authors Yen, Sobin)"
+pmid = "3372419"
+
+[data.compliance_by_order]
+description = "Compliance coefficient alpha by Strahler order (1 = smallest noncapillary vessel)"
+location = "Abstract"
+provenance = "abs"
+statistic = "single value per order as stated (n lungs and spread not in abstract)"
+order = [1, 2, 3]
+arteriole_alpha_um_per_cmH2O = [0.128, 0.164, 0.210]
+arteriole_alpha_percent_per_cmH2O = [0.682, 0.472, 0.354]
+venule_alpha_um_per_cmH2O = [0.187, 0.215, 0.250]
+venule_alpha_percent_per_cmH2O = [0.992, 0.612, 0.424]
+cat_juxta_alveolar_alpha = 0.274
+missing_note = "Number of lungs, D0 per order, SD and the pressure-diameter points are in the full text, which was not read. Unit of the cat value is not restated in the abstract."
