@@ -1542,6 +1542,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     qv = Vector{F32}(undef, nv); pv = similar(qv)
     q[perm] = Array(S.q); pa[perm] = Array(S.pa); rr[perm] = Array(S.rr)
     qt[tperm] = Array(S.qt); so2[tperm] = Array(S.so2); qv[vperm] = Array(S.qv); pv[vperm] = Array(S.pv)
+    dist === nothing || (rv[vperm] = Array(S.rv))     # distended venous resistances, for the pressure-drop shares
     nneg = count(<=(0), qt)
     nneg > 0 && @warn "$nneg terminals with reversed or zero flow (venous pressure above arterial); their beds are treated as stagnant"
     @inbounds for i in 1:nt
