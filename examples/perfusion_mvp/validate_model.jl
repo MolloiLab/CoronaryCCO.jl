@@ -15,6 +15,34 @@ const TO_ = isdefined(@__MODULE__, :TO) ? TO : identity       # device (pipeline
 
 const DATA = joinpath(@__DIR__, "..", "..", "test", "data")
 const T0 = time(); phase(name) = (@printf("  [%s %.1f s]\n", name, time() - T0); flush(stdout))
+# per-voxel flow (mL/s per mm³) and relative O₂ demand from each terminal's territory shares (a function:
+# the solved circuit comes in untyped, and these loops run over every (voxel, terminal) share)
+function voxel_fields(tshare, q, terminals, demand, terr, nvox)
+    fvox = zeros(Float64, nvox); dvox = zeros(Float64, nvox)
+    for (v, i, fr) in tshare
+        fvox[v] += fr * q[terminals[i]] / (terr[i] * 1.0f3)
+        dvox[v] += fr * demand[i] / (terr[i] * 1.0f3)
+    end
+    return fvox, dvox
+end
+# relative dispersion of a per-voxel field over pieces (`piece[v]` in 1:K), mass-weighted
+function piece_rd(vox, piece, K)
+    fsum = zeros(Float64, K); msum = zeros(Float64, K)
+    for v in eachindex(vox)
+        fsum[piece[v]] += vox[v]; msum[piece[v]] += 1
+    end
+    ok = msum .> 0; f = fsum[ok] ./ msum[ok]; m = msum[ok]
+    fm = sum(f .* m) / sum(m)
+    return Dict("mass_g" => 1.05e-3 * sum(m) / length(m), "rd" => sqrt(sum(m .* (f .- fm) .^ 2) / sum(m)) / fm, "pieces" => length(m))
+end
+# each segment's root (segments in parent-first `order`)
+function root_table(order, parent)
+    rootof = zeros(Int32, length(parent))
+    for h in eachindex(order)
+        j = order[h]; p = parent[j]; rootof[j] = p == 0 ? j : rootof[p]
+    end
+    return rootof
+end
 # the script body in one local scope: compiled as a unit (global-scope loops are untyped)
 let
     treefile = get(ARGS, 1, joinpath(@__DIR__, "out", "tree_20000.bin")); outjson = get(ARGS, 2, joinpath(@__DIR__, "out", "validate_20000.json"))
@@ -95,6 +123,15 @@ let
     res = Dict{String, Any}("n" => n, "segments" => ns, "terminals" => length(terms), "coverage" => coverage)
     # maximal dilation first: its microvascular scale κ is shared by the rest state
     Cstress = haskey(ENV, "CIRC") ? nothing : circuit(tree, terr; state = :stress, veins, vleaf, phys = Physiology(organ = "heart", radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))))
+    # pieces: 1 mm voxels, then Voronoi cells of K random voxel seeds (equal mean volume; they follow the thin
+    # wall, unlike cubes); fixed seed, so both states use the same pieces every run
+    RNG = Xoshiro(1); nv = length(vidx)
+    pieces = map((1, 8, 27, 64, 216, 1000, 4000, 16000)) do target_mm3
+        target_mm3 == 1 && return (nv, collect(1:nv))
+        K = max(4, nv ÷ target_mm3)
+        seeds = q[:, round.(Int, range(1, nv, length = K))] .+ 0.1f0 .* randn(RNG, Float32, 3, K)
+        return (K, nearest_terminal(seeds, q; h = 4.0f0))
+    end
     for (st, state) in (("rest", :rest), ("stress", :stress))
         rcv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))
         C = if haskey(ENV, "CIRC")                 # solved circuits (; Cs, Cr) from an earlier run on the same inputs
@@ -108,34 +145,12 @@ let
         vel = C.q ./ (Float32(π) .* (tree.r .* C.xd ./ 10) .^ 2)      # cm/s, at the solved diameters
         e = logbins(8, 4000, 18)
         # regional flow heterogeneity: flow per gram in cubes of side L (Bassingthwaighte et al. 1989)
-        fvox = zeros(Float64, size(q, 2))                                # flow per voxel (mL/s per mm³)
-        dvox = zeros(Float64, size(q, 2))                                # relative O₂ demand per voxel
-        for (v, i, fr) in tshare
-            fvox[v] += fr * C.q[C.terminals[i]] / (terr[i] * 1.0f3)
-            dvox[v] += fr * C.demand[i] / (terr[i] * 1.0f3)
-        end
-        # pieces: 1 mm voxels, then Voronoi cells of K random voxel seeds (equal mean volume; they
-        # follow the thin wall, unlike cubes). RD is mass-weighted.
+        fvox, dvox = voxel_fields(tshare, C.q, C.terminals, C.demand, terr, size(q, 2))   # flow (mL/s per mm³), relative O₂ demand
+        # flow and demand spread over the pieces (RD is mass-weighted)
         phase("$st circuit+profiles")
-        rd = []; rdd = []; RNG = Xoshiro(1)                 # fixed seed: the same pieces every run
-        nv = length(vidx)
-        for target_mm3 in (1, 8, 27, 64, 216, 1000, 4000, 16000)
-            if target_mm3 == 1
-                piece = collect(1:nv); K = nv
-            else
-                K = max(4, nv ÷ target_mm3)
-                seeds = q[:, round.(Int, range(1, nv, length = K))] .+ 0.1f0 .* randn(RNG, Float32, 3, K)
-                piece = nearest_terminal(seeds, q; h = 4.0f0)
-            end
-            for (vox, out) in ((fvox, rd), (dvox, rdd))
-                fsum = zeros(Float64, K); msum = zeros(Float64, K)
-                for v in 1:nv
-                    fsum[piece[v]] += vox[v]; msum[piece[v]] += 1
-                end
-                ok = msum .> 0; f = fsum[ok] ./ msum[ok]; m = msum[ok]
-                fm = sum(f .* m) / sum(m)
-                push!(out, Dict("mass_g" => 1.05e-3 * sum(m) / length(m), "rd" => sqrt(sum(m .* (f .- fm) .^ 2) / sum(m)) / fm, "pieces" => length(m)))
-            end
+        rd = []; rdd = []
+        for (K, piece) in pieces
+            push!(rd, piece_rd(fvox, piece, K)); push!(rdd, piece_rd(dvox, piece, K))
         end
         # impulse response at the coronary sinus: a 0.02 s pulse at the ostia
         phase("$st heterogeneity")
@@ -158,10 +173,7 @@ let
         # arrival at the most distal imaged (base-tree) point: TIMI-like ostium → distal landmark time
         base = findall(tree.isbase); tdist = maximum(C.t_end[base])
         # per root: arrival at its imaged distal tips (base segments with no base child)
-        rootof = zeros(Int32, ns)
-        for h in 1:ns
-            j = C.order[h]; p = tree.parent[j]; rootof[j] = p == 0 ? j : rootof[p]
-        end
+        rootof = root_table(C.order, tree.parent)
         hasbasechild = falses(ns); for j in base
             p = tree.parent[j]; p > 0 && (hasbasechild[p] = true)
         end
