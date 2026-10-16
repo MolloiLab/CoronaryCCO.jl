@@ -5,7 +5,8 @@
 (isdefined(Main, :Body) || include(joinpath(@__DIR__, "body.jl"))); (isdefined(Main, :Flow) || include(joinpath(@__DIR__, "flow.jl"))); using .Body, .Flow, Printf, TOML
 # the coronary bed: XCAT vmale_50 myocardium (LV + RV labels, 1 mm grid, 148.1 mL) with the heart's physiology
 const HEART = Physiology(organ = "heart"); const COR = (; ml = 148.1f0, HEART.fb, HEART.ve, HEART.ps, HEART.rho)
-human_circulation(; kw...) = Body.human_circulation(; cor = COR, kw...)
+# one blood for the whole phantom: the body model takes the heart's hematocrit (as phantom/frames.jl does)
+human_circulation(; kw...) = Body.human_circulation(; cor = COR, hct = HEART.hd, kw...)
 
 const REF = joinpath(@__DIR__, "..", "..", "data", "reference")
 ref(id) = TOML.parsefile(joinpath(REF, id * ".toml"))["data"]
