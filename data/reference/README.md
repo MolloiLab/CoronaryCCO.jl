@@ -56,7 +56,8 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `kassab1994_capillary_network.toml` | Capillary segment diameter and length by segment type (C0a/C00/C0v/Ccc) for RV and LV, functional length, path length, cross-connections per path, capillaries per arteriole and venule order | Pig, 4 hearts; cast, arrested, vasodilated | FT (Tables 1–5, text) |
 | `kassab1995_arteriolar_bifurcations.toml` | Murray ratio (D1³+D2³)/D0³ at bifurcations of 9–50 µm arterioles | Pig, 4 normal and 3 RVH; vasodilated cast | FT |
 | `huo2012_intraspecific_scaling.toml` | Stem-crown scaling exponents fitted to the pig trees and to other organs: volume–diameter, flow–diameter, flow–length; Horton ε, γ | Pig and others; anatomy only | FT |
-| `seiler1992_lumen_area_vs_bed_size.toml` | Human epicardial lumen area vs distal branch length and distal mass; area ratio at bifurcations | Human angiography | FT |
+| `seiler1992_lumen_area_vs_bed_size.toml` | Human epicardial lumen area vs distal branch length and distal mass; area ratio at bifurcations 1.647 ± 0.06 (SEM implied; SD ≈ 0.42) | Human angiography | FT |
+| `finet2008_fractal_bifurcation_ratio.toml` | Bifurcation diameter ratio Dm/(Dd1 + Dd2) = 0.678 ± 0.067 (SD) by mother-diameter class | Human, 173 normal bifurcations, QCA/IVUS | FT |
 | `kassab1999_capillary_hemodynamics.toml` | Capillary distensibility and pressure–radius data used as model input | Pig, epicardial capillaries | secondary (full text not available) |
 | `kaimovitz2005_3d_arterial_reconstruction.toml` | **Model benchmark, not data.** Stochastic 3-D reconstruction of the whole RCA/LAD/LCx tree from Kassab 1993; how it assigned diameters (Dl/Dm along elements, asymmetry ratio matrix for side branches); arterial blood volume 4.1 ± 0.23 ml/100 g and its LV/septum/RV split. The per-order asymmetry and S/E inputs are missing | Pig anatomy, 5 reconstructed sets | mixed (abs + secondary; full text not available) |
 

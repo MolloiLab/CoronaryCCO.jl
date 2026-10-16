@@ -80,6 +80,10 @@ description = "Parent-to-daughter mean lumen area ratio A0/mean(A_daughter) at 5
 location = "Table 2 (p. 1996); Results text"
 provenance = "FT"
 value = 1.647
+value_spread = 0.06
+spread_statistic = "printed as 1.647 ± 0.06 (p. 1998, Results); not labelled. SEM is implied by the paper's own tests: as SEM (n = 50) the difference from 1.588 is t ≈ 1.0 (reported NS) and from 2 is t ≈ 5.9 (reported p < 0.005); as an SD both would be highly significant."
+implied_sd = 0.42
+implied_sd_note = "0.06 × √50; an inference from the SEM reading, not printed."
 exponent_a = 0.72
 definition = "A0 / mean daughter area = 2^a"
 n_bifurcations = 50
@@ -87,7 +91,7 @@ theory_min_energy = 1.588
 theory_constant_velocity = 2.0
 p_vs_min_energy = "NS"
 p_vs_constant_velocity = 0.005
-missing_note = "SD of the observed ratio not given."
+missing_note = "Per-bifurcation values not tabulated. The ± 0.06 is unlabelled (see spread_statistic); corrected 2026-10-16 (earlier versions of this file said no spread was given)."
 
 [data.lv_mass_vs_left_tree_length]
 description = "Total LV mass vs total left coronary tree length in group 1 (one point per patient)"

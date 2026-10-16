@@ -1,0 +1,84 @@
+[meta]
+id = "finet2008_fractal_bifurcation_ratio"
+data_type = "experimental"
+validates = "Per-bifurcation diameter ratio R = Dm/(Dd1 + Dd2) (mean +/- SD) at 173 normal human epicardial coronary bifurcations, overall and in six mother-diameter classes (2.2-5.2 mm); mother and daughter diameters per class. Gives the spread of parent-to-daughter size ratios at angiographically visible bifurcations."
+species = "human"
+preparation = "Quantitative coronary angiography (dedicated QCA bifurcation software) of patients under 55 y, free of cardiovascular risk factors, with strictly normal coronary angiograms obtained before valve replacement surgery. 87 enrolled, 59 included (35 F, 24 M, age 46 +/- 8.5 y); 173 bifurcations (2.9 per patient). A subgroup of 27 patients had IVUS to confirm normality. Reference diameters measured for mother (Dm) and both daughters (Dd1 >= Dd2)."
+conditions = "Clinical diagnostic angiography before valve surgery. Intracoronary nitrate use not identified in the pages read."
+verification = "FT"
+access = "Publisher open PDF, https://eurointervention.pcronline.com/article/fractal-geometry-of-arterial-coronary-bifurcations-a-quantitative-coronary-angiography-and-intravascular-ultrasound-analysis/pdf (text layer read; Tables 1 and 2 are text in the PDF)."
+notes = """Statistics: 'Variables are presented as mean +/- SD' (Statistical analysis and table footnotes; tables print 'DS').
+The abstract says 47 patients; the Methods/Results say 59 patients were included. Both are as printed.
+The IVUS-subgroup angiographic ratio is printed as 'R(angio)=0.0670+/-0.031' (an evident typo for 0.670); stored as 0.670 with a note.
+Table 1 'Reduction in mm' for all bifurcations is 0.631 +/- 0.365; the Results text prints 0.631 +/- 1.05 mm.
+DERIVED (not printed in the paper): A0/mean(A1,A2) = 2 Dm^2/(Dd1^2 + Dd2^2) = 2 R^2 (1+s)^2/(1+s^2), s = Dd2/Dd1.
+With R = 0.678 and s = 2.236/2.708 = 0.826 (ratio of class means) this gives about 1.82; symmetric daughters give 4R^2 = 1.84.
+First-order propagation of SD_R alone (relative SD of R^2 = 2 x 0.0665/0.678 = 0.196) gives SD about 0.36 (CV about 20%),
+which ignores the extra spread from per-bifurcation asymmetry s; treat it as a lower bound on the SD of the area ratio."""
+use_in_model = """For each model bifurcation with mother diameter in the angiographic range (~2-5.5 mm), compute R = Dm/(Dd1+Dd2) and compare mean and SD with
+ratio_by_mother_diameter (overall 0.678 +/- 0.0665, n = 173). To score A0/mean(A1,A2) use the derived conversion in meta.notes, or better compute R directly
+in the model and compare R. Vessels below ~2 mm are not represented."""
+
+[source]
+authors = ["Finet G", "Gilard M", "Perrenot B", "Rioufol G", "Motreff P", "Gavit L", "Prost R"]
+year = 2008
+title = "Fractal geometry of arterial coronary bifurcations: a quantitative coronary angiography and intravascular ultrasound analysis"
+journal = "EuroIntervention"
+volume = "3"
+issue = "4"
+pages = "490-498"
+doi = "10.4244/EIJV3I4A87"
+crossref_verified = "2026-10-16; Crossref title exact match"
+pmid = "19736093"
+
+[data.ratio_by_mother_diameter]
+description = "Per-bifurcation diameter ratio R = Dm/(Dd_larger + Dd_smaller) and vessel diameters, all bifurcations and by mother-vessel diameter class (QCA)"
+location = "Table 1 (p. 493)"
+provenance = "FT"
+statistic = "mean +/- SD; n = bifurcations"
+class_label = ["all", "Dm>=4.5", "4<=Dm<=4.5", "3.5<=Dm<=4", "3<=Dm<=3.5", "2.5<=Dm<=3", "Dm<=2.5"]
+n_bifurcations = [173, 21, 24, 18, 43, 33, 35]
+dm_mean_mm = [3.339, 5.195, 4.202, 3.726, 3.192, 2.748, 2.224]
+dm_sd_mm = [0.948, 0.561, 0.143, 0.132, 0.146, 0.119, 0.186]
+dd_larger_mean_mm = [2.708, 4.159, 3.334, 3.046, 2.559, 2.312, 1.831]
+dd_larger_sd_mm = [0.774, 0.529, 0.3, 0.338, 0.258, 0.273, 0.226]
+dd_smaller_mean_mm = [2.236, 3.476, 2.828, 2.476, 2.027, 1.889, 1.583]
+dd_smaller_sd_mm = [0.689, 0.548, 0.333, 0.501, 0.337, 0.241, 0.209]
+reduction_mean_mm = [0.631, 1.036, 0.868, 0.681, 0.633, 0.436, 0.394]
+reduction_sd_mm = [0.365, 0.538, 0.333, 0.321, 0.246, 0.245, 0.154]
+percent_reduction = [18.9, 19.93, 20.64, 18.26, 19.84, 15.86, 17.72]
+ratio_mean = [0.678, 0.6846, 0.6865, 0.685, 0.7019, 0.6595, 0.656]
+ratio_sd = [0.0665, 0.0632, 0.0655, 0.0827, 0.066, 0.058, 0.059]
+reduction_definition = "Dm - Dd_larger"
+missing_note = "Class boundaries printed as overlapping (e.g. 4 <= Dm <= 4.5 and 4.5 <= Dm); recorded as printed. Per-bifurcation values (Fig 2) not digitized."
+
+[data.ratio_ivus_subgroup]
+description = "Ratio R in the 27-patient IVUS subgroup, by angiography and by IVUS"
+location = "Results, Self-similarity and fractal ratio (p. 493)"
+provenance = "FT"
+statistic = "mean +/- SD"
+n_patients = 27
+r_angio_mean = 0.670
+r_angio_sd = 0.031
+r_ivus_mean = 0.668
+r_ivus_sd = 0.028
+p_angio_vs_ivus = "NS"
+missing_note = "R(angio) printed as 0.0670 (typo). Number of bifurcations in the subgroup not stated."
+
+[data.mother_diameter_prediction_errors]
+description = "Error in mother diameter predicted from daughter diameters by the linear law Dm = 0.678(Dd1+Dd2), Murray's law (cubes) and flow conservation (squares), over 173 bifurcations"
+location = "Table 2 (p. 494)"
+provenance = "FT"
+statistic = "mean +/- SD"
+model = ["real", "linear_0.678", "murray_cube", "area_conservation_square"]
+dm_mean_mm = [3.339, 3.312, 3.158, 3.521]
+dm_sd_mm = [0.948, 0.948, 0.898, 1.004]
+real_minus_est_mean_mm = [0.0, 0.027, 0.181, -0.182]
+real_minus_est_sd_mm = [0.0, 0.333, 0.317, 0.34]
+relative_diff_mean_pct = [0.0, 0.332, 5.0, -5.94]
+relative_diff_sd_pct = [0.0, 9.82, 8.9, 10.13]
+abs_diff_mean_mm = [0.0, 0.262, 0.292, 0.29]
+abs_diff_sd_mm = [0.0, 0.206, 0.219, 0.25]
+abs_relative_diff_mean_pct = [0.0, 7.94, 8.622, 8.96]
+abs_relative_diff_sd_pct = [0.0, 5.76, 5.45, 7.57]
+missing_note = ""
