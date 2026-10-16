@@ -64,16 +64,25 @@ let
         x isa Union{AbstractVector, Tuple} ? "[" * join(js.(collect(x)), ",") * "]" : x isa AbstractFloat ? (isfinite(x) ? @sprintf("%.5g", x) : "null") : string(x)
 
     logbins(lo, hi, k) = exp10.(range(log10(lo), log10(hi), length = k + 1))
-    function binstats(x, y, edges; w = ones(length(x)))
+    # per-bin median and 10/90th percentiles of y for x in [edges[b], edges[b+1]): one pass to bin,
+    # then one sort per bin
+    function binstats(x, y, edges)
+        K = length(edges) - 1; bin = Int32[searchsortedlast(edges, x[i]) for i in eachindex(x)]
+        cnt = zeros(Int, K + 2); for b in bin
+            cnt[b + 1] += 1
+        end
+        start = cumsum(cnt) .- cnt; ys = similar(y, length(y)); fill_ = copy(start)
+        for i in eachindex(x)
+            b = bin[i]; fill_[b + 1] += 1; ys[fill_[b + 1]] = y[i]
+        end
         out = []
-        for b in 1:(length(edges) - 1)
-            sel = findall(i -> edges[b] <= x[i] < edges[b + 1], eachindex(x))
-            isempty(sel) && continue
-            ys = sort(y[sel])
+        for b in 1:K
+            n = cnt[b + 1]; n == 0 && continue
+            v = sort!(ys[(start[b + 1] + 1):(start[b + 1] + n)])
             push!(
                 out, Dict(
-                    "x" => sqrt(edges[b] * edges[b + 1]), "n" => length(sel), "median" => ys[(end + 1) ÷ 2],
-                    "p10" => ys[max(1, ceil(Int, 0.1 * end))], "p90" => ys[max(1, ceil(Int, 0.9 * end))]
+                    "x" => sqrt(edges[b] * edges[b + 1]), "n" => n, "median" => v[(n + 1) ÷ 2],
+                    "p10" => v[max(1, ceil(Int, 0.1 * n))], "p90" => v[max(1, ceil(Int, 0.9 * n))]
                 )
             )
         end

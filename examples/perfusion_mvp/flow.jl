@@ -1405,6 +1405,7 @@ function _autoregulate!(
             it > 10 && dq < 1.0f-4 && (fixtone || abs(ssin - sref) < 1.0f-3) && break
         end
     end
+    iters == maxit && @warn "$(state) state stopped at its iteration limit ($maxit) without meeting the convergence test"
     _solve!(S, kappa; warm = true)
     stress || _metabolic!(S, phys, terr_g)
     return iters, p99()
