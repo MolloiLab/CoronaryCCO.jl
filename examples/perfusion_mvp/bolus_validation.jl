@@ -109,8 +109,10 @@ let d = ref("lehmonen2022_cmr_chamber_bolus_passage"), co = 81.6f0 * 70 / 1000
         # not scored: at 0.1 mmol/kg the saturation-recovery blood-pool signal is far past its linear range (linear only to
         # ≈ 0.01 mmol/kg, Utz 2007; peaks clipped, Li 2023, Kellman 2017), so the signal curve's width overstates the
         # concentration curve's; the CT width rows (iodine is linear in HU) test the same thing
-        row!("lehmonen2022", "FWHM (cycles), " * tv["site"][k], fwhm(r, c) / b, tv["fwhm_median_cc"][k], tv["fwhm_iqr_width_cc"][k] / 1.35;
-            score = false, note = "not scored: MRI signal saturates at this dose (blood pool linear only to ≈ 0.01 mmol/kg), so the measured width is a signal width")
+        row!(
+            "lehmonen2022", "FWHM (cycles), " * tv["site"][k], fwhm(r, c) / b, tv["fwhm_median_cc"][k], tv["fwhm_iqr_width_cc"][k] / 1.35;
+            score = false, note = "not scored: MRI signal saturates at this dose (blood pool linear only to ≈ 0.01 mmol/kg), so the measured width is a signal width"
+        )
     end
 end
 # ---- Dock et al. 1961 (dye dilution): pulmonary artery → left atrium mean transit, normal dynamics

@@ -1170,8 +1170,10 @@ end
 end
 
 # wall constants of a `Physiology` as a plain tuple (for kernels)
-_wall(p) = (; cps = p.wall_cpass_slope, c10 = p.wall_cpass1_0, c1s = p.wall_cpass1_slope, cac = p.wall_cact_coef, cae = p.wall_cact_exp,
-    a10 = p.wall_cact1_0, a1s = p.wall_cact1_slope, a20 = p.wall_cact2_0, a2s = p.wall_cact2_slope)
+_wall(p) = (;
+    cps = p.wall_cpass_slope, c10 = p.wall_cpass1_0, c1s = p.wall_cpass1_slope, cac = p.wall_cact_coef, cae = p.wall_cact_exp,
+    a10 = p.wall_cact1_0, a1s = p.wall_cact1_slope, a20 = p.wall_cact2_0, a2s = p.wall_cact2_slope,
+)
 @inline function _tension(x::F32, A::F32, d0::F32, w)
     cp = w.cps * d0; cp1 = w.c10 + w.c1s * d0
     ca = w.cac * d0^w.cae; ca1 = w.a10 + w.a1s * d0; ca2 = w.a20 + w.a2s * d0

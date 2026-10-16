@@ -23,9 +23,9 @@ function orders(m; maxiter)
     K = maximum(R.order)
     return [
         (
-                count = count(==(o), R.order), d = 1000 * mean(R.diameter[R.order .== o]),
-                l = mean(R.length[R.order .== o]),
-            ) for o in 1:K
+            count = count(==(o), R.order), d = 1000 * mean(R.diameter[R.order .== o]),
+            l = mean(R.length[R.order .== o]),
+        ) for o in 1:K
     ]
 end
 
