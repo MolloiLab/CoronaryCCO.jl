@@ -1,0 +1,94 @@
+# Kaimovitz B, Lanir Y, Kassab GS (2005). Large-scale 3-D geometric reconstruction of the porcine
+# coronary arterial vasculature based on detailed anatomical data. Ann Biomed Eng 33:1517-1535.
+# Full text not accessible. Abstract (PubMed) plus statements about this reconstruction in two later
+# papers by the same group: Kaimovitz et al. 2008 (AJP Heart, full text) and Kaimovitz et al. 2010
+# (AJP Heart, PMC2957345, open full text).
+
+[meta]
+id = "kaimovitz2005_3d_arterial_reconstruction"
+data_type = "model"
+validates = "Model benchmark, not data. A stochastic 3-D reconstruction of the entire pig RCA, LAD and LCx arterial trees down to the first capillary segment, built from the Kassab 1993 morphometry by simulated annealing and mapped onto a prolate spheroid. Diameters were assigned from per-order diameter-asymmetry statistics. Useful as a precedent for how a Kassab-constrained tree assigns diameters, and for the reconstructed arterial blood volume and its LV/septum/RV split."
+species = "pig (model built on pig morphometry)"
+preparation = "Computational reconstruction. Constraints: measured morphometry of the pig coronary arterial trees (Kassab et al. 1993). Five reconstructed sets (n = 5, per Kaimovitz 2010)."
+conditions = "Anatomy of arrested, maximally vasodilated casts (inherited from the input morphometry). 150-cm3 heart geometry (per Kaimovitz 2010)."
+verification = "mixed"
+access = "Abstract via PubMed (PMID 16341920). Full text is paywalled (Springer, bot challenge; Semantic Scholar lists it as closed; no PMC copy) and was not read. Secondary statements from Kaimovitz et al. 2008 (publisher full-text HTML, Wayback capture 20220305070123) and Kaimovitz et al. 2010 (PMC2957345, read 2026-10-16)."
+notes = """Abstract: RCA, LAD and LCx trees reconstructed down to the capillaries; 3-D structure first built in rectangular slab geometry by global optimization with parallel simulated annealing, constrained by the measured morphometry; then mapped onto a prolate spheroid by least squares on changes in segment lengths and angles. 'Vessel diameters were assigned based on a novel representation of diameter asymmetry along bifurcations.' Reconstructed morphological statistics are stated to be consistent with the measured data (no numbers in the abstract).
+Diameter-assignment procedure as described in Kaimovitz 2008 (Discussion, Anatomical reconstructions): start at the most proximal segment with a diameter from a uniform random number generator; the other segments of the same element get diameters from a normal random generator with the intra-element Dl/Dm mean and SD for that order; side-branch segments get diameters from the inter-element Ds/Dm statistics (the asymmetry ratio matrix); the segment stemming from the distal segment of the mother element uses inter-element Dl/Dm statistics; repeated top-down to the capillaries. The per-order statistics themselves are tabulated in kaimovitz2008_diameter_asymmetry.toml (ARM) and in that paper's unreadable supplement.
+The per-order asymmetry and segments-per-element (S/E) statistics used as constraints in this paper are not available here. S/E per order comes from Kassab 1993 (kassab1993_arterial_morphometry.toml)."""
+use_in_model = """Not a validation target for the anatomy itself: it is another model built from the same Kassab data. Compare a CCO tree's arterial blood volume (4.1 +/- 0.23 ml/100 g excluding capillaries) and per-branch LV/septum/RV volume split with the reconstructed values, and use the 2008 ARM for the diameter-asymmetry check. The diameter-assignment recipe (normal sampling of Dl/Dm along elements, ARM for side branches) is an option for assigning diameters in a grown tree."""
+
+[source]
+authors = ["Kaimovitz B", "Lanir Y", "Kassab GS"]
+year = 2005
+title = "Large-Scale 3-D Geometric Reconstruction of the Porcine Coronary Arterial Vasculature Based on Detailed Anatomical Data"
+journal = "Ann Biomed Eng"
+volume = "33"
+issue = "11"
+pages = "1517-1535"
+doi = "10.1007/s10439-005-7544-3"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 33, issue 11, 1517-1535, published 2005-11)"
+
+[secondary_source]
+authors = ["Kaimovitz B", "Lanir Y", "Kassab GS"]
+year = 2010
+title = "A full 3-D reconstruction of the entire porcine coronary vasculature"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "299"
+issue = "4"
+pages = "H1064-H1076"
+doi = "10.1152/ajpheart.00151.2010"
+pmcid = "PMC2957345"
+note = "Cites the 2005 paper as ref. 32. Its numbers for the arterial network are attributed to the 2005 reconstruction; they were not checked against the 2005 text. Crossref verified 2026-10-16: title exact match, vol 299, issue 4, H1064-H1076, published 2010-10."
+
+[data.reconstruction_size]
+description = "Reconstructed arterial network: number of sets, heart size, epicardial segment count"
+location = "Kaimovitz 2010 Methods (heart size) and Results (segment counts)"
+provenance = "secondary"
+statistic = "mean +/- SD over n = 5 reconstructed sets"
+n_reconstructed_sets = 5
+heart_volume_cm3 = 150.0
+n_epicardial_arterial_segments_mean = 934.0
+n_epicardial_arterial_segments_sd = 58.0
+missing_note = "The 150-cm3 heart is described as 'the size of the heart used in the morphometric study (32)'. The epicardial portion is the counterpart of venous orders -12 to -9; the arterial orders included are not stated. The total arterial segment count is not printed (only the combined arterial + venous total, 27,307,376 +/- 1,155,359, and the venous total, 17,148,946 +/- 1,049,498). Arterial-only values are not back-computed."
+
+[data.arterial_blood_volume]
+description = "Mass-normalized blood volume of the reconstructed arterial tree"
+location = "Kaimovitz 2010 Discussion"
+provenance = "secondary"
+statistic = "mean +/- SD, n = 5 reconstructed sets"
+cbv_arterial_excl_capillaries_ml_per_100g_mean = 4.1
+cbv_arterial_excl_capillaries_ml_per_100g_sd = 0.23
+functional_arterial_capillary_volume_ml = 0.14
+cbv_arterial_capillaries_ml_per_100g_mean = 3.22
+cbv_arterial_capillaries_ml_per_100g_sd = 0.31
+cbv_arterial_total_ml_per_100g_mean = 7.32
+cbv_arterial_total_ml_per_100g_sd = 0.31
+missing_note = "Only the 4.1 +/- 0.23 ml/100 g value is attributed to ref. 32 directly. The capillary and total values were computed in the 2010 paper by scaling the 0.14-ml functional arterial capillary volume by 23 (mean capillaries per cross-connected mesh); they are 2010 calculations on the 2005 network."
+
+[data.arterial_volume_distribution]
+description = "Volume of each reconstructed arterial branch tree split over LV, septum and RV (percent of the branch's cumulative volume), with Weaver et al. data printed alongside"
+location = "Kaimovitz 2010 Table 2 ('Generated arterial' and 'Weaver et al. data' columns)"
+provenance = "secondary"
+statistic = "mean +/- SD (%) over reconstructed sets; Weaver et al. values as single numbers"
+branch = ["LAD", "LCx", "RCA"]
+lv_pct_mean = [47.0, 30.3, 22.7]
+lv_pct_sd = [14.2, 6.1, 8.4]
+septum_pct_mean = [39.7, nan, 60.2]
+septum_pct_sd = [10.0, nan, 10.0]
+rv_pct_mean = [19.7, nan, 80.2]
+rv_pct_sd = [20.9, nan, 20.9]
+weaver_lv_pct = [49.0, 35.0, 25.0]
+weaver_septum_pct = [58.0, nan, 42.0]
+weaver_rv_pct = [0.0, nan, 72.0]
+missing_note = "LCx septum and RV cells are blank in the printed table. The columns do not sum to 100 per branch as printed; the table footnote says the values are 'ratios of branch volumes relative to the cumulative volume (in %)'. Stored as printed."
+
+[data.diameter_asymmetry_inputs]
+description = "Per-order diameter-asymmetry statistics (Dl/Dm, Ds/Dm per order and ARM) and per-order S/E used as reconstruction constraints"
+location = "2005 full text (not read)"
+provenance = "missing"
+statistic = "mean +/- SD per order"
+mother_order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+dl_over_dm_mean = [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
+ds_over_dm_mean = [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
+missing_note = "The 2005 full text was not accessible. The same group's later per-order asymmetry statistics from the same raw database are in kaimovitz2008_diameter_asymmetry.toml (ARMs, Tables 1-3). No fraction of junctions by asymmetry class was found in any text read."

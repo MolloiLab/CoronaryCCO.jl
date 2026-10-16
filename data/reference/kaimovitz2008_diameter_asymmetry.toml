@@ -1,6 +1,6 @@
 # Kaimovitz B, Huo Y, Lanir Y, Kassab GS (2008). Diameter asymmetry of porcine coronary arterial trees:
 # structural and functional implications. Am J Physiol Heart Circ Physiol 294:H714-H723.
-# Numbers from Tables 1-3 (asymmetry ratio matrices) of the publisher full-text HTML.
+# Numbers from Tables 1-4 and the text of the publisher full-text HTML.
 
 [meta]
 id = "kaimovitz2008_diameter_asymmetry"
@@ -10,7 +10,7 @@ species = "pig"
 preparation = "Raw bifurcation data of the Kassab et al. 1993 arterial database (casts > 50 um, histology < 50 um), ordered by the original manual diameter-defined Strahler scheme ('raw' tables)."
 conditions = "Arrested, maximally vasodilated, cast (as Kassab 1993)."
 verification = "mixed"
-access = "Publisher full-text HTML (journals.physiology.org) read via Wayback Machine capture 20220305070123; tables parsed from HTML cells (column positions preserved). Supplemental Tables S1-S7 (automatic-scheme ARMs; per-order Dl/Dm, Ds/Dm and AER) were not accessible."
+access = "Publisher full-text HTML (journals.physiology.org) read via Wayback Machine capture 20220305070123; tables parsed from HTML cells (column positions preserved). Supplemental Tables S1-S8 (one PDF, Tables+S1-S8.pdf: automatic-scheme ARMs; per-order Dl/Dm, Ds/Dm and AER) were not accessible: re-tried 2026-10-16, live site 403 (bot challenge), Wayback 404; figure images (Figs. 1-7) are not archived either. Tables 1-3 re-checked cell by cell against the same capture on 2026-10-16 (119 cells, 0 mismatches)."
 notes = """Inter-element bifurcations only: each daughter belongs to a different element, so the smaller daughter starts a side branch of lower order. Intra-element Dl/Dm (taper along an element) is shown only in Fig. 1 (minimum at mother order 5, ~70-80 um) and Supplemental Tables S5-S7.
 Row = order of the smaller daughter Ds (0 = capillary), column = order of the mother Dm. Entries are stored as flat parallel arrays (daughter_order, mother_order, value). Empty cells in the printed matrix are simply absent here.
 Some cells print a mean without SD or n (single observation or omitted); those SD/n are stored as nan.
@@ -27,7 +27,7 @@ volume = "294"
 issue = "2"
 pages = "H714-H723"
 doi = "10.1152/ajpheart.00818.2007"
-crossref_verified = "2026-10-15; Crossref title exact match (vol 294, issue 2, H714-H723)"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 294, issue 2, H714-H723, published 2008-02); first checked 2026-10-15"
 
 [data.arm_lad]
 description = "LAD asymmetry ratio matrix: Ds/Dm for smaller daughter of order daughter_order and mother of order mother_order (manual/raw ordering)"
@@ -72,4 +72,31 @@ provenance = "missing"
 statistic = "mean +/- SD per mother order"
 mother_order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 dl_over_dm_mean = [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
-missing_note = "Values exist in Supplemental Tables S5-S7 (not accessed) and Figs. 1-4 (not digitized). Text: Dl/Dm has a significant minimum at mother order 5 (Dm ~70-80 um); AER ~1 for orders 6-11, rising toward order 1."
+missing_note = "Values exist in Supplemental Tables S5-S7 (not accessed) and Figs. 1-4 (images not obtainable, so not digitized). Text: Dl/Dm has a significant minimum at mother order 5 (Dm ~70-80 um; Fig. 5 polynomial fit); Ds/Dm decreases monotonically with mother order; AER ~1 for orders 6-11, rising toward order 1; k per order in Fig. 4 only. The small/large daughter ratio Ds/Dl (or SD = Dl/Ds) per order is not tabulated: the text says SD is uniform over orders 1-5 and increases above order 5 (data not shown). Do not form Ds/Dl from the ratio of the mean Ds/Dm and Dl/Dm. The paper gives no fraction of junctions by asymmetry class."
+
+[data.dl_over_dm_order_tests_lad]
+description = "Order-based statistical tests on intra-element Dl/Dm in the LAD tree (manual/raw ordering). 1 = H0 rejected, 0 = H0 accepted"
+location = "Table 4"
+provenance = "FT"
+statistic = "test outcome flags; P values as printed (<0.05 stored as 0.05 with p_is_upper_bound = true)"
+mother_order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+normality_rejected_ks = [0, 0, 0, 0, 0, 0, 1, 1, 1, 0]
+normality_rejected_lilliefors = [0, 0, 0, 1, 0, 0, 1, 1, 1, 0]
+same_mean_rejected_wmw = [1, 0, 0, 1, 1, 1, 1, 0, 0, 0]
+p_wmw = [0.05, 0.33, 0.87, 0.05, 0.05, 0.05, 0.05, 0.48, 0.35, 0.51]
+p_wmw_is_upper_bound = [true, false, false, true, true, true, true, false, false, false]
+same_mean_rejected_ks = [1, 0, 0, 1, 1, 1, 1, 0, 0, 0]
+p_ks = [0.05, 0.67, 0.80, 0.05, 0.05, 0.05, 0.05, 0.46, 0.25, 0.89]
+p_ks_is_upper_bound = [true, false, false, true, true, true, true, false, false, false]
+missing_note = "The second H0 is printed as 'Mother and Daughter Population Have the Same Mean'; the text describes it as adjacent-order populations having the same mean. Kruskal-Wallis and t-test results are mentioned in the text but not tabulated. No Dl/Dm means are printed in this table."
+
+[data.sample_size_text]
+description = "Size of the manual (raw) bifurcation database and the sample near the Dl/Dm minimum"
+location = "Discussion, Critique of methods"
+provenance = "FT"
+statistic = "counts of measurements"
+n_measurements_lad_lcx_rca_raw = 11201
+n_measurements_mother_35_60um = 246
+dl_over_dm_minimum_mother_diameter_lo_um = 70.0
+dl_over_dm_minimum_mother_diameter_hi_um = 80.0
+missing_note = "The text gives the minimum location as Dm 'approximately equal to 70~80 um' (Results) and 'mean diameter of ~70 um' (abstract). Per-tree counts are not given."

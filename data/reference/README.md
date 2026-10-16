@@ -58,6 +58,7 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `huo2012_intraspecific_scaling.toml` | Stem-crown scaling exponents fitted to the pig trees and to other organs: volume–diameter, flow–diameter, flow–length; Horton ε, γ | Pig and others; anatomy only | FT |
 | `seiler1992_lumen_area_vs_bed_size.toml` | Human epicardial lumen area vs distal branch length and distal mass; area ratio at bifurcations | Human angiography | FT |
 | `kassab1999_capillary_hemodynamics.toml` | Capillary distensibility and pressure–radius data used as model input | Pig, epicardial capillaries | secondary (full text not available) |
+| `kaimovitz2005_3d_arterial_reconstruction.toml` | **Model benchmark, not data.** Stochastic 3-D reconstruction of the whole RCA/LAD/LCx tree from Kassab 1993; how it assigned diameters (Dl/Dm along elements, asymmetry ratio matrix for side branches); arterial blood volume 4.1 ± 0.23 ml/100 g and its LV/septum/RV split. The per-order asymmetry and S/E inputs are missing | Pig anatomy, 5 reconstructed sets | mixed (abs + secondary; full text not available) |
 
 ### Microvascular pressure and resistance distribution
 
