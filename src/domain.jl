@@ -41,7 +41,7 @@ function distance_map(::Type{T}, img::AbstractArray{UInt8, 3}; p::Integer = 3) w
     for dim in 1:3
         n = size(D, dim)
         others = [size(D, d) for d in 1:3 if d != dim]
-        Threads.@threads for j in 1:prod(others)
+        AK.foreachindex(1:prod(others); min_elems = 64) do j      # independent lines; exact integer passes
             g = Vector{Int64}(undef, nmax); out = similar(g)
             a, b = (j - 1) % others[1] + 1, (j - 1) ÷ others[1] + 1
             idx(u) = dim == 1 ? (u, a, b) : dim == 2 ? (a, u, b) : (a, b, u)
