@@ -20,7 +20,7 @@ Pkg.add(url = "https://github.com/MolloiLab/Vasculature.jl")
 
 ## 1. Grow
 
-![grown heart tree](docs/assets/step1_grow.png)
+![imaged input → grown tree](docs/assets/step1_grow.png)
 
 You give four things; everything else is the same for every organ:
 
