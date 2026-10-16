@@ -1,0 +1,42 @@
+[meta]
+id = "melikian2010_imr_normal_controls"
+data_type = "experimental"
+validates = "Human index of microcirculatory resistance (IMR = Pd x hyperemic mean transit time, units) in patients without clinical atherosclerosis vs patients with atheroma; FFR."
+species = "human"
+preparation = "116 patients, 143 coronary arteries. Control group: 15 patients (22 arteries, 48 +/- 16 y) with no clinical evidence of atherosclerosis. Atheroma group: 101 patients (121 arteries, 63 +/- 11 y) with established atherosclerosis and multiple risk factors. IMR is by definition a bolus-thermodilution index from a pressure/temperature wire (method details not in the abstract)."
+conditions = "Maximal hyperemia (agent not stated in the abstract). IMR and FFR per artery."
+verification = "abs"
+access = "Abstract only (PubMed PMID 20542779); full text not accessed."
+notes = """Mean +/- SD with ranges. IMR is pressure x transit time (mmHg.s); it scales with resistance x vascular volume and cannot be converted to mmHg.min.g/mL without volumetric flow and territory mass.
+Commonly used upper normal limit IMR < 25 (Mahendiran 2025 cites '>25 widely accepted' for abnormal)."""
+use_in_model = """Context only: normal IMR 19 +/- 5 U (range 8-28). If the model reports a transit time from the distal wire site to the venous outflow at full dilation, Pd x that transit time can be compared with IMR (with the caveat that IMR uses the mean transit time of a saline bolus, not of blood volume)."""
+
+[source]
+authors = ["Melikian N", "Vercauteren S", "Fearon WF", "Cuisset T", "MacCarthy PA", "Davidavicius G", "Aarnoudse W", "Bartunek J", "Vanderheyden M", "Wyffels E", "Wijns W", "Heyndrickx GR", "Pijls NH", "De Bruyne B"]
+year = 2010
+title = "Quantitative assessment of coronary microvascular function in patients with and without epicardial atherosclerosis"
+journal = "EuroIntervention"
+volume = "5"
+issue = "8"
+pages = "939-945"
+doi = "10.4244/EIJV5I8A158"
+crossref_verified = "2026-10-15; Crossref title exact match (EuroIntervention vol 5, issue 8, 939-945)"
+pmid = "20542779"
+
+[data.imr_ffr]
+description = "IMR and FFR, control vs atheroma group"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD (range); n = arteries"
+group = ["control (no atherosclerosis)", "atheroma"]
+n_arteries = [22, 121]
+n_patients = [15, 101]
+imr_U = [19.0, 25.0]
+imr_sd_U = [5.0, 13.0]
+imr_min_U = [8.0, 6.0]
+imr_max_U = [28.0, 75.0]
+ffr = [0.96, 0.85]
+ffr_sd = [0.02, 0.14]
+ffr_min = [0.93, 0.19]
+ffr_max = [1.00, 1.00]
+missing_note = "Full text not accessed; hyperemic agent, Pd and transit times not available. IMR vs FFR r = 0.09 (P = 0.24); 69% of atheroma-group IMR values lay within the control range."

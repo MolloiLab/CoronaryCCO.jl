@@ -1,0 +1,73 @@
+[meta]
+id = "mahendiran2025_mass_indexed_microvascular_resistance"
+data_type = "experimental"
+validates = "Human LAD absolute resting and hyperemic flow (mL/min), microvascular resistance (WU) and the same indexed by CT-derived subtended myocardial mass (mL/min/g and WU.kg = mmHg.min.g/mL), in ANOCA patients with normal microvascular resistance reserve (controls) vs functional and structural CMD."
+species = "human"
+preparation = "100 patients with angina and non-obstructive coronary arteries (no stenosis > 50%, FFR > 0.80, no prior MI), Aalst 2019-2023. CCTA on SOMATOM Force; vessel-specific subtended mass by Voronoi (Synapse 3D), volume x 1.05 g/cm3. Invasive: IC isosorbide dinitrate 0.2 mg; PressureWire X and RayFlow 2.52 Fr infusion catheter in the first millimetres of the LAD; room-temperature saline (20-23 C)."
+conditions = "Rest: saline 10 mL/min; hyperemia: saline 20 mL/min (saline-induced hyperemia, no adenosine). Q from continuous thermodilution (Eq. 1); Rmu,rest from Pa,rest/Qrest; Rmu,hyper from Pd,hyper/Qhyper (no back pressure subtracted). MRR = (Qhyper/Qrest) x (Pa,rest/Pd,hyper). Controls: MRR >= 3.0 (n = 49); functional CMD: MRR < 3.0 and Rmu,hyper < 475 WU (n = 31); structural CMD: MRR < 3.0 and Rmu,hyper >= 475 WU (n = 20). LAD only. Median CCTA-to-invasive interval 28 days (IQR 9-93)."
+verification = "FT"
+access = "Open full text (PMC12337768) read as HTML; Tables 1-2 read from the HTML tables. Supplementary PDF not retrieved (bot challenge)."
+notes = """All values mean +/- SD. Indexed resistance = Rmu x mass (WU.kg); 1 WU.kg = 1 mmHg.min.g/mL exactly.
+Table 2 labels the resting indexed resistance row as 'Mass-indexed Rmu,hyper, WU.kg' (67.04 / 80.82 / 45.07 / 67.31); the Results text identifies these as indexed Rmu,rest. Stored as resting.
+The 'control' group is ANOCA patients with normal MRR, not healthy volunteers (61 +/- 11 y, 37% female, 55% hypertensive); their hyperemic Pd is not printed but FFR 0.86 +/- 0.03 and Pa,hyper 92.5 +/- 13.6 mmHg are.
+Means of individual indexed values are not equal to ratios of group means.
+Discussion: control indexed Qhyper 4.56 mL/min/g is compared to a 3-5-fold PET flow increase; indexed Qrest 1.36 to PET resting 0.7-1.2 mL/min/g (upper end).
+HRhyper SD (48.84 overall, 84.52 functional CMD) is as printed."""
+use_in_model = """Second human target for hyperemic microvascular resistance per gram: controls 20.7 +/- 8.0 mmHg.min.g/mL (Pd/Q x mass) at Qhyper 4.56 +/- 2.20 mL/min/g in the LAD, with subtended LAD mass 59.6 +/- 21.7 g (40% of LV mass 147 g). Compare with model P_distal/Q x mass for the LAD tree at full dilation, no back pressure subtracted. The resting indexed values (81 +/- 31 WU.kg, 1.36 mL/min/g) are the autoregulated-rest targets."""
+
+[source]
+authors = ["Mahendiran T", "Stalikas N", "Gallinoro E", "Keulards D", "Sakai K", "Bouisset F", "Viscusi MM", "Corradetti S", "Sonck J", "van 't Veer M", "Wilgenhof A", "Pijls NHJ", "Collet C", "De Bruyne B"]
+year = 2025
+title = "Coronary flow and resistance patterns indexed by subtended myocardial mass in coronary microvascular dysfunction"
+journal = "EuroIntervention"
+volume = "21"
+issue = "16"
+pages = "921-932"
+doi = "10.4244/EIJ-D-25-00229"
+crossref_verified = "2026-10-15; Crossref title exact match (EuroIntervention vol 21, issue 16, 921-932; authors Mahendiran, Stalikas, Gallinoro, Keulards)"
+pmid = "40828311"
+
+[data.lad_flow_resistance]
+description = "LAD mass, flow, resistance and pressures, overall and by CMD subtype"
+location = "Table 2 (Results text agrees)"
+provenance = "FT"
+statistic = "mean +/- SD; n = patients"
+group = ["overall", "control (MRR >= 3.0)", "functional CMD", "structural CMD"]
+n = [100, 49, 31, 20]
+subtended_mass_g = [55.29, 59.64, 53.75, 47.00]
+subtended_mass_sd_g = [18.66, 21.69, 13.99, 13.83]
+lv_mass_g = [138.25, 147.46, 133.71, 122.74]
+lv_mass_sd_g = [37.63, 36.57, 34.06, 40.77]
+lad_pct_of_lv = [40.24, 40.22, 40.70, 39.56]
+lad_pct_of_lv_sd = [8.69, 9.57, 7.36, 8.71]
+CFR = [2.70, 3.44, 2.00, 1.97]
+CFR_sd = [0.99, 0.81, 0.45, 0.56]
+MRR = [3.09, 3.96, 2.31, 2.16]
+MRR_sd = [1.08, 0.76, 0.49, 0.63]
+FFR = [0.86, 0.86, 0.87, 0.86]
+FFR_sd = [0.03, 0.03, 0.03, 0.03]
+q_rest_mL_per_min = [87.20, 71.04, 117.18, 80.34]
+q_rest_sd_mL_per_min = [37.03, 18.33, 38.68, 41.76]
+q_rest_per_g_mL_per_min_per_g = [1.75, 1.36, 2.31, 1.85]
+q_rest_per_g_sd_mL_per_min_per_g = [0.94, 0.70, 0.86, 1.16]
+q_hyper_mL_per_min = [215.63, 241.09, 222.40, 142.76]
+q_hyper_sd_mL_per_min = [70.02, 72.87, 46.35, 37.42]
+q_hyper_per_g_mL_per_min_per_g = [4.23, 4.56, 4.39, 3.20]
+q_hyper_per_g_sd_mL_per_min_per_g = [1.82, 2.20, 1.32, 0.90]
+r_rest_WU = [1226.20, 1385.11, 842.03, 1432.36]
+r_rest_sd_WU = [470.57, 380.67, 240.70, 587.84]
+r_rest_x_mass_mmHg_min_g_per_mL = [67.04, 80.82, 45.07, 67.31]
+r_rest_x_mass_sd_mmHg_min_g_per_mL = [31.63, 31.30, 17.98, 30.83]
+r_hyper_WU = [417.31, 355.78, 362.84, 652.49]
+r_hyper_sd_WU = [155.67, 93.43, 63.51, 158.17]
+r_hyper_x_mass_mmHg_min_g_per_mL = [22.24, 20.68, 19.33, 30.58]
+r_hyper_x_mass_sd_mmHg_min_g_per_mL = [9.20, 7.99, 5.68, 11.63]
+hr_rest_bpm = [71.04, 66.06, 76.58, 74.64]
+hr_rest_sd_bpm = [13.45, 11.85, 13.93, 12.39]
+hr_hyper_bpm = [73.42, 64.07, 88.62, 72.78]
+hr_hyper_sd_bpm = [48.84, 12.75, 84.52, 11.67]
+pa_rest_mmHg = [93.10, 93.07, 90.44, 97.31]
+pa_rest_sd_mmHg = [13.14, 12.18, 12.75, 15.45]
+pa_hyper_mmHg = [93.67, 92.53, 90.26, 101.73]
+pa_hyper_sd_mmHg = [14.69, 13.62, 14.05, 15.94]
+missing_note = "Pd,hyper and Pd,rest are not printed. Resting indexed resistance row is mislabeled 'Rmu,hyper' in Table 2 (see notes). WU.kg stored under the identical unit mmHg.min.g/mL."

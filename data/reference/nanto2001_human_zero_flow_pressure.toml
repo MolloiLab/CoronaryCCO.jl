@@ -1,0 +1,55 @@
+[meta]
+id = "nanto2001_human_zero_flow_pressure"
+data_type = "experimental"
+validates = "Human LAD zero-flow pressure (Pzf) from the instantaneous aortic pressure vs Doppler flow-velocity relation: at rest (normal beats), during intracoronary-ATP vasodilation (normal beats), and during a long ATP-induced diastolic pause under vasodilation ('actual Pzf'). Gives the rest-vs-hyperemia drop in Pzf and the bias of whole-cycle diastolic fits vs a long-diastole fit."
+species = "human"
+preparation = "15 patients (11 M, 4 F; 61 +/- 10 y, range 40-76) at diagnostic catheterization with no significant coronary narrowing (5 at 6-month follow-up after angioplasty or stenting with only irregularity at the treated site; 2 vasospastic angina; 8 chest pain syndrome with an almost normal coronary artery). Cardiac medications withdrawn the day before. 0.014-inch Doppler guidewire (FloWire, 12 MHz) in the proximal LAD; aortic pressure from a 5 Fr catheter engaged in the left main trunk."
+conditions = "Rest; then intracoronary ATP 0.05 mg bolus (vasodilation, normal cardiac cycles); after return to control, ATP 0.05 mg followed immediately by ATP 0.4 mg to produce AV block and a long diastole (3,132 +/- 1,509 ms) during vasodilation. Pzf = pressure-axis intercept of a least-squares line through instantaneous pressure-velocity points: diastolic phase over 4 cardiac cycles (normal beats) or the declining pressure and flow during the long pause."
+verification = "FT"
+access = "Publisher PDF from J-STAGE (Jpn Circ J 65:793-796), text extracted with pdftotext; all values below are in the running text (no tables). Abstract also read via PubMed (PMID 11548878)."
+notes = """All values mean +/- SD, n = 15.
+Pressure is aortic (coronary orifice), not distal coronary; the authors list this as a limitation for the normal-cycle Pzf.
+The authors note the long pause was not long enough to reach a static state, so the true hyperemic Pzf 'might be a lower value' than 21 mmHg.
+Regression of actual (long-diastole) Pzf on normal-cycle vasodilated Pzf: y = -0.84 + 0.609x, r = 0.75, P < 0.01; normal-cycle Pzf overestimated actual Pzf by 15 +/- 6 mmHg.
+Coronary flow velocity fell to 22 +/- 13 cm/s by the end of the long pause, so the intercept is an extrapolation of the last part of the pressure-flow line.
+Related (abstract only, not stored as data): Nanto S et al. Angiology 1996;47:115-122 (doi 10.1177/000331979604700202, PMID 8595006) found long-pause Pzf 14 +/- 7 mmHg in 9 patients (pause 5,320 +/- 1,498 ms, velocity fell to 11 +/- 8 cm/s) and stated Pzf exceeded right-atrial and LV end-diastolic pressure. Doi Y et al. Angiology 1996;47:1047-1051 (doi 10.1177/000331979604701104, PMID 8921753): in 15 patients with angiographically normal coronaries, the diastolic pressure-velocity intercept correlated with LVEDP at rest (r = 0.64) and during papaverine (r = 0.58); numeric Pzf values are not in the abstract. Di Mario C et al. Circulation 1994;90:1215-1224 (doi 10.1161/01.cir.90.3.1215): during adenosine-induced long pauses in 9 normal arteries the velocity-pressure relation became curvilinear at low pressure, 'with no intercept with the pressure axis in most cases'."""
+use_in_model = """Human anchor for the effective outflow (back) pressure of the fully dilated bed. A linear hyperemic pressure-flow model should extrapolate to roughly 21 +/- 7 mmHg (long-diastole, upper bound per the authors), well below the 36 +/- 9 mmHg obtained from normal-beat diastolic fits; the model's 13.6 mmHg (Kanatsuka 1990, dog) lies within 1 SD of this human value. The rest-vs-vasodilated drop (47 -> 36 mmHg on normal beats) shows Pzf is lower at full dilation than with tone, so a rest-state model with tone should not reuse the hyperemic back pressure."""
+
+[source]
+authors = ["Nanto S", "Masuyama T", "Takano Y", "Hori M", "Nagata S"]
+year = 2001
+title = "Determination of coronary zero flow pressure by analysis of the baseline pressure-flow relationship in humans"
+journal = "Jpn Circ J"
+volume = "65"
+issue = "9"
+pages = "793-796"
+doi = "10.1253/jcj.65.793"
+crossref_verified = "2026-10-15; Crossref title exact match ('Determination of Coronary Zero Flow Pressure by Analysis of the Baseline Pressure-Flow Relationship in Humans.'; vol 65, issue 9, 793-796; authors Nanto, Masuyama, Takano, Hori)"
+pmid = "11548878"
+
+[data.zero_flow_pressure]
+description = "Zero-flow pressure from the instantaneous aortic pressure vs LAD flow-velocity relation, three conditions"
+location = "Abstract; Results (p. 794-795); Fig. 5"
+provenance = "FT"
+statistic = "mean +/- SD; n = 15 patients"
+condition = ["rest, diastole of normal beats (4 cycles)", "intracoronary ATP 0.05 mg, diastole of normal beats (4 cycles)", "intracoronary ATP 0.05 + 0.4 mg, single long diastole ('actual Pzf')"]
+pzf_mmHg = [47.0, 36.0, 21.0]
+pzf_sd_mmHg = [15.0, 9.0, 7.0]
+n = 15
+overestimate_normal_cycle_vs_long_diastole_mmHg = [15.0, 6.0]
+overestimate_note = "[mean, SD] of (vasodilated normal-cycle Pzf - long-diastole Pzf)"
+long_pause_duration_ms = [3132.0, 1509.0]
+long_pause_duration_note = "[mean, SD]"
+end_pause_flow_velocity_cm_per_s = [22.0, 13.0]
+end_pause_flow_velocity_note = "[mean, SD] velocity reached at the end of the long pause"
+missing_note = "Individual Pzf points of Fig. 5 are not digitized. Rest-condition long-diastole Pzf was not measured."
+
+[data.hemodynamics_baseline]
+description = "Baseline heart rate, aortic pressure and peak LAD flow velocity"
+location = "Results (p. 794)"
+provenance = "FT"
+statistic = "mean +/- SD; n = 15"
+variable = ["heart rate bpm", "systolic aortic pressure mmHg", "diastolic aortic pressure mmHg", "peak coronary flow velocity cm/s"]
+value = [74.0, 138.0, 77.0, 48.0]
+sd = [14.0, 16.0, 14.0, 30.0]
+missing_note = "Hyperemic aortic pressure, LVEDP and right-atrial pressure are not reported."

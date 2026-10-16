@@ -1,0 +1,56 @@
+[meta]
+id = "vanherck2007_hyperemic_zero_flow_pressure"
+data_type = "experimental"
+validates = "Human hyperemic (intracoronary adenosine) late-diastolic zero-flow pressure Pzf in stented target vessels and in unobstructed reference vessels, in stable-angina controls vs recent myocardial infarction; LVEDP as the main determinant of Pzf."
+species = "human"
+preparation = "95 patients with de novo single-vessel disease scheduled for elective PCI: 27 stable angina pectoris (AP; control, no prior infarction), 20 non-Q-wave MI and 48 Q-wave MI (3-12 days old). Exclusions: prior cardiac surgery, totally occluded infarct vessel, ECG hypertrophy, visible collaterals, significant valve disease, shock. IV heparin and continuous IV nitrates. 0.014-inch Doppler guidewire (FloWire, 15 MHz FloMap) 1 cm distal to the stent after an optimal angiographic result, then in the mid part of an unobstructed reference vessel perfusing non-infarcted myocardium. Aortic pressure at the guiding-catheter tip."
+conditions = "Rest and maximal hyperemia after intracoronary adenosine 40 ug bolus. Pressure-flow loop from 3 superimposed beats; Pzf and slope (SIPF) from linear regression of instantaneous aortic pressure vs peak flow velocity during LATE diastole (method of Di Mario / Mancini). LVEDP measured after the flow measurements."
+verification = "mixed"
+access = "Open-access full text (PMC2000925) read as HTML; Table 1 and text FT; reference-vessel Pzf digitized from Fig. 3A (PMC figure image, 475 x 192 px)."
+notes = """All values mean (SD).
+Pzf here is the late-diastolic hyperemic intercept on beating hearts (not a long pause). Validation (n = 26): aortic vs intracoronary pressure gave Pzf mean difference 0.40 (limits SD 3.48) mmHg; intra/interobserver ICC near 0.9.
+In the AP control group, hyperemic Pzf (14.6 mmHg treated, ~12.7 reference) is BELOW the measured LVEDP (20.7 mmHg). Reference vessels were 6 LAD and 15 LCX in AP (Table 1 lists counts per group; numbers per group do not all sum to n).
+Stepwise regression: LVEDP was the strongest determinant of Pzf in both treated (F to enter 54.2) and reference (48.5) vessels; CFR second (12.0 and 5.2).
+'Treated vessel' values are after stenting of a culprit/target lesion (residual diameter stenosis 11.0 (6.6)% in AP)."""
+use_in_model = """Human hyperemic effective back pressure in vessels supplying non-infarcted myocardium: ~13-15 mmHg (SD ~7-8) in stable-angina patients with LVEDP ~21 mmHg. Compare with the model's outflow pressure of 13.6 mmHg; the agreement supports keeping it. The LVEDP dependence (and the rise to 22-37 mmHg after infarction) indicates the back pressure is set by intramyocardial/ventricular diastolic pressure rather than by venous (right-atrial) pressure."""
+
+[source]
+authors = ["Van Herck PL", "Carlier SG", "Claeys MJ", "Haine SE", "Gorissen P", "Miljoen H", "Bosmans JM", "Vrints CJ"]
+year = 2007
+title = "Coronary microvascular dysfunction after myocardial infarction: increased coronary zero flow pressure both in the infarcted and in the remote myocardium is mainly related to left ventricular filling pressure"
+journal = "Heart"
+volume = "93"
+issue = "10"
+pages = "1231-1237"
+doi = "10.1136/hrt.2006.100818"
+crossref_verified = "2026-10-15; Crossref title exact match (Heart vol 93, issue 10, 1231-1237; authors Van Herck, Carlier, Claeys, Haine)"
+pmid = "17395671"
+
+[data.pzf_hyperemia]
+description = "Hyperemic late-diastolic zero-flow pressure by group, treated (stented) vessel and reference vessel"
+location = "Abstract and Results (treated vessel, FT); Fig. 3A (reference vessel, fig)"
+provenance = "mixed"
+provenance_per_value = ["FT", "FT", "FT", "fig", "missing", "missing"]
+figure = "Fig. 3A"
+digitization_error = "about +/-1 mmHg on mean and SD (1 px = 0.71 mmHg; axis ticks at 0-100 located to 0.5 px; the same read-out gave 14.8 / SD 8.5 for the treated AP bar vs the published 14.6 / 8.0)"
+statistic = "mean (SD)"
+group_vessel = ["AP treated", "non-Q-wave MI treated", "Q-wave MI treated", "AP reference", "non-Q-wave MI reference", "Q-wave MI reference"]
+pzf_mmHg = [14.6, 22.5, 37.1, 12.7, nan, nan]
+pzf_sd_mmHg = [8.0, 9.1, 12.9, 7.1, nan, nan]
+n_patients = [27, 20, 48, 27, 20, 48]
+missing_note = "Reference-vessel Pzf for the MI groups is shown only in Fig. 3A and was not digitized (only the AP control bar is a model target). p < 0.001 across treated groups."
+
+[data.hemodynamics]
+description = "LVEDP, ejection fraction, heart rate and arterial pressure at baseline and hyperemia by group"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean (SD)"
+variable = ["LVEDP mmHg", "ejection fraction %", "baseline heart rate /min", "baseline mean BP mmHg", "baseline diastolic BP mmHg", "hyperemia heart rate /min", "hyperemia systolic BP mmHg", "hyperemia diastolic BP mmHg", "hyperemia mean BP mmHg", "age y"]
+ap_value = [20.7, 69.8, 63.1, 97.9, 70.4, 63.7, 134.3, 67.1, 93.7, 64.4]
+ap_sd = [6.5, 15.2, 8.5, 16.5, 14.0, 8.6, 25.3, 13.7, 17.6, 11.2]
+non_q_mi_value = [21.6, 67.4, 62.5, 91.0, 68.2, 63.5, 119.6, 64.3, 85.7, 57.4]
+non_q_mi_sd = [5.1, 10.9, 16.3, 10.2, 10.3, 14.2, 17.3, 11.3, 12.0, 12.6]
+q_mi_value = [28.2, 55.4, 71.7, 94.6, 72.1, 72.6, 124.3, 69.6, 92.0, 61.9]
+q_mi_sd = [7.7, 12.3, 11.5, 14.5, 10.5, 10.5, 22.8, 10.9, 15.1, 11.3]
+n = [27, 20, 48]
+missing_note = "Flow velocities (bAPV, hAPV) and CFR are only in Fig. 2 and are not digitized. Right-atrial pressure not measured."

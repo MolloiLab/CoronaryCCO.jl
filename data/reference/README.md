@@ -71,6 +71,25 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `nellis1981_microvascular_pressure.toml` | Pressures in small RV arteries and veins above and below 140 µm | Rabbit, beating RV | mixed |
 | `mittal2005_coronary_flow_model.toml` | **Model benchmark, not data.** Flow–diameter exponent, inlet flow, arterial conductance, arterial transit times and volume on the Kassab anatomy | Pig anatomy; Poiseuille with Pries viscosity, 100 → 26 mmHg | FT |
 
+### Human back pressure and hyperemic resistance (full dilation)
+
+| File | What it validates | Species / conditions | Status |
+|---|---|---|---|
+| `nanto2001_human_zero_flow_pressure.toml` | Zero-flow pressure: rest 47 ± 15, IC ATP normal beats 36 ± 9, IC ATP long diastole 21 ± 7 mmHg (n = 15) | Human, LAD Doppler wire, no significant stenosis | FT |
+| `vanherck2007_hyperemic_zero_flow_pressure.toml` | Hyperemic late-diastolic Pzf 14.6 ± 8.0 (stented) and ~12.7 ± 7 mmHg (reference vessel) in stable angina; rise after MI tracks LVEDP | Human, IC adenosine, Doppler wire | mixed (reference bar fig) |
+| `wustmann2003_coronary_wedge_pressure.toml` | Wedge pressure after 1-min occlusion of a normal artery 23 ± 8 mmHg vs CVP 5.5, LVEDP 11; CFI 0.19 | Human, 100 normal arteries, no adenosine | FT |
+| `verhoeff2005_hmr_reference_vessel.toml` | HMR (h-Pd/h-v) 1.73 ± 0.38 mmHg·s/cm in normal reference vessels; before/after PCI | Human, IC adenosine, dual-sensor wire | FT |
+| `fournier2021_absolute_flow_resistance.toml` | Absolute hyperemic flow (whole heart 668 ± 185 mL/min; 4.9–5.9 mL/min/g) and Rmicro × mass 15.5–21.7 mmHg·min·g/mL in normals | Human, continuous thermodilution + CT mass, saline hyperemia | mixed (supplement not read) |
+| `mahendiran2025_mass_indexed_microvascular_resistance.toml` | LAD Qhyper 4.56 ± 2.20 mL/min/g and Rμ,hyper × mass 20.7 ± 8.0 mmHg·min·g/mL (controls); resting and CMD values | Human ANOCA, continuous thermodilution + CT mass | FT |
+| `melikian2010_imr_normal_controls.toml` | IMR 19 ± 5 U in patients without atherosclerosis | Human, bolus thermodilution | abs |
+
+### Human PET myocardial blood flow (healthy volunteers)
+
+| File | What it validates | Species / conditions | Status |
+|---|---|---|---|
+| `kaufmann1999_o15_water_reproducibility.toml` | Hyperemic MBF 3.51 ± 0.45 / 3.83 ± 0.49 mL/min/g, CVR ~4, MAP/MBF 25 ± 4 mmHg·min·g/mL at hyperemia | Human, 21 healthy men 45 ± 8 y, [15O]H2O, adenosine | FT |
+| `uren1995_o15_water_age_bands.toml` | Rest and hyperemic MBF and reserve by decade (20–29 y: 2.95 ± 1.04; 30–39 y: 3.66 ± 0.89 mL/min/g) | Human, 56 normals, [15O]H2O, mostly dipyridamole | FT |
+
 ### Velocity and flow
 
 | File | What it validates | Species / conditions | Status |

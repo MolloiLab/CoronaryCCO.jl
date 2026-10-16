@@ -1,0 +1,59 @@
+[meta]
+id = "verhoeff2005_hmr_reference_vessel"
+data_type = "experimental"
+validates = "Human hyperemic microvascular resistance index h-MRv = h-Pd / h-v (HMR, mmHg.cm^-1.s) in angiographically normal reference vessels and in target vessels before and after PCI; resting MRv; hyperemic distal pressure and velocity."
+species = "human"
+preparation = "23 patients with stable angina (57.8 +/- 7.3 y; 17 M), 24 lesions. Prototype 0.014-inch dual-sensor guidewire (Doppler at the tip, pressure 3 cm proximal; Volcano). Aortic pressure via the guiding catheter. Intracoronary nitroglycerin 0.1 mg every 30 min. Reference vessels: distal part of an angiographically normal vessel; all were left coronary arteries (n = 20)."
+conditions = "Rest and maximal hyperemia with intracoronary adenosine 20-40 ug bolus. Hyperemia = highest average of 3 consecutive per-beat velocity averages; matching per-beat Pa and Pd. h-MRv = h-Pd/h-v; h-SRv = (h-Pa - h-Pd)/h-v. Collateral index Pw/Pa at the end of balloon occlusion (target vessels)."
+verification = "FT"
+access = "Publisher PDF (Circulation 111:76-82) from the Wayback Machine capture 20220804102832 of the ahajournals PDF URL; text extracted with pdftotext; Table 2 read from the text layer."
+notes = """All values mean +/- SD. CRU in the table footnote = mmHg.cm^-1.s (printed as 's^-1', an obvious typo for an index of pressure/velocity).
+h-v is average peak velocity (APV) from the Doppler spectrum, not volumetric flow, so HMR cannot be converted to mmHg.min.g/mL without vessel area, a velocity-profile factor and territory mass (none reported).
+HMR is computed with Pd, not Pd - Pzf; the paper discusses the pressure dependence of h-MRv (it fell as h-Pd rose after PCI).
+Pw/Pa in target vessels before PCI was 0.23 +/- 0.07, unrelated to pre-treatment h-MRv (r = 0.28, P = 0.19)."""
+use_in_model = """Use reference-vessel values (h-MRv 1.73 +/- 0.38 CRU at h-Pd 93 mmHg, h-v 56 cm/s) only as a ratio check: model distal-segment pressure / mean velocity in a mid-to-distal left coronary artery at full dilation, with the wire-measured APV converted from the model mean velocity (APV ~ 2x mean for a parabolic profile is an assumption, not in this paper). The absolute per-gram resistance target comes from the thermodilution files (fournier2021, mahendiran2025)."""
+
+[source]
+authors = ["Verhoeff BJ", "Siebes M", "Meuwissen M", "Atasever B", "Voskuil M", "de Winter RJ", "Koch KT", "Tijssen JG", "Spaan JA", "Piek JJ"]
+year = 2005
+title = "Influence of percutaneous coronary intervention on coronary microvascular resistance index"
+journal = "Circulation"
+volume = "111"
+issue = "1"
+pages = "76-82"
+doi = "10.1161/01.CIR.0000151610.98409.2F"
+crossref_verified = "2026-10-15; Crossref title exact match ('Influence of Percutaneous Coronary Intervention on Coronary Microvascular Resistance Index'; vol 111, issue 1, 76-82)"
+pmid = "15611371"
+
+[data.hemodynamics_by_step]
+description = "Hemodynamic and angiographic characteristics of target vessels (before, after balloon, stent, upsized stent) and reference vessels"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD; n = vessels per column"
+step = ["before", "balloon", "stent", "upstent", "reference"]
+n = [24, 19, 24, 11, 20]
+b_v_cm_per_s = [15.7, 20.5, 21.4, 24.0, 21.9]
+b_v_sd_cm_per_s = [7.3, 3.7, 7.7, 10.9, 8.2]
+h_v_cm_per_s = [27.2, 45.5, 58.5, 62.7, 56.3]
+h_v_sd_cm_per_s = [15.7, 11.2, 16.9, 19.5, 14.1]
+b_Pd_mmHg = [75.9, 92.0, 97.9, 92.1, 98.7]
+b_Pd_sd_mmHg = [22.5, 17.0, 17.1, 14.9, 16.3]
+h_Pd_mmHg = [57.9, 74.3, 85.5, 76.9, 93.2]
+h_Pd_sd_mmHg = [17.0, 14.6, 15.6, 13.7, 14.9]
+h_Pa_mmHg = [99.1, 94.3, 96.4, 90.1, 97.2]
+h_Pa_sd_mmHg = [14.9, 15.0, 14.3, 15.4, 14.5]
+h_dP_mmHg = [41.2, 20.0, 10.9, 13.2, 4.0]
+h_dP_sd_mmHg = [17.2, 9.6, 10.3, 10.5, 4.2]
+b_MRv_mmHg_s_per_cm = [5.62, 4.73, 5.08, 4.61, 5.17]
+b_MRv_sd_mmHg_s_per_cm = [2.61, 1.65, 1.84, 2.08, 1.95]
+h_MRv_mmHg_s_per_cm = [2.74, 1.72, 1.58, 1.32, 1.73]
+h_MRv_sd_mmHg_s_per_cm = [1.40, 0.53, 0.61, 0.39, 0.38]
+h_SRv_mmHg_s_per_cm = [2.41, 0.50, 0.21, 0.24, 0.08]
+h_SRv_sd_mmHg_s_per_cm = [2.10, 0.36, 0.21, 0.25, 0.08]
+FFR = [0.59, 0.79, 0.89, 0.86, 0.96]
+FFR_sd = [0.16, 0.09, 0.10, 0.10, 0.04]
+CFVR = [1.70, 2.27, 2.84, 2.83, 2.76]
+CFVR_sd = [0.57, 0.64, 0.64, 0.66, 0.73]
+MLD_mm = [1.21, 2.00, 3.11, 3.30, 2.27]
+MLD_sd_mm = [0.32, 0.77, 0.59, 0.50, 0.59]
+missing_note = "Significance markers vs previous step and vs reference are in the table footnotes and not stored. Reference-vessel MLD/%DS refer to the measurement site."

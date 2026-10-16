@@ -9,7 +9,7 @@
 # companion veins. Flow is pressure-driven: stress = maximal vasodilation, rest = autoregulated
 # arteriolar diameters (myogenic, shear and metabolic tone).
 using Vasculature, Printf, Serialization
-include("flow.jl"); include("territory.jl"); include("coupling.jl")
+(isdefined(Main, :Flow) || include("flow.jl")); (isdefined(Main, :Territory) || include("territory.jl")); include("coupling.jl")
 using .Flow, .Territory
 
 const DATA = joinpath(@__DIR__, "..", "..", "test", "data")

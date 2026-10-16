@@ -2,7 +2,7 @@
 # Validates the bolus model (body.jl) against human first-pass data, each study simulated with its
 # own injection protocol, injection site and cardiac output, and scored against the values stored
 # in data/reference. Usage: julia --project=. bolus_validation.jl [out.json]
-include(joinpath(@__DIR__, "body.jl")); using .Body, Printf, TOML
+(isdefined(Main, :Body) || include(joinpath(@__DIR__, "body.jl"))); using .Body, Printf, TOML
 
 const REF = joinpath(@__DIR__, "..", "..", "data", "reference")
 ref(id) = TOML.parsefile(joinpath(REF, id * ".toml"))["data"]

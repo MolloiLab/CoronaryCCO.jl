@@ -1,0 +1,54 @@
+[meta]
+id = "fournier2021_absolute_flow_resistance"
+data_type = "experimental"
+validates = "Human absolute hyperemic coronary flow (mL/min) and absolute resistance (Wood units = mmHg.min/L) per artery and for the whole heart by continuous thermodilution, in normal coronaries; flow and microvascular resistance indexed to CT-derived territory mass."
+species = "human"
+preparation = "69 patients, 177 arteries, two centres (Aalst, Eindhoven). Group 1 'normals' (n = 25): strictly normal angiogram, normal LV function, no valve disease, FFR > 0.80 in all arteries and, when available, normal CCTA with Agatston 0. Group 2 (n = 44): mild non-obstructive atherosclerosis (no focal stenosis > 30%). Whole heart (all 3 arteries, or LAD + LCX if RCA non-dominant) in 20 normals and 29 patients. CCTA territory mass (HeartFlow core lab) in 15 normals (41 vessels) and 25 patients (71 vessels). Pressure/temperature wire (PressureWire X) plus RayFlow monorail infusion catheter; room-temperature saline by Medrad Stellant pump."
+conditions = "Hyperemia induced by the intracoronary saline infusion itself (no adenosine); IC nitroglycerin 0.2 mg and IV heparin 100 U/kg beforehand. Q = 1.08 x (Ti/T) x Qi (continuous thermodilution; Eq. A as an image). Resistances by Ohm's law (Eqs. B-D as images; CoroFlow software): Rtot from Pa, Rmicro from Pd, Repi from Pa - Pd, all divided by Q, with no venous/back-pressure term subtracted."
+verification = "mixed"
+access = "Open full text (PMC9724861) read as HTML. The Supplementary PDF (Tables 1-2 with per-artery values, Pa, Pd and patient characteristics) could not be retrieved (bot challenge on PMC and Europe PMC); equations B-D are images not visible in the text."
+notes = """All values mean +/- SD.
+1 Wood unit = 1 mmHg.min/L. Resistance x mass in WU.kg is numerically identical to mmHg.min.g/mL (unit identity: mmHg.min/L x kg = mmHg.min.g/mL).
+The mass-indexed Rmicro values (15.5 / 20.6 / 21.7) are printed in the paper with the unit 'mL/min/g', which cannot be right for a resistance; by the companion definition (Mahendiran 2025: Rmicro x mass, WU.kg) they are WU.kg = mmHg.min.g/mL. Stored here under that unit; treat the unit as an editorial correction.
+The authors state hyperemic flows per gram 'exceeded those derived from PET' and list possible reasons: saline hyperemia more potent than IV/IC adenosine, indicator volume added to blood flow, and CT mass vs PET per-volume mass. The RayFlow catheter creates a small gradient at high flow, so flow is 'slightly underestimated'.
+Discussion summary: whole-heart hyperemic Q ~670 mL/min, total minimal microvascular resistance ~150 WU (normals).
+Repi LAD p-value: abstract p = 0.048, Results p < 0.001 (inconsistent in the source)."""
+use_in_model = """Most direct human target for the absolute hyperemic resistance per gram. Model comparison: Rmicro,model = P(distal epicardial artery) / Q(territory) x territory mass, in mmHg.min.g/mL, at full dilation, with NO back pressure subtracted (to match the clinical definition). Normal LAD 15.5 +/- 5.6, LCX 20.6 +/- 5.1, RCA 21.7 +/- 6.4. Hyperemic flow per gram 4.9-5.9 mL/min/g (LAD 5.9 +/- 1.9) is the invasive counterpart of PET 3.5 +/- 1.0; the model's 5.2 mL/min/g lies inside the thermodilution range but above PET."""
+
+[source]
+authors = ["Fournier S", "Keulards DCJ", "van 't Veer M", "Colaiori I", "Di Gioia G", "Zimmermann FM", "Mizukami T", "Nagumo S", "Kodeboina M", "El Farissi M", "Zelis JM", "Sonck J", "Collet C", "Pijls NHJ", "De Bruyne B"]
+year = 2021
+title = "Normal values of thermodilution-derived absolute coronary blood flow and microvascular resistance in humans"
+journal = "EuroIntervention"
+volume = "17"
+issue = "4"
+pages = "e309-e316"
+doi = "10.4244/EIJ-D-20-00684"
+crossref_verified = "2026-10-15; Crossref title exact match (EuroIntervention vol 17, issue 4, e309-e316; authors Fournier, Keulards, van 't Veer, Colaiori)"
+pmid = "33016881"
+
+[data.hyperemic_flow_resistance]
+description = "Hyperemic absolute flow and total / epicardial resistance, normals vs mild atherosclerosis"
+location = "Abstract; Results ('Absolute coronary flow values', 'Total coronary resistance'); Figs. 3-5"
+provenance = "FT"
+statistic = "mean +/- SD; n = patients (whole heart: 20 normals, 29 patients)"
+quantity = ["whole-heart Q mL/min", "LAD Q mL/min", "whole-heart Rtot WU", "LAD Rtot WU", "LAD Repi WU", "FFR (all arteries)"]
+normal_value = [668.0, 293.0, 161.0, 379.0, 43.0, 0.95]
+normal_sd = [185.0, 102.0, 45.0, 147.0, 23.0, 0.03]
+mild_atherosclerosis_value = [582.0, 228.0, 177.0, 462.0, 83.0, 0.91]
+mild_atherosclerosis_sd = [138.0, 71.0, 48.0, 169.0, 41.0, 0.06]
+p_value = ["0.068", "0.004", "0.244", "0.048", "0.048 (abstract) / <0.001 (Results)", "0.001"]
+missing_note = "LCX and RCA Q and R, absolute Rmicro (WU) per artery, Pa and Pd are only in Supplementary Table 2 / Fig. 5, which were not accessible. Rmicro did not differ significantly between groups (text)."
+
+[data.mass_indexed_normals]
+description = "Hyperemic flow per gram and microvascular resistance x territory mass in normals with CCTA mass"
+location = "Abstract; Results ('Absolute coronary flow and resistance values normalised for myocardial mass')"
+provenance = "FT"
+statistic = "mean +/- SD; 15 normals, 41 vessels"
+territory = ["LAD", "LCX", "RCA"]
+q_per_gram_mL_per_min_per_g = [5.9, 4.9, 5.3]
+q_per_gram_sd_mL_per_min_per_g = [1.9, 1.7, 2.1]
+rmicro_x_mass_mmHg_min_g_per_mL = [15.5, 20.6, 21.7]
+rmicro_x_mass_sd_mmHg_min_g_per_mL = [5.6, 5.1, 6.4]
+p_values = "Q per gram p = 0.44 (NS); Rmicro x mass lower in LAD than LCX and RCA, p < 0.05"
+missing_note = "Printed unit for Rmicro x mass is 'mL/min/g' (see notes); stored as WU.kg = mmHg.min.g/mL. Per-territory masses are not in the main text."
