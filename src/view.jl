@@ -96,6 +96,7 @@ struct TreeView{T, M, F, G, D, VI8, VB, VU8, VR, VT}
     rmax::T
     fix_base::Bool
     full::Bool
+    keepout::T            # vessel keep-out factor for new terminals (see distance_valid)
     level::T              # connectivity restriction level of this round
     roots::VR             # root segment of each tree
     rcaps::VT             # root radius cap of each tree
@@ -109,6 +110,7 @@ Adapt.@adapt_structure TreeView
 @inline _isfast(::TreeView) = true
 @inline _fullvol(V::TreeView) = V.full
 @inline _level(V::TreeView) = V.level
+@inline _keepout(::Type{T}, V::TreeView) where {T} = T(V.keepout)
 @inline _maxconn(::Type{T}, p::ParamView) where {T} = T(p.max_connection)
 @inline _reach(::Type{T}, p::ParamView) where {T} = T(p.reach)
 @inline _ktol(::Type{T}, p::ParamView) where {T} = T(p.kamiya_tol)
@@ -186,7 +188,7 @@ function tree_view(E::Engine{T}, vc::ViewCache; to = identity) where {T}
     return TreeView(
         M, F, G, D, P, up(:tcount, E.tcount), up(:middle, E.middle), up(:isbase, E.isbase), up(:treeid, E.treeid), E.cscale,
         E.lscale, E.max_angle_cos, E.rmax,
-        E.fix_base, E.volume === :full, T(_level(E)), up(:roots, E.roots), up(:rcaps, E.rcaps),
+        E.fix_base, E.volume === :full, _keepout(T, E), T(_level(E)), up(:roots, E.roots), up(:rcaps, E.rcaps),
         up(:rest, E.rest), up(:rmin, E.rmin)
     )
 end

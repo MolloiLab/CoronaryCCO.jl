@@ -92,6 +92,9 @@ const TERRITORY_REACH = 6.0   # mm at size_scale 1; see nearest_k!
 @inline _maxconn(::Type{T}, p::CCOParams) where {T} = T(p.max_connection * p.size_scale)
 @inline _reach(::Type{T}, p::CCOParams) where {T} = T(TERRITORY_REACH * p.size_scale)
 @inline _ktol(::Type{T}, p::CCOParams) where {T} = T(p.kamiya_tol * p.size_scale^3)
+# keep-out factor around existing vessels for a new terminal (distance_valid): upstream's 2 at the current scale, 1 (the
+# final lumen) when sizes are tested at the final scale
+@inline _keepout(::Type{T}, E) where {T} = E.collision === :final ? one(T) : T(2)
 
 # Territories in a forest. A domain voxel value >= 0xC0 lists in its low six bits the trees a
 # terminal there may join (bit k-1 for tree k); any other inside value (e.g. 255) allows all.
@@ -192,9 +195,13 @@ end
 @inline function distance_valid(E, p::P3{T}, mpd::T) where {T}
     m = E.m
     c = E.cscale
-    seg_bad(j) = proj_distance(segA(m, j), segB(m, j), p) < cmax(mpd, m.radius[j] * c * T(2))
+    # keep-out around a vessel: upstream's 2 × its current radius; at the final scale (collision = :final) its final lumen,
+    # 1 × the final radius: twice a final radius kept terminals 10-30 mm from the lung's hilar arteries, leaving 101 mL of
+    # lung more than 5 mm from any terminal (4 mL with the lumen rule)
+    kf = _keepout(T, E)
+    seg_bad(j) = proj_distance(segA(m, j), segB(m, j), p) < cmax(mpd, m.radius[j] * c * kf)
     term_bad(j) = E.tcount[j] > 0 && norm3(sub3(m.pos[j], p)) < mpd
-    grid_any_r(seg_bad, E.g, p, p, r -> cmax(mpd, r * c * T(2)), E.rmax) && return false
+    grid_any_r(seg_bad, E.g, p, p, r -> cmax(mpd, r * c * kf), E.rmax) && return false
     grid_any(term_bad, E.g, p, p, mpd) && return false
     return true
 end
