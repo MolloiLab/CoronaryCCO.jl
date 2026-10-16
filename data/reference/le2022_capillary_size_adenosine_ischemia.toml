@@ -1,0 +1,74 @@
+[meta]
+id = "le2022_capillary_size_adenosine_ischemia"
+data_type = "experimental"
+validates = "Capillary cross-sectional area and diameter (post-mortem EM) by myocardial layer with vs without intracoronary adenosine in beds distal to a flow-halving stenosis; MCE blood volume (A) and velocity (beta) responses to adenosine during ischemia"
+species = "dog"
+preparation = "Nine instrumented open-chest dogs; LAD/LCx time-of-flight flow probes; stenoses halving CBF; MCE with microbubble destruction-replenishment (A = blood volume, beta = velocity); perfusion fixation (2% glutaraldehyde + 2% paraformaldehyde) in 3 dogs for EM of capillaries and pericytes."
+conditions = "Baseline; primary stenosis (CBF halved, distal pressure 43 mmHg); primary stenosis + intracoronary adenosine; secondary stenosis in the other artery without adenosine (control bed). Fixation during the same conditions."
+verification = "FT"
+access = "Open-access full text, PMC9263193 (Europe PMC fullTextXML), Results, Tables 1, 3, 5 and Discussion."
+notes = """Values mean +/- SEM. This is NOT a normal-bed rest vs maximal-dilation comparison: both EM beds were ischemic (flow halved), one with adenosine.
+EM capillary areas come from fixed tissue (3 dogs); fixation artefacts possible (the authors say so).
+Discussion: normal dog capillary diameter ~5.5 um (cited); here ischemic capillaries were about half that size and adenosine restored them to ~80% of normal, despite a further fall in driving pressure.
+Baseline (no stenosis) maximal hyperemic CBF after 30 s occlusion: LAD 35 +/- 4 -> 94 +/- 13 mL/min, LCx 36 +/- 4 -> 79 +/- 13 mL/min (Results)."""
+use_in_model = """Evidence that capillary lumen is not fixed: under ischemia capillaries narrow (pericytes) and adenosine re-opens them. For a normal bed at maximal dilation this suggests capillaries sit at or near their passive (~5.5 um in dog) size rather than dilating beyond it. Do not use the ischemic areas as normal-bed values."""
+
+[source]
+authors = ["Le DE", "Zhao Y", "Kaul S"]
+year = 2022
+title = "Persistent coronary vasomotor tone during myocardial ischemia occurs at the capillary level and may involve pericytes"
+journal = "Front Cardiovasc Med"
+volume = "9"
+issue = ""
+pages = "930492"
+doi = "10.3389/fcvm.2022.930492"
+crossref_verified = "2026-10-16; Crossref title exact match, Frontiers in Cardiovascular Medicine 9, 2022, first author Le"
+pmid = "35811707"
+
+[data.hemodynamics_primary_stenosis]
+description = "Hemodynamics at baseline, primary stenosis, and primary stenosis + IC adenosine"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SEM; n = 9"
+variable = ["coronary blood flow mL/min", "distal coronary pressure mmHg", "coronary driving pressure mmHg", "MVR mmHg/(mL/min)", "mean aortic pressure mmHg", "heart rate bpm"]
+baseline = [36.0, 97.0, 88.0, 3.07, 100.0, 100.0]
+baseline_se = [5.0, 4.0, 4.0, 0.57, 4.0, 7.0]
+stenosis = [17.0, 43.0, 36.0, 2.89, 99.0, 90.0]
+stenosis_se = [3.0, 5.0, 6.0, 0.84, 3.0, 5.0]
+stenosis_adenosine = [23.0, 37.0, 29.0, 1.82, 96.0, 94.0]
+stenosis_adenosine_se = [4.0, 4.0, 5.0, 0.66, 4.0, 5.0]
+missing_note = "MVR = (distal coronary - RA pressure)/CBF. ANOVA for MVR p = 0.41."
+
+[data.mce_percent_change]
+description = "MCE blood volume (A), velocity (beta) and MBF (A*beta) as % change from baseline"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SEM; n = 6"
+condition = ["primary stenosis before adenosine", "primary stenosis during adenosine", "secondary stenosis (no adenosine)"]
+A_change_pct = [-39.0, 118.0, -33.0]
+A_change_se_pct = [9.0, 40.0, 14.0]
+beta_change_pct = [-45.0, -25.0, -46.0]
+beta_change_se_pct = [11.0, 25.0, 9.0]
+mbf_change_pct = [-63.0, 97.0, -63.0]
+mbf_change_se_pct = [11.0, 59.0, 12.0]
+missing_note = "As printed. The paper reads the 'during adenosine' column against the pre-adenosine stenosis state (* p < 0.05 vs primary stenosis before adenosine)."
+
+[data.em_capillary_size]
+description = "Post-mortem EM capillary cross-sectional area by layer and longitudinal capillary diameter, ischemic bed without vs with IC adenosine"
+location = "Table 5"
+provenance = "FT"
+statistic = "mean +/- SEM; n = capillaries (3 dogs)"
+layer = ["endocardium", "mid-myocardium", "epicardium"]
+area_no_adenosine_um2 = [28.34, 19.53, 11.49]
+area_no_adenosine_se_um2 = [4.37, 1.34, 0.92]
+n_no_adenosine = [20, 62, 41]
+area_adenosine_um2 = [29.76, 24.02, 22.57]
+area_adenosine_se_um2 = [2.83, 1.71, 1.76]
+n_adenosine = [36, 72, 39]
+longitudinal_diameter_no_adenosine_um = 2.74
+longitudinal_diameter_no_adenosine_se_um = 0.19
+longitudinal_diameter_no_adenosine_n = 10
+longitudinal_diameter_adenosine_um = 4.43
+longitudinal_diameter_adenosine_se_um = 0.76
+longitudinal_diameter_adenosine_n = 18
+missing_note = "Adenosine vs none: mid p < 0.05, epi p < 0.001, endo n.s.; longitudinal diameter p < 0.05. Pericyte areas (Table 5C) not transcribed."

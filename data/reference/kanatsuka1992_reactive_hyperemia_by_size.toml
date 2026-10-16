@@ -1,0 +1,36 @@
+[meta]
+id = "kanatsuka1992_reactive_hyperemia_by_size"
+data_type = "experimental"
+validates = "Which arterial microvessel sizes (< 100 vs > 100 um) dilate during brief LAD occlusion and the following reactive hyperemia in the beating canine heart, and the time course of their dilation"
+species = "dog"
+preparation = "In vivo beating canine hearts; subepicardial LAD microvessels via a microscope with a floating objective; LAD flow velocity by suction-type Doppler probe (Tohoku University)."
+conditions = "LAD occlusion 20 or 30 s then release; before and after 8-phenyltheophylline 7.5 mg/kg IV or glibenclamide 200 ug/kg into the LAD."
+verification = "abs"
+access = "PubMed abstract (PMID 1516163). ahajournals.org returns HTTP 403 to scripted requests; Wayback held only HTML redirects for the PDF URLs."
+notes = """Qualitative only in the abstract: no diameters or % changes are printed.
+During occlusion only arterial microvessels < 100 um dilated. At early reactive hyperemia all arterial microvessels dilated, and peak dilation was greater in vessels < 100 um than in vessels > 100 um.
+Dilation of < 100 um vessels ceased within 60 s, whereas dilation of > 100 um vessels lasted more than 120 s (consistent with flow-mediated dilation of larger vessels).
+Glibenclamide strongly attenuated dilation of all sizes; 8-phenyltheophylline did not change peak dilation."""
+use_in_model = """Qualitative check only: at peak hyperemic flow, larger (> 100 um) arterial microvessels also dilate (unlike adenosine, which dilates only < 150 um in Kanatsuka 1989), so a model of reactive hyperemia or exercise should not hold > 100 um vessels at resting diameter. No numbers to fit."""
+
+[source]
+authors = ["Kanatsuka H", "Sekiguchi N", "Sato K", "Akai K", "Wang Y", "Komaru T", "Ashikawa K", "Takishima T"]
+year = 1992
+title = "Microvascular sites and mechanisms responsible for reactive hyperemia in the coronary circulation of the beating canine heart"
+journal = "Circ Res"
+volume = "71"
+issue = "4"
+pages = "912-922"
+doi = "10.1161/01.RES.71.4.912"
+crossref_verified = "2026-10-16; Crossref title match, Circulation Research 71(4):912-922, 1992, first author Kanatsuka"
+pmid = "1516163"
+
+[data.size_dependence_statements]
+description = "Size-dependent dilation statements from the abstract"
+location = "Abstract"
+provenance = "abs"
+statistic = "qualitative"
+phase = ["occlusion", "early reactive hyperemia", "late reactive hyperemia"]
+vessels_lt100um = ["dilated", "dilated; larger peak dilation", "dilation ended within 60 s"]
+vessels_gt100um = ["no dilation", "dilated", "dilation sustained > 120 s"]
+missing_note = "No diameters, % changes, n or statistics in the abstract."

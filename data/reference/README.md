@@ -241,6 +241,15 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `chilian_layne1990_hypoperfusion_adenosine_by_size.toml` | Per-vessel adenosine dilation vs control diameter, 44–293 µm | Dog, beating heart | mixed |
 | `kanatsuka1989_size_class_dilation_digitized.toml` | Class-mean diameter ratios (≤ 150 vs > 150 µm) with pacing, adenosine and dipyridamole, matched and large doses | Dog, beating heart | fig |
 | `kanatsuka1990_stenosis_size_classes.toml` | Diameter change by size class at reduced distal pressure (stenosis) | Dog, beating heart | mixed |
+| `kanatsuka1989_per_vessel_large_dose_digitized.toml` | Per-vessel dilation at large adenosine/dipyridamole doses (flow ×5–7): 44–80 µm +15–53%, 95–150 µm ≈ +3–15%, > 150 µm ≈ 0 | Dog, beating heart (Fig. 8) | fig |
+| `yada1999_adenosine_endo_epi_arterioles.toml` | Arteriolar (< 120 µm) dilation with intracoronary adenosine, subendocardial +17% vs subepicardial +13% | Dog, needle-probe videomicroscope | abs |
+| `yada1993_subendocardial_needle_probe.toml` | Cardiac-cycle diameter change of subendocardial vs subepicardial arterioles (no vasodilator) | Pig, needle probe | abs |
+| `kanatsuka1992_reactive_hyperemia_by_size.toml` | Size-dependent arteriolar dilation in reactive hyperemia (qualitative) | Dog | abs |
+| `bin2003_adenosine_capillary_blood_volume.toml` | Intracoronary adenosine leaves myocardial capillary blood volume unchanged (flow rises by velocity) | Dog, contrast echo | abs |
+| `jayaweera1999_capillary_resistance_share.toml` | Model (not data): capillaries 25% of resistance at rest, 75% at hyperemia, assuming constant capillary pressure | Dog, contrast echo model | abs |
+| `le2022_capillary_size_adenosine_ischemia.toml` | Electron microscopy: adenosine enlarges capillaries only in ischemic, not normal, beds | Dog | FT |
+| `duncker2015_resistance_distribution_review.toml` | Review: capillary and venular resistance small and nearly constant; up to 40% of resistance in 200–400 µm arteries with dipyridamole | Review (dog, cat, pig, human) | FT |
+| `marcus1990_microvascular_resistance_review.toml` | Review: 45–50% of resting resistance in vessels > 100 µm | Review (cat, dog) | abs |
 
 ### Flow heterogeneity
 

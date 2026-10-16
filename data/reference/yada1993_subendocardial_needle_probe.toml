@@ -1,0 +1,38 @@
+[meta]
+id = "yada1993_subendocardial_needle_probe"
+data_type = "experimental"
+validates = "First needle-probe videomicroscope observation of subendocardial arterioles and venules in the beating heart: end-diastolic vs end-systolic diameter by layer and size class (50-100 vs > 100 um)"
+species = "pig"
+preparation = "12 open-chest anesthetized pigs; sheathed needle probe with a doughnut balloon and flushing microtube introduced into the LV through the left atrial appendage and mitral valve; CCD camera, x200-400 on a 15-in monitor."
+conditions = "Baseline only in the abstract (no vasodilator reported in the abstract)."
+verification = "abs"
+access = "PubMed abstract (PMID 8477527), truncated at 250 words. ahajournals.org returns HTTP 403 to scripted requests and no Wayback PDF capture was found."
+notes = """Values mean +/- SD. Reported as phasic (cardiac-cycle) change, NOT rest vs vasodilation. The question of rest vs maximal dilation in < 40 um vessels is not addressed in the abstract.
+Larger (> 100 um) subendocardial vessels narrowed more in systole than 50-100 um vessels (p < 0.05); percentages not in the abstract."""
+use_in_model = """Context for compression rather than vasodilation: subendocardial arterioles narrow ~24% from end-diastole to end-systole; subepicardial arterioles ~2%. Diastolic diameters are the relevant 'rest' state for comparisons with Kanatsuka/Chilian end-diastolic data."""
+
+[source]
+authors = ["Yada T", "Hiramatsu O", "Kimura A", "Goto M", "Ogasawara Y", "Tsujioka K", "Yamamori S", "Ohno K", "Hosaka H", "Kajiya F"]
+year = 1993
+title = "In vivo observation of subendocardial microvessels of the beating porcine heart using a needle-probe videomicroscope with a CCD camera"
+journal = "Circ Res"
+volume = "72"
+issue = "5"
+pages = "939-946"
+doi = "10.1161/01.RES.72.5.939"
+crossref_verified = "2026-10-16; Crossref title match, Circulation Research 72(5):939-946, 1993, first author Yada"
+pmid = "8477527"
+
+[data.phasic_diameter]
+description = "End-diastolic vs end-systolic diameter of subendocardial arterioles and venules"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD; n = vessels"
+vessel = ["subendocardial arteriole", "subendocardial venule"]
+end_diastolic_um = [114.0, 134.0]
+end_diastolic_sd_um = [46.0, 60.0]
+end_systolic_um = [84.0, 109.0]
+end_systolic_sd_um = [26.0, 45.0]
+change_pct = [-24.0, -17.0]
+n = [13, 15]
+missing_note = "Subepicardial arterioles: -2% (n = 5, p < 0.01); subepicardial venules: +19% (n = 8, p < 0.001); diameters not given in the abstract."

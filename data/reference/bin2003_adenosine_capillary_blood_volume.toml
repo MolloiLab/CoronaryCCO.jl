@@ -1,0 +1,35 @@
+[meta]
+id = "bin2003_adenosine_capillary_blood_volume"
+data_type = "experimental"
+validates = "Whether intracoronary adenosine recruits capillary blood volume (MCE plateau A) or raises only microbubble velocity (MCE beta) in normal canine myocardium; comparison with dobutamine; capillary derecruitment distal to a noncritical stenosis"
+species = "dog"
+preparation = "Nine open-chest anesthetized dogs with two noncritical stenoses; myocardial contrast echocardiography (capillary blood volume VOL and velocity VEL), 2D echo wall thickening, radiolabeled microspheres (MBF)."
+conditions = "Rest; intracoronary adenosine 5 ug/kg/min; intracoronary dobutamine 2 ug/kg/min (separate administrations)."
+verification = "abs"
+access = "PubMed abstract (PMID 12878997) only; publisher full text not accessed."
+notes = """Abstract gives no absolute MBF or VOL values. 'Adenosine had no effect on VOL' in normal myocardium: all of the MBF increase came from VEL.
+Dobutamine raised VOL by ~30% (modest capillary recruitment). Distal to the noncritical stenosis both drugs blunted the MBF rise, with ~15% higher capillary resistance attributed to capillary derecruitment.
+MCE VOL is dominated by capillaries (Kaul group: ~90% of MCE blood volume is capillary)."""
+use_in_model = """Supports holding capillary number and capillary volume ~fixed under adenosine in the normal bed: no capillary recruitment. With volume fixed, the capillary resistance is unchanged and the flow increase comes from velocity."""
+
+[source]
+authors = ["Bin JP", "Le DE", "Jayaweera AR", "Coggins MP", "Wei K", "Kaul S"]
+year = 2003
+title = "Direct effects of dobutamine on the coronary microcirculation: comparison with adenosine using myocardial contrast echocardiography"
+journal = "J Am Soc Echocardiogr"
+volume = "16"
+issue = "8"
+pages = "871-879"
+doi = "10.1067/S0894-7317(03)00423-1"
+crossref_verified = "2026-10-16; Crossref title exact match, J Am Soc Echocardiogr 16(8):871-879, 2003, first author Bin"
+pmid = "12878997"
+
+[data.capillary_volume_response]
+description = "Change in MCE capillary blood volume (VOL) in normal myocardium"
+location = "Abstract"
+provenance = "abs"
+statistic = "as stated"
+agent = ["adenosine 5 ug/kg/min IC", "dobutamine 2 ug/kg/min IC"]
+capillary_volume_change_pct = [0.0, 30.0]
+capillary_volume_change_note = ["'no effect on VOL' (0 is a stand-in for 'no significant change', not a measured mean)", "'only a 30% increase in VOL'"]
+missing_note = "Stenosed bed: ~15% increase in capillary resistance from capillary derecruitment with either drug. No absolute values or dispersion in the abstract."

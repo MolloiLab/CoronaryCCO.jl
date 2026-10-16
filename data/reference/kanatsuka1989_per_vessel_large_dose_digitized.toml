@@ -1,0 +1,48 @@
+[meta]
+id = "kanatsuka1989_per_vessel_large_dose_digitized"
+data_type = "experimental"
+validates = "Supplement to kanatsuka1989_adenosine_microvessels and kanatsuka1989_size_class_dilation_digitized: per-vessel in vivo % diameter change vs control diameter (44-310 um) during LARGE-dose adenosine and dipyridamole (5-7-fold perfusion), i.e. near-maximal pharmacological dilation, including the smallest arterial microvessels observed (44-76 um)"
+species = "dog"
+preparation = "As in kanatsuka1989_adenosine_microvessels: open-chest dogs, subepicardial LV arterial microvessels by stroboscopic epi-illumination intravital microscopy at end diastole; mean aortic pressure held within 10 mmHg of control."
+conditions = "Adenosine 1.1 mg/kg/min IV (left panel) and dipyridamole 1.0 mg/kg IV bolus (right panel); myocardial perfusion 5-7x control (Results text)."
+verification = "fig"
+access = "Publisher PDF (Circ Res 65:1296-1305) from Wayback Machine capture 20220710031222 of https://www.ahajournals.org/doi/pdf/10.1161/01.RES.65.5.1296?download=true (same file as the existing TOMLs). Page 8 rendered at 400 dpi; Fig. 8 triangle markers found as connected dark components and their centroids converted with linear fits to the printed axis ticks (y: 10% = 81.8 px; x: 50 um = 68.4-68.7 px)."
+notes = """Individual vessels (one marker per vessel). Check against Fig. 9 class means: adenosine <= 150 um recovered n = 8, mean 22.2% (Fig. 9: 22.8%, n = 8);
+> 150 um recovered n = 7, mean -0.3% (Fig. 9: 0.3%, n = 7). Dipyridamole <= 150 um recovered n = 7, mean 15.1% (Fig. 9: 16.0%, n = 7);
+> 150 um recovered 9 of 10 (one marker hidden on the zero line; the Fig. 9 mean of -0.9% implies it lies near +1%).
+Three adenosine markers and three dipyridamole markers sit on or touch the zero line; their y was taken from the part of the marker outside the line (larger error).
+The smallest vessel observed in either panel is ~44 um. No vessel < 40 um was measured in this study.
+Derived (not in paper): mean dilation of vessels < 80 um = 34.3% (adenosine, n = 3) and 23.9% (dipyridamole, n = 4); vessels 95-150 um = 15.0% (adenosine, n = 5) and 3.4% (dipyridamole, n = 3)."""
+use_in_model = """Size-resolved maximal-dilation target for the smallest observable subepicardial arterioles: at 5-7-fold flow, ~45-75 um arterioles dilate ~15-53% (mean ~24-34%), ~95-150 um arterioles ~0-23% (mean ~3-15%), > 150 um ~0%. A 30% dilation alone lowers single-vessel Poiseuille resistance ~2.9-fold, so the class mean of ~16-23% (<= 150 um) hides a strong within-class size gradient. Small n (3-4 vessels < 80 um); treat as indicative."""
+
+[source]
+authors = ["Kanatsuka H", "Lamping KG", "Eastham CL", "Dellsperger KC", "Marcus ML"]
+year = 1989
+title = "Comparison of the effects of increased myocardial oxygen consumption and adenosine on the coronary microvascular resistance"
+journal = "Circ Res"
+volume = "65"
+issue = "5"
+pages = "1296-1305"
+doi = "10.1161/01.RES.65.5.1296"
+crossref_verified = "2026-10-15; Crossref title exact match (see kanatsuka1989_adenosine_microvessels)"
+pmid = "2805245"
+
+[data.per_vessel_large_dose_adenosine]
+description = "Per-vessel % change in diameter vs control diameter, adenosine 1.1 mg/kg/min IV"
+location = "Figure 8, left panel"
+provenance = "fig"
+digitization_error = "+/- 3 um and +/- 0.5% for isolated markers; +/- 1.5% in y for the three markers touching the zero line (206, 239, 310 um)"
+statistic = "individual vessels"
+control_diameter_um = [58.0, 67.0, 76.0, 96.0, 97.0, 101.0, 105.0, 147.0, 163.0, 165.0, 185.0, 206.0, 232.0, 239.0, 310.0]
+diameter_change_pct = [52.7, 14.9, 35.2, 22.8, 10.7, 17.6, 7.1, 16.7, 6.8, 2.9, -5.2, -0.8, -6.1, -0.5, 0.8]
+missing_note = "All 15 vessels of Fig. 9 recovered."
+
+[data.per_vessel_large_dose_dipyridamole]
+description = "Per-vessel % change in diameter vs control diameter, dipyridamole 1.0 mg/kg IV"
+location = "Figure 8, right panel"
+provenance = "fig"
+digitization_error = "+/- 3 um and +/- 0.5% for isolated markers; +/- 1.5% in y for markers touching the zero line (139 um at -0.6%, 162 um, 216 um)"
+statistic = "individual vessels"
+control_diameter_um = [44.0, 47.0, 54.0, 73.0, 115.0, 139.0, 139.0, 162.0, 169.0, 179.0, 186.0, 193.0, 216.0, 234.0, 245.0, 254.0]
+diameter_change_pct = [29.1, 15.1, 19.3, 32.2, 4.4, -0.6, 6.4, -0.6, 7.4, 2.3, -5.8, -8.0, -1.7, 2.2, -6.8, 1.2]
+missing_note = "16 of 17 vessels recovered; one > 150 um marker is hidden on the zero line."

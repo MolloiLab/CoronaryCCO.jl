@@ -1,0 +1,33 @@
+[meta]
+id = "marcus1990_microvascular_resistance_review"
+data_type = "review"
+validates = "Summary of the Iowa group's beating-heart microvascular pressure work: fraction of total coronary resistance in vessels > 100 um at rest, and nonuniform redistribution with dilators"
+species = "cat and dog (review of the authors' own studies)"
+preparation = "Review of stroboscopic epi-illumination intravital microscopy and servo-null micropressure studies of subepicardial microvessels in the beating heart."
+conditions = "Normal tone; qualitative statements on autoregulation, increased MVO2, sympathetic stimulation and drugs (papaverine, dipyridamole, adenosine, nitroglycerin, others)."
+verification = "abs"
+access = "PubMed abstract (PMID 2114232). ahajournals.org returns HTTP 403 to scripted requests; no Wayback PDF capture found."
+notes = """Secondary source; the 45-50% figure is the same result as chilian1986_microvascular_pressure (arterioles 70-130 um at 50-55% of aortic pressure). The abstract gives no number for the dilated state."""
+use_in_model = """Resting check only: ~45-50% of resistance upstream of 100 um arterioles. Not independent of chilian1986."""
+
+[source]
+authors = ["Marcus ML", "Chilian WM", "Kanatsuka H", "Dellsperger KC", "Eastham CL", "Lamping KG"]
+year = 1990
+title = "Understanding the coronary circulation through studies at the microvascular level"
+journal = "Circulation"
+volume = "82"
+issue = "1"
+pages = "1-7"
+doi = "10.1161/01.CIR.82.1.1"
+crossref_verified = "2026-10-16; Crossref title exact match, Circulation 82(1):1-7, 1990, first author Marcus"
+pmid = "2114232"
+
+[data.resting_partition]
+description = "Share of total coronary vascular resistance in vessels larger than 100 um, normal conditions"
+location = "Abstract"
+provenance = "abs"
+statistic = "range as stated"
+size_threshold_um = 100.0
+pct_resistance_in_vessels_gt_threshold_low = 45.0
+pct_resistance_in_vessels_gt_threshold_high = 50.0
+missing_note = "No values for the vasodilated state in the abstract."

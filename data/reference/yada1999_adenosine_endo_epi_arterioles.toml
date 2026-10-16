@@ -1,0 +1,46 @@
+[meta]
+id = "yada1999_adenosine_endo_epi_arterioles"
+data_type = "experimental"
+validates = "In vivo dilation of subendocardial vs subepicardial arterioles (< 120 um) to intracoronary adenosine in the beating canine heart, and its dependence on K-ATP channels and NO"
+species = "dog"
+preparation = "Beating canine hearts in vivo (n = 19 dogs); subendocardial (Endo) and subepicardial (Epi) arterioles < 120 um observed with a needle-probe CCD intravital videomicroscope (Kawasaki Medical School)."
+conditions = "Intracoronary adenosine 20 and 50 ug/kg/min, before and after glibenclamide 200 ug/kg IC, L-NAME 30 ug/kg/min IC for 20 min, or both."
+verification = "abs"
+access = "PubMed abstract (PMID 10564149) only. Publisher full text (journals.physiology.org) returned HTTP 403 and no Wayback PDF capture was found."
+notes = """'Maximum dilation' is the authors' term for the response at 120 s of adenosine 50 ug/kg/min IC. Whether this dose is pharmacologically maximal is not stated in the abstract.
+The abstract states that smaller arterioles were more sensitive in both layers, but gives no size-resolved numbers. Statistic (SD or SE) and vessel counts not given in the abstract.
+Two sets of control values appear (17 vs 18% Endo; 13, 15 or 16% Epi) because each blocker protocol had its own adenosine-alone reference."""
+use_in_model = """Second independent beating-heart estimate (needle probe, includes the subendocardium) that arterioles < 120 um dilate only ~13-18% with strong IC adenosine. Endo arterioles dilate a little more than Epi. Consistent with Kanatsuka 1989 and Chilian & Layne 1990 class means."""
+
+[source]
+authors = ["Yada T", "Hiramatsu O", "Tachibana H", "Toyota E", "Kajiya F"]
+year = 1999
+title = "Role of NO and K(+)(ATP) channels in adenosine-induced vasodilation on in vivo canine subendocardial arterioles"
+journal = "Am J Physiol"
+volume = "277"
+issue = "5"
+pages = "H1931-H1939"
+doi = "10.1152/ajpheart.1999.277.5.H1931"
+crossref_verified = "2026-10-16; Crossref title match ('Role of NO and K ATP + channels in adenosine-induced vasodilation on in vivo canine subendocardial arterioles'), AJP Heart Circ Physiol 277(5):H1931-H1939, 1999, first author Yada"
+pmid = "10564149"
+
+[data.adenosine_dilation_by_layer]
+description = "% increase in arteriolar diameter at 120 s of IC adenosine 50 ug/kg/min (authors' 'maximum dilation'), arterioles < 120 um"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean (dispersion not given in abstract)"
+layer = ["subendocardium", "subepicardium"]
+diameter_change_pct = [17.0, 13.0]
+p_endo_vs_epi = 0.01
+missing_note = "Control diameters, n vessels, SD/SE and the 20 ug/kg/min response not given in the abstract."
+
+[data.blocker_effects]
+description = "% increase in diameter with adenosine before vs after K-ATP blockade (glibenclamide), NOS inhibition (L-NAME) or both"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean"
+layer = ["subendocardium", "subendocardium", "subendocardium", "subepicardium", "subepicardium", "subepicardium"]
+blocker = ["glibenclamide", "L-NAME", "glibenclamide + L-NAME", "glibenclamide", "L-NAME", "glibenclamide + L-NAME"]
+adenosine_alone_pct = [18.0, 17.0, 14.0, 15.0, 16.0, 12.0]
+adenosine_with_blocker_pct = [9.0, 9.0, -1.0, 9.0, 10.0, 3.0]
+missing_note = ""

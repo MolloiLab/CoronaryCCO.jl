@@ -1,0 +1,46 @@
+[meta]
+id = "jayaweera1999_capillary_resistance_share"
+data_type = "experimental"
+validates = "Model-derived split of total myocardial vascular resistance into arterial, capillary and venous compartments at rest and during hyperemia, with and without a noncritical stenosis; capillary blood volume by myocardial contrast echocardiography"
+species = "dog"
+preparation = "Nine dogs (University of Virginia); three-compartment series model (arterial, capillary, venous, each with its own resistance) fitted to hemodynamic data at baseline and stenosis, at rest and during hyperemia; MCE video intensity as an index of capillary blood volume."
+conditions = "Rest and hyperemia (agent not named in the abstract), no stenosis vs noncritical stenosis, plus a flow-limiting stenosis at rest."
+verification = "abs"
+access = "PubMed abstract (PMID 10600857). journals.physiology.org returns HTTP 403 to scripted requests; no Wayback capture found."
+notes = """IMPORTANT: the capillary share is MODEL-DERIVED, not directly measured. The model assumes capillary hydrostatic pressure is constant in all stages.
+The result depends on that assumption, which other groups have not tested by direct capillary pressure measurement in the beating heart.
+'Total myocardial vascular resistance decreasing by 51 +/- 13%' with hyperemia implies only a ~2-fold resistance fall in this preparation, smaller than the 3-7-fold seen elsewhere.
+Values mean +/- SD or SE (not stated in the abstract)."""
+use_in_model = """Upper-bound view of capillary resistance during hyperemia: if capillaries do not dilate, their fixed resistance becomes the dominant share (~75%) once arterioles dilate. Use as a bracketing hypothesis, not as a measurement. Contrasts with Duncker 2015 and Chilian 1989, where the microvessel compartment resistance falls ~11-fold with dipyridamole."""
+
+[source]
+authors = ["Jayaweera AR", "Wei K", "Coggins M", "Bin JP", "Goodman C", "Kaul S"]
+year = 1999
+title = "Role of capillaries in determining CBF reserve: new insights using myocardial contrast echocardiography"
+journal = "Am J Physiol"
+volume = "277"
+issue = "6"
+pages = "H2363-H2372"
+doi = "10.1152/ajpheart.1999.277.6.H2363"
+crossref_verified = "2026-10-16; Crossref title exact match, AJP Heart Circ Physiol 277(6):H2363-H2372, 1999, first author Jayaweera"
+pmid = "10600857"
+
+[data.capillary_share]
+description = "Capillary contribution to total myocardial vascular resistance and change in total resistance"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- dispersion (SD or SE not stated)"
+condition = ["no stenosis, rest", "no stenosis, hyperemia", "noncritical stenosis, hyperemia"]
+capillary_pct_of_total_resistance = [25.0, 75.0, 84.0]
+capillary_pct_dispersion = [5.0, 14.0, 8.0]
+missing_note = "Arterial and venous shares not given separately in the abstract."
+
+[data.total_resistance_change]
+description = "Change in total myocardial vascular resistance"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- dispersion"
+comparison = ["hyperemia vs rest, no stenosis", "noncritical stenosis vs no stenosis, rest", "noncritical stenosis vs no stenosis, hyperemia"]
+total_resistance_change_pct = [-51.0, -22.0, 58.0]
+total_resistance_change_dispersion_pct = [13.0, 10.0, 50.0]
+missing_note = "Rest stenosis: no change in capillary resistance. Hyperemia with stenosis: increase attributed to capillary resistance."

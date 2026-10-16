@@ -1,0 +1,37 @@
+[meta]
+id = "duncker2015_resistance_distribution_review"
+data_type = "review"
+validates = "Review statements on where coronary resistance sits by vessel size at rest and during pharmacological dilation, and on capillary/venular resistance during changes in tone"
+species = "multiple (dog, cat, pig, human; review)"
+preparation = "Narrative review; the size-distribution statements cite Chilian 1989 (ref 21; cat, dipyridamole), Zhang, Rogers & Merkus 2008 book chapter (ref 28), and Kanatsuka 1989/1990 (refs 29-30)."
+conditions = "Basal tone vs pharmacological vasodilation (dipyridamole); autoregulation; increased MVO2."
+verification = "FT"
+access = "Author manuscript full text, PMC5856234 (NCBI E-utilities efetch db=pmc), section 'Coronary vascular resistance' / microvascular heterogeneity paragraphs."
+notes = """Secondary source: every number here comes from cited primary work. The '40% of total CVR in 200-400 um small arteries during dipyridamole' line cites a book chapter (ref 28), not a primary measurement; it matches Chilian 1989's 42% for arteries > 170 um.
+The claim that capillary and venular resistance 'remains fairly constant during changes in vasomotor tone' cites Chilian 1989, whose microvessel compartment lumps arterioles < 170 um with capillaries and venules < 150 um, so it does not isolate capillaries.
+No statement in the review splits the resistance drop between < 40 um and 40-150 um vessels."""
+use_in_model = """Qualitative consensus to check model partitions against: resting resistance mostly in 50-200 um vessels; at maximal dilation the share in 200-400 um small arteries rises to ~40%; capillaries/venules small and roughly fixed. Do not treat as independent of chilian1989_dipyridamole_resistance."""
+
+[source]
+authors = ["Duncker DJ", "Koller A", "Merkus D", "Canty JM Jr"]
+year = 2015
+title = "Regulation of coronary blood flow in health and ischemic heart disease"
+journal = "Prog Cardiovasc Dis"
+volume = "57"
+issue = "5"
+pages = "409-422"
+doi = "10.1016/j.pcad.2014.12.002"
+crossref_verified = "2026-10-16; Crossref title exact match, Prog Cardiovasc Dis 57(5):409-422, 2015, first author Duncker"
+pmid = "25475073"
+
+[data.size_statements]
+description = "Quantitative statements on resistance location by vessel size"
+location = "Section 'Coronary vascular resistance' (paragraphs citing refs 21 and 28)"
+provenance = "FT"
+statistic = "review statements"
+statement = ["resistance vessels span 20-400 um", "conduit arteries > 400 um contribute < 5% pressure drop", "basal pressure drop mostly across 50-200 um vessels, little across 200-400 um", "with dipyridamole up to 40% of total CVR in 200-400 um small arteries", "capillary and venular resistance normally small and fairly constant with changes in tone"]
+size_low_um = [20.0, 400.0, 50.0, 200.0, nan]
+size_high_um = [400.0, nan, 200.0, 400.0, nan]
+pct_of_total_resistance = [nan, 5.0, nan, 40.0, nan]
+cited_ref = ["Chilian 1989", "none given in that sentence", "Chilian 1989", "Zhang, Rogers & Merkus 2008 (book chapter)", "Chilian 1989"]
+missing_note = "The 5% is an upper bound ('< 5%')."
