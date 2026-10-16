@@ -77,3 +77,30 @@ function grow(spec::GrowthSpec, domain, inlets; root = nothing, blockers = nothi
         symmetry_floor = spec.symmetry_floor, size_scale = size_scale(spec)
     )
 end
+
+"""
+    write_vol(path, mask::AbstractArray{Bool, 3}, lower::NTuple{3, <:Integer}) -> path
+
+Write a Bool mask as a DGtal `.vol` (Version 2, 1 mm voxels): voxel `mask[i, j, k]` is the point `lower .+ (i, j, k) .- 1`.
+"""
+function write_vol(path::AbstractString, mask::AbstractArray{Bool, 3}, lower::NTuple{3, <:Integer})
+    s = size(mask); c = lower .+ (s .- 1) .÷ 2
+    open(path, "w") do io
+        print(io, "Center-X: $(c[1])\nCenter-Y: $(c[2])\nCenter-Z: $(c[3])\nX: $(s[1])\nY: $(s[2])\nZ: $(s[3])\n")
+        print(io, "Voxel-Size: 1\nAlpha-Color: 0\nVoxel-Endian: 0\nInt-Endian: 0123\nVersion: 2\n.\n")
+        write(io, UInt8[m ? 0xff : 0x00 for m in mask])
+    end
+    return path
+end
+
+"""
+    mesh_domain(path, vertices, triangles; margin = 3) -> path
+
+The growth domain of an organ given as a closed surface mesh (`vertices` 3 × n in mm, `triangles` 3 × m, 1-based):
+the voxels of a 1 mm grid whose centres lie inside the mesh, written to `path` as a `.vol` for [`grow`](@ref).
+"""
+function mesh_domain(path::AbstractString, X::AbstractMatrix, T::AbstractMatrix{<:Integer}; margin::Real = 3)
+    g0 = grid_around(X, 1.0; margin)
+    lo = round.(Int, g0.origin); g = VoxelGrid(Float64.(lo), 1.0, g0.dims)
+    return write_vol(path, voxelize(X, T, g), lo)
+end

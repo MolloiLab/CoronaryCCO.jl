@@ -364,7 +364,7 @@ site, the four heart chambers, the lungs, the coronary bed, and the systemic org
 are keyword arguments; sources are in `docs` of each block below.
 
 Coronary bed: `cor = (; ml, fb, ve, ps, rho)` (required): myocardial tissue volume and the heart's
-blood fraction, interstitial fraction, contrast PS and density (`Flow.Physiology(organ = "heart")`).
+blood fraction, interstitial fraction, contrast PS and density (`Flow.FlowSpec(organ = "heart")`).
 
 Heart (from the XCAT phantom): `co` 81.6 mL/s (stroke volume 132.2 − 50.6 mL at 60/min),
 chamber volumes `v_ra` 52.0, `v_rv` 85.4, `v_la` 37.6, `v_lv` 95.2 mL, `beat` 1 s. Blood that
@@ -455,7 +455,7 @@ function human_circulation(;
     push!(S, Segment(:aortic_root, :av, :root; kind = :artery, v = F(v_aortic_root), plug = 0.8f0, rd = 0.1f0))
     # lumped coronary bed from the heart's own physiology: `cor = (; ml, fb, ve, ps, rho)` with the
     # myocardial tissue volume (mL) and the blood fraction, interstitial fraction, contrast PS
-    # (mL/min/g) and density of `Flow.Physiology(organ = "heart")`
+    # (mL/min/g) and density of `Flow.FlowSpec(organ = "heart")`
     push!(S, Segment(:coronary, :root, :cs; kind = :bed, q = F(f_cor), v = F(cor.fb * cor.ml), ve = F(cor.ve * cor.ml), ps = F(cor.ps / 60 * cor.ml * cor.rho)))
     push!(S, Segment(:coronary_sinus, :cs, :ra_in; kind = :vein, v = 3.0f0, plug = 0.8f0, rd = 0.1f0))
     push!(S, Segment(:arch, :root, :arch_out; kind = :artery, v = F(v_arch), plug = 0.8f0, rd = 0.1f0))

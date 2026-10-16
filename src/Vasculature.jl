@@ -37,17 +37,20 @@ include("morphometry.jl")
 include("qc.jl")
 include("generate.jl")
 include("postprocess.jl")
+include("xcat/voxelize.jl")
 include("spec.jl")
 # perfusion model: flow from pressures, territories, whole-body contrast, coronary flow capacity, CT frames, phantom
 include("perfusion/flow.jl")
 include("perfusion/territory.jl")
+include("perfusion/pipeline.jl")
 include("perfusion/body.jl")
 include("perfusion/cfc.jl")
 include("perfusion/organct.jl")
 include("perfusion/dynamic_phantom.jl")
 
 export CCOParams, CCOModel, MaskDomain, Engine, nsegments
-export GrowthSpec, grow, size_scale
+export GrowthSpec, grow, size_scale, mesh_domain, write_vol
+export FlowSpec, flow, couple_veins
 export read_vol, import_gxl, export_gxl, grow!, generate, dds_orders, tree_qc, set_territories!, set_forbidden!
 
 end

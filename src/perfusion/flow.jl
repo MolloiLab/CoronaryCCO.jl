@@ -10,7 +10,7 @@
 #   beds and veins. Arteries below 150 µm are walls in force balance whose smooth-muscle tone
 #   follows wall tension (myogenic) and the O₂ state of the beds they feed (ATP from desaturating
 #   red cells, conducted upstream), so resting flow, its distribution, the pressure–flow curve and
-#   the response to a stenosis all follow from the physics (see `Physiology`, `circuit`).
+#   the response to a stenosis all follow from the physics (see `FlowSpec`, `circuit`).
 # - Veins are a grown venous tree (each bed drains into a venule), or, by default, companion veins:
 #   every arterial segment j has a vein that carries the same flow back, lies along the same
 #   centerline, and holds 40/29 of the artery's volume (radius × √(40/29)). Copying only the
@@ -35,7 +35,7 @@ import AcceleratedKernels as AK
 using Atomix: @atomic
 using TOML
 
-export VTree, vtree, save_vtree, load_vtree, merge_vtrees, Physiology, Circuit, circuit, with_extraction, InputCurve,
+export VTree, vtree, save_vtree, load_vtree, merge_vtrees, FlowSpec, Circuit, circuit, with_extraction, InputCurve,
     gamma_input, Transport, transport, frame_masses, sinus_outflow
 
 const F32 = Float32
@@ -114,11 +114,11 @@ function load_vtree(path)
 end
 
 # ---------------------------------------------------------------------------------------------
-# Physiology
+# FlowSpec
 # ---------------------------------------------------------------------------------------------
 
 """
-    Physiology(; organ, kwargs...)
+    FlowSpec(; organ, kwargs...)
 
 Boundary conditions, tissue constants and vessel-wall mechanics of one organ's vascular bed.
 Flow is not prescribed: it follows from the geometry, the two pressures and the arteriolar
@@ -221,7 +221,7 @@ Arteriolar wall mechanics (autoregulation; Carlson, Arciero & Secomb 2008, Arcie
   flow, its distribution and every response to pressure or a stenosis follow. Pass the healthy
   rest circuit as `reference` to keep C_tone fixed (then the extraction is free to change).
 """
-struct Physiology
+struct FlowSpec
     p_in::F32
     p_out::F32
     regulation::Symbol
@@ -304,15 +304,15 @@ function organ_parameters(organ::AbstractString)
     return Dict(Symbol(k) => v["value"] for (k, v) in d)
 end
 
-function Physiology(; organ::AbstractString, kwargs...)
+function FlowSpec(; organ::AbstractString, kwargs...)
     d = organ_parameters(organ)
-    bad = setdiff(keys(kwargs), fieldnames(Physiology))
-    isempty(bad) || throw(ArgumentError("unknown Physiology fields $(collect(bad))"))
-    vals = map(fieldnames(Physiology)) do f
+    bad = setdiff(keys(kwargs), fieldnames(FlowSpec))
+    isempty(bad) || throw(ArgumentError("unknown FlowSpec fields $(collect(bad))"))
+    vals = map(fieldnames(FlowSpec)) do f
         v = haskey(kwargs, f) ? kwargs[f] : haskey(d, f) ? d[f] : throw(ArgumentError("organ $organ: no value for $f"))
-        fieldtype(Physiology, f) === Symbol ? Symbol(v) : F32(v)
+        fieldtype(FlowSpec, f) === Symbol ? Symbol(v) : F32(v)
     end
-    p = Physiology(vals...)
+    p = FlowSpec(vals...)
     p.regulation in _REGULATION || throw(ArgumentError("regulation must be one of $_REGULATION"))
     p.capillary in _CAPILLARY || throw(ArgumentError("capillary must be one of $_CAPILLARY"))
     p.venous_scale in _VENOUS_SCALE || throw(ArgumentError("venous_scale must be one of $_VENOUS_SCALE"))
@@ -344,7 +344,7 @@ const DYN_PER_MMHG = 1333.22f0
 struct Circuit
     tree::VTree
     veins::VTree                 # venous tree (companion veins: arterial topology, radius × s)
-    phys::Physiology
+    phys::FlowSpec
     state::Symbol                # :rest (autoregulated) or :stress (maximal vasodilation)
     order::Vector{Int32}         # arterial breadth-first order: every parent before its children
     terminals::Vector{Int32}     # arterial segment index of each terminal
@@ -395,7 +395,7 @@ dimensions), then drains into the venous tree.
 
 Every artery with a passive diameter ≤ `phys.d_active` is a vessel wall in force balance: its
 diameter is where the wall tension P·D/2 equals passive plus active smooth-muscle tension (see
-[`Physiology`](@ref)). Flows, pressures, oxygen saturations and the conducted metabolic signal
+[`FlowSpec`](@ref)). Flows, pressures, oxygen saturations and the conducted metabolic signal
 are solved together with all those diameters until they agree.
 
 - `state = :stress`: maximal vasodilation (adenosine): activation 0 everywhere, so vessels sit
@@ -425,7 +425,7 @@ whatever the pressures and the distal arterioles make it.
 whole iteration then runs; the returned `Circuit` holds host arrays either way.
 """
 function circuit(
-        t::VTree, territory_ml::AbstractVector; phys::Physiology, state::Symbol = :rest,
+        t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::Symbol = :rest,
         veins::Union{Nothing, VTree} = nothing, vleaf = nothing, reference::Union{Nothing, Circuit} = nothing,
         kappa = nothing, kappa_init = 1, stenosis = nothing, demand = nothing, verbose::Bool = false, to = identity
     )
@@ -1172,7 +1172,7 @@ end
     return h, l
 end
 
-# wall constants of a `Physiology` as a plain tuple (for kernels)
+# wall constants of a `FlowSpec` as a plain tuple (for kernels)
 _wall(p) = (;
     cps = p.wall_cpass_slope, c10 = p.wall_cpass1_0, c1s = p.wall_cpass1_slope, cac = p.wall_cact_coef, cae = p.wall_cact_exp,
     a10 = p.wall_cact1_0, a1s = p.wall_cact1_slope, a20 = p.wall_cact2_0, a2s = p.wall_cact2_slope,
@@ -1225,7 +1225,7 @@ end
 # fixed-point scale holds, so the sums run in bands of 12 L₀ of ℓ_k: a band's scan weighs bed i by
 # e^{−(ℓ_i − ℓ_band)/L₀} ≤ 1 and leaves out the beds above the band, which no subtree of the band
 # contains. The weights are fixed (`_solver`).
-function _metabolic!(S::_Solver, phys::Physiology, terr_g)
+function _metabolic!(S::_Solver, phys::FlowSpec, terr_g)
     ni = S.ni; nt = S.nt
     cO2 = 1.34f0 * phys.hb / 100.0f0; r1 = phys.atp_r1
     rref = 1.0f0 - r1 * phys.sao2 * (1 - phys.oef)
@@ -1337,7 +1337,7 @@ function _distend!(S::_Solver, D::_Dist)
 end
 
 function _autoregulate!(
-        S::_Solver, W::_Wall, kappa::F32, phys::Physiology, state::Symbol, ctone::Vector{F32}, fixtone::Bool,
+        S::_Solver, W::_Wall, kappa::F32, phys::FlowSpec, state::Symbol, ctone::Vector{F32}, fixtone::Bool,
         terr_g, mu0, sten, lim::_Limits, verbose, sheet = nothing, dist = nothing
     )
     nw = length(W.seg); hd = phys.hd; stress = state === :stress
@@ -1454,7 +1454,7 @@ function _autoregulate!(
     return iters, p99()
 end
 
-function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, state::Symbol, veins, vleaf, reference, kappa, kappa_init, stenosis, demand, verbose, to)
+function _circuit(t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::Symbol, veins, vleaf, reference, kappa, kappa_init, stenosis, demand, verbose, to)
     n = nseg(t)
     nchild, ptr, kids, order = _topology(t.parent)
     terminals = Int32[j for j in 1:n if nchild[j] == 0]

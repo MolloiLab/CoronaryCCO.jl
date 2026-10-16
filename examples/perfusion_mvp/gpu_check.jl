@@ -9,7 +9,7 @@ tree = load_vtree(joinpath(@__DIR__, "out", "tree_$n.bin"))
 nchild = zeros(Int, length(tree.r)); foreach(p -> p > 0 && (nchild[p] += 1), tree.parent)
 terms = findall(==(0), nchild)
 terr = fill(255.0f0 / length(terms), length(terms))
-C = circuit(tree, terr; state = :stress, phys = Physiology(organ = "heart"))
+C = circuit(tree, terr; state = :stress, phys = FlowSpec(organ = "heart"))
 inp = gamma_input()
 times = 0.0f0:0.5f0:30.0f0
 frame_masses(C, inp, times[1:2]); frame_masses(C, inp, times[1:2]; to = MtlArray)   # compile

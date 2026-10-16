@@ -3,95 +3,89 @@
 [![CI](https://github.com/MolloiLab/Vasculature.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/MolloiLab/Vasculature.jl/actions/workflows/CI.yml)
 [![License: GPL v3+](https://img.shields.io/badge/License-GPLv3+-blue.svg)](LICENSE)
 
-Pure-Julia, vendor-neutral tools that take an organ mesh or mask to a grown vascular network
-and a voxelized material phantom: **grow → flow → mesh + voxelize + materialize**. The phantom
-is the hand-off point. CT simulation (for example with
-[BasisSimulator.jl](https://github.com/MolloiLab/BasisSimulator.jl)) and perfusion analysis
-stay in their own packages and appear here only as worked examples.
+| Heart: contrast through the grown coronary tree | Lung: contrast through the grown pulmonary trees |
+|:---:|:---:|
+| ![heart](docs/assets/heart_flow.gif) | ![lung](docs/assets/lung_flow.gif) |
 
-The growth engine is a port of **HCT-CCO** (Vajire, Choy, Kassab and Lee), which grows
-subject-specific coronary arterial trees from a segmented epicardial base tree inside a
-CT-derived myocardial domain. The first target is coronary perfusion; brain and other organs
-are planned.
+Grow a complete vascular tree inside any organ from the few vessels a scan shows, compute its blood flow from the
+pressures alone, send a contrast injection through it, and export a voxelized perfusion phantom for CT simulation.
+One algorithm for every organ; an organ differs only in the numbers you give it.
 
-> **The growth engine is a port, not a new method.** The algorithm belongs to the HCT-CCO
-> authors, and HCT-CCO itself extends **OpenCCO** (Kerautret, Ngo, Passat, Talbot and Jaquet).
-> If you use tree growth from this package, please cite both of their articles (see
-> [How to cite](#how-to-cite)). Upstream: <https://github.com/Sujal-vajire/HCT-CCO>.
+## Install
 
-## What it does
+```julia
+using Pkg
+Pkg.add(url = "https://github.com/MolloiLab/Vasculature.jl")
+```
+
+## 1. Grow
+
+![grown heart tree](docs/assets/step1_grow.png)
+
+Give the organ (a closed surface mesh, or a mask), the imaged inlet vessels (one tree per inlet, as GXL centrelines) and
+a `GrowthSpec`. Everything else is the same for every organ.
 
 ```julia
 using Vasculature
-E = generate("case0.vol", "case0.xml"; nterm = 40_000, aperf = 10_000, min_dist = 1,
-             root = (-26, 41, 13), seed = 1, export_xml = "tree.xml")
-postprocess("tree.xml", "tree"; domain_vol = "case0.vol")   # orders, morphometry, hemodynamics, VTP/OBJ
-dds_orders(E.m)                                              # orders computed from the tree itself
+
+domain = mesh_domain("heart.vol", vertices, triangles)     # organ surface → 1 mm growth domain
+spec = GrowthSpec(nterm = 1_000_000, tissue_ml = 148.1,     # terminals, tissue volume
+                  root_caps = [2.54, 1.59])                 # imaged inlet radii (mm): LCA, RCA
+tree = grow(spec, domain, ["lca.xml", "rca.xml"])           # ≈ 1 min for 10⁶ terminals on a laptop GPU
 ```
 
-On an Apple M4 laptop CPU (8 threads), case0 with HCT-CCO's sample settings:
+| | `nterm` | `tissue_ml` | inlets | `root_caps` |
+|---|---|---|---|---|
+| heart (adult) | 1,000,000 | 148 (myocardium) | LCA, RCA | imaged ostial radii |
+| lung (adult, both) | 200,000 | 2,800 | main pulmonary artery | imaged main-PA radius |
+| any other organ | your choice (more = finer) | its segmented volume | each imaged inlet (femoral artery, carotids + basilar, ...) | their imaged radii |
 
-| terminals | upstream C++ | Vasculature exact mode | Vasculature (default) |
-|---:|---:|---:|---:|
-| 4,000 | 81 s | 2.3 s | 1.6 s |
-| 40,000 | ≈ 3.6–5 h (extrapolated) | 109 s | 14 s |
-| 200,000 | – | – | ≈ 100 s |
+More inlets are just more files: `grow(spec, brain, ["lica.xml", "rica.xml", "basilar.xml"])`.
+Walls the vessels must not cross (heart chambers, lung airways, brain ventricles) go in `blockers`. Veins grow the
+same way from their imaged outlet trees (`grow(spec, domain, ["left_pulmonary_veins.xml", "right_pulmonary_veins.xml"])`).
 
-With the corrected options (`docs/deviations.md`), batched growth (the default) grows
-10⁵ terminals in about 7 s and 8 × 10⁵ in 48 s on the CPU, or 41 s with each round evaluated
-on the laptop GPU; sequential growth takes 35–51 s and more than 12 min.
+## 2. Flow
 
-- **Exact mode** (test-only) reproduces upstream bit for bit in Float64: on case0, every
-  segment's topology, coordinates, radius, resistance, flow and radius ratio match the C++
-  reference build at 500 and 2,000 terminals. Ceres's Levenberg–Marquardt solve is replicated
-  bit for bit on 514,000 recorded and synthetic cases.
-- **The default engine** updates resistances, radii and volume only along the path from each
-  new bifurcation to the root (the incremental update the HCT-CCO paper describes), using a
-  spatial grid for all geometric queries. It equals exact mode to rounding.
-- **Batched growth** (`growth = :batched`, the default) adds up to 1% of the tree per round, evaluating
-  every location of a round in parallel against the same tree. Its trees are statistically
-  equivalent to sequential growth, not identical (see
-  [`docs/deviations.md`](docs/deviations.md), section 12).
-- Parallel work uses AcceleratedKernels.jl. Each batched round's candidate evaluation is a
-  kernel over flat arrays that runs on CPU threads or, with `device`, on a GPU. It is tested on
-  Apple M-series GPUs with Metal.jl, where unified memory makes uploads cheap:
-  `device = x -> MtlArray{eltype(x), ndims(x), Metal.SharedStorage}(x)`. CUDA, ROCm and oneAPI
-  arrays should work the same way but are untested. Sequential growth, commits and the
-  per-round refresh run on CPU threads. Production runs use `Float32`, which GPUs need.
-- Post-processing (`postprocess`) is a pure-Julia port of HCT-CCO's Python script and
-  reproduces its CSVs byte for byte; figures come from a CairoMakie extension.
+![flow from pressure](docs/assets/step2_flow.png)
 
-## Departures from upstream
+```julia
+F = flow(FlowSpec(organ = "heart"), arteries, veins, tissue)   # tissue: 3 × n voxel centres (mm)
+F.rest.resist.mbf, F.stress.resist.mbf                         # mL/min/g at rest and at maximal dilation
+```
 
-Upstream behaviour is the default. Where upstream has a bug or differs from the HCT-CCO
-paper, an option gives the corrected behaviour: full-tree volume objective (`volume = :full`),
-Euclidean wall distance (`metric = :euclidean`), continuous terminal sampling
-(`sampling = :continuous`), imaged vessels kept on their centerlines (`fix_base = true`), and
-in post-processing the decoded myocardial mass and end-to-end element grouping (defaults).
-Each one is documented, with its origin and the supporting literature, in
-[`docs/deviations.md`](docs/deviations.md).
+No flow is prescribed: each vessel's flow follows from the inlet and outlet pressures, the vessel sizes and the
+arterioles' tone. `FlowSpec(organ = "heart")` and `FlowSpec(organ = "lung")` hold measured values, each with its
+source; override any of them by keyword.
 
-With the paper's bifurcation exponent γ = 2.33 and these corrections, growth reaches all 11
-Strahler orders without rescaling diameters after growth; see the deviations document for
-the terminal counts this requires.
+## 3. Contrast
+
+![contrast transport](docs/assets/step3_transport.png)
+
+A clinical injection (dose, rate, saline flush, injection site) travels through a whole-body circulation into the
+organ's grown tree, then through every capillary bed and vein, with exchange into the tissue and washout by the kidneys.
+(Being folded into one call, `transport(spec, F, injection)`, like `grow` and `flow`.)
+
+## 4. Phantom
+
+![phantom](docs/assets/step4_phantom.png)
+
+The result is one compartment volume (one integer per voxel) and one CSV per scenario: each compartment's base material
+and its iodine concentration every second, plus the ground-truth blood flow. Load it at any time point as material
+maps for a CT simulator such as [BasisSimulator.jl](https://github.com/MolloiLab/BasisSimulator.jl).
+(Being folded into one call, `phantom(spec, ...)`, like `grow` and `flow`.)
+
+![lung CT](docs/assets/step5_ct.png)
 
 ## How to cite
 
-Please cite the upstream work:
+The growth algorithm is HCT-CCO, extended from OpenCCO. If you use tree growth, please cite:
 
-1. S. L. Vajire, J. S. Choy, G. S. Kassab and L.-C. Lee, "Hierarchy Aware CT-Driven
-   Constrained Constructive Optimization: A Framework for Coronary Network Generation," *Annals of Biomedical Engineering*, 2026.
-   <https://doi.org/10.1007/s10439-026-04383-4>. Code: <https://github.com/Sujal-vajire/HCT-CCO>.
-2. B. Kerautret, P. Ngo, N. Passat, H. Talbot and C. Jaquet, "OpenCCO: An Implementation
-   of Constrained Constructive Optimization for Generating 2D and 3D Vascular Trees,"
-   *Image Processing On Line*, 13, 258–279, 2023.
-   <https://doi.org/10.5201/ipol.2023.477>
-
-and, as appropriate, the methods they build on: Schreiner and Buxbaum (1993), Karch et al.
-(1999) and Kamiya and Togawa (1972). Full references are in [`NOTICE.md`](NOTICE.md) and
-[`CITATION.cff`](CITATION.cff).
+- S. L. Vajire, J. S. Choy, G. S. Kassab, L.-C. Lee. Hierarchy aware CT-driven constrained constructive optimization:
+  a framework for coronary network generation. *Ann. Biomed. Eng.*, 2026. doi:10.1007/s10439-026-04383-4
+- B. Kerautret, P. Ngo, N. Passat, H. Talbot, C. Jaquet. OpenCCO: an implementation of constrained constructive
+  optimization for generating 2D and 3D vascular trees. *Image Process. On Line* 13:258–279, 2023.
+  doi:10.5201/ipol.2023.477
 
 ## License
 
-GPL-3.0-or-later, the same terms as HCT-CCO. See [`LICENSE`](LICENSE) and
-[`NOTICE.md`](NOTICE.md) for provenance and the licenses of upstream dependencies.
+GPL-3.0-or-later.
