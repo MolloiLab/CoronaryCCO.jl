@@ -181,6 +181,56 @@ value = 0.0
 unit = "um"
 note = "Not used: no vessel carries active tone (regulation = passive)."
 
+[parameters.wall_cpass_slope]
+value = 0.0
+unit = "dyn/cm per um"
+note = "Not used: no vessel carries active tone (regulation = passive)."
+
+[parameters.wall_cpass1_0]
+value = 0.0
+unit = "1"
+note = "Not used: no vessel carries active tone (regulation = passive)."
+
+[parameters.wall_cpass1_slope]
+value = 0.0
+unit = "1/um"
+note = "Not used: no vessel carries active tone (regulation = passive)."
+
+[parameters.wall_cact_coef]
+value = 0.0
+unit = "dyn/cm"
+note = "Not used: no vessel carries active tone (regulation = passive)."
+
+[parameters.wall_cact_exp]
+value = 0.0
+unit = "1"
+note = "Not used: no vessel carries active tone (regulation = passive)."
+
+[parameters.wall_cact1_0]
+value = 0.0
+unit = "1"
+note = "Not used: no vessel carries active tone (regulation = passive)."
+
+[parameters.wall_cact1_slope]
+value = 0.0
+unit = "1/um"
+note = "Not used: no vessel carries active tone (regulation = passive)."
+
+[parameters.wall_cact2_0]
+value = 0.0
+unit = "1"
+note = "Not used: no vessel carries active tone (regulation = passive)."
+
+[parameters.wall_cact2_slope]
+value = 0.0
+unit = "1/um"
+note = "Not used: no vessel carries active tone (regulation = passive)."
+
+[parameters.wall_cmyo]
+value = 0.0
+unit = "cm/dyn x um"
+note = "Not used: no vessel carries active tone (regulation = passive)."
+
 [parameters.oef]
 value = 0.0
 unit = "1"

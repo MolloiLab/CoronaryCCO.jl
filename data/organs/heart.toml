@@ -135,6 +135,66 @@ unit = "um"
 note = "Arteries below this passive diameter carry smooth-muscle tone; adenosine and dipyridamole dilate only these."
 sources = ["kanatsuka1989_adenosine_microvessels"]
 
+[parameters.wall_cpass_slope]
+value = 6.666
+unit = "dyn/cm per um"
+note = "Passive tension strength C_pass = slope x D0. Carlson & Secomb 2005 / Carlson 2008 fits as tabulated by Fry et al. 2013 Table 1 (hamster cremaster origin; coronary refits: namani2018_coronary_wall_parameters)."
+sources = ["fry2013_vessel_wall_parameters"]
+
+[parameters.wall_cpass1_0]
+value = 12.52
+unit = "1"
+note = "Passive tension sensitivity C'_pass = intercept + slope x D0: intercept. Carlson & Secomb 2005 / Carlson 2008 fits as tabulated by Fry et al. 2013 Table 1 (hamster cremaster origin; coronary refits: namani2018_coronary_wall_parameters)."
+sources = ["fry2013_vessel_wall_parameters"]
+
+[parameters.wall_cpass1_slope]
+value = -0.027
+unit = "1/um"
+note = "C'_pass slope. Carlson & Secomb 2005 / Carlson 2008 fits as tabulated by Fry et al. 2013 Table 1 (hamster cremaster origin; coronary refits: namani2018_coronary_wall_parameters)."
+sources = ["fry2013_vessel_wall_parameters"]
+
+[parameters.wall_cact_coef]
+value = 1.3
+unit = "dyn/cm"
+note = "Maximal active tension C_act = coef x D0^exp: coefficient (refit by Fry 2013 on small vessels). Carlson & Secomb 2005 / Carlson 2008 fits as tabulated by Fry et al. 2013 Table 1 (hamster cremaster origin; coronary refits: namani2018_coronary_wall_parameters)."
+sources = ["fry2013_vessel_wall_parameters"]
+
+[parameters.wall_cact_exp]
+value = 1.48
+unit = "1"
+note = "C_act exponent. Carlson & Secomb 2005 / Carlson 2008 fits as tabulated by Fry et al. 2013 Table 1 (hamster cremaster origin; coronary refits: namani2018_coronary_wall_parameters)."
+sources = ["fry2013_vessel_wall_parameters"]
+
+[parameters.wall_cact1_0]
+value = 0.773
+unit = "1"
+note = "Active length dependence C'_act = intercept + slope x D0: intercept. Carlson & Secomb 2005 / Carlson 2008 fits as tabulated by Fry et al. 2013 Table 1 (hamster cremaster origin; coronary refits: namani2018_coronary_wall_parameters)."
+sources = ["fry2013_vessel_wall_parameters"]
+
+[parameters.wall_cact1_slope]
+value = -0.00059
+unit = "1/um"
+note = "C'_act slope. Carlson & Secomb 2005 / Carlson 2008 fits as tabulated by Fry et al. 2013 Table 1 (hamster cremaster origin; coronary refits: namani2018_coronary_wall_parameters)."
+sources = ["fry2013_vessel_wall_parameters"]
+
+[parameters.wall_cact2_0]
+value = 0.415
+unit = "1"
+note = "Active tension range C''_act = intercept + slope x D0: intercept. Carlson & Secomb 2005 / Carlson 2008 fits as tabulated by Fry et al. 2013 Table 1 (hamster cremaster origin; coronary refits: namani2018_coronary_wall_parameters)."
+sources = ["fry2013_vessel_wall_parameters"]
+
+[parameters.wall_cact2_slope]
+value = -0.0008
+unit = "1/um"
+note = "C''_act slope. Carlson & Secomb 2005 / Carlson 2008 fits as tabulated by Fry et al. 2013 Table 1 (hamster cremaster origin; coronary refits: namani2018_coronary_wall_parameters)."
+sources = ["fry2013_vessel_wall_parameters"]
+
+[parameters.wall_cmyo]
+value = 1.369
+unit = "cm/dyn x um"
+note = "Myogenic sensitivity C_myo = value / D0 (cm/dyn). Carlson & Secomb 2005 / Carlson 2008 fits as tabulated by Fry et al. 2013 Table 1 (hamster cremaster origin; coronary refits: namani2018_coronary_wall_parameters)."
+sources = ["fry2013_vessel_wall_parameters"]
+
 [parameters.oef]
 value = 0.73
 unit = "1"

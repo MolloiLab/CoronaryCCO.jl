@@ -191,13 +191,13 @@ Arteriolar wall mechanics (autoregulation; Carlson, Arciero & Secomb 2008, Arcie
   (Kanatsuka et al. 1989), so maximal dilation does not reach the larger ones. Larger arteries
   are rigid conduits.
 - Wall tension at equilibrium: P·D/2 = T_pass(D) + A·T_act,max(D), with the diameter-dependent
-  fits of Carlson & Secomb (2005) as tabulated by Fry et al. (2013): C_pass = 6.666·D₀ dyn/cm,
+  fits of Carlson & Secomb (2005) as tabulated by Fry et al. (2013), organ data `wall_*`: C_pass = 6.666·D₀ dyn/cm,
   C′_pass = 12.52 − 0.027·D₀, C_act = 1.30·D₀^1.48 dyn/cm, C′_act = 0.773 − 0.00059·D₀,
   C″_act = 0.415 − 0.00080·D₀ (D₀ in µm, the passive diameter at 100 mmHg). At its own pressure
   each artery can therefore be no wider than its relaxed wall (A = 0) and no narrower than its
   fully contracted wall (A = 1); its diameter lies between them as 1 − A. This is its capacity.
 - Activation A = 1/(1 + e^{−S}), S = C_myo·T − `g_meta`·M + C_tone, with C_myo = 1.369/D₀ cm/dyn
-  (Carlson & Secomb 2005): the myogenic and metabolic responses. The shear (flow-induced)
+  (Carlson & Secomb 2005; `wall_cmyo`): the myogenic and metabolic responses. The shear (flow-induced)
   response of Carlson et al. (2008) is left out: a CCO twig carries a real arteriole's flow in a
   vessel that is too long and too thin for it (see κ above), so its wall shear is not
   physiological, and shear plays a secondary role in coronary autoregulation (Namani et al. 2018).
@@ -243,6 +243,17 @@ struct Physiology
     r_micro_dilated::F32
     # autoregulation
     d_active::F32
+    # vessel wall (Carlson & Secomb 2005 fits as functions of D₀ in µm; tensions dyn/cm)
+    wall_cpass_slope::F32
+    wall_cpass1_0::F32
+    wall_cpass1_slope::F32
+    wall_cact_coef::F32
+    wall_cact_exp::F32
+    wall_cact1_0::F32
+    wall_cact1_slope::F32
+    wall_cact2_0::F32
+    wall_cact2_slope::F32
+    wall_cmyo::F32
     oef::F32
     g_meta::F32
     mvo2::F32
@@ -1128,7 +1139,7 @@ struct _Limits
     dp::F32; np::Int                 # pressure grid from 1 mmHg
     hi::Matrix{F32}; lo::Matrix{F32}
 end
-function _Limits(dmin::F32, dmax::F32, pmax::F32)
+function _Limits(dmin::F32, dmax::F32, pmax::F32, w)
     nd = 96; ld0 = log(dmin) - 0.01f0; dld = (log(dmax) + 0.01f0 - ld0) / (nd - 1)
     dp = 0.25f0; np = ceil(Int, (pmax + 5.0f0 - 1.0f0) / dp) + 1
     hi = Matrix{F32}(undef, np, nd); lo = similar(hi)
@@ -1136,7 +1147,7 @@ function _Limits(dmin::F32, dmax::F32, pmax::F32)
         d0 = exp(ld0 + (k - 1) * dld); xh = 1.0f0; xl = 0.5f0
         for i in 1:np
             P = 1.0f0 + (i - 1) * dp
-            xh = _equilibrium(xh, 0.0f0, P, d0); xl = _equilibrium(xl, 1.0f0, P, d0)
+            xh = _equilibrium(xh, 0.0f0, P, d0, w); xl = _equilibrium(xl, 1.0f0, P, d0, w)
             hi[i, k] = xh; lo[i, k] = xl
         end
     end
@@ -1158,18 +1169,21 @@ end
     return h, l
 end
 
-@inline function _tension(x::F32, A::F32, d0::F32)
-    cp = 6.666f0 * d0; cp1 = 12.52f0 - 0.027f0 * d0
-    ca = 1.3f0 * d0^1.48f0; ca1 = 0.773f0 - 0.00059f0 * d0; ca2 = 0.415f0 - 0.0008f0 * d0
+# wall constants of a `Physiology` as a plain tuple (for kernels)
+_wall(p) = (; cps = p.wall_cpass_slope, c10 = p.wall_cpass1_0, c1s = p.wall_cpass1_slope, cac = p.wall_cact_coef, cae = p.wall_cact_exp,
+    a10 = p.wall_cact1_0, a1s = p.wall_cact1_slope, a20 = p.wall_cact2_0, a2s = p.wall_cact2_slope)
+@inline function _tension(x::F32, A::F32, d0::F32, w)
+    cp = w.cps * d0; cp1 = w.c10 + w.c1s * d0
+    ca = w.cac * d0^w.cae; ca1 = w.a10 + w.a1s * d0; ca2 = w.a20 + w.a2s * d0
     return cp * exp(cp1 * (x - 1.0f0)) + A * ca * exp(-((x - ca1) / ca2)^2)
 end
 
 # Stable equilibrium diameter ratio near x0 at activation A and transmural pressure P (mmHg):
 # wall tension T_pass + A·T_act,max minus the load P·D/2 crosses zero upward there (a smaller
 # vessel yields, a larger one contracts back).
-@inline function _equilibrium(x0::F32, A::F32, P::F32, d0::F32)
+@inline function _equilibrium(x0::F32, A::F32, P::F32, d0::F32, w)
     load = P * DYN_PER_MMHG * d0 * 1.0f-4 / 2.0f0
-    g(x) = _tension(x, A, d0) - load * x
+    g(x) = _tension(x, A, d0, w) - load * x
     lo = 0.05f0; hi = 2.0f0; h = 0.02f0
     x0 = clamp(x0, lo, hi)
     if g(x0) > 0
@@ -1319,6 +1333,7 @@ function _autoregulate!(
     lhi = S.lhi; llo = S.llo; dp = lim.dp; np = lim.np
     mut = S.mut; mua = S.mua; mudl = S.mudl; numax = F32(length(mut) - 1) - 1.0f-3
     gmeta = phys.g_meta
+    cmyo = phys.wall_cmyo * DYN_PER_MMHG * 1.0f-4 / 2.0f0     # C_myo·T = C_myo·P·D/2 = cmyo·P·(D/D₀), D₀ in µm
     function setfa!()
         # μ_rel(D) interpolated in log D (relative error < 10⁻⁷)
         AK.foreachindex(xd) do w
@@ -1359,7 +1374,7 @@ function _autoregulate!(
                     @inbounds begin
                         j = seg[w]; p = par[j]
                         P = max(((p == 0 ? Pa : pa[p]) + pa[j]) / 2, 1.0f0)
-                        stim[w] = 0.09128f0 * P * xd[w] - gmeta * sig[j]
+                        stim[w] = cmyo * P * xd[w] - gmeta * sig[j]
                     end
                 end
                 ctone[1] = -sort!(Array(stim))[(nw + 1) ÷ 2]
@@ -1378,7 +1393,7 @@ function _autoregulate!(
                 if stress
                     act[w] = 0.0f0
                 else
-                    sw = 0.09128f0 * P * xd[w] - gmeta * sig[j]
+                    sw = cmyo * P * xd[w] - gmeta * sig[j]
                     d = 1.0f0 / (1.0f0 + exp(-(sw + ct))) - act[w]
                     ωw[w] = d * dA[w] < 0 ? max(0.005f0, 0.5f0 * ωw[w]) : min(0.3f0, 1.1f0 * ωw[w])
                     dA[w] = d; act[w] += ωw[w] * d
@@ -1464,7 +1479,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     mv = [2000.0f0 * vt.r[k] < phys.d_ven_micro for k in 1:nv]
     # vasoactive arteries
     d0c = F32[2000.0f0 * t.r[j] for j in 1:n if 2000.0f0 * t.r[j] < phys.d_active]
-    lim = _Limits(isempty(d0c) ? 1.0f0 : minimum(d0c), isempty(d0c) ? 2.0f0 : maximum(d0c), max(phys.p_in, 1.0f0))
+    lim = _Limits(isempty(d0c) ? 1.0f0 : minimum(d0c), isempty(d0c) ? 2.0f0 : maximum(d0c), max(phys.p_in, 1.0f0), _wall(phys))
     S, perm, iperm, tperm, vperm = _solver(
         t.parent, nchild, ptr, kids, vt.parent, vptr, vkids, vl, tidx, ra, rv, rcap, ma, mv, len, lim,
         phys.p_in, phys.p_out, 10.0f0 * phys.atp_l0, hd, to
