@@ -1,0 +1,127 @@
+[meta]
+id = "levitt2003_interstitial_pharmacokinetics"
+data_type = "model"
+validates = "Whole-body PBPK parameter set for extracellular solutes in a 70-kg, 20%-fat 'standardhuman' (PKQuest): per-organ weight, water, interstitial (EDTA) water fraction, blood flow and interstitial albumin ratio; human steady-state and equilibrium volumes of distribution for mannitol, EDTA, inulin, sucrose, glucuronides and beta-lactams; animal and human per-tissue interstitial volume fractions; muscle capillary PS for inulin and protein-bound antibiotics; and the rule that sets every other organ's PS from the muscle PS."
+species = "human (model parameters); rat, rabbit, cat, dog and man (Table 4 interstitial volumes)"
+preparation = "Literature survey. Published human plasma curves (antecubital venous sampling, digitized with UN-SCAN-IT) refitted with PKQuest. Most data sets are group means treated as one 'average' subject; some are single subjects (N = 1)."
+conditions = "Resting adult. Single IV bolus or infusion. Renal clearance is the only solute-specific adjustable parameter for flow-limited solutes; muscle fclear (hence PS) is added for permeability-limited solutes."
+verification = "FT"
+access = "Open access. Full text read from Europe PMC XML (PMC194216) on 2026-10-16. Tables 1 and 6 also checked against the BMC PDF text layout (bmcclinpharma.biomedcentral.com). The PDF is kept outside the repo."
+notes = """KEY POINT: this paper does NOT give a per-tissue PS for EDTA. It treats EDTA (and mannitol, the glucuronides and weakly bound beta-lactams) as FLOW-LIMITED (fclear = 1) in every organ. Adding a permeability limitation did not improve the EDTA fit.
+The only EDTA PS it quotes is a literature 'standard reference value' of about 5 mL/min/100 g for skeletal muscle, skin and subcutaneous tissue (citing Crone & Levitt 1984, APS Handbook). With resting muscle flow 2.25 mL/min/100 g this gives fclear 0.89 by eq. 6. It also cites EDTA muscle PS 5.0 (cat, Watson 1995) and 12.9 mL/min/100 g (rat, Haraldsson & Rippe 1986), both at flows >= 10x resting.
+Eq. 6: fclear_i = 1 - exp(-fP * PS_i / F_i), with fP the free plasma fraction and F_i 'the organ plasma volume flow (liters/min/Kg)'. The EDTA example in the Discussion plugs in the muscle BLOOD flow (2.25) although eq. 6 names plasma flow.
+PKQuest default PS rule (Methods): liver, kidney and portal organs flow-limited; heart and lung PS = 50 x muscle PS; brain PS = 0 when fclear[muscle] < 1; all other organs (skin, tendon, other, adipose) PS = muscle PS. Only fclear[muscle] is input.
+Inulin (MW ~5000) is permeability-limited: PS_muscle = 0.61 mL/min/100 g (fclear[muscle] = 0.409) and its interstitial volume is 0.42 x the EDTA volume (mecf = 0.42). Literature range quoted for inulin muscle PS: 0.59 to 1.62 mL/min/100 g.
+The paper gives no explicit PS-vs-molecular-size law. Its only size statements: inulin PS ~ 1/8-1/10 of the EDTA reference, inulin volume about half of EDTA (Ladegaard-Pedersen & Engell: 48% smaller), and EDTA and beta-lactams 'are of similar size'.
+Extracellular water is 17.46 L of 41.84 L total body water (42%). Skin + tendon + other hold 62% of extravascular ECF water and dominate whole-body exchange kinetics.
+Organ flows were fine-tuned to fit solute data; muscle 2.25 mL/min/100 g (D2O fit), adipose 4.4 mL/min/100 g (enflurane fit), tendon 1 mL/min/100 g. Cardiac output 5.62 L/min.
+'Bone' is the inert solid only (no water, no flow); skeletal water and flow are distributed among the other organs. 'Blood' volume includes intra-organ blood, so organ values are extravascular.
+Antecubital vein blood is modelled as about 10% muscle, 20% skin, 5% other, 5% adipose and 60% A-V anastomoses (refined in levitt2004_arterial_antecubital_difference). Antecubital Vss is 4-10% above arterial Vss."""
+use_in_model = """Use Table 6 as the physiological prior for per-bed interstitial volume (ecf water) and flow. Do not cite this paper for an EDTA PS per tissue: it has none, and it models EDTA as flow-limited. If a PS is wanted, start from the muscle reference (~5 mL/min/100 g for EDTA, or a human measurement such as keiding1988), apply Levitt's rule (skin, tendon, other, adipose PS = muscle PS per 100 g; heart, lung 50x; liver, kidney, gut flow-limited), then scale for solute size (see haraldsson1986 and keiding1988). Compare: the bed values under review (muscle 4000 mL, skin 1300, fat 2000, other 1500, bone 1500) vs Table 6 ecf water (muscle 3042, skin 1092, adipose 3500, other 3756 + tendon 2550, bone 0)."""
+
+[source]
+authors = ["Levitt DG"]
+year = 2003
+title = "The pharmacokinetics of the interstitial space in humans"
+journal = "BMC Clin Pharmacol"
+volume = "3"
+issue = "1"
+pages = "3"
+doi = "10.1186/1472-6904-3-3"
+crossref_verified = "2026-10-16; Crossref title exact match (BMC Clinical Pharmacology vol 3, article 3; sole author Levitt)"
+pmid = "12890292"
+pmcid = "PMC194216"
+
+[data.pbpk_standardhuman]
+description = "PBPK organ parameters for the 70-kg, 20%-fat standardhuman. ecf_fraction = interstitial (EDTA) water as a fraction of extravascular organ water. ka = interstitial albumin concentration in the EDTA space / plasma albumin."
+location = "Table 6"
+provenance = "FT"
+statistic = "model parameter values, no dispersion"
+organ = ["blood", "liver", "portal", "muscle", "kidney", "brain", "heart", "lung", "skin", "tendon", "other", "bone", "adipose"]
+weight_kg = [5.5, 1.8, 1.5, 26.0, 0.31, 1.4, 0.33, 0.536, 2.6, 3.0, 5.524, 4.0, 17.5]
+lipid_fraction = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.8]
+solid_fraction = [0.18, 0.3, 0.22, 0.22, 0.2, 0.2, 0.2, 0.2, 0.3, 0.15, 0.15, 1.0, 0.0]
+solid_kg = [0.99, 0.54, 0.33, 5.72, 0.062, 0.28, 0.066, 0.107, 0.78, 0.45, 0.828, 4.0, 0.0]
+ecf_fraction = [0.595, 0.23, 0.3, 0.15, 0.165, 0.0, 0.25, 0.2, 0.6, 1.0, 0.8, 0.5, 1.0]
+water_L = [4.51, 1.26, 1.17, 20.28, 0.248, 1.12, 0.264, 0.428, 1.82, 2.55, 4.695, 0.0, 3.5]
+water_L_per_kg = [0.82, 0.7, 0.78, 0.78, 0.8, 0.8, 0.8, 0.8, 0.7, 0.85, 0.85, 0.0, 0.2]
+ecf_water_L = [2.68345, 0.2898, 0.351, 3.042, 0.04092, 0.0, 0.066, 0.08576, 1.092, 2.55, 3.75632, 0.0, 3.5]
+flow_L_per_min_per_kg = [nan, 0.25, 0.75, 0.0225, 4.0, 0.56, 0.8, 10.482, 0.1, 0.01, 0.02, nan, 0.044]
+flow_L_per_min = [nan, 0.45, 1.125, 0.585, 1.24, 0.784, 0.264, 5.6184, 0.26, 0.03, 0.1104, 0.0, 0.77]
+ka = [nan, 0.5, 0.35, 0.5, 0.35, 0.1, 0.5, 0.35, 0.25, 0.25, 0.25, 0.0, 0.35]
+ka_times_ecf_L = [nan, 0.1449, 0.1228, 1.521, 0.0143, 0.0, 0.033, 0.03, 0.273, 0.6375, 0.9390, 0.0, 1.225]
+total_weight_kg = 70.0
+total_water_L = 41.84
+total_ecf_water_L = 17.4572
+cardiac_output_L_per_min = 5.6184
+total_ka_times_ecf_L = 4.9406
+missing_note = "Blood has no flow or Ka entries. Bone flow-per-kg cell is blank in the table. 'liver' flow is the hepatic artery; 'portal' (stomach, intestines, pancreas, spleen) drains into the liver. Lung flow is the whole cardiac output. The table does not say whether flows are blood or plasma; the text describes them as blood flows (e.g. muscle 2.25 mL/min/100 g)."
+
+[data.pbpk_default_ps_rule]
+description = "PKQuest default capillary PS of each organ relative to skeletal muscle (per unit tissue), applied when fclear[muscle] < 1"
+location = "Methods (text after eq. 6)"
+provenance = "FT"
+statistic = "model assumption"
+organ_group = ["liver", "kidney", "portal", "heart", "lung", "brain", "skin, tendon, other, adipose"]
+ps_rule = ["flow-limited", "flow-limited", "flow-limited", "50 x muscle", "50 x muscle", "0 (blood-brain barrier)", "1 x muscle"]
+missing_note = "No measured basis is given for skin/tendon/other/adipose PS = muscle PS; the paper notes it is an assumption."
+
+[data.muscle_ps_fits]
+description = "Skeletal muscle capillary PS from PKQuest fits to human plasma curves, plus literature PS values quoted in the text"
+location = "Results and Discussion (text; Figs 6, 10-12)"
+provenance = "FT"
+statistic = "single best-fit values to group-mean (or N = 1) data; no confidence intervals"
+solute = ["inulin", "ceforanide", "flucloxacillin", "dicloxacillin", "EDTA (literature reference, muscle/skin/subcutis)", "EDTA (cat, Watson 1995)", "mannitol (cat, Watson 1995)", "EDTA (rat, Haraldsson & Rippe 1986)"]
+ps_mL_per_min_per_100g = [0.61, 5.0, 7.0, 11.3, 5.0, 5.0, 7.6, 12.9]
+fclear_muscle = [0.409, 0.518, 0.344, 0.25, nan, nan, nan, nan]
+free_fraction_plasma = [1.0, 0.18, 0.07, 0.03, 1.0, 1.0, 1.0, 1.0]
+basis = ["PKQuest fit (Odeh 1993 data)", "PKQuest fit", "PKQuest fit", "PKQuest fit", "Crone & Levitt 1984 review", "isolated perfused muscle, flow > 10x rest", "isolated perfused muscle, flow > 10x rest", "perfused hindquarter, flow > 10x rest"]
+inulin_ps_literature_range_mL_per_min_per_100g = [0.59, 1.62]
+inulin_mecf = 0.42
+missing_note = "Dicloxacillin PS is printed as 11.3 in one place and 11 in the Fig. 12 legend. Free fractions for inulin/EDTA/mannitol are '~0' bound (stored as 1.0 free). The paper gives no PS for EDTA from its own fits because EDTA was modelled as flow-limited."
+
+[data.fit_quality]
+description = "Average error between PBPK prediction and human antecubital plasma data, where printed"
+location = "Results (text) and Figs 6, 9-12 legends"
+provenance = "FT"
+statistic = "PKQuest average relative error (weighted by a 'noise' term, default 10% of mean concentration)"
+solute = ["inulin (Odeh, 3 adjusted parameters)", "cefatrizine (flow-limited)", "ceforanide (PS-limited)", "ceforanide (flow-limited)", "flucloxacillin (PS-limited)", "flucloxacillin (flow-limited)", "dicloxacillin (PS-limited)", "dicloxacillin (flow-limited)"]
+average_error_percent = [2.0, 5.4, 4.3, 8.6, 6.4, 11.0, 12.0, 18.0]
+inulin_error_is_upper_bound = true
+missing_note = "No numeric error is printed for EDTA, mannitol or the glucuronides; their fits are shown only in Figs 2-5 (EDTA: Fig. 3, Elia et al. 1987 data). The inulin value is 'less than 2%'."
+
+[data.human_volume_of_distribution]
+description = "Human steady-state volume of distribution (Vss) recalculated by PKQuest deconvolution, per body weight and per total body water"
+location = "Table 1"
+provenance = "FT"
+statistic = "one value per data set (group mean or N = 1)"
+solute = ["mannitol", "EDTA", "mannitol", "amoxicillin", "amoxicillin", "morphine-6-glucuronide", "morphine-6-glucuronide", "morphine-3-glucuronide", "inulin", "inulin", "inulin"]
+reference_number = [58.0, 58.0, 57.0, 62.0, 61.0, 59.0, 42.0, 60.0, 37.0, 39.0, 40.0]
+vss_2exp_L_per_kg = [0.28, 0.265, 0.33, 0.262, 0.267, 0.247, 0.30, 0.275, 0.133, 0.131, 0.20]
+vss_3exp_L_per_kg = [nan, nan, 0.33, 0.275, 0.253, 0.245, 0.40, 0.273, 0.131, 0.136, 0.277]
+vssw_L_per_L = [0.48, 0.45, 0.56, 0.44, 0.45, 0.42, 0.50, 0.47, 0.22, 0.23, 0.34]
+missing_note = "Ref 58 = Elia et al. 1987 (N = 7, 28 y, 70.9 kg). Ref 40 (Prescott) inulin kinetics were non-linear. 3-exponential Vss not computed where blank."
+
+[data.human_equilibrium_volume]
+description = "Equilibrium volume of distribution (Veq) and two-exponential time constants in renal failure or constant infusion"
+location = "Table 2"
+provenance = "FT"
+statistic = "one value per data set"
+solute = ["amoxicillin (renal failure)", "morphine-6-glucuronide (renal failure)", "inulin (constant infusion, Schwartz 1949)", "sucrose (constant infusion, Deane 1951)", "inulin (constant infusion, Deane 1951)"]
+fast_time_constant_min = [9.8, 23.0, nan, nan, nan]
+slow_time_constant_min = [909.0, 2083.0, nan, nan, nan]
+veq_L_per_kg = [0.26, 0.24, 0.15, 0.159, 0.162]
+missing_note = "Time constants not applicable (NA) for the constant-infusion studies."
+
+[data.tissue_interstitial_fraction]
+description = "Interstitial volume as fraction of total extravascular organ water, selected animal and human measurements"
+location = "Table 4"
+provenance = "FT"
+statistic = "single values or ranges as printed; ranges stored as low/high"
+species = ["rat", "rat", "rat", "rat", "rat", "rat", "rat", "rat", "rat", "rat", "rabbit", "rabbit", "rabbit", "rabbit", "cat", "cat", "dog", "dog", "dog", "dog", "human"]
+solute = ["EDTA", "EDTA", "EDTA", "EDTA", "EDTA", "EDTA", "EDTA", "EDTA", "inulin", "inulin", "EDTA", "EDTA", "inulin", "inulin", "EDTA", "EDTA", "EDTA", "EDTA", "inulin", "inulin", "inulin"]
+tissue = ["skeletal muscle", "skin", "skeletal muscle", "skin", "intestine", "adipose", "liver", "lung", "skeletal muscle", "skin", "skeletal muscle", "skin", "skeletal muscle", "heart", "skeletal muscle", "skin", "skeletal muscle", "skin", "muscle", "skin", "skeletal muscle"]
+vi_fraction_low = [0.081, 0.55, 0.075, 0.52, 0.15, 0.49, 0.34, 0.2, 0.12, 0.3, 0.077, 0.42, 0.1, 0.24, 0.13, 0.88, 0.16, 0.78, 0.1, 0.48, 0.08]
+vi_fraction_high = [0.091, 0.73, 0.075, 0.52, 0.25, 0.49, 0.34, 0.2, 0.12, 0.3, 0.077, 0.42, 0.1, 0.24, 0.13, 0.88, 0.16, 0.78, 0.1, 0.48, 0.11]
+method = ["renal ligature, 30 min post mortem", "renal ligature, 30 min post mortem", "constant infusion (ref 67)", "constant infusion (ref 67)", "constant infusion (ref 67)", "constant infusion (ref 67)", "constant infusion (ref 67)", "constant infusion (ref 67)", "constant infusion (Tsuji)", "constant infusion (Tsuji)", "renal ligature", "renal ligature", "renal ligature + uptake time course (ref 73)", "renal ligature + uptake time course (ref 73)", "renal ligature", "renal ligature", "renal ligature", "renal ligature", "renal ligature (Nichols 1953)", "renal ligature (Nichols 1953)", "bolus + infusion, biopsy 20-120 min"]
+missing_note = "Selected rows only; the full Table 4 also lists tendon (0.26-0.83), stomach, colon, sucrose, sulfate, mannitol and thiosulfate rows. Rabbit (ref 74) gives exchange time constants: muscle T ~ 9 min, heart ~ 1 min, intestine ~ 1.5 min, ear ~ 12 min."

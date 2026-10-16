@@ -1,0 +1,41 @@
+[meta]
+id = "miller2013_cmr_ecv_time_dose"
+data_type = "experimental"
+validates = "Time course of myocardial ECV after an extracellular-contrast bolus in healthy adults: the myocardium-to-blood ratio from 2 to 20 min after Gd-DTPA, at three doses."
+species = "human"
+preparation = "30 healthy volunteers in three age- and sex-matched groups of 10 (15 male overall); 1.5 T; mid-ventricular short-axis MOLLI before contrast and every 2 min from 2 to 20 min after it; hematocrit measured the same day."
+conditions = "Gd-DTPA bolus at 0.10 (group A), 0.15 (B) or 0.20 mmol/kg (C). Dynamic-equilibrium ECV from blood and myocardial T1 with the same-day hematocrit."
+verification = "FT"
+access = "Conference abstract (SCMR 2013), full abstract text read on PMC (PMC3559320), 2026-10-16. Per-time-point values are only in its Fig 1C and are not stored."
+notes = """ECV rises slowly and linearly after the bolus in every dose group; the authors read this as an incomplete dynamic equilibrium between blood and myocardium.
+The rise is small: about +1 to +1.6 percentage points over 2-20 min. Per-minute rates are not printed; from the endpoints they are about +0.06 to +0.09 points/min (computed here, not by the authors).
+The direction is the useful part for a transport model: in healthy myocardium the ratio does NOT fall from a high early value; at 2 min it is already within about a point of its 20-min value.
+Gd-DTPA (MW about 547) is a smaller extracellular agent than iohexol (MW 821); T1-based ECV assumes fast water exchange."""
+use_in_model = """Qualitative and semi-quantitative check of washout dynamics: after a bolus of an extracellular agent, the healthy myocardium-to-blood ratio converted to ECV changes by only about +1 to +1.6 points between 2 and 20 min. A model whose ratio falls by several points over that window has plasma falling too fast early or tissue trailing too much."""
+
+[source]
+authors = ["Miller CA", "Naish JH", "Coutts G", "Clark D", "Zhao S", "Ray SG", "Ainslie MP", "Potluri R", "Parker G", "Schmitt M"]
+year = 2013
+title = "Effect of contrast dose, post-contrast acquisition time, myocardial regionality, cardiac cycle and gender on dynamic-equilibrium CMR measurement of myocardial extracellular volume"
+journal = "J Cardiovasc Magn Reson"
+volume = "15"
+issue = "Suppl 1"
+pages = "M3"
+doi = "10.1186/1532-429X-15-S1-M3"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 15, M3, 2013; first author Miller)"
+pmcid = "PMC3559320"
+
+[data.ecv_time_course]
+description = "Myocardial ECV at 2 min and at 20 min after Gd-DTPA, by dose group"
+location = "Abstract, Results"
+provenance = "FT"
+statistic = "mean +/- SD; n = 10 per group"
+group = ["A 0.10 mmol/kg", "B 0.15 mmol/kg", "C 0.20 mmol/kg"]
+ecv_2min_percent = [27.2, 25.3, 25.2]
+ecv_2min_sd_percent = [2.7, 2.8, 1.7]
+ecv_20min_percent = [28.8, 26.5, 26.2]
+ecv_20min_sd_percent = [3.4, 3.2, 2.1]
+p_2_vs_20_min = [0.020, 0.004, 0.068]
+ecv_all_timepoints_percent = [27.7, 25.8, 25.8]
+ecv_all_timepoints_sd_percent = [3.7, 3.4, 2.8]
+missing_note = "Values at 4-18 min are only in Fig 1C. The abstract gives no plasma concentration-time data."

@@ -1,0 +1,50 @@
+[meta]
+id = "haraldsson1986_credta_b12_muscle_ps"
+data_type = "experimental"
+validates = "Size dependence of skeletal-muscle capillary PS between Cr-EDTA (MW 341) and cyanocobalamin (vitamin B12, MW 1355): PS at infinite flow, PS ratio vs free-diffusion ratio, equivalent pore radius."
+species = "rat"
+preparation = "Isolated perfused, maximally vasodilated rat hindquarters; near-isogravimetric; single-injection venous indicator-dilution curves recorded on line."
+conditions = "Range of perfusion flows; PS extrapolated to infinite flow (PS_tot) to minimise heterogeneity effects."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 3092578). Full text (Acta Physiol Scand, Wiley) not accessible."
+notes = """PS rose with flow and extraction depended on transit time, showing flow and tissue heterogeneity. PS_tot is taken as the best estimate of true diffusion capacity.
+PS_tot ratio Cr-EDTA/B12 = 2.59 +/- 0.11 vs free-diffusion-coefficient ratio 1.79, i.e. restricted diffusion with equivalent pore radius 53 A.
+Using PS_peak (no heterogeneity correction) gave ratio 1.89 (pore 300 A); PS_area gave 2.33 (pore 70 A). So the method strongly changes the inferred size dependence.
+Maximal vasodilation and very high flow: absolute PS is far above resting human values (cf. keiding1988: EDTA 3.31 in exercising forearm).
+Note on MW: the tracer is the Cr-EDTA complex, MW 341 (Keiding uses 340.2), not EDTA free acid (MW 292)."""
+use_in_model = """Use the RATIO, not the absolute PS. Between MW 341 and 1355 the PS falls 2.59-fold while free diffusion falls only 1.79-fold. A power-law interpolation in MW between these two points (an estimate made outside this file) puts a MW-821 solute at about 0.55 x the Cr-EDTA PS if diffusion is restricted, or about 0.69 x if PS simply tracks free diffusion."""
+
+[source]
+authors = ["Haraldsson B", "Rippe B"]
+year = 1986
+title = "Restricted diffusion of CrEDTA and cyanocobalamine across the exchange vessels in rat hindquarters"
+journal = "Acta Physiol Scand"
+volume = "127"
+issue = "3"
+pages = "359-372"
+doi = "10.1111/j.1748-1716.1986.tb07916.x"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 127, issue 3, 359-372; first author Haraldsson)"
+pmid = "3092578"
+
+[data.ps_by_solute]
+description = "Permeability-surface area product extrapolated to infinite flow (PS_tot)"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SE (n not given in the abstract)"
+solute = ["Cr-EDTA", "cyanocobalamin (B12)"]
+molecular_weight = [341.0, 1355.0]
+ps_tot_mL_per_min_per_100g = [12.9, 5.1]
+ps_tot_se_mL_per_min_per_100g = [0.5, 0.3]
+missing_note = "Number of rats and flow range are not in the abstract."
+
+[data.ps_ratio]
+description = "Cr-EDTA/B12 PS ratio by PS estimator, free-diffusion ratio, and implied equivalent pore radius"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SE"
+estimator = ["PS_tot (infinite flow)", "PS_area", "PS_peak", "free diffusion coefficient ratio"]
+ps_ratio_credta_to_b12 = [2.59, 2.33, 1.89, 1.79]
+ps_ratio_se = [0.11, 0.05, 0.04, nan]
+equivalent_pore_radius_A = [53.0, 70.0, 300.0, nan]
+osmotic_transient_pore_radius_A = 40.0
+missing_note = "The free-diffusion ratio has no SE. Osmotic-transient pore radius is 'approximately 40 A' from other work in the same preparation."

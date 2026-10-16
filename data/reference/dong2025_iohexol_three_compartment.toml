@@ -1,0 +1,62 @@
+[meta]
+id = "dong2025_iohexol_three_compartment"
+data_type = "experimental"
+validates = "Three-compartment population PK of IV iohexol in healthy adults with dense sampling from 10 min to 24 h: central and two peripheral volumes, intercompartmental clearances, renal clearance; NCA half-life, Vz, CL, recovery; dose linearity 259 vs 3235 mg."
+species = "human"
+preparation = "12 healthy volunteers (5 men, 7 women), median age 34 y (23-48), weight 77.3 kg (59.1-95.8), eGFR 100 mL/min/1.73 m2 (83.6-134). Randomized changeover, two fasting iohexol doses 7-14 days apart."
+conditions = "IV iohexol 259 mg ('test') or 3235 mg ('reference'). Plasma at 10, 20, 30, 45, 60, 90 min and 2-24 h; urine to 24 h. LC-MS/MS (LLOQ 25 ng/mL). NONMEM 7.5."
+verification = "FT"
+access = "Open access (CC BY 4.0). Full text read from Europe PMC XML (PMC11788587) on 2026-10-16."
+notes = """Three compartments beat two by 225 OFV points. No non-renal clearance. No dose effect on any parameter.
+Sum V1 + V2 + V3: median individual EBE 15.1 L (11.5-18.8).
+First sample at 10 min, so V1 (9.06 L) already includes space that equilibrates within ~10 min; the sub-10-min fast phase is not resolved.
+Q2 (5.84 L/h) to V3 (4.34 L) is the 'intermediate' exchange; Q1 (0.221 L/h) to V2 (1.56 L) is a very slow pool.
+The injection rate/duration is not stated beyond 'intravenous bolus'.
+Iohexol plasma protein binding 1.5% (cited); MW 821 (Delanaye 2016, PMC5036902)."""
+use_in_model = """Iohexol 10-60 min target in healthy adults: simulate the 3-compartment model (CLR 5.50 L/h, V1 9.06 L, Q2 5.84 L/h, V3 4.34 L, Q1 0.221 L/h, V2 1.56 L) from 10 min onward and compare with the model's plasma curve. Do not compare before 10 min. Complements hooper2025 (2-compartment) and meurer2015 (sampling from 1 min)."""
+
+[source]
+authors = ["Dong Q", "Chen Z", "Boland J", "Dokos C", "Hagos Y", "Kühne A", "Taubert M", "Gründemann D", "Fuhr U"]
+year = 2025
+title = "Validating Low-Dose Iohexol as a Marker for Glomerular Filtration Rate by In Vitro and In Vivo Studies"
+journal = "Clin Transl Sci"
+volume = "18"
+issue = "2"
+pages = "e70141"
+doi = "10.1111/cts.70141"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 18, issue 2, article e70141; first author Dong)"
+pmid = "39895366"
+pmcid = "PMC11788587"
+
+[data.poppk_three_compartment]
+description = "Final population PK parameters (fixed effects) with bootstrap"
+location = "Table 3"
+provenance = "FT"
+statistic = "point estimate, RSE %, bootstrap median (95% CI); n = 12 subjects, 2 occasions"
+parameter = ["CLR", "V1", "Q1", "V2", "Q2", "V3"]
+unit = ["L/h", "L", "L/h", "L", "L/h", "L"]
+estimate = [5.50, 9.06, 0.221, 1.56, 5.84, 4.34]
+rse_percent = [4.22, 4.88, 14.7, 7.74, 18.5, 7.37]
+bootstrap_median = [5.50, 9.06, 0.219, 1.57, 5.76, 4.34]
+bootstrap_ci_low = [5.13, 8.18, 0.164, 1.36, 4.11, 3.81]
+bootstrap_ci_high = [6.02, 10.1, 0.313, 1.87, 8.23, 4.99]
+iiv_cv_percent_clr_v1_v2_v3 = [14.0, 16.6, 14.0, 15.5]
+iov_cv_percent_clr_v1_q2 = [2.51, 6.23, 29.2]
+residual_cv_percent_plasma = 11.3
+residual_cv_percent_urine = 25.0
+total_volume_ebe_median_L = 15.1
+total_volume_ebe_range_L = [11.5, 18.8]
+missing_note = "Half-lives of the three exponentials are not reported; they can be simulated from these parameters (not done here)."
+
+[data.nca]
+description = "Noncompartmental parameters for test (259 mg) and reference (3235 mg) doses"
+location = "Table 2"
+provenance = "FT"
+statistic = "geometric mean (geometric SD); n = 12 plasma, 10 urine"
+dose_mg = [259.0, 3235.0]
+auc_0_inf_mg_h_per_L = [46.7, 600.0]
+terminal_half_life_h = [3.32, 4.14]
+vz_L = [26.1, 32.4]
+clearance_L_per_h = [5.46, 5.43]
+urinary_recovery_percent = [106.0, 103.0]
+missing_note = "Geometric SDs omitted here; see Table 2."

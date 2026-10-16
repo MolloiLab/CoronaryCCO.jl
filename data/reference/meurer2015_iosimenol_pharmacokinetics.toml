@@ -1,0 +1,80 @@
+[meta]
+id = "meurer2015_iosimenol_pharmacokinetics"
+data_type = "experimental"
+validates = "Early plasma kinetics of an IV iodinated non-ionic dimer (iosimenol) in healthy men with samples from 1 min: initial (distribution) half-life, fraction of dose left in plasma at 2 min, terminal half-life, Vz, clearance, urinary recovery."
+species = "human"
+preparation = "Phase 1, randomized, double-blind, placebo-controlled dose escalation (Berlin, 2002). 24 healthy Caucasian men 18-43 y, BMI 20-27; 6 per dose on iosimenol, 2 per dose on saline."
+conditions = "Iosimenol 340 mgI/mL at 0.5, 1.5 or 3.0 mL/kg (about 0.2, 0.5, 1.0 gI/kg), IV at 3 mL/s. Blood at 1, 2, 5, 10, 30, 45 min, 1, 1.5, 2, 3, 4, 6, 8, 12, 24, 48 h. Iodine by X-ray fluorescence (LOQ 0.15 mgI/mL)."
+verification = "FT"
+access = "Open access (CC BY-NC 3.0). Full text read from Europe PMC XML (PMC4396406) on 2026-10-16."
+notes = """Cmax at 1-2 min (5 min in two subjects). At 2 min only 39.6 +/- 3.3% of the dose was in the total plasma volume (how plasma volume was estimated is not stated in the text read).
+The authors state that reported CM distribution half-lives vary between about 10 and 30 min, and attribute this mainly to injection rate and sampling times.
+Plasma levels for the two lower doses were quantifiable only to 3-4 h (LOQ), which limits the terminal fits.
+Iosimenol is a dimer, so larger than iohexol (MW 821); its MW is not stated in the text read. Unbound to plasma protein (per the authors).
+Initial-phase half-life is a per-subject biexponential estimate; the method is not detailed beyond t1/2,lambda1."""
+use_in_model = """Best open human benchmark found for the first hour after an iodinated contrast bolus: with sampling from 1 min, the fast phase half-life is ~10 min (7-13 min by dose) for a dimer, and ~60% of the dose has left plasma by 2 min. A monomer like iohexol should equilibrate at least as fast. So a model plasma distribution half-life of 5.8 min is not clearly too fast when compared with early-sampled data; the 26-min iodixanol value (svaland1992) comes from a fit to later samples."""
+
+[source]
+authors = ["Meurer K", "Kelsch B", "Hogstrom B"]
+year = 2015
+title = "The pharmacokinetic profile, tolerability and safety of the iodinated, non-ionic, dimeric contrast medium Iosimenol 340 injection in healthy human subjects"
+journal = "Acta Radiol"
+volume = "56"
+issue = "5"
+pages = "581-586"
+doi = "10.1177/0284185114534414"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 56, issue 5, 581-586; first author Meurer)"
+pmid = "24895062"
+pmcid = "PMC4396406"
+
+[data.pharmacokinetics_by_dose]
+description = "Pharmacokinetic parameters per dose group"
+location = "Table 1"
+provenance = "FT"
+statistic = "arithmetic mean +/- SD (tmax median and range); n = 6 per group"
+dose_mL_per_kg = [0.5, 1.5, 3.0]
+dose_gI_per_kg = [0.2, 0.5, 1.0]
+n_subjects = [6.0, 6.0, 6.0]
+cmax_mgI_per_mL = [1.80, 4.77, 9.63]
+cmax_sd_mgI_per_mL = [0.78, 2.15, 2.73]
+tmax_median_h = [0.03, 0.03, 0.02]
+tmax_range_low_h = [0.02, 0.02, 0.02]
+tmax_range_high_h = [0.08, 0.08, 0.03]
+auc_0_t_mgI_h_per_mL = [1.41, 4.50, 10.43]
+auc_0_t_sd_mgI_h_per_mL = [0.23, 0.54, 1.49]
+initial_half_life_min = [7.2, 13.2, 10.2]
+initial_half_life_sd_min = [3.6, 7.2, 3.6]
+terminal_half_life_h = [1.64, 2.23, 2.17]
+terminal_half_life_sd_h = [0.27, 0.38, 0.30]
+urinary_recovery_6h_percent = [75.0, 82.8, 72.3]
+urinary_recovery_6h_sd_percent = [3.8, 5.9, 15.7]
+urinary_recovery_4d_percent = [90.9, 95.3, 86.1]
+urinary_recovery_4d_sd_percent = [5.0, 2.9, 19.0]
+clearance_L_per_h = [7.40, 7.81, 6.86]
+clearance_sd_L_per_h = [1.14, 1.53, 0.53]
+renal_clearance_L_per_h = [6.54, 7.44, 5.93]
+renal_clearance_sd_L_per_h = [0.70, 1.51, 1.25]
+vz_L_per_kg = [0.22, 0.31, 0.29]
+vz_sd_L_per_kg = [0.03, 0.02, 0.04]
+missing_note = "Body weights per group are not given, so Cmax cannot be converted to fraction of dose per litre here."
+
+[data.pooled_early_phase]
+description = "Pooled early-phase values over all iosimenol subjects"
+location = "Abstract; Results (text)"
+provenance = "FT"
+statistic = "mean +/- SD; n = 18"
+n_subjects = 18.0
+distribution_half_life_min = 10.2
+distribution_half_life_sd_min = 4.8
+terminal_half_life_h = 2.01
+terminal_half_life_sd_h = 0.32
+vz_L_per_kg = 0.27
+vz_sd_L_per_kg = 0.05
+dose_fraction_in_plasma_at_2min_percent = 39.6
+dose_fraction_in_plasma_at_2min_sd_percent = 3.3
+plasma_conc_at_2min_mg_per_mL = [3.18, 7.94, 16.41]
+plasma_conc_at_2min_sd_mg_per_mL = [1.42, 2.76, 3.61]
+plasma_conc_at_2min_dose_gI_per_kg = [0.2, 0.5, 1.0]
+injection_rate_mL_per_s = 3.0
+literature_distribution_half_life_range_min = [10.0, 30.0]
+missing_note = "The 2-min concentrations are printed as 'iosimenol concentrations' in mg/mL; the text does not say whether as iodine or drug substance (Table 1 Cmax is mg iodine/mL). Biexponential coefficients (intercepts) are not reported."

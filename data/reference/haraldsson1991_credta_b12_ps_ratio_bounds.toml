@@ -1,0 +1,37 @@
+[meta]
+id = "haraldsson1991_credta_b12_ps_ratio_bounds"
+data_type = "experimental"
+validates = "Re-analysis of rat hindquarter indicator-dilution data giving upper and lower bounds on the Cr-EDTA/cyanocobalamin PS ratio after correction for transit-time heterogeneity and back diffusion."
+species = "rat"
+preparation = "Recalculation of previously published single-injection indicator-dilution data (48 measurements in 8 rats), maximally vasodilated hindquarters."
+conditions = "As haraldsson1986_credta_b12_muscle_ps."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 1772031). Full text (Acta Physiol Scand, Wiley) not accessible."
+notes = """Bounds account for heterogeneity of the second kind (transit-time dependent extraction) and the maximal effect of back diffusion.
+Pore radius from the bounds: 60-109 A; after correcting also for flow-dependent extraction (heterogeneity of the first kind) the minimum falls to 45 A and the upper bound to 60 A.
+Conclusion: marked restricted diffusion of small solutes in maximally dilated rat muscle microvessels."""
+use_in_model = """Bracket for the PS size ratio over MW 341 -> 1355: 2.10 to 2.63. Together with haraldsson1986 (2.59) this gives the restricted-diffusion end of the PS scaling."""
+
+[source]
+authors = ["Haraldsson B", "Rippe B"]
+year = 1991
+title = "Upper and lower bounds on capillary permeability ratios of Cr-EDTA to cyanocobalamine in rat hindquarters"
+journal = "Acta Physiol Scand"
+volume = "143"
+issue = "3"
+pages = "239-244"
+doi = "10.1111/j.1748-1716.1991.tb09228.x"
+crossref_verified = "2026-10-16; Crossref title match (vol 143, issue 3, 239-244; first author Haraldsson). PubMed lists pages 239-41."
+pmid = "1772031"
+
+[data.ps_ratio_bounds]
+description = "Cr-EDTA/B12 PS ratio bounds and equivalent pore radius"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SE (presumed); n = 48 measurements in 8 rats"
+bound = ["upper", "lower"]
+ps_ratio_credta_to_b12 = [2.63, 2.10]
+ps_ratio_se = [0.06, 0.07]
+pore_radius_A = [60.0, 109.0]
+pore_radius_after_flow_correction_A = [60.0, 45.0]
+missing_note = "The abstract does not state whether +/- is SD or SE. Pore radii pair with the bounds as listed (higher ratio -> smaller pore)."

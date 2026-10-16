@@ -372,3 +372,16 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `scherer2019_porcine_iodine_myocardial_tac.toml` | First-pass iodine density curves, myocardium vs LV: peaks, times to peak, upslopes, AUC | Pig, 1 healthy animal, spectral CT | FT |
 | `cheriyan2022_lung_dce_mri_ve_ktrans.toml` | Lung DCE-MRI (extended Tofts): Ktrans ≈ 0.21–0.26 /min, ve ≈ 0.32–0.33, vp ≈ 0.42–0.47 of non-air tissue | Human, 17 healthy volunteers, gadobutrol | FT |
 | `seemann2025_porcine_lung_extravascular_ecv.toml` | Lung gadolinium ECV 64 ± 1.5%, plasma fraction 42 ± 4.7%, extravascular ECV 21 ± 4.6% of non-air tissue; fluid loading | Pig | FT |
+| `miller2013_cmr_ecv_time_dose.toml` | Myocardial ECV 2 → 20 min after a Gd-DTPA bolus at three doses: a slow rise of about +1 to +1.6 points (incomplete dynamic equilibrium) | Human, 30 healthy volunteers, 1.5 T MOLLI | FT (abstract) |
+| `levitt2003_interstitial_pharmacokinetics.toml` | PKQuest standard human: interstitial water and blood flow per organ (Table 6, ECF 17.5 L), inulin PS, the default PS rule; EDTA is modelled flow-limited (no per-tissue EDTA PS) | Human, model fitted to plasma data | FT |
+| `levitt2002_pkquest_inulin_permeability.toml` | Resting human muscle PS for inulin 0.6, dicloxacillin 13, ceftriaxone 6 mL/min/100 g | Human | FT |
+| `levitt2004_arterial_antecubital_difference.toml` | Antecubital venous blood as a mix of muscle, skin, adipose, other and A-V shunt outflow | Human, PKQuest | FT |
+| `haraldsson1986_credta_b12_muscle_ps.toml` | Muscle PS for Cr-EDTA (MW 341) and B12 (MW 1355); PS ratio vs free-diffusion ratio; pore radius | Rat, maximally dilated hindquarter | abs |
+| `haraldsson1991_credta_b12_ps_ratio_bounds.toml` | Bounds of the Cr-EDTA / B12 PS ratio (2.10–2.63) and pore radius | Rat | abs |
+| `keiding1988_human_forearm_inulin_edta_ps.toml` | Forearm PS: EDTA 3.31 ± 0.38, inulin 0.90 ± 0.19 mL/min/100 g; ratio 4.0 vs free-diffusion 3.07 | Human, lightly exercising forearm | abs |
+| `watson1995_cat_muscle_small_solute_ps.toml` | Muscle PS for EDTA 5.0, mannitol 7.6, urea 17.8, Na 21.0 mL/min/100 g; pore model | Cat, high flow | abs |
+| `paaske1977_cat_muscle_inulin_ps.toml` | Muscle inulin PS 0.84 mL/min/100 g; unrestricted-diffusion view | Cat | abs |
+| `cousins1999_gfr_agent_arterial_kinetics.toml` | Arterial DTPA/inulin curves are triexponential; the first, largest phase ends by about 20 min | Human | abs |
+| `cousins2002_bromide_dtpa_exchange.toml` | DTPA distribution spaces (12.3 + 5.8 L), forearm extraction about 0.5, exchange asymptote 20–25 min | Human | abs |
+| `meurer2015_iosimenol_pharmacokinetics.toml` | Iodinated dimer kinetics from 1 min: initial half-life 10.2 ± 4.8 min, terminal 2.01 h, Vz 0.27 L/kg, 39.6% of the dose in plasma at 2 min | Human, healthy men | FT |
+| `dong2025_iohexol_three_compartment.toml` | Three-compartment iohexol PK (clearance, V1–V3, inter-compartment flows) from 10 min | Human, 12 healthy adults | FT |

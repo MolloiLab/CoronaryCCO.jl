@@ -1,0 +1,42 @@
+[meta]
+id = "watson1995_cat_muscle_small_solute_ps"
+data_type = "experimental"
+validates = "Skeletal-muscle capillary PS for four small solutes (22Na, 14C-urea, 3H-mannitol, 51Cr-EDTA) at high flow; restricted diffusion; pore model."
+species = "cat"
+preparation = "Isolated, perfused lower hindlimb muscles of anesthetized cats. Tracers added stepwise to arterial inflow; Evans blue-albumin reference."
+conditions = "Flow > 70 mL/min/100 g (isoproterenol-type high flow per Levitt 2003). Some runs during osmotic flow (20% NaCl)."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 7840263). Full text (Am J Physiol, APS) not retrievable by script (HTTP 403)."
+notes = """Mannitol/urea PS ratio 0.42 +/- 0.02 (n = 9) is below the free-diffusion ratio 0.49, indicating restricted diffusion.
+Osmotic transients did not change small-solute PS.
+Pore model: water-only pathway with 60% of hydraulic capacity plus 4-nm-radius pores with A/dx = 21,000 cm per unit membrane thickness.
+Very high flow; Levitt 2003 argues resting PS is lower because of capillary recruitment."""
+use_in_model = """EDTA PS 5.0 mL/min/100 g at high flow in cat muscle is the 'standard' value Levitt cites. Use it as an upper reference for muscle; the size trend (Na 21 > urea 17.8 > mannitol 7.6 > EDTA 5.0) supports a PS that falls faster than free diffusion with size."""
+
+[source]
+authors = ["Watson PD"]
+year = 1995
+title = "Permeability of cat skeletal muscle capillaries to small solutes"
+journal = "Am J Physiol"
+volume = "268"
+issue = "1 Pt 2"
+pages = "H184-H193"
+doi = "10.1152/ajpheart.1995.268.1.H184"
+crossref_verified = "2026-10-16; Crossref title exact match (AJP Heart vol 268, issue 1, H184-H193; sole author Watson)"
+pmid = "7840263"
+
+[data.ps_by_solute]
+description = "PS at flows > 70 mL/min/100 g"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SE; n = animals per solute"
+solute = ["51Cr-EDTA", "3H-mannitol", "14C-urea", "22Na"]
+ps_mL_per_min_per_100g = [5.0, 7.6, 17.8, 21.0]
+ps_se_mL_per_min_per_100g = [0.5, 1.2, 1.4, 1.4]
+n_animals = [7.0, 4.0, 5.0, 3.0]
+ps_ratio_mannitol_to_urea = 0.42
+ps_ratio_mannitol_to_urea_se = 0.02
+free_diffusion_ratio_mannitol_to_urea = 0.49
+pore_radius_nm = 4.0
+osmotic_flow_mL_per_min_per_100g = 4.2
+missing_note = "Molecular weights and free diffusion coefficients are not in the abstract."

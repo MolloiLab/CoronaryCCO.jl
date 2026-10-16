@@ -1,0 +1,46 @@
+[meta]
+id = "cousins2002_bromide_dtpa_exchange"
+data_type = "experimental"
+validates = "Three-compartment-in-series volumes for 99mTc-DTPA (MW ~393) vs 77Br-bromide in humans, early forearm extraction fractions and the time to asymptotic net extraction (20-25 min)."
+species = "human"
+preparation = "Group A: 8 patients at diagnostic arteriography, frequent arterial samples to 40 min, antecubital samples 30 s after each. Group B: 8 GFR patients + 2 normal volunteers, frequent venous samples to 280 min. Simultaneous IV 99mTc-DTPA and Na 77Br-bromide."
+conditions = "Bromide volumes corrected for red-cell uptake; intracellular bromide accumulation assumed."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 11976804). Full text (Eur J Nucl Med Mol Imaging, Springer) not accessible."
+notes = """Bromide/DTPA normalised venous ratio 0.56 (SD 0.08) at 1 min: smaller bromide leaves plasma faster.
+Forearm plasma-to-interstitium extraction fraction: bromide about 0.6, DTPA about 0.5. Net extractions of both reached asymptotes with identical time courses over 20-25 min.
+Volume of the second space is an inverse function of solute size; the third space a positive function.
+DTPA total volume 18.0 L, of which first + second spaces 12.3 L and third space 5.8 L."""
+use_in_model = """For a small chelate like EDTA/DTPA, about 12 L equilibrates within the first ~20-25 min and another ~6 L more slowly. A contrast model with only a fast-equilibrating ECF will miss the slower third space that shapes the 20-60 min plasma curve."""
+
+[source]
+authors = ["Cousins C", "Skehan SJ", "Rolph SM", "Flaxman ME", "Ballinger JR", "Bird NJ", "Barber RW", "Peters AM"]
+year = 2002
+title = "Comparative microvascular exchange kinetics of [77Br]bromide and 99mTc-DTPA in humans"
+journal = "Eur J Nucl Med Mol Imaging"
+volume = "29"
+issue = "5"
+pages = "655-662"
+doi = "10.1007/s00259-001-0746-5"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 29, issue 5, 655-662; first author Cousins)"
+pmid = "11976804"
+
+[data.distribution_volumes]
+description = "Distribution volumes of DTPA and bromide (group B) and early exchange measures (group A)"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean (SD); group B n = 10, group A n = 8"
+solute = ["99mTc-DTPA", "77Br-bromide (corrected)"]
+total_volume_L = [18.0, 22.5]
+total_volume_sd_L = [2.8, 3.8]
+first_plus_second_space_L = [12.3, 13.9]
+first_plus_second_space_sd_L = [2.0, 2.9]
+third_space_L = [5.8, 4.1]
+third_space_sd_L = [2.2, 2.8]
+fraction_first_plus_second = [0.69, 0.78]
+fraction_first_plus_second_sd = [0.09, 0.14]
+forearm_extraction_fraction_approx = [0.5, 0.6]
+bromide_to_dtpa_ratio_at_1min = 0.56
+bromide_to_dtpa_ratio_at_1min_sd = 0.08
+net_extraction_asymptote_time_min = [20.0, 25.0]
+missing_note = "Bromide total volume (22.5 L) is uncorrected for intracellular uptake; the corrected first+second and third spaces are given. Exponential half-lives are not in the abstract. net_extraction_asymptote_time_min is the printed range 20-25 min, common to both solutes."

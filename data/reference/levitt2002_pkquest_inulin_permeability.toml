@@ -1,0 +1,44 @@
+[meta]
+id = "levitt2002_pkquest_inulin_permeability"
+data_type = "model"
+validates = "Human resting skeletal-muscle capillary PS for inulin (MW ~5000) and two protein-bound antibiotics, from whole-body PBPK fits to plasma curves; comparison with forearm and animal PS values."
+species = "human"
+preparation = "PKQuest PBPK fit to published human plasma data: inulin (Odeh et al. 1993), dicloxacillin (Lofgren 1986), ceftriaxone (Stoeckel 1981, one subject)."
+conditions = "Resting adults; default muscle blood flow 0.0266 L/min/kg in this earlier PKQuest version."
+verification = "FT"
+access = "Open access. Full text read from Europe PMC XML (PMC130020) on 2026-10-16."
+notes = """Muscle fclear 0.354 for inulin corresponds to PS 0.6 mL/min/100 g. Dicloxacillin fclear 0.26 gives PS 13; ceftriaxone fclear 0.15 gives PS 6 mL/min/100 g.
+The author calls the inulin value possibly the first human whole-body value. It is 'slightly less' than 0.9 mL/min/100 g in lightly exercising human forearm (Keiding et al. 1988) and within the animal range 0.6-1.2.
+He argues the low value may reflect low resting flow: muscle capillary surface area can vary more than 4-fold with recruitment.
+The antibiotic PS values are 'about 2 times larger' than literature sucrose and EDTA muscle PS, which the author attributes possibly to carrier transport. No numeric EDTA PS is given here.
+Later superseded parameter set: levitt2003_interstitial_pharmacokinetics (inulin PS 0.61, muscle flow 0.0225 L/min/kg)."""
+use_in_model = """Lower anchor for resting human muscle PS of a large hydrophilic solute: inulin ~0.6 mL/min/100 g at rest (whole-body fit) vs 0.9 in exercising forearm. Supports the idea that resting PS is below the high-flow animal values."""
+
+[source]
+authors = ["Levitt DG"]
+year = 2002
+title = "PKQuest: capillary permeability limitation and plasma protein binding - application to human inulin, dicloxacillin and ceftriaxone pharmacokinetics"
+journal = "BMC Clin Pharmacol"
+volume = "2"
+issue = "1"
+pages = "7"
+doi = "10.1186/1472-6904-2-7"
+crossref_verified = "2026-10-16; Crossref title match (BMC Clinical Pharmacology vol 2, article 7; sole author Levitt)"
+pmid = "12323078"
+pmcid = "PMC130020"
+
+[data.muscle_ps]
+description = "Skeletal muscle PS from PKQuest fits"
+location = "Abstract; Results; Discussion"
+provenance = "FT"
+statistic = "single best-fit values"
+solute = ["inulin", "dicloxacillin", "ceftriaxone"]
+ps_mL_per_min_per_100g = [0.6, 13.0, 6.0]
+fclear_muscle = [0.354, 0.26, 0.15]
+default_muscle_flow_L_per_min_per_kg = 0.0266
+inulin_forearm_exercise_ps_quoted_mL_per_min_per_100g = 0.9
+inulin_animal_ps_range_quoted_mL_per_min_per_100g = [0.6, 1.2]
+inulin_fit_clearance_L_per_min = [0.104, 0.1]
+inulin_fit_clearance_labels = ["experimental", "model"]
+inulin_fit_vd_L = 10.7
+missing_note = "Ceftriaxone fclear is the zero-concentration value (non-linear binding)."

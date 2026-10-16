@@ -373,6 +373,14 @@ pure delay before its mixing volume.
 
 Lungs: `v_pa` 40 mL pulmonary trunk and main branches (plug), `v_lung` 510 mL (ICRP 89: pulmonary
 blood 10.5% of 5.3 L ≈ 550 mL in all), `lung_plug` and `lung_rd` give its transit-time shape.
+The lung exchanges contrast with its interstitium like any bed, so it washes in and out with the plasma. Human lung
+DCE-MRI with gadobutrol (17 healthy volunteers, extended Tofts; [cheriyan2022]) gives, per mL of non-air tissue,
+vp ≈ 0.445, ve 0.328 and Ktrans 0.234 /min. With the lung's 510 mL of blood that is ≈ 1146 mL of non-air tissue, so
+`e_lung` = 0.328 × 1146 ≈ 376 mL and, with Ktrans ≈ PS at the lung's high flow, PS ≈ 4.47 mL/s for gadobutrol (MW 605).
+Capillary PS falls with solute size; human forearm EDTA vs inulin gives PS ∝ MW^-0.51 [keiding1988], so for iohexol
+(MW 821) `ps_lung` = 4.47 × (821/605)^-0.51 ≈ 3.83 mL/s. Other estimates of the lung interstitium are smaller (pig
+extravascular ECV 21% ≈ 240 mL [seemann2025]; 86 mL in Levitt's standard human [levitt2003]). Set both to 0 for a
+blood-only lung.
 
 Veins (lumen volume = area × length, supine; data/reference ids in brackets):
 - arm (antecubital → axilla): basilic 4.4 mm [salinaro2024] over 25 cm (no in vivo length
@@ -412,7 +420,7 @@ are each bed's plug part.
 function human_circulation(;
         co = 81.6f0, hct = 0.43f0, beat = 1.0f0,
         v_ra = 52.0f0, v_rv = 85.4f0, v_la = 37.6f0, v_lv = 95.2f0,
-        v_pa = 40.0f0, pa_plug = 0.5f0, pa_rd = 0.2f0, v_lung = 510.0f0, lung_plug = 0.25f0, lung_rd = 0.46f0,
+        v_pa = 40.0f0, pa_plug = 0.5f0, pa_rd = 0.2f0, v_lung = 510.0f0, lung_plug = 0.25f0, lung_rd = 0.46f0, e_lung = 376.0f0, ps_lung = 3.83f0,
         v_aortic_root = 25.0f0, v_arch = 35.0f0, v_desc = 100.0f0, v_sys_art = 160.0f0,
         vein_plug = 0.95f0, vein_rd = 0.04f0, arm_c = 0.88f0, arm_r = 1.76f0,
         v_arm = 3.8f0, v_axillary = 6.0f0, v_subclavian = 3.1f0, v_bc_r = 3.5f0, v_bc_l = 7.3f0, v_ij_r = 11.5f0, v_ij_l = 7.8f0, v_svc = 15.4f0,
@@ -434,7 +442,7 @@ function human_circulation(;
     push!(S, Segment(:ra, :ra_in, :tv; kind = :central, v = F(v_ra)))
     push!(S, Segment(:rv, :tv, :pv; kind = :central, v = F(v_rv), delay = F(beat / 2)))
     push!(S, Segment(:pulm_trunk, :pv, :pa_br; kind = :central, v = F(v_pa), plug = F(pa_plug), rd = F(pa_rd)))
-    push!(S, Segment(:lung, :pa_br, :pulm_vein; kind = :central, v = F(v_lung), plug = F(lung_plug), rd = F(lung_rd)))
+    push!(S, Segment(:lung, :pa_br, :pulm_vein; kind = :central, v = F(v_lung), plug = F(lung_plug), rd = F(lung_rd), ve = F(e_lung), ps = F(ps_lung)))
     push!(S, Segment(:la, :pulm_vein, :mv; kind = :central, v = F(v_la)))
     push!(S, Segment(:lv, :mv, :av; kind = :central, v = F(v_lv), delay = F(beat / 2)))
     # aorta and beds; the flow fractions of the beds other than the coronary sum to 1 − f_cor

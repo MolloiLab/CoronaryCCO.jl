@@ -1,0 +1,41 @@
+[meta]
+id = "cousins1999_gfr_agent_arterial_kinetics"
+data_type = "experimental"
+validates = "Shape of the early (0-60 min) ARTERIAL plasma curve of small extracellular GFR markers (99mTc-DTPA, inulin) after an IV bolus in humans: triexponential, with a dominant first exponential that is gone by about 20 min; arterio-venous difference across the forearm."
+species = "human"
+preparation = "7 subjects undergoing diagnostic arteriography. Simultaneous IV injection of 99mTc-DTPA and inulin. Arterial and antecubital venous plasma sampled to 60 min (n = 5) or 120 min (n = 2). Calf scintillation probe in 5."
+conditions = "Resting supine patients; not healthy volunteers."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 10572915). Full text (Nucl Med Commun, LWW) not accessible. Individual curves are reproduced graphically in levitt2004_arterial_antecubital_difference (subject 2)."
+notes = """Venous sampling from 20 min to 4 h shows only two exponentials; arterial sampling from the start shows three.
+First exponential: largest amplitude, disappears by about 20 min; it reflects plasma-to-interstitium equilibration in 'carcass' tissue (mainly muscle and skin).
+Second exponential: minor; meaning unclear. Third: renal clearance.
+The A-V difference becomes zero at about the same time (~20 min). Its integral behaves like a second compartment in series with plasma.
+No half-lives or coefficients are printed in the abstract."""
+use_in_model = """Qualitative target for the first hour: the model's arterial curve should show a large fast component that is essentially finished by ~20 min, followed by a small intermediate and the renal phase. A distribution half-life of a few minutes in ARTERIAL plasma is not in conflict with a ~10-30 min 'distribution half-life' fitted to venous samples starting later (see meurer2015, svaland1992)."""
+
+[source]
+authors = ["Cousins C", "Mohammadtaghi S", "Mubashar M", "Strong R", "Gunasekera RD", "Myers MJ", "Peters AM"]
+year = 1999
+title = "Clearance kinetics of solutes used to measure glomerular filtration rate"
+journal = "Nucl Med Commun"
+volume = "20"
+issue = "11"
+pages = "1047-1054"
+doi = "10.1097/00006231-199911000-00010"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 20, issue 11, 1047-1054; first author Cousins)"
+pmid = "10572915"
+
+[data.curve_structure]
+description = "Qualitative timing of the early arterial plasma phase"
+location = "Abstract"
+provenance = "abs"
+statistic = "group description, n = 7"
+n_subjects = 7.0
+arterial_exponentials = 3.0
+venous_exponentials_20min_to_4h = 2.0
+first_exponential_gone_by_min = 20.0
+av_difference_zero_by_min = 20.0
+fast_half_life_min = nan
+fast_coefficient_fraction = nan
+missing_note = "Exponential half-lives and coefficients exist in the full text (not read). '20 min' is the abstract's 'about 20 min'."

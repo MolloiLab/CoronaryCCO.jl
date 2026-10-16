@@ -1,0 +1,37 @@
+[meta]
+id = "levitt2004_arterial_antecubital_difference"
+data_type = "model"
+validates = "Tissue make-up of antecubital venous blood ('arm' flow fractions) needed to compare a whole-body model's arterial curve with antecubital plasma samples; DTPA modelled with the EDTA parameter set against simultaneous arterial and antecubital data."
+species = "human"
+preparation = "PKQuest refit of published simultaneous arterial and antecubital-vein data for ethanol, thiopental, 99mTc-DTPA (Cousins et al. 1999, subject 2), ketamine, D2O, acetone, methylene chloride, toluene."
+conditions = "IV bolus (DTPA ~15 s) or infusion; resting adults. For DTPA, sample times were shifted +30 s and dose treated as adjustable because Cousins did not report it."
+verification = "FT"
+access = "Open access. Full text read from Europe PMC XML (PMC375538) on 2026-10-16."
+notes = """DTPA used the same PBPK parameters as EDTA in levitt2003 (flow-limited); extracellular water fractions muscle 0.15, skin 0.6, adipose 0.2, other 0.8. Renal clearance was the only adjusted parameter.
+One 'standard arm' set fits ethanol, thiopental, DTPA and ketamine. A different set was needed for D2O and the volatile solutes, so arm state varies between studies.
+The fit is sensitive to the muscle fraction: raising it to 15% (shunt 42.5%) fits clearly worse.
+Numbers below are the author's chosen values ('rough trial and error'), not statistical estimates."""
+use_in_model = """If the model is compared with antecubital venous data in the first 5-20 min, sample a virtual 'arm' vein mixing 5% muscle, 25% skin, 7.5% adipose, 10% other and 52.5% A-V shunt outflow (shunt 1 mL/min/g). Arterial and antecubital curves converge after about 5-10 min for extracellular solutes (levitt2003)."""
+
+[source]
+authors = ["Levitt DG"]
+year = 2004
+title = "Physiologically based pharmacokinetic modeling of arterial - antecubital vein concentration difference"
+journal = "BMC Clin Pharmacol"
+volume = "4"
+issue = "1"
+pages = "2"
+doi = "10.1186/1472-6904-4-2"
+crossref_verified = "2026-10-16; Crossref title match (BMC Clinical Pharmacology vol 4, article 2; sole author Levitt)"
+pmid = "15053829"
+pmcid = "PMC375538"
+
+[data.standard_arm]
+description = "Fraction of antecubital vein blood flow contributed by each tissue, and A-V shunt flow per gram"
+location = "Results (text) and Fig. 1"
+provenance = "FT"
+statistic = "chosen values, no dispersion"
+tissue = ["muscle", "skin", "adipose", "other", "AV shunt"]
+flow_fraction = [0.05, 0.25, 0.075, 0.1, 0.525]
+shunt_flow_mL_per_min_per_g = 1.0
+missing_note = "No uncertainty given. Earlier estimate in levitt2003: 10% muscle, 20% skin, 5% other, 5% adipose, 60% shunt."

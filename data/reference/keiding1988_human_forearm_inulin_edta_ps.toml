@@ -1,0 +1,44 @@
+[meta]
+id = "keiding1988_human_forearm_inulin_edta_ps"
+data_type = "experimental"
+validates = "Human skeletal-muscle capillary PS (capillary diffusion capacity, CDC) for 51Cr-EDTA (MW 340.2) and 14C-inulin (MW 5200) measured in the same subjects; PS ratio vs free-diffusion ratio."
+species = "human"
+preparation = "5 healthy subjects. Brachial-artery injection of 125I-albumin + 14C-inulin, then after 30 min rest 125I-albumin + 51Cr-EDTA. Deep cubital vein (mainly muscle drainage) sampled in 2-s periods; indicator-diffusion technique."
+conditions = "Light forearm exercise. Mean plasma flow 8.5 mL/min/100 g forearm. Albumin extraction corrected."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 3147574). Full text (Acta Physiol Scand, Wiley) not accessible."
+notes = """CDC ratio EDTA/inulin 4.0 +/- 0.5 vs free-diffusion-coefficient ratio 3.07 +/- 0.002 (N = 36 and 17 measurements). So inulin is somewhat restricted relative to EDTA; equivalent pore radius about 160 A.
+Values are per 100 g forearm (not per 100 g muscle) and during light exercise, so higher than at rest (Levitt's whole-body resting inulin PS is 0.6 vs 0.90 here).
+This is the only human same-subject EDTA vs larger-solute muscle PS pair found."""
+use_in_model = """Human anchor for muscle PS of EDTA: ~3.3 mL/min/100 g in lightly exercising forearm (resting value lower). Human size scaling: PS falls 4.0-fold from MW 340 to 5200. A power-law interpolation in MW (an estimate made outside this file) gives about 0.64 x the EDTA PS for MW 821, i.e. ~2.1 mL/min/100 g forearm under these conditions."""
+
+[source]
+authors = ["Keiding S", "Henriksen O", "Sejrsen P"]
+year = 1988
+title = "Muscle capillary permeability for [14C]inulin and [51Cr]EDTA in human forearm"
+journal = "Acta Physiol Scand"
+volume = "133"
+issue = "3"
+pages = "335-342"
+doi = "10.1111/j.1748-1716.1988.tb08415.x"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 133, issue 3, 335-342; first author Keiding)"
+pmid = "3147574"
+
+[data.forearm_ps]
+description = "Extraction fraction and capillary diffusion capacity (PS) per 100 g forearm"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SEM; n = 5 subjects"
+solute = ["14C-inulin", "51Cr-EDTA"]
+molecular_weight = [5200.0, 340.2]
+extraction_fraction = [0.107, 0.377]
+extraction_fraction_sem = [0.015, 0.033]
+ps_mL_per_min_per_100g_forearm = [0.90, 3.31]
+ps_sem_mL_per_min_per_100g_forearm = [0.19, 0.38]
+plasma_flow_mL_per_min_per_100g_forearm = 8.5
+ps_ratio_edta_to_inulin = 4.0
+ps_ratio_sem = 0.5
+free_diffusion_ratio_edta_to_inulin = 3.07
+free_diffusion_ratio_sd = 0.002
+equivalent_pore_radius_A = 160.0
+missing_note = "Free diffusion coefficients themselves (37 C, water) are not printed in the abstract, only their ratio."

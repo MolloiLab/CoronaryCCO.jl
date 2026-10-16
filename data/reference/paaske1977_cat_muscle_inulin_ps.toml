@@ -1,0 +1,38 @@
+[meta]
+id = "paaske1977_cat_muscle_inulin_ps"
+data_type = "experimental"
+validates = "Muscle capillary PS for 14C-inulin at near-resting flow and the claim that inulin, 51Cr-EDTA and 57Co-B12 cross muscle capillaries in proportion to their free diffusion coefficients (no restriction)."
+species = "cat"
+preparation = "Autoperfused cat gastrocnemius; bolus injection, venous sampling; 7 experiments. Compared with EDTA and B12 data from the group's earlier studies."
+conditions = "Plasma flow 4.0 mL/100 g/min."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 410233). Full text (Acta Physiol Scand, Wiley) not accessible."
+notes = """This is the counter-position to haraldsson1986: the Copenhagen group found no restricted diffusion of inulin relative to EDTA and B12, implying much larger pores than 30-40 A.
+The EDTA and B12 PS values used for the comparison are not in the abstract.
+Extravascular distribution volume for inulin 13.0 mL/100 g; EDTA and inulin had identical extravascular volumes in this preparation."""
+use_in_model = """Free-diffusion end of the PS scaling: if PS tracks free diffusion, PS(MW 821)/PS(EDTA) equals D(821)/D(EDTA) (about 0.7 by the MW^-0.41 trend implied by the D ratios in haraldsson1986 and keiding1988). Inulin PS 0.84 mL/100 g/min at 4 mL/100 g/min plasma flow is close to human values."""
+
+[source]
+authors = ["Paaske WP", "Sejrsen P"]
+year = 1977
+title = "Transcapillary exchange of 14C-inulin by free diffusion in channels of fused vesicles"
+journal = "Acta Physiol Scand"
+volume = "100"
+issue = "4"
+pages = "437-445"
+doi = "10.1111/j.1748-1716.1977.tb05968.x"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 100, issue 4, 437-445; first author Paaske)"
+pmid = "410233"
+
+[data.inulin_exchange]
+description = "Inulin capillary diffusion capacity, extraction and distribution volume"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean of 7 experiments; dispersion not in the abstract"
+n_experiments = 7.0
+ps_inulin_mL_per_min_per_100g = 0.84
+extraction_inulin = 0.307
+plasma_flow_mL_per_min_per_100g = 4.0
+extravascular_volume_inulin_mL_per_100g = 13.0
+rejected_pore_radius_A = 30.0
+missing_note = "EDTA and B12 PS values for the comparison are not in the abstract."
