@@ -68,7 +68,8 @@ Adapt.@adapt_structure DomainView
 struct ParamView{T}
     num_neighbors::Int
     upstream_attach::Bool
-    max_connection::T
+    max_connection::T          # size-scaled (CCOParams.size_scale)
+    reach::T                   # TERRITORY_REACH, size-scaled
     kamiya_iters::Int
     kamiya_tol::T
     side_branch_bias::T
@@ -108,6 +109,9 @@ Adapt.@adapt_structure TreeView
 @inline _isfast(::TreeView) = true
 @inline _fullvol(V::TreeView) = V.full
 @inline _level(V::TreeView) = V.level
+@inline _maxconn(::Type{T}, p::ParamView) where {T} = T(p.max_connection)
+@inline _reach(::Type{T}, p::ParamView) where {T} = T(p.reach)
+@inline _ktol(::Type{T}, p::ParamView) where {T} = T(p.kamiya_tol)
 
 # Host-side buffers reused across rounds (CSR grid and, for devices, the static domain).
 mutable struct ViewCache
@@ -175,7 +179,8 @@ function tree_view(E::Engine{T}, vc::ViewCache; to = identity) where {T}
     end
     D = DomainView(vc.dom[1], vc.dom[2], vc.dom[3], E.dom.lower, E.dom.upper, E.dom.min_dist, vc.dom[4], E.dom.fine_origin, E.dom.fine_h)
     P = ParamView{T}(
-        p.num_neighbors, p.upstream_attach, T(p.max_connection), p.kamiya_iters, T(p.kamiya_tol), T(p.side_branch_bias),
+        p.num_neighbors, p.upstream_attach, T(p.max_connection * p.size_scale), T(TERRITORY_REACH * p.size_scale), p.kamiya_iters,
+        T(p.kamiya_tol * p.size_scale^3), T(p.side_branch_bias),
         T(p.term_flow_cv), _symmetry_knots(T, p.symmetry_floor)...
     )
     return TreeView(

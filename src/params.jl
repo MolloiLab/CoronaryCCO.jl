@@ -19,6 +19,7 @@ Run parameters. Defaults match the upstream `HctCco` command line and `HctccoMod
 | `extension_mode` | `--extensionModel` | false |
 | `upstream_attach` | (parity only; see below) | false |
 | `max_connection` | `getMaxBranchLength()` (fixed) | 25.0 |
+| `size_scale` | (Vasculature only) | 1.0 |
 | `num_neighbors` | `myNumNeighbor` | 20 |
 | `nb_max_search` | `expandTree(nbMaxSearch)` | 100 |
 | `nb_try_candidate` | `expandTree(nbTryCandite)` | 100 |
@@ -46,6 +47,14 @@ restores that check; it exists only for the bitwise parity test.
 `getMaxBranchLength` of 25 ("same units as post-processing filter"). It is a numerical guard
 against implausibly long connections, not a measured quantity, and no organ sets its own value
 yet; on XCAT's lung, 60 mm gave the same trees as 25 mm (deviations §15).
+
+`size_scale` s carries HCT-CCO's size-dependent constants to organs of another size. They were
+set for adult human hearts, so s = 1 there (every constant verbatim) and s = (V / V_ref)^(1/3)
+elsewhere, V the organ's tissue volume and V_ref the reference heart's: the longest connection
+(25 s), the territory reach (6 s) and the Kamiya volume tolerance (0.01 s³) scale with it;
+quantities set by cells or by the tissue unit (the minimum radius, the terminal perfusion
+volume) and the dimensionless stage schedule do not. Lengths are in domain units (mm on a 1 mm
+grid). See `size_scale_for`.
 """
 Base.@kwdef struct CCOParams
     nterm::Int = 500
@@ -58,6 +67,7 @@ Base.@kwdef struct CCOParams
     extension_mode::Bool = false
     upstream_attach::Bool = false
     max_connection::Float32 = 25.0f0     # mm; see below
+    size_scale::Float32 = 1.0f0          # organ length scale vs the reference heart; see below
     num_neighbors::Int = 20
     nb_max_search::Int = 100
     nb_try_candidate::Int = 100

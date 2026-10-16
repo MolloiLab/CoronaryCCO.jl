@@ -87,7 +87,11 @@ function _tree_ids(m::CCOModel, roots)
     return id
 end
 
-const TERRITORY_REACH = 6.0   # mm; see nearest_k!
+const TERRITORY_REACH = 6.0   # mm at size_scale 1; see nearest_k!
+# size-scaled constants (CCOParams.size_scale; ParamView carries them already scaled)
+@inline _maxconn(::Type{T}, p::CCOParams) where {T} = T(p.max_connection * p.size_scale)
+@inline _reach(::Type{T}, p::CCOParams) where {T} = T(TERRITORY_REACH * p.size_scale)
+@inline _ktol(::Type{T}, p::CCOParams) where {T} = T(p.kamiya_tol * p.size_scale^3)
 
 # Territories in a forest. A domain voxel value >= 0xC0 lists in its low six bits the trees a
 # terminal there may join (bit k-1 for tree k); any other inside value (e.g. 255) allows all.
@@ -314,14 +318,14 @@ end
         # territory's tree (otherwise regions where a neighbouring tree arrived first stay empty).
         # No connection can exceed max_connection (try_candidate!), so the search stops there.
         if bits != 0x7fff
-            if k >= 1 && R - g.margin > bd[1, col] + T(TERRITORY_REACH)
-                lim = bd[1, col] + T(TERRITORY_REACH)
+            if k >= 1 && R - g.margin > bd[1, col] + _reach(T, E.p)
+                lim = bd[1, col] + _reach(T, E.p)
                 while k > 1 && bd[k, col] > lim
                     k -= 1
                 end
                 return k
             end
-            R - g.margin > T(E.p.max_connection) && return k
+            R - g.margin > _maxconn(T, E.p) && return k
             k >= n && bd[n, col] < R - g.margin && return k
         end
         R *= 2
@@ -460,7 +464,7 @@ HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared bas
     (!prm.upstream_attach || is_connectable(E, s)) || return fail
     distance_valid(E, p, T(0.05)) || return fail
     # isValidConnection
-    norm3(sub3(p, m.pos[s])) > T(prm.max_connection) && return fail
+    norm3(sub3(p, m.pos[s])) > _maxconn(T, prm) && return fail
     rs = _isfast(E) ? fast_radius(E, s) : m.radius[s]
     rs * T(0.7) < T(0.005) && return fail
     ps = m.pos[s]
@@ -529,7 +533,7 @@ HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared bas
         if i == 0
             volCurr = vol
         else
-            if abs(volCurr - vol) < T(prm.kamiya_tol)
+            if abs(volCurr - vol) < _ktol(T, prm)
                 l0 = norm3(sub3(pOpt, pParent)) * lf
                 l1 = norm3(sub3(pOpt, ps)) * lf
                 l2 = norm3(sub3(pOpt, p)) * lf
