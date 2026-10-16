@@ -1,0 +1,41 @@
+[meta]
+id = "haefelibleuer1988_human_acinus"
+data_type = "experimental"
+validates = "Size and internal branching of the human pulmonary acinus (the unit distal to a terminal bronchiole), for choosing the acinus as the terminal perfusion unit of a lung tree."
+species = "human"
+preparation = "Silicone rubber casts of the airways of two adult human lungs; acinus = alveolated airways distal to the terminal bronchiole."
+conditions = "Postmortem casts."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 3382030). Full text paywalled."
+notes = """Acinar volume 187 +/- 79 mm3 (SD). Intra-acinar airways branch dichotomously over about 9 generations (range 6-12). Internal duct diameter 500 -> 270 um from acinar generation 0 to 10; outer diameter with the alveolar sleeve stays ~700 um. Path length from transitional bronchiole to alveolar sacs 8.8 +/- 1.4 mm.
+The number of acini per lung is not in the abstract and was not verified here; see ebrahimi2022_pulmonary_model_parameters for the 30,676 acinar units used in a human perfusion model."""
+use_in_model = """(a) If growth stops at the acinus, each terminal should supply ~187 mm3 of lung; arterioles inside an acinus follow ~9 dichotomous generations (Clark/Tawhai ladder model)."""
+
+[source]
+authors = ["Haefeli-Bleuer B", "Weibel ER"]
+year = 1988
+title = "Morphometry of the human pulmonary acinus"
+journal = "Anat Rec"
+volume = "220"
+issue = "4"
+pages = "401-414"
+doi = "10.1002/ar.1092200410"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 220, issue 4, 401-414; authors Haefeli-Bleuer, Weibel)"
+pmid = "3382030"
+
+[data.acinus]
+description = "Acinar size and airway geometry"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD; casts from 2 lungs"
+acinar_volume_mean_mm3 = 187.0
+acinar_volume_sd_mm3 = 79.0
+intra_acinar_generations_typical = 9
+intra_acinar_generations_min = 6
+intra_acinar_generations_max = 12
+duct_inner_diameter_gen0_um = 500.0
+duct_inner_diameter_gen10_um = 270.0
+duct_outer_diameter_um = 700.0
+path_length_mean_mm = 8.8
+path_length_sd_mm = 1.4
+missing_note = "Number of acini measured and number per lung not in the abstract."

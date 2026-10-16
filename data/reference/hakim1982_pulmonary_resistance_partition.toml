@@ -1,0 +1,34 @@
+[meta]
+id = "hakim1982_pulmonary_resistance_partition"
+data_type = "experimental"
+validates = "Partition of pulmonary vascular resistance into arterial, middle (distensible, capillary-containing) and venous segments by arterial and venous occlusion."
+species = "dog"
+preparation = "In situ isolated left lower lung lobes perfused at steady flow in zone 3. Rapid pressure changes after sudden arterial-inflow or venous-outflow occlusion give the arterial and venous pressure drops; the remainder is the middle segment."
+conditions = "Zone 3, steady flow; serotonin, histamine, varied flow and venous pressure."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 7068486). No open or archived full text found."
+notes = """Under the conditions studied, the middle non-muscular segment held most of the vascular compliance and less than 16% of the total resistance. Muscular arteries and veins contributed equally to the remaining resistance. Serotonin raised the arterial drop, histamine the venous drop, neither changed the middle drop. Arterial and venous drops (not middle) rose with flow. Arteries and veins resisted distension above transmural pressures of about 10 and 5 Torr."""
+use_in_model = """(c) Alternative resistance split to Bhattacharya 1980: arteries ~42%, middle < 16%, veins ~42% (the halves are an inference from 'equal' in the abstract, not printed numbers). The occlusion 'middle' segment includes small arterioles and venules, so this bounds the capillary share from below."""
+
+[source]
+authors = ["Hakim TS", "Michel RP", "Chang HK"]
+year = 1982
+title = "Partitioning of pulmonary vascular resistance in dogs by arterial and venous occlusion"
+journal = "J Appl Physiol"
+volume = "52"
+issue = "3"
+pages = "710-715"
+doi = "10.1152/jappl.1982.52.3.710"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 52, issue 3, 710-715; authors Hakim, Michel, Chang)"
+pmid = "7068486"
+
+[data.resistance_partition]
+description = "Share of total resistance in the middle segment; arterial vs venous relation"
+location = "Abstract"
+provenance = "abs"
+statistic = "as stated in the abstract"
+middle_segment_share_max_percent = 16.0
+arterial_vs_venous = "equal shares of the remaining resistance"
+arterial_transmural_distension_limit_Torr = 10.0
+venous_transmural_distension_limit_Torr = 5.0
+missing_note = "Per-animal pressures, flows and n not in the abstract. The 10 and 5 Torr limits are printed as '10--5 Torr' for arteries and veins respectively."

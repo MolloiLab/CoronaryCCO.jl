@@ -1,0 +1,192 @@
+# Huang W, Yen RT, McLaurine M, Bledsoe G (1996). Morphometry of the human pulmonary vasculature.
+# Every number below was transcribed from Tables 1-8 of the publisher PDF and checked against a
+# 200 dpi rendering of each table page. Units are in the key suffix.
+
+[meta]
+id = "huang1996_human_pulmonary_morphometry"
+data_type = "experimental"
+validates = "Per-order element and segment diameter, length, S/E, connectivity matrices, corrected total element counts and per-order blood volume of the human pulmonary arterial tree (left lung) and venous tree (right lung), diameter-defined Strahler orders 1-15 (arteries +1..+15, veins -1..-15)."
+species = "human"
+preparation = "Two postmortem lungs, accidental deaths not involving the lung (Table 1). Arterial cast: left lung, 44-yr-old man, 95 kg, 185 cm, 18 h postmortem, antegrade perfusion. Venous cast: right lung, 24-yr-old man, 128 kg, 180 cm, 6 h postmortem, retrograde perfusion. Silicone elastomer (Microfil CP-101, Sobin method) perfused at 34 cmH2O inlet to 0 cmH2O outlet for 20 min with airway pressure 10 cmH2O and pleural pressure atmospheric, then held at 3 cmH2O. Capillaries collapse (venous minus alveolar pressure -7 cmH2O), separating the arterial and venous trees. Tissue dissolved in 10% KOH; casts measured under a stereomicroscope with image analysis (diameter = area / length between normals, at segment midpoint)."
+conditions = "Postmortem cast, lung inflated (alveolar pressure 10 cmH2O), zone-1-like capillary collapse. Diameters are cast lumen widths."
+verification = "FT"
+access = "Publisher PDF (jap.physiology.org/content/jap/81/5/2123.full.pdf) retrieved from the Wayback Machine capture 20170820075218; text by pdftotext; Tables 2-8 read from 200 dpi page renders."
+notes = """CITATION CORRECTION: the request cited 'J Appl Physiol 80:1773'. Crossref and the PDF give J Appl Physiol 81(5):2123-2133, 1996.
+Orders: diameter-defined Strahler system (Jiang et al. 1994 rule). Order 0 = capillary sheet. Arterial orders printed +1..+15, venous orders -1..-15; stored here as positive integers with separate arterial and venous tables.
+One lung per tree (n = 1 subject each). Arteries and veins come from DIFFERENT people and different lungs.
+Element = segments of one order in series; S/E = segments per element (Table 6). Diameter and length SDs are SD across vessels; connectivity entries are mean +/- SE.
+Text regressions (log10 vs order): arterial diameter y = -1.84 + 0.19x, venous y = -1.74 + 0.20x (diameter ratio 1.56 arteries, 1.58 veins); arterial length y = -0.95 + 0.17x, venous y = -0.79 + 0.18x (length ratio 1.49, 1.50); corrected number y = 8.40 - 0.53x arteries, 7.66 - 0.52x veins (branching ratio 3.36, 3.33).
+Fractal dimensions (Eq. 12, Nelson-Manchester): element diameter 2.71 arteries, 2.64 veins; element length 2.97 arteries, 2.86 veins.
+Total blood volume (Eq. 11): 150.06 mL arteries (left lung), 86.59 mL veins (right lung). These exclude capillaries.
+Table 3 connectivity: diagonal entry for order 15 (C(15,15) = 0.50) and C(14,14) = 0 are printed as such. Blank lower-triangle cells are stored as 0.0.
+Table 8 cross-species summary (arteries / veins): cat 12 / 11 orders, order-1 diameter 21 / 22 um; dog 12 / 11 orders, 28 / 29 um; rat arteries 11 orders, 13 um, ratios 1.58 / 1.60 / 2.76 (Jiang 1994); whole human lung Strahler data (Singhal, Horsfield) 17 / 15 orders, 13 / 13 um."""
+use_in_model = """Primary per-order target for a LUNG arterial and venous tree. Order the synthetic tree with the diameter-defined Strahler rule and compare element diameter, length and corrected total element count per order on log-linear plots. Order-1 arterioles are 20 +/- 3 um (Table 2) and the corrected count of order-1 arterial elements in ONE left lung is 51,205,812 (Table 5): this sets the terminal size and terminal count for growth (scale left-lung count by lung volume share for both lungs). Per-order volume (Table 7) checks the arterial and venous blood volume split. Compare connectivity columns for asymmetric branching."""
+
+[source]
+authors = ["Huang W", "Yen RT", "McLaurine M", "Bledsoe G"]
+year = 1996
+title = "Morphometry of the human pulmonary vasculature"
+journal = "J Appl Physiol"
+volume = "81"
+issue = "5"
+pages = "2123-2133"
+doi = "10.1152/jappl.1996.81.5.2123"
+crossref_verified = "2026-10-15; Crossref title exact match (Morphometry of the human pulmonary vasculature; vol 81, issue 5, 2123-2133; authors Huang, Yen, McLaurine, Bledsoe)"
+
+[data.specimens]
+description = "Specimen information"
+location = "Table 1"
+provenance = "FT"
+statistic = "individual specimens"
+specimen = [1, 2]
+tree = ["arterial", "venous"]
+lung = ["left", "right"]
+age_years = [44, 24]
+sex = ["M", "M"]
+hours_postmortem = [18, 6]
+body_weight_kg = [95.0, 128.0]
+body_height_cm = [185.0, 180.0]
+missing_note = ""
+
+[data.arterial_elements]
+description = "Elements of the pulmonary arterial tree, human left lung (orders +1..+15)"
+location = "Table 2 (Arteries)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of elements measured"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+n = [113, 81, 48, 50, 180, 315, 315, 227, 182, 142, 84, 36, 16, 5, 2]
+diameter_mean_mm = [0.020, 0.036, 0.056, 0.097, 0.15, 0.22, 0.34, 0.51, 0.77, 1.16, 1.75, 2.71, 4.16, 7.34, 14.80]
+diameter_sd_mm = [0.003, 0.005, 0.005, 0.012, 0.02, 0.02, 0.06, 0.04, 0.07, 0.10, 0.19, 0.35, 0.60, 1.14, 2.10]
+length_mean_mm = [0.22, 0.26, 0.36, 0.45, 0.68, 1.08, 1.92, 2.81, 3.73, 6.58, 12.35, 18.07, 25.97, 35.69, 25.30]
+length_sd_mm = [0.08, 0.12, 0.20, 0.25, 0.36, 0.65, 1.22, 1.77, 2.43, 4.26, 6.77, 11.65, 14.19, 10.28, 28.15]
+missing_note = ""
+
+[data.venous_elements]
+description = "Elements of the pulmonary venous tree, human right lung (orders -1..-15, stored as 1..15)"
+location = "Table 2 (Veins)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of elements measured"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+n = [36, 31, 38, 195, 150, 81, 50, 33, 64, 79, 42, 25, 9, 4, 2]
+diameter_mean_mm = [0.018, 0.031, 0.067, 0.13, 0.23, 0.38, 0.62, 0.90, 1.42, 1.99, 2.88, 4.00, 5.86, 8.65, 12.97]
+diameter_sd_mm = [0.002, 0.005, 0.010, 0.02, 0.03, 0.04, 0.06, 0.07, 0.15, 0.21, 0.21, 0.33, 0.38, 0.76, 1.70]
+length_mean_mm = [0.13, 0.21, 0.38, 1.06, 1.50, 2.92, 4.79, 6.78, 11.24, 14.78, 17.90, 26.49, 19.49, 34.99, 35.68]
+length_sd_mm = [0.07, 0.15, 0.24, 0.54, 0.85, 1.91, 3.64, 6.32, 6.91, 7.71, 10.92, 13.11, 11.89, 16.97, 7.36]
+missing_note = ""
+
+[data.arterial_segments]
+description = "Segments of the pulmonary arterial tree, human left lung"
+location = "Table 6 (Arteries)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of segments measured; S/E = segment-to-element ratio"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+n = [121, 112, 65, 73, 254, 636, 941, 846, 681, 608, 481, 181, 83, 19, 5]
+diameter_mean_mm = [0.020, 0.036, 0.056, 0.096, 0.15, 0.22, 0.35, 0.51, 0.77, 1.17, 1.78, 2.81, 4.33, 7.31, 15.12]
+diameter_sd_mm = [0.003, 0.006, 0.005, 0.015, 0.02, 0.03, 0.09, 0.06, 0.10, 0.14, 0.25, 0.46, 0.68, 1.38, 1.81]
+length_mean_mm = [0.20, 0.19, 0.26, 0.31, 0.48, 0.54, 0.64, 0.76, 1.00, 1.54, 2.16, 3.59, 5.01, 9.39, 10.12]
+length_sd_mm = [0.08, 0.10, 0.16, 0.15, 0.24, 0.32, 0.33, 0.51, 0.66, 1.19, 1.38, 2.67, 3.18, 5.37, 9.64]
+s_per_e_mean = [1.07, 1.38, 1.35, 1.46, 1.41, 2.02, 2.99, 3.73, 3.74, 3.34, 5.73, 5.03, 5.19, 3.80, 2.50]
+s_per_e_sd = [0.26, 0.56, 0.60, 0.79, 0.66, 1.25, 1.65, 2.17, 2.63, 2.99, 3.41, 3.38, 3.04, 0.45, 0.71]
+missing_note = ""
+
+[data.venous_segments]
+description = "Segments of the pulmonary venous tree, human right lung"
+location = "Table 6 (Veins)"
+provenance = "FT"
+statistic = "mean +/- SD; n = number of segments measured; S/E = segment-to-element ratio"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+n = [37, 50, 79, 475, 431, 291, 192, 131, 323, 446, 255, 145, 19, 14, 2]
+diameter_mean_mm = [0.018, 0.032, 0.066, 0.13, 0.23, 0.39, 0.63, 0.90, 1.39, 2.01, 2.90, 4.08, 5.95, 8.75, 12.97]
+diameter_sd_mm = [0.002, 0.006, 0.012, 0.03, 0.04, 0.06, 0.08, 0.08, 0.19, 0.26, 0.26, 0.52, 0.48, 0.99, 1.70]
+length_mean_mm = [0.12, 0.13, 0.18, 0.43, 0.52, 0.81, 1.25, 1.71, 2.23, 2.62, 2.95, 4.57, 9.23, 10.00, 35.68]
+length_sd_mm = [0.01, 0.10, 0.15, 0.24, 0.26, 0.43, 0.69, 0.99, 1.38, 1.88, 2.20, 3.52, 3.71, 6.23, 7.36]
+s_per_e_mean = [1.03, 1.61, 2.08, 2.44, 2.87, 3.59, 3.84, 3.97, 5.05, 5.65, 6.07, 5.80, 2.11, 3.50, 1.00]
+s_per_e_sd = [0.17, 0.67, 1.19, 1.26, 1.57, 2.46, 2.83, 3.79, 2.86, 3.30, 4.31, 3.84, 1.05, 1.29, 0.00]
+missing_note = ""
+
+[data.corrected_element_counts]
+description = "Corrected total number of elements per order (intact + cut + extrapolated via connectivity, Eq. 7). Arteries: one left lung; veins: one right lung."
+location = "Table 5"
+provenance = "FT"
+statistic = "counts (single specimen per tree)"
+order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+arterial_intact = [69, 35, 27, 34, 102, 173, 179, 134, 132, 153, 99, 49, 21, 6, 2]
+arterial_cut = [81, 105, 233, 858, 719, 776, 716, 612, 464, 223, 52, 9, 15, 1, 0]
+arterial_extrapolated = [51205662, 14057057, 5101643, 2255954, 673348, 284823, 85125, 21258, 5629, 1348, 299, 69, 7, 0, 0]
+arterial_corrected_total = [51205812, 14057197, 5101903, 2256846, 674169, 285772, 86020, 22004, 6225, 1724, 450, 127, 43, 7, 2]
+venous_intact = [124, 122, 125, 195, 147, 83, 50, 33, 62, 77, 41, 25, 9, 4, 2]
+venous_cut = [121, 151, 283, 732, 543, 501, 337, 197, 170, 21, 10, 1, 2, 0, 0]
+venous_extrapolated = [39823308, 8493972, 2165925, 452124, 72335, 14983, 3334, 837, 203, 45, 12, 5, 0, 0, 0]
+venous_corrected_total = [39823553, 8494245, 2166333, 453051, 73025, 15567, 3721, 1067, 435, 143, 63, 31, 11, 4, 2]
+missing_note = ""
+
+[data.blood_volume_per_order]
+description = "Total blood volume per order V_n = pi/4 D^2 N L (Eq. 11) and cumulative volume from order 15 down"
+location = "Table 7"
+provenance = "FT"
+statistic = "computed by the authors from Tables 2 and 5"
+order = [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+arterial_volume_mL = [8.71, 10.56, 15.20, 13.19, 13.35, 11.92, 10.83, 12.70, 15.00, 11.55, 7.84, 7.56, 4.50, 3.68, 3.47]
+arterial_cumulative_mL = [8.71, 19.27, 34.47, 47.66, 61.01, 72.93, 83.76, 96.46, 111.46, 123.01, 130.85, 138.41, 142.91, 146.59, 150.06]
+venous_volume_mL = [9.43, 8.22, 5.78, 10.31, 7.33, 6.58, 7.73, 4.63, 5.38, 5.20, 4.39, 6.07, 2.89, 1.36, 1.29]
+venous_cumulative_mL = [9.43, 17.65, 23.43, 33.74, 41.07, 47.65, 55.38, 60.01, 65.39, 70.59, 74.98, 81.05, 83.94, 85.30, 86.59]
+missing_note = "Arterial values are one left lung; venous values are one right lung. Not whole-lung volumes."
+
+[data.arterial_connectivity]
+description = "Connectivity matrix C(m,n) of pulmonary arterial elements, human left lung: rows m = daughter order 1..15, columns n = parent order 1..15"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean (SE printed in source, not stored)"
+layout = "row-major list of rows; c_row_m[n-1] = C(m, n)"
+c_row_1 = [0.17, 2.54, 1.11, 0.38, 0.02, 0.01, 0.02, 0.0, 0.02, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+c_row_2 = [0.0, 0.23, 1.67, 0.97, 0.17, 0.09, 0.06, 0.04, 0.02, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+c_row_3 = [0.0, 0.0, 0.26, 1.44, 0.63, 0.28, 0.20, 0.19, 0.11, 0.03, 0.0, 0.0, 0.0, 0.0, 0.0]
+c_row_4 = [0.0, 0.0, 0.0, 0.18, 1.96, 1.50, 0.93, 1.07, 0.65, 0.16, 0.03, 0.0, 0.0, 0.0, 0.0]
+c_row_5 = [0.0, 0.0, 0.0, 0.0, 0.06, 1.81, 1.10, 0.81, 0.83, 0.45, 0.12, 0.02, 0.0, 0.0, 0.0]
+c_row_6 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.12, 2.54, 1.16, 0.83, 0.93, 0.71, 0.20, 0.05, 0.0, 0.0]
+c_row_7 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 2.52, 1.08, 1.08, 1.49, 0.94, 0.43, 0.0, 0.0]
+c_row_8 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.28, 2.06, 1.26, 1.63, 1.45, 0.43, 0.0, 0.0]
+c_row_9 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.21, 2.38, 1.47, 0.88, 0.81, 0.33, 0.0]
+c_row_10 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.21, 2.52, 1.35, 1.48, 0.0, 0.0]
+c_row_11 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 2.43, 0.95, 0.33, 0.0]
+c_row_12 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.14, 2.57, 1.00, 0.50]
+c_row_13 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.19, 2.83, 1.50]
+c_row_14 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.50]
+c_row_15 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.50]
+missing_note = "SEs are printed in the source for most entries but are not stored here. Blank lower-triangle cells stored as 0.0. No capillary (order 0) row is given."
+
+[data.venous_connectivity]
+description = "Connectivity matrix C(m,n) of pulmonary venous elements, human right lung: rows m = order 1..15, columns n = order 1..15 (venous orders, sign dropped)"
+location = "Table 4"
+provenance = "FT"
+statistic = "mean (SE printed in source, not stored)"
+layout = "row-major list of rows; c_row_m[n-1] = C(m, n)"
+c_row_1 = [0.38, 2.59, 1.24, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+c_row_2 = [0.0, 0.53, 1.80, 0.20, 0.03, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+c_row_3 = [0.0, 0.0, 0.28, 3.23, 1.13, 0.82, 0.42, 0.06, 0.02, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+c_row_4 = [0.0, 0.0, 0.0, 0.40, 3.16, 2.15, 1.68, 1.03, 0.36, 0.34, 0.24, 0.12, 0.0, 0.0, 0.0]
+c_row_5 = [0.0, 0.0, 0.0, 0.0, 0.31, 2.64, 1.74, 1.64, 1.76, 1.39, 1.24, 0.68, 0.0, 0.0, 0.0]
+c_row_6 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 2.30, 1.73, 1.86, 2.07, 1.78, 1.52, 0.0, 0.0, 0.0]
+c_row_7 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.24, 1.67, 1.57, 1.39, 1.93, 0.88, 0.11, 0.25, 0.0]
+c_row_8 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.12, 1.73, 0.69, 0.66, 1.24, 0.22, 0.0, 0.0]
+c_row_9 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.10, 2.13, 0.83, 0.84, 0.33, 0.0, 0.0]
+c_row_10 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 1.66, 0.88, 0.11, 0.75, 0.0]
+c_row_11 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.72, 0.78, 0.25, 0.0]
+c_row_12 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.04, 2.11, 1.50, 0.0]
+c_row_13 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.11, 2.50, 0.0]
+c_row_14 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0]
+c_row_15 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+missing_note = "SEs not stored. Blank lower-triangle cells stored as 0.0. For veins, 'parent' n is the downstream (larger) order into which order m drains."
+
+[data.cross_species_summary]
+description = "Total order number, order-1 diameter and diameter/length/branching ratios across species"
+location = "Table 8"
+provenance = "FT"
+statistic = "summary values as printed"
+group = ["cat arteries", "dog arteries", "rat arteries", "human whole lung arteries (Strahler; Singhal/Horsfield)", "human this study arteries", "cat veins", "dog veins", "human whole lung veins (Horsfield & Gorden)", "human this study veins"]
+total_orders = [12, 12, 11, 17, 15, 11, 11, 15, 15]
+order1_diameter_um = [21.0, 28.0, 13.0, 13.0, 20.0, 22.0, 29.0, 13.0, 18.0]
+diameter_ratio = [1.72, 1.67, 1.58, 1.60, 1.56, 1.73, 1.70, nan, 1.58]
+length_ratio = [1.81, 1.52, 1.60, 1.49, 1.49, nan, 1.56, nan, 1.50]
+branching_ratio = [3.58, 3.69, 2.76, nan, 3.36, 3.52, 3.76, 3.30, 3.33]
+missing_note = "Human whole-lung arterial branching ratio printed as 3.03 (orders 6-17) and 3.37 (orders 1-5); human whole-lung venous diameter ratio 1.68 (orders 7-14) and 1.49 (1-6); venous length ratio 1.68 (7-14) and 1.48 (1-6); cat venous length ratio 1.53 (orders 4-10) and 2.40 (1-3). Split values stored as nan here. Rat veins not available ('x'). Dog data partly from unpublished observations (Tien, Gan, Yen)."

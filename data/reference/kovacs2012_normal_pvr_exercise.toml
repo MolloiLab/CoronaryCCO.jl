@@ -1,0 +1,46 @@
+[meta]
+id = "kovacs2012_normal_pvr_exercise"
+data_type = "experimental (review summary)"
+validates = "Normal pulmonary vascular resistance (PVR) and total pulmonary resistance (TPR) at supine rest by age, and their change with moderate exercise."
+species = "human"
+preparation = "Systematic review of right-heart-catheter studies reporting individual PVR and TPR of healthy subjects at rest and exercise; stratified by age, exercise level and posture."
+conditions = "Supine rest; moderate and higher exercise; limited upright data."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 21885394). Full text not retrieved."
+notes = """During moderate exercise in subjects <= 50 y, an 85% increase in cardiac output came with a 25% fall in TPR (p < 0.0001) and a 12% fall in PVR (p < 0.01). At 51-69 y no significant fall; at >= 70 y TPR rose 17% (p = 0.01). At higher exercise levels TPR fell in all age groups. Upright resting TPR and PVR were higher than supine and fell more with exercise.
+80 dyn.s/cm5 = 1 Wood unit (mmHg.min/L)."""
+use_in_model = """(c) Resistance check: supine resting PVR 61-69 dyn.s/cm5 (~0.8-0.9 WU) in subjects < 50 y; TPR (Ppa/CO, includes the left-atrial pressure) ~165 dyn.s/cm5. A grown lung tree plus capillary sheet should give (Ppa - Pla)/Q in this range, and PVR should fall ~12% when flow rises 85%."""
+
+[source]
+authors = ["Kovacs G", "Olschewski A", "Berghold A", "Olschewski H"]
+year = 2012
+title = "Pulmonary vascular resistances during exercise in normal subjects: a systematic review"
+journal = "Eur Respir J"
+volume = "39"
+issue = "2"
+pages = "319-328"
+doi = "10.1183/09031936.00008611"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 39, issue 2, 319-328; authors Kovacs, Olschewski, Berghold, Olschewski)"
+pmid = "21885394"
+
+[data.supine_rest_by_age]
+description = "Supine resting PVR and TPR by age group"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD"
+age_group = ["< 24 y", "24-50 y", "51-69 y", ">= 70 y"]
+pvr_mean_dyn_s_per_cm5 = [61.0, 69.0, 86.0, 90.0]
+pvr_sd_dyn_s_per_cm5 = [23.0, 28.0, 15.0, 39.0]
+tpr_mean_dyn_s_per_cm5 = [165.0, 164.0, 226.0, 223.0]
+tpr_sd_dyn_s_per_cm5 = [50.0, 46.0, 64.0, 45.0]
+missing_note = "n per age group not in the abstract."
+
+[data.moderate_exercise_change_le50]
+description = "Change with moderate exercise, subjects aged <= 50 y"
+location = "Abstract"
+provenance = "abs"
+statistic = "percent change of group means"
+cardiac_output_change_percent = 85.0
+tpr_change_percent = -25.0
+pvr_change_percent = -12.0
+missing_note = "Absolute exercise values not in the abstract."

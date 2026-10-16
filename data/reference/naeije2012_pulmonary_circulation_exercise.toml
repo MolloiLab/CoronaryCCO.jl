@@ -1,0 +1,52 @@
+[meta]
+id = "naeije2012_pulmonary_circulation_exercise"
+data_type = "experimental (review summary)"
+validates = "Limits of normal for resting human pulmonary haemodynamics (cardiac output, PA systolic/diastolic/mean, occluded PA pressure, capillary pressure by single arterial occlusion, PVR), pressure-flow slopes in young and old subjects, and the 60/40 arterial vs capillary+venous resistance split (Gaar equation)."
+species = "human (resistance split from perfused dog lungs, cited)"
+preparation = "Narrative review. Table 1: 55 healthy resting volunteers (14 for capillary pressure by single arterial occlusion), from the authors' references 133, 146 and 161 (Maggiorini et al. and others). Table 2: pressure-flow slopes from Reeves et al. (reference 178), supine and upright, young adults 20-30 y and old men 60-80 y."
+conditions = "Rest, supine unless stated; exercise discussed in the text."
+verification = "FT"
+access = "Open author manuscript on PMC (PMC3480234), HTML full text; tables parsed from the HTML."
+notes = """Values are secondary (review of other studies). Table 1 'limits of normal' are mean - 2 SD to mean + 2 SD.
+Table 1 heart-rate lower limit printed '4' (likely 34 or 44); kept as printed.
+Text: average PVR 1 mmHg.min/L in young adults, rising to 2.5 mmHg.min/L over 4-6 decades.
+Text: Gaar et al. (isolated perfused normal lungs) found 60% arterial and 40% capillary + venous resistance, giving Pcp = Pla + 0.4 (Ppa - Pla). At very high flows (7-10x normal) the upstream fraction falls and the Gaar equation no longer holds. Hypoxia does not change the longitudinal distribution of resistance (dogs, minipigs, humans).
+Text: capillary pressure threshold for interstitial oedema 20-25 mmHg; maximal-exercise PA pressures 40-50 mmHg.
+Text: distensibility coefficient alpha 1.7 +/- 1.8 %/mmHg from multipoint exercise Ppa-Q plots (Argiento et al.); Operation Everest II: TPVR 2.3 +/- 0.2 -> 3.9 +/- 0.2 WU and alpha 0.02 +/- 0.002 -> 0.008 +/- 0.001 /mmHg with chronic hypoxia.
+Text: exercise raises capillary blood volume about three-fold (gas exchange section); a 2.5-fold maximum expansion is used in Dempsey's transit-time calculation."""
+use_in_model = """(b) Boundary pressures: mean Ppa 13 (7-19) mmHg, Ppao 9 (5-13) mmHg, Q 6.4 L/min at rest. (c) Resistance distribution: Pcp 10 (8-12) mmHg sits about 40% of the way from Pla to Ppa; a grown lung tree with a capillary sheet should put ~60% of the arteriovenous pressure drop upstream of the capillaries at rest. The distensibility alpha (~2 %/mmHg) parameterises vessel distension if a Linehan-type model is used."""
+
+[source]
+authors = ["Naeije R", "Chesler N"]
+year = 2012
+title = "Pulmonary circulation at exercise"
+journal = "Compr Physiol"
+volume = "2"
+issue = "1"
+pages = "711-741"
+doi = "10.1002/cphy.c100091"
+crossref_verified = "2026-10-15; Crossref title match (Pulmonary Circulation at Exercise; pages 711-741; authors Naeije, Chesler); volume/issue taken from PMC record"
+pmid = "23105961"
+pmcid = "PMC3480234"
+
+[data.normal_rest_limits]
+description = "Limits of normal of pulmonary blood flow and vascular pressures at rest"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean and limits of normal (mean +/- 2 SD); n = 55 (n = 14 for Pcp)"
+variable = ["cardiac_output_L_per_min", "cardiac_index_L_per_min_per_m2", "heart_rate_bpm", "ppa_systolic_mmHg", "ppa_diastolic_mmHg", "ppa_mean_mmHg", "ppao_mmHg", "pcp_mmHg", "pra_mmHg", "pvr_dyn_s_per_cm5", "psa_mean_mmHg"]
+mean = [6.4, 3.8, 67.0, 19.0, 10.0, 13.0, 9.0, 10.0, 5.0, 55.0, 91.0]
+lower_limit = [4.4, 2.5, 4.0, 13.0, 6.0, 7.0, 5.0, 8.0, 1.0, 11.0, 71.0]
+upper_limit = [8.4, 4.5, 100.0, 26.0, 16.0, 19.0, 13.0, 12.0, 9.0, 99.0, 110.0]
+missing_note = "Heart-rate lower limit printed as 4 (kept). Pcp measured by single arterial occlusion in 14 of the 55."
+
+[data.pressure_flow_slopes]
+description = "Slopes of pulmonary vascular pressure-flow relationships (mmHg per L/min) in normal subjects"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean slope and SD; n = subjects"
+group = ["young supine Ppa-Q", "young upright Ppa-Q", "young supine Ppw-Q", "young upright Ppw-Q", "old men supine Ppa-Q", "old men supine Ppw-Q"]
+n = [63.0, 21.0, 53.0, 16.0, 14.0, nan]
+slope_mmHg_per_L_per_min = [1.00, 1.01, 0.30, 0.84, 2.54, 1.93]
+slope_sd = [0.91, 0.43, 0.35, 0.39, 0.77, 0.94]
+missing_note = "n for old-men Ppw slope is blank in the source."

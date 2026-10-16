@@ -1,0 +1,37 @@
+[meta]
+id = "glenny1990_pulmonary_flow_fractal"
+data_type = "experimental"
+validates = "Spatial heterogeneity of regional pulmonary blood flow: relative dispersion RD vs piece size follows a fractal law with fractal dimension Ds; gravitational vs isogravitational heterogeneity."
+species = "dog"
+preparation = "Six supine anaesthetised dogs; 99mTc macroaggregated albumin injected IV at FRC; lungs fixed in situ, sliced transversely, imaged on a planar gamma camera; 3D flow arrays reconstructed and repeatedly subdivided (pieces > 0.25 cm3)."
+conditions = "Supine, anaesthetised, FRC."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 2228863). No open or archived full text found."
+notes = """RDs (SD/mean) was fractal, Ds = 1.09 +/- 0.02 (1.0 = homogeneous, 1.5 = random), average fit r = 0.98. RD was largest in the gravitational direction but the difference from isogravitational planes was small.
+Related abstracts by the same group (not stored as separate files): Glenny et al. 1991 J Appl Physiol 71:620 (doi 10.1152/jappl.1991.71.2.620), dog microspheres in 1.9 cm3 pieces: CV 42.5% within isogravitational planes, vertical height explained only 5.8% (supine) and 2.4% (prone) of flow variance; Glenny, Polissar & Robertson 1991 J Appl Physiol 71:2449 (doi 10.1152/jappl.1991.71.6.2449): position 7.8%, error/time 8.4%, fixed structure 83.8% of flow variance. Glenny & Robertson 1991 J Appl Physiol 70:1024 fitted a fractal dichotomous tree with flow split gamma / 1-gamma to the RD data.
+The reference piece size and RD value at that size are in the full text, not the abstract. Compare the myocardial convention in bassingthwaighte1989_flow_heterogeneity (RD(m) = RD(ref) m^(1-D))."""
+use_in_model = """Flow-heterogeneity check for the grown lung tree: compute terminal-flow RD in voxel aggregates of increasing size and fit log RD vs log piece size; the slope should give Ds ~1.09 (Hurst H ~0.91), much more spatially correlated than myocardium (D ~1.2). Gravity should explain only a small fraction of variance."""
+
+[source]
+authors = ["Glenny RW", "Robertson HT"]
+year = 1990
+title = "Fractal properties of pulmonary blood flow: characterization of spatial heterogeneity"
+journal = "J Appl Physiol"
+volume = "69"
+issue = "2"
+pages = "532-545"
+doi = "10.1152/jappl.1990.69.2.532"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 69, issue 2, 532-545; authors Glenny, Robertson)"
+pmid = "2228863"
+
+[data.fractal_dimension]
+description = "Spatial fractal dimension of regional pulmonary blood flow"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- dispersion as printed in the abstract (SD vs SE not stated there); n = 6 dogs"
+n_animals = 6
+ds_mean = 1.09
+ds_dispersion = 0.02
+fit_r_mean = 0.98
+min_piece_volume_cm3 = 0.25
+missing_note = "Per-animal Ds and RD at a reference piece size are only in the full text."

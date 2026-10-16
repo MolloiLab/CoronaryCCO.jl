@@ -1,0 +1,40 @@
+[meta]
+id = "ochs2004_alveolar_number"
+data_type = "experimental"
+validates = "Number and mean size of alveoli in the adult human lung by design-based stereology; upper bound on the number of precapillary arterioles (1-2 per alveolus)."
+species = "human"
+preparation = "Six adult human lungs; alveolar openings counted at the free septal edges with physical disectors (Euler number of the 2D network), light microscopy."
+conditions = "Fixed lungs."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 14512270). Full text paywalled."
+notes = """Mean 480 million alveoli (range 274-790 million; CV 37%), closely related to total lung volume. Mean alveolar volume 4.2 x 10^6 um3 (range 3.3-4.8 x 10^6; CV 10%), about 170 alveoli per mm3 of parenchyma.
+Singhal 1973 assumed one precapillary vessel per alveolus (3 x 10^8) and cites 1-2 per alveolus."""
+use_in_model = """(a) Terminal density: ~170 alveoli per mm3 parenchyma and ~4.8 x 10^8 alveoli per adult lung pair bound the count of precapillary arterioles. Huang 1996 order-1 arterioles (20 um) are fewer (~5 x 10^7 per left lung), so one terminal of a growth model probably feeds several alveoli."""
+
+[source]
+authors = ["Ochs M", "Nyengaard JR", "Jung A", "Knudsen L", "Voigt M", "Wahlers T", "Richter J", "Gundersen HJ"]
+year = 2004
+title = "The number of alveoli in the human lung"
+journal = "Am J Respir Crit Care Med"
+volume = "169"
+issue = "1"
+pages = "120-124"
+doi = "10.1164/rccm.200308-1107OC"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 169, issue 1, 120-124; authors Ochs, Nyengaard, Jung, Knudsen, Voigt, Wahlers, Richter, Gundersen)"
+pmid = "14512270"
+
+[data.alveoli]
+description = "Alveolar number and size"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean (range); n = 6 lungs"
+n_lungs = 6
+alveolar_number_mean = 480.0e6
+alveolar_number_min = 274.0e6
+alveolar_number_max = 790.0e6
+alveolar_number_cv_percent = 37.0
+alveolar_volume_mean_um3 = 4.2e6
+alveolar_volume_min_um3 = 3.3e6
+alveolar_volume_max_um3 = 4.8e6
+alveoli_per_mm3_parenchyma = 170.0
+missing_note = "Per-lung values and lung volumes are only in the full text."

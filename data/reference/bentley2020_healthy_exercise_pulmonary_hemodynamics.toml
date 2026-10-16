@@ -1,0 +1,38 @@
+[meta]
+id = "bentley2020_healthy_exercise_pulmonary_hemodynamics"
+data_type = "experimental"
+validates = "Invasive pulmonary haemodynamics in healthy middle-aged adults at semiupright rest and steady-state submaximal cycling: mPAP, PA systolic/diastolic, PAWP, RAP, cardiac output, transpulmonary gradient, Rp (PVR), pulmonary compliance Cp and the RC time; healthy upper limits of dmPAP/dCO and dPAWP/dCO."
+species = "human"
+preparation = "36 healthy community volunteers (50% male, age median 55, IQR 50-60 y; BMI 25.3 +/- 3.0) with no cardiac or systemic disease, from a previous exercise-haemodynamics study; right heart catheterization with end-expiratory pressures at semiupright rest and during steady-state submaximal semiupright cycling (work rate 67 +/- 26 W). Compared with 85 dyspnoea patients (BREATH cohort), not stored here."
+conditions = "Semiupright posture; submaximal steady-state exercise; end-expiratory PAWP."
+verification = "FT"
+access = "Open access full text (Europe PMC JATS XML, PMC7763717); Table 2 parsed from the XML table cells."
+notes = """Only the healthy-control columns are stored. Rp in the healthy rest column is printed 0.07 +/- 0.22 mmHg.s/mL; the SD looks like a typo (the other columns have SD 0.02-0.05) but is kept as printed.
+Healthy-derived upper 95% limits used for phenotyping: dmPAP/dCO <= 3.2 WU, dPAWP/dCO <= 2 mmHg/(L/min), exercise PP/PAWP <= 2.5.
+Healthy dPAWP/dCO = 0.7 +/- 0.8 mmHg/(L/min)."""
+use_in_model = """Inlet and outlet boundary conditions for a lung model: rest mPAP 17 +/- 3 mmHg, PAWP (left-atrial proxy) 11 +/- 2 mmHg, CO 4.8 +/- 0.8 L/min, transpulmonary gradient 6 +/- 2 mmHg; exercise (CO 11.2 L/min) mPAP 25 +/- 5, PAWP 15 +/- 5, TPG 10 +/- 3. The TPG/CO ratio checks total pulmonary vascular resistance (~1.2 WU at rest), and the fall of TPG/CO with exercise checks recruitment/distension in the capillary sheet model. RpCp time 0.39 s (rest) checks the lumped compliance."""
+
+[source]
+authors = ["Bentley RF", "Barker M", "Esfandiari S", "Wright SP", "Valle FH", "Granton JT", "Mak S"]
+year = 2020
+title = "Normal and Abnormal Relationships of Pulmonary Artery to Wedge Pressure During Exercise"
+journal = "J Am Heart Assoc"
+volume = "9"
+issue = "22"
+pages = "e016339"
+doi = "10.1161/JAHA.120.016339"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 9, issue 22, article e016339; authors Bentley, Barker, Esfandiari, Wright, Valle, Granton, Mak)"
+pmid = "33153377"
+pmcid = "PMC7763717"
+
+[data.healthy_rest_exercise]
+description = "Healthy controls (n = 36), semiupright rest vs steady-state submaximal exercise"
+location = "Table 2 (Healthy Control columns)"
+provenance = "FT"
+statistic = "mean +/- SD; n = 36 subjects"
+variable = ["work_rate_W", "heart_rate_bpm", "stroke_volume_mL", "cardiac_output_L_per_min", "systolic_bp_mmHg", "diastolic_bp_mmHg", "mean_arterial_pressure_mmHg", "right_atrial_pressure_mmHg", "pa_systolic_mmHg", "pa_diastolic_mmHg", "mpap_mmHg", "pawp_mmHg", "systemic_vascular_resistance_dyn_s_per_cm5", "pulmonary_pulse_pressure_mmHg", "transpulmonary_gradient_mmHg", "diastolic_pressure_gradient_mmHg", "rp_mmHg_s_per_mL", "cp_mL_per_mmHg", "rpcp_time_s", "pp_over_pawp"]
+rest_mean = [nan, 64.0, 76.0, 4.8, 128.0, 79.0, 96.0, 6.0, 25.0, 11.0, 17.0, 11.0, 1538.0, 14.0, 6.0, -1.0, 0.07, 5.6, 0.39, 1.3]
+rest_sd = [nan, 8.0, 16.0, 0.8, 13.0, 8.0, 8.0, 2.0, 4.0, 3.0, 3.0, 2.0, 287.0, 3.0, 2.0, 1.0, 0.22, 1.6, 0.10, 0.4]
+exercise_mean = [67.0, 121.0, 93.0, 11.2, 169.0, 80.0, 109.0, 6.0, 36.0, 15.0, 25.0, 15.0, 778.0, 21.0, 10.0, -0.1, 0.06, 4.6, 0.23, 1.5]
+exercise_sd = [26.0, 3.0, 23.0, 2.7, 15.0, 9.0, 8.0, 3.0, 7.0, 4.0, 5.0, 5.0, 199.0, 5.0, 3.0, 3.0, 0.02, 1.7, 0.007, 0.5]
+missing_note = "No work rate at rest. Exercise heart-rate SD printed 3 and exercise RpCp SD printed 0.007 (both kept as printed). Rest mPAP <= 20 mmHg in 31/36 (86%), 21-24 in 5/36, none >= 25."

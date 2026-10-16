@@ -225,6 +225,25 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `lassen2023_rb82_adenosine_cardiac_output.toml` | Cardiac output, HR and SV at rest and during adenosine 140 µg/kg/min; pulmonary transit and volume | Human, 33 healthy, Rb-82 PET | FT |
 | `thomas2017_adenosine_cmr_hemodynamics.toml` | HR, blood pressure, SV index and EF after adenosine 140 µg/kg/min; CO +28% (abstract of the same group) | Human, 25 healthy, CMR | mixed |
 
+### Lung (pulmonary circulation)
+
+| File | What it validates | Species / conditions | Status |
+|---|---|---|---|
+| `huang1996_human_pulmonary_morphometry.toml` | Per-order element and segment diameter, length, S/E, connectivity, corrected counts and volume, arteries and veins, diameter-defined Strahler orders 1–15 (order-1 arteriole 20 ± 3 µm; 5.1 × 10⁷ per left lung). Cited as 80:1773 in the request; correct is 81:2123 | Human, 1 left lung (arteries) + 1 right lung (veins), silicone casts | FT |
+| `singhal1973_human_pulmonary_arterial_tree.toml` | Whole-lung arterial tree by classical Strahler order 1–17: counts, diameter, length, area, volume (150.9 mL), velocity at 80 mL/s; order-1 13 µm, 3 × 10⁸ (extrapolated) | Human, 1 resin cast | FT |
+| `bentley2020_healthy_exercise_pulmonary_hemodynamics.toml` | mPAP, PAWP, RAP, CO, TPG, Rp, Cp, RC time at semiupright rest and submaximal exercise | Human, 36 healthy, RHC | FT |
+| `naeije2012_pulmonary_circulation_exercise.toml` | Limits of normal at rest (Ppa 13, Ppao 9, Pcp 10 mmHg, PVR 55 dyn·s·cm⁻⁵); pressure–flow slopes young vs old; 60/40 arterial vs capillary+venous resistance (Gaar) | Human, review | FT (values secondary) |
+| `kovacs2009_normal_pulmonary_pressure.toml` | Normal mPAP at rest (14.0 ± 3.3 mmHg) by posture and age, and at mild exercise by age | Human, 1,187 healthy, review | abs |
+| `kovacs2012_normal_pvr_exercise.toml` | Supine resting PVR and TPR by age; −12% PVR and −25% TPR with an 85% CO rise | Human, review | abs |
+| `bhattacharya1980_lung_microvascular_pressures.toml` | Micropuncture resistance split: 45% in alveolar capillaries, most of the rest in arterioles, none in venules > 20 µm | Dog, isolated perfused lung | abs |
+| `hakim1982_pulmonary_resistance_partition.toml` | Occlusion resistance split: middle segment < 16%, arteries and veins equal shares of the rest | Dog, perfused lobe, zone 3 | abs |
+| `bouwsema2017_capillary_blood_volume_exercise.toml` | Resting capillary blood volume Vc (89 / 76 mL), DLCO, Dm; CO rest to 90% VO₂peak; capillary transit Vc/Q stays > 0.3 s | Human, 32 healthy young, multiple-FIO₂ DLCO | FT |
+| `ebrahimi2022_pulmonary_model_parameters.toml` | **Model input, not data.** Sheet-flow capillary parameters (H₀ 3.5 µm, compliance 1.3 × 10⁻⁹ m/Pa, from cat), viscosities, 30,676 acinar units, tuned Strahler ratios | Human lung model | FT |
+| `glenny1990_pulmonary_flow_fractal.toml` | Regional pulmonary flow heterogeneity is fractal, Ds = 1.09 ± 0.02; gravity a minor factor | Dog, 6, MAA | abs |
+| `molina2012_lung_weight.toml` | Lung weight at autopsy (right 445 g, left 395 g, with blood) | Human, 232 men 18–35 y | abs |
+| `ochs2004_alveolar_number.toml` | 480 × 10⁶ alveoli (274–790 × 10⁶), ~170 per mm³ parenchyma | Human, 6 lungs, stereology | abs |
+| `haefelibleuer1988_human_acinus.toml` | Acinar volume 187 ± 79 mm³, ~9 intra-acinar generations, path length 8.8 mm | Human, 2 lungs, casts | abs |
+
 ## Caveats that matter for comparisons
 
 - **Kassab orders are diameter-defined Strahler orders** (Eq. 1 of Kassab 1993), not generations.

@@ -1,0 +1,34 @@
+[meta]
+id = "bhattacharya1980_lung_microvascular_pressures"
+data_type = "experimental"
+validates = "Longitudinal distribution of pulmonary vascular resistance by direct micropuncture: share of total resistance in alveolar-wall capillaries, arterioles and venules."
+species = "dog"
+preparation = "Isolated perfused dog lung; subpleural microvascular pressures by servo-null micropipettes (short bevelled glass tips, suction ring to stabilise the pleural surface)."
+conditions = "Isolated perfused lung."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 7423192). Science full text is paywalled."
+notes = """Of the total vascular resistance, 45% was in the alveolar-wall capillaries. Most of the rest was in the arterioles. Pressure drop in venules > 20 um diameter was negligible.
+Compare with Hakim 1982 (occlusion method: middle segment < 16%) and Gaar et al. (60% arterial / 40% capillary + venous, via naeije2012). The split depends strongly on method and on how 'capillary' is defined."""
+use_in_model = """(c) Resistance distribution: with a sheet-flow capillary bed between the arterial and venous trees, the capillary share of arteriovenous pressure drop should be of order 40-45% at zone-3 conditions, with little drop in venules > 20 um."""
+
+[source]
+authors = ["Bhattacharya J", "Staub NC"]
+year = 1980
+title = "Direct measurement of microvascular pressures in the isolated perfused dog lung"
+journal = "Science"
+volume = "210"
+issue = "4467"
+pages = "327-328"
+doi = "10.1126/science.7423192"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 210, issue 4467, 327-328; authors Bhattacharya, Staub)"
+pmid = "7423192"
+
+[data.resistance_share]
+description = "Fraction of total pulmonary vascular resistance by segment"
+location = "Abstract"
+provenance = "abs"
+statistic = "group value as stated (n not in abstract)"
+capillary_share_percent = 45.0
+venules_gt20um_pressure_drop = "negligible"
+arterioles_share = "most of the remaining 55%"
+missing_note = "Absolute pressures, flow, n and the arteriolar/venular split in numbers are not in the abstract."

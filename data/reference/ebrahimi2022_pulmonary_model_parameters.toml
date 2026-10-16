@@ -1,0 +1,37 @@
+[meta]
+id = "ebrahimi2022_pulmonary_model_parameters"
+data_type = "model"
+validates = "Model input, not data: parameter set of an anatomically based human pulmonary perfusion model (Clark/Tawhai/Burrowes lineage) with Fung-Sobin sheet-flow capillaries, ladder acinar units and Strahler-ratio vessel trees."
+species = "human (capillary sheet parameters from cat lung)"
+preparation = "1D network of ~153,000 extra-acinar vessel elements coupled to 3D CFD of the main, left and right pulmonary arteries; 30,676 acinar units, each a 9-generation symmetric arteriole/venule ladder joined by capillary sheets."
+conditions = "Model of an upright or supine human lung; boundary conditions in the paper."
+verification = "FT"
+access = "Open access full text (Europe PMC JATS XML, PMC10012968); Table 1 parsed from the XML table cells."
+notes = """Values are the model's chosen inputs with their cited origin (column 'References & Methodology' in Table 1).
+Sheet-flow values (alpha_c, H0, Hmax) are from Sobin et al. 1979 photomicrographs of ex vivo CAT lung, not human. F = 21.6 (Fung & Sobin 1972) is the sheet-flow numerical factor.
+Strahler diameter ratios are printed 1.52 (arteries) and 1.56 (veins), 'fit parameter to produce geometry consistent with Huang et al. (1996)'. Huang 1996 itself reports regression diameter ratios 1.56 and 1.58; the model values are tuned, not Huang's.
+Acinar unit count 30,676 is the meshing output, stated as consistent with Huang 1996 casts.
+Text: the right lung holds 53.6 +/- 1.5% of total lung volume supine (53.3 +/- 1.3% upright), citing Yamada et al. 2020."""
+use_in_model = """Starting values for a sheet-flow capillary element: unstrained sheet height 3.5 um, compliance 1.3e-9 m/Pa, maximum height 7.7 um, arteriole-to-venule path length 1186 um, capillary viscosity 1.9 mPa.s, total capillary surface 65.4 m2. The 30,676 acinar units give a coarse terminal count for a lung tree that stops at acini (one terminal per acinus) before adding a ladder model."""
+
+[source]
+authors = ["Ebrahimi BS", "Kumar H", "Tawhai MH", "Burrowes KS", "Hoffman EA", "Clark AR"]
+year = 2022
+title = "Simulating Multi-Scale Pulmonary Vascular Function by Coupling Computational Fluid Dynamics With an Anatomic Network Model"
+journal = "Front Netw Physiol"
+volume = "2"
+issue = ""
+pages = "867551"
+doi = "10.3389/fnetp.2022.867551"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 2, article 867551; authors Ebrahimi, Kumar, Tawhai, Burrowes, Hoffman, Clark)"
+pmcid = "PMC10012968"
+
+[data.model_parameters]
+description = "Model parameters and geometric features"
+location = "Table 1"
+provenance = "FT"
+statistic = "model inputs (single values)"
+parameter = ["extra_acinar_compliance_per_Pa", "blood_density_kg_per_m3", "blood_viscosity_Pa_s", "capillary_blood_viscosity_Pa_s", "total_capillary_surface_area_m2", "capillary_sheet_compliance_m_per_Pa", "sheet_flow_numerical_factor", "arteriole_to_venule_pathlength_m", "unstrained_sheet_height_m", "max_sheet_height_m", "strahler_diameter_ratio_arteries", "strahler_diameter_ratio_veins", "main_pa_area_m2", "left_pa_area_m2", "right_pa_area_m2", "n_1d_vessel_elements", "n_acinar_units"]
+value = [1.49e-4, 1050.0, 0.0035, 0.0019, 65.4, 1.3e-9, 21.6, 1186e-6, 3.5e-6, 7.7e-6, 1.52, 1.56, 7.72e-4, 3.77e-4, 3.54e-4, 153396.0, 30676.0]
+cited_origin = ["Krenz & Dawson 2003 (26 studies, across species)", "Pries et al. 1996", "Pries et al. 1996", "Fung 1984", "Gehr et al. 1978 (electron microscopy)", "Sobin et al. 1979 (ex vivo cat lung)", "Fung & Sobin 1972 (theory)", "Zhou et al. 2002 (theory)", "Sobin et al. 1979 (ex vivo cat lung)", "Sobin et al. 1979 (ex vivo cat lung)", "fit to Huang et al. 1996", "fit to Huang et al. 1996", "CT", "CT", "CT", "meshing output", "meshing output, consistent with Huang et al. 1996"]
+missing_note = "Blood viscosity unit printed 'Pa/s' in the source (means Pa.s). The 3D geometry volume (7.967e-5 m3) row is garbled in the XML and not stored."

@@ -1,0 +1,37 @@
+[meta]
+id = "molina2012_lung_weight"
+data_type = "experimental"
+validates = "Normal adult male lung weights at autopsy (right and left lung, including contained blood), for scaling terminal density per gram of lung."
+species = "human"
+preparation = "Prospective autopsy series, 232 healthy men aged 18-35 y (mean 23.9 y; length 146-193 cm, mean 173 cm; weight 48.5-153 kg, mean 76.4 kg) with sudden traumatic deaths (87% ballistic or blunt force); excluded medical illness, drug use, prolonged treatment, long injury-to-death interval or organ injury."
+conditions = "Autopsy (fresh) organ weights; lungs weighed with their blood content."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 22182984). Full text paywalled."
+notes = """Autopsy lung weight includes blood and any agonal or post-traumatic oedema, so it overstates the dry tissue mass. Regression found insufficient association of organ weight with body length, weight or BMI to allow prediction.
+Women: Molina & DiMaio 2015 Part II (women) was not retrieved."""
+use_in_model = """Lung mass for terminal density: right + left mean = 445 + 395 = 840 g (sum derived here). With Huang 1996 order-1 arterioles (~5.1 x 10^7 in one left lung) or Singhal 1973 precapillaries (~3 x 10^8 both lungs), this sets terminals per gram for a lung growth domain."""
+
+[source]
+authors = ["Molina DK", "DiMaio VJ"]
+year = 2012
+title = "Normal organ weights in men: part II-the brain, lungs, liver, spleen, and kidneys"
+journal = "Am J Forensic Med Pathol"
+volume = "33"
+issue = "4"
+pages = "368-372"
+doi = "10.1097/PAF.0b013e31823d29ad"
+crossref_verified = "2026-10-15; Crossref title match (Normal Organ Weights in Men; vol 33, issue 4, 368-372; authors Molina, DiMaio)"
+pmid = "22182984"
+
+[data.lung_weight]
+description = "Lung weights, healthy men 18-35 y"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean, range, proposed 95% reference range; n = 232 cases"
+lung = ["right", "left"]
+weight_mean_g = [445.0, 395.0]
+weight_min_g = [185.0, 186.0]
+weight_max_g = [967.0, 885.0]
+reference_range_low_g = [155.0, 112.0]
+reference_range_high_g = [720.0, 675.0]
+missing_note = "SDs and per-organ n (organs with injury were excluded) are not in the abstract."
