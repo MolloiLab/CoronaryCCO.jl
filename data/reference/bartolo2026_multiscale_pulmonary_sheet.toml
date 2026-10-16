@@ -1,0 +1,39 @@
+[meta]
+id = "bartolo2026_multiscale_pulmonary_sheet"
+data_type = "model"
+validates = "Secondary report of the maximum human sheet height from Sobin et al. 1979 (the human abstract behind h0 3.5 um and alpha 0.127 um/cmH2O), plus a model parameter table for sheet flow."
+species = "human (model); maximum sheet height attributed to Sobin et al. 1979 human postmortem lungs"
+preparation = "1D multiscale pulmonary hemodynamics model (arteries to veins with sheet-flow capillaries); arXiv preprint."
+conditions = "Model; sensitivity ranges for h0, alpha_c, friction factor, sheet length."
+verification = "secondary"
+access = "arXiv:2607.19269v1 PDF (open). Discussion text on h0 and parameter table read."
+notes = """Text: 'While Sobin et al. (1979) reported a maximum sheet height of 7.7 um, we intentionally extended our upper bound to 20 um.' Reference list gives Sobin SS, Fung YC, Tremer HM, Lindal RG (1979) 'Distensibility of human pulmonary capillary blood-vessels in the interalveolar septa', Microvasc Res 17(3):S87 (Huang 2011 cites the same work as Fed Proc 38:990). Not read in the primary.
+Derived (not stated by any source): with human h0 = 3.5 um and alpha = 0.127 um/cmH2O, h = 7.7 um is reached at P_tm = (7.7 - 3.5)/0.127 = 33 cmH2O. This is consistent with the 'up to 32 cmH2O' human value (Clark 2010 text; Clark 2011 and Burrowes 2011 use 32), not with 15 cmH2O (which would give h_max = 5.4 um)."""
+use_in_model = """If capping the human sheet: h_max ~ 7.7 um (Sobin 1979, secondary) corresponds to P_CU ~ 32-33 cmH2O with Huang 2011 constants."""
+
+[source]
+authors = ["Bartolo MA", "Haider MA", "Hill NA", "Olufsen MS"]
+year = 2026
+title = "Multiscale hemodynamics model for the pulmonary arteries, arterioles, capillaries, venules and veins"
+journal = "arXiv (q-bio.TO), preprint"
+volume = ""
+issue = ""
+pages = "2607.19269v1"
+doi = ""
+crossref_verified = "not in Crossref (arXiv preprint); arXiv id 2607.19269v1, 21 Jul 2026"
+
+[data.sheet_height]
+description = "Maximum sheet height attributed to Sobin et al. 1979 (human), and model sheet parameters"
+location = "Discussion (h0 paragraph); parameter table"
+provenance = "secondary"
+statistic = "single values"
+sobin1979_max_sheet_height_um = 7.7
+model_h0_cm = 0.00035
+model_h0_range_cm = [0.00035, 0.001]
+model_alpha_c_cm_s2_per_g = 1.3e-8
+model_alpha_c_range_cm_s2_per_g = [1e-9, 1e-7]
+model_sheet_length_cm = 0.1186
+model_friction_kappa = 20.0
+derived_P_at_hmax_cmH2O = 33.0
+derived_note = "derived here from 7.7 um with h0 3.5 um and alpha 0.127 um/cmH2O; not stated in the source"
+missing_note = "The 7.7 um figure is secondary; the 1979 abstract itself was not found online. No pressure at which 7.7 um was reached is given."

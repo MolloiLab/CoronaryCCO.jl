@@ -1,0 +1,56 @@
+[meta]
+id = "fung1972_alveolar_sheet_elasticity"
+data_type = "measurement"
+validates = "Range of transmural pressure over which alveolar sheet thickness is linear in pressure (cat, measured; dog, read from Glazier et al. 1969 data), and the qualitative statement that h tends to a constant at very high transmural pressure. Theory paper; cat data come from the companion Sobin et al. 1972 paper."
+species = "cat (sheet thickness and VSTR data); dog (capillary width data of Glazier et al. 1969, reanalysed)"
+preparation = "Analysis of silicone-elastomer-perfused cat lungs (companion paper, Sobin et al. 1972, Circ Res 30:440) and of rapidly frozen dog lungs (Glazier et al. 1969, ref 5)."
+conditions = "Cat: transmural (capillary-alveolar) pressure 6.3-27 cmH2O. Table 1 cats perfused at 15 and 25 mmHg. Dog: zone 3, transpulmonary pressure (TPP) 10 and 25 cmH2O."
+verification = "FT"
+access = "Full-text PDF from a Wayback Machine capture of circres.ahajournals.org (2017-07-05). Text p. 451-452 (Eq. 1-2, Fig. 1 legend), Table 1 (p. 453), text p. 463-464 (dog estimates)."
+notes = """Cat: the authors state the linear h-vs-dP relation holds 'in the pressure range 6.3 < dP < 27 cm H2O' (the measured range of the companion paper); Fig. 1 shows only dashed 'expected theoretical' curves beyond both ends, explicitly 'without numerical significance'. So the cat paper does NOT measure a plateau; it measured no data above 27 cmH2O. Text: nonlinear geometry and membrane tension 'will make h tend to a constant at very high dP' (no number). For dP < 0, h = 0 (Eq. 2).
+Dog (from Glazier 1969 Fig. 8 reanalysed): at TPP 10 cmH2O, alpha = 0.122 um/cmH2O; at TPP 25 cmH2O, alpha falls to 0.079 um/cmH2O; h0 taken as 2.5 um. Beyond ~25 cm down zone 3 the capillary width 'increases less and less ... and eventually tends to a constant', and the text states the 'upper limit of linearity between sheet thickness and pressure is about 25 cm H2O for the dog when the TPP is 10 cm H2O'. This is the only numeric upper limit in this paper, and it is for DOG, not cat.
+Possible origin of the 'cat 25 cmH2O' figure quoted by Clark 2010 (via Fung 1997): it matches this dog estimate and the top of the cat measured range (27), but this paper does not state a cat upper limit. Treat 'cat P_CU = 25' as unverified."""
+use_in_model = """Supports a linear sheet law up to at least ~25-27 cmH2O in cat and dog. Does not support a human cap at 15 cmH2O. If a cap is used, ~25 cmH2O is the only measured-data-based upper limit of linearity in this source (dog, TPP 10 cmH2O); alpha decreases with lung inflation (0.122 -> 0.079 um/cmH2O, TPP 10 -> 25)."""
+
+[source]
+authors = ["Fung YC", "Sobin SS"]
+year = 1972
+title = "Elasticity of the pulmonary alveolar sheet"
+journal = "Circ Res"
+volume = "30"
+issue = "4"
+pages = "451-469"
+doi = "10.1161/01.res.30.4.451"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 30, issue 4, 451-469; authors Fung, Sobin)"
+pmid = "5013860"
+
+[data.linear_range]
+description = "Transmural pressure range of linear sheet thickness-pressure relation, and dog upper limit of linearity"
+location = "Text p. 452 and Fig. 1 legend (cat); text p. 463-464 (dog)"
+provenance = "FT"
+statistic = "range limits as stated in text"
+cat_linear_range_cmH2O = [6.3, 27.0]
+cat_plateau_measured = false
+dog_upper_limit_of_linearity_cmH2O = 25.0
+dog_upper_limit_condition = "TPP 10 cmH2O, zone 3, from Glazier et al. 1969 data"
+dog_alpha_TPP10_um_per_cmH2O = 0.122
+dog_alpha_TPP25_um_per_cmH2O = 0.079
+dog_h0_um = 2.5
+missing_note = "No upper limit stated for cat; no human data. Dog limit is an estimate read from another group's figure, no SD."
+
+[data.cat_sheet_dimensions]
+description = "Experimental results on sheet dimensions of the cat (silicone-elastomer perfused), means +/- SD"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD"
+perfusion_pressure_mmHg = [15.0, 25.0]
+VSTR_percent_mean = [91.43, 91.78]
+VSTR_percent_sd = [1.91, 1.93]
+unit_hexagon_area_um2_mean = [163.66, 142.06]
+unit_hexagon_area_um2_sd = [37.11, 31.70]
+post_diameter_um_mean = [4.19, 3.82]
+post_diameter_um_sd = [0.79, 0.70]
+interpost_distance_um_mean = [9.13, 8.01]
+interpost_distance_um_sd = [0.85, 0.90]
+n_fields = [160, 149]
+missing_note = "OCR of the 25 mmHg column read '91.7S +/- 1.9.i' and 'S.01'; recorded as 91.78, 1.93, 8.01 (best reading of the scanned PDF; check before use)."

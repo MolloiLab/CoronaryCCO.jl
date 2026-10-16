@@ -302,6 +302,10 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 
 | File | What it validates | Species / conditions | Status |
 |---|---|---|---|
+| `fung1972_alveolar_sheet_elasticity.toml` | Sheet thickness vs transmural pressure, cat: linear 6.3–27 cmH2O, "tends to a constant" at very high pressure; dog upper limit ≈ 25 cmH2O | Cat, dog | FT |
+| `sobin1972_cat_sheet_elasticity.toml` | Cat sheet h = 4.28 + 0.2191·ΔP (µm, cmH2O), 2,753 measurements, no plateau over 6.3–27 cmH2O | Cat | abs |
+| `burrowes2011_embolic_occlusion_model.toml` | Lung perfusion model using a 32 cmH2O distension limit (vessels; sheet law "analogous") | Human (model) | FT |
+| `bartolo2026_multiscale_pulmonary_sheet.toml` | Secondary report of Sobin 1979 human maximum sheet height 7.7 µm | Human (model, preprint) | FT |
 | `huang1996_human_pulmonary_morphometry.toml` | Per-order element and segment diameter, length, S/E, connectivity, corrected counts and volume, arteries and veins, diameter-defined Strahler orders 1–15 (order-1 arteriole 20 ± 3 µm; 5.1 × 10⁷ per left lung). Cited as 80:1773 in the request; correct is 81:2123 | Human, 1 left lung (arteries) + 1 right lung (veins), silicone casts | FT |
 | `singhal1973_human_pulmonary_arterial_tree.toml` | Whole-lung arterial tree by classical Strahler order 1–17: counts, diameter, length, area, volume (150.9 mL), velocity at 80 mL/s; order-1 13 µm, 3 × 10⁸ (extrapolated) | Human, 1 resin cast | FT |
 | `bentley2020_healthy_exercise_pulmonary_hemodynamics.toml` | mPAP, PAWP, RAP, CO, TPG, Rp, Cp, RC time at semiupright rest and submaximal exercise | Human, 36 healthy, RHC | FT |

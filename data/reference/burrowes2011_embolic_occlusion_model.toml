@@ -1,0 +1,31 @@
+[meta]
+id = "burrowes2011_embolic_occlusion_model"
+data_type = "model"
+validates = "Model input, not data: Auckland multiscale human perfusion model (same group as Clark 2010/2011) states the upper transmural-pressure bound used for vessel and capillary-sheet distension."
+species = "human (model)"
+preparation = "Multiscale arterial/venous trees with ladder acinar model; embolic occlusion simulations."
+conditions = "Alveolar pressure 0; P_tm = P_b - P_a in vessels < 200 um."
+verification = "FT"
+access = "Open access full text (PMC3224428), read via Europe PMC fullTextXML."
+notes = """Text: 'Capillary sheet thickness is defined using a relationship analogous to Eqn. A1. Eqn. A1 is assumed valid for P tm < 32 cmH2O, beyond which the vessel is maximally extended in the radial direction.' Read literally, the 32 cmH2O bound is stated for Eqn A1 (vessel radius law); the sheet law is 'analogous'. No citation for 32 is given at that sentence. Clark 2011 (existing file) cites 32 cmH2O to the Sobin et al. 1979 human abstract. Allen et al. 2026 (Ann Biomed Eng 54:13, PMC12748109) repeats the same 32 cmH2O sentence for its vessel Eq. 1. So after Clark 2010 (15 cmH2O) the Auckland group used 32 cmH2O."""
+use_in_model = """Alternative cap for the sheet law: P_CU = 32 cmH2O (human, Auckland models 2011 onward)."""
+
+[source]
+authors = ["Burrowes KS", "Clark AR", "Tawhai MH"]
+year = 2011
+title = "Blood flow redistribution and ventilation-perfusion mismatch during embolic pulmonary arterial occlusion"
+journal = "Pulm Circ"
+volume = "1"
+issue = "3"
+pages = "365-376"
+doi = "10.4103/2045-8932.87302"
+crossref_verified = "2026-10-16; Crossref title match (vol 1, issue 3, 365-376; authors Burrowes, Clark, Tawhai)"
+pmcid = "PMC3224428"
+
+[data.distension_upper_bound]
+description = "Upper transmural pressure for the linear distension law"
+location = "Methods (multiscale model), text"
+provenance = "FT"
+statistic = "single model input value"
+P_tm_upper_cmH2O = 32.0
+missing_note = "No source cited for 32 at this sentence; applies explicitly to Eqn A1 (vessels), sheet by analogy."

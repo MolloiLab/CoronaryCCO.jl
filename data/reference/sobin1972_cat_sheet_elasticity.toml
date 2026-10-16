@@ -1,0 +1,36 @@
+[meta]
+id = "sobin1972_cat_sheet_elasticity"
+data_type = "measurement"
+validates = "Primary cat measurement of alveolar sheet thickness h vs transmural pressure: linear regression and the pressure range over which it was measured (the empirical basis of the Fung-Sobin sheet law and of cat h0 and alpha)."
+species = "cat"
+preparation = "Vertical and horizontal silicone-elastomer-perfused cat lungs; sheet thickness measured histologically; electron microscopy of posts."
+conditions = "Transmural (alveolar-capillary) pressure 6.3 to 27 cmH2O."
+verification = "abs"
+access = "Abstract only (OpenAlex abstract index of the AHA abstract; full text paywalled at ahajournals.org, and no Wayback PDF capture found)."
+notes = """Abstract: 2753 individual measurements; h vs dP is 'linear over the measured pressure range'; regression h = 4.28 + 0.2191 dP (h in um, dP in cmH2O); 4.28 um at zero pressure is an extrapolated value; 0.2191 um/cmH2O is the compliance coefficient alpha.
+No plateau or upper limit reported in the abstract: linearity holds up to the highest pressure tested (27 cmH2O). Whether the full text gives a cat upper limit (the 25 cmH2O quoted by Clark 2010 via Fung 1997) is unknown; not read."""
+use_in_model = """Cat sheet law h = 4.28 um + 0.2191 um/cmH2O x P_tm, valid at least 6.3-27 cmH2O. Human models use h0 3.5 um and alpha 0.127 um/cmH2O (Sobin et al. 1979 abstract, see huang2011 file), not these cat values."""
+
+[source]
+authors = ["Sobin SS", "Fung YC", "Tremer HM", "Rosenquist TH"]
+year = 1972
+title = "Elasticity of the pulmonary alveolar microvascular sheet in the cat"
+journal = "Circ Res"
+volume = "30"
+issue = "4"
+pages = "440-450"
+doi = "10.1161/01.res.30.4.440"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 30, issue 4, 440-450; authors Sobin, Fung, Tremer, Rosenquist)"
+pmid = "5013859"
+
+[data.sheet_thickness_vs_pressure]
+description = "Linear regression of sheet thickness on transmural pressure, cat"
+location = "Abstract"
+provenance = "abs"
+statistic = "linear regression on pooled individual measurements"
+h0_extrapolated_um = 4.28
+alpha_um_per_cmH2O = 0.2191
+pressure_range_cmH2O = [6.3, 27.0]
+n_measurements = 2753
+plateau_reported = false
+missing_note = "No SD, r, or per-animal n in the abstract. No upper limit of linearity reported; full text not read."
