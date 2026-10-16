@@ -216,3 +216,40 @@ note = "Not used (regulation = passive)."
 value = 1.0
 unit = "cm"
 note = "Not used (regulation = passive); kept nonzero because the solver's signal decay divides by it."
+
+# Distensible vessels (Huang et al. 2011 Eq. 1: D = D0 (1 + beta dP), D0 the morphometric diameter)
+[parameters.beta_art_small]
+value = 0.00361
+unit = "1/cmH2O"
+note = "Derived: median of Huang 2011 Table 2 arterial beta for orders 1-5 (below the alveolar diameter): 0.698, 0.482, 0.361, 0.361, 0.361 %/cmH2O -> 0.361 %/cmH2O (beta in %/cmH2O, see yen1990 notes)."
+sources = ["huang2011_human_sheet_flow_parameters", "yen1990_human_pulmonary_vessel_elasticity"]
+
+[parameters.beta_art_large]
+value = 0.01281
+unit = "1/cmH2O"
+note = "Derived: median of Huang 2011 Table 2 arterial beta for orders 6-16: 1.135, 0.932, 0.877, 1.238 and 1.281 (x7) %/cmH2O -> 1.281 %/cmH2O."
+sources = ["huang2011_human_sheet_flow_parameters", "yen1990_human_pulmonary_vessel_elasticity"]
+
+[parameters.beta_ven_small]
+value = 0.0101
+unit = "1/cmH2O"
+note = "Derived: median of Huang 2011 Table 1 venous beta for orders 1-5: 1.010, 0.625, 0.433, 1.798, 1.260 %/cmH2O -> 1.010 %/cmH2O."
+sources = ["huang2011_human_sheet_flow_parameters", "yen1990_human_pulmonary_vessel_elasticity"]
+
+[parameters.beta_ven_large]
+value = 0.00708
+unit = "1/cmH2O"
+note = "Derived: median of Huang 2011 Table 1 venous beta for orders 6-15: 1.260, 0.887 and 0.708 (x8) %/cmH2O -> 0.708 %/cmH2O."
+sources = ["huang2011_human_sheet_flow_parameters", "yen1990_human_pulmonary_vessel_elasticity"]
+
+[parameters.d_alveolus_um]
+value = 250.0
+unit = "um"
+note = "Human alveolar diameter used by Huang 2011 (250 um, the human/cat ratio 250/117 of the path length): vessels below it see alveolar pressure, larger ones pleural pressure (Huang 2011 Eq. 1)."
+sources = ["huang2011_human_sheet_flow_parameters"]
+
+[parameters.p_pleural_cmH2O]
+value = -3.5
+unit = "cmH2O"
+note = "Derived: mean of end-expiratory pleural (esophageal) pressure upright/sitting, -3.7 (Washko 2006, from transpulmonary 3.7 at relaxation volume) and -3.3 cmH2O (Owens 2012, lean adults sitting)."
+sources = ["washko2006_esophageal_pressure_posture", "owens2012_esophageal_pressure_sitting_supine"]

@@ -135,6 +135,11 @@ Boundary conditions and blood
   waterfall effect of intramyocardial pressure into one steady back pressure.
 - `regulation`: `:o2` (arteriolar tone follows the O₂ state of each bed, below) or `:passive`
   (no active tone: every state is the relaxed one).
+- Distensible vessels (`beta_*`, per cmH2O; 0 = rigid): every non-vasoactive vessel has diameter
+  D = D₀·(1 + β·ΔP) (Huang et al. 2011 Eq. 1, D₀ the morphometric diameter), with ΔP its mean
+  pressure minus the pressure around it: `p_ext` (alveolar) for vessels smaller than
+  `d_alveolus_um`, `p_pleural_cmH2O` for larger ones; β takes its small/large value on the same
+  split. Diameters follow the pressures inside the solve.
 - `venous_scale`: `:volume_share` (a grown venous tree is scaled to `share_ven/share_art` of the
   arterial volume) or `:grown` (its radii stay as grown, e.g. anchored at an imaged root).
 - `capillary`: `:tube` (parallel functional capillaries, below) or `:sheet` (Fung & Sobin sheet
@@ -255,6 +260,13 @@ struct Physiology
     sheet_kf::F32
     sheet_path_um::F32
     sheet_pmax_cmH2O::F32
+    # distensible vessels (Huang et al. 2011 Eq. 1): D = D0·(1 + β·ΔP), ΔP in cmH2O
+    beta_art_small::F32
+    beta_art_large::F32
+    beta_ven_small::F32
+    beta_ven_large::F32
+    d_alveolus_um::F32
+    p_pleural_cmH2O::F32
 end
 
 const ORGAN_DIR = normpath(joinpath(@__DIR__, "..", "..", "data", "organs"))
@@ -1257,9 +1269,39 @@ function _sheet!(S::_Solver, sh::_Sheet, kappa::F32)
     return nothing
 end
 
+# Distensible vessels: per arterial and venous segment, a size class (small: below the alveolar
+# diameter) sets β and the outside pressure; `_distend!` sets each vessel's resistance factor from
+# its current mean pressure (geometric relaxation, like the sheet beds).
+struct _Dist{VB <: AbstractVector{Bool}, VF <: AbstractVector{F32}}
+    asmall::VB; vsmall::VB; aact::VB; rv0::VF
+    bas::F32; bal::F32; bvs::F32; bvl::F32; pal::F32; ppl::F32      # β per mmHg; pressures in mmHg
+end
+function _distend!(S::_Solver, D::_Dist)
+    pa = S.pa; par = S.par; fa = S.fa; Pa = S.Pa; asm = D.asmall; act = D.aact
+    bas = D.bas; bal = D.bal; pal = D.pal; ppl = D.ppl
+    AK.foreachindex(fa) do k
+        @inbounds if !act[k]
+            p = par[k]; P = ((p == 0 ? Pa : pa[p]) + pa[k]) / 2
+            x = asm[k] ? 1.0f0 + bas * (P - pal) : 1.0f0 + bal * (P - ppl)
+            x = max(x, 0.1f0)                                   # numerical guard only
+            fa[k] = sqrt(fa[k] / x^4)
+        end
+    end
+    pv = S.pv; vpar = S.vpar; rv = S.rv; rv0 = D.rv0; vsm = D.vsmall; Pb = S.Pb; bvs = D.bvs; bvl = D.bvl
+    AK.foreachindex(rv) do k
+        @inbounds begin
+            p = vpar[k]; P = (pv[k] + (p == 0 ? Pb : pv[p])) / 2
+            x = max(vsm[k] ? 1.0f0 + bvs * (P - pal) : 1.0f0 + bvl * (P - ppl), 0.1f0)
+            rv[k] = sqrt(rv[k] * rv0[k] / x^4)
+        end
+    end
+    S.kv[] = NaN32                                              # venous resistances changed
+    return nothing
+end
+
 function _autoregulate!(
         S::_Solver, W::_Wall, kappa::F32, phys::Physiology, state::Symbol, ctone::Vector{F32}, fixtone::Bool,
-        terr_g, mu0, sten, lim::_Limits, verbose, sheet = nothing
+        terr_g, mu0, sten, lim::_Limits, verbose, sheet = nothing, dist = nothing
     )
     nw = length(W.seg); hd = phys.hd; stress = state === :stress
     sref = phys.sao2 * (1 - phys.oef); gain = 2.0f0; lasterr = 0.0f0
@@ -1348,6 +1390,7 @@ function _autoregulate!(
         stress && (dxok = nw == 0 || AK.mapreduce((a, b) -> abs(a - b) < 1.0f-3 ? 1 : 0, +, xd, xold; init = 0) >= k99)
         # inexact network solves while the diameters are still moving; exact once they settle
         sheet === nothing || _sheet!(S, sheet, kappa)
+        dist === nothing || _distend!(S, dist)
         setfa!(); _solve!(S, kappa; warm = true, tol = clamp(0.1f0 * dq1, 1.0f-6, 1.0f-3))
         qt = qsum(); dq = abs(qt - qhist[mod1(it, 10)]) / qt; qhist[mod1(it, 10)] = qt
         dq1 = abs(qt - qprev) / qt; qprev = qt
@@ -1432,6 +1475,18 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
         copyto!(S.rcap, to(F32[1.0f0 / (4.0f0 * Kt[i] * al * h^3) for i in tperm]))
         sheet = _Sheet(to(Kt[tperm]), phys.sheet_h0_um, al, phys.p_ext, phys.sheet_h0_um + al * phys.sheet_pmax_cmH2O / 1.35951f0)
     end
+    dist = nothing
+    if max(phys.beta_art_small, phys.beta_art_large, phys.beta_ven_small, phys.beta_ven_large) > 0
+        c = 1.35951f0                                                     # cmH2O per mmHg
+        aact = falses(n); for k in 1:n
+            2000.0f0 * t.r[perm[k]] < phys.d_active && (aact[k] = true)
+        end
+        dist = _Dist(
+            to(Bool[2000.0f0 * t.r[perm[k]] < phys.d_alveolus_um for k in 1:n]), to(Bool[2000.0f0 * vt.r[vperm[k]] < phys.d_alveolus_um for k in 1:nv]),
+            to(Vector{Bool}(aact)), to(copy(Array(S.rv))), phys.beta_art_small * c, phys.beta_art_large * c,
+            phys.beta_ven_small * c, phys.beta_ven_large * c, phys.p_ext, phys.p_pleural_cmH2O / c
+        )
+    end
     seg = Int32[k for k in 1:n if 2000.0f0 * t.r[perm[k]] < phys.d_active]   # solver numbering
     act = perm[seg]                                                          # caller numbering
     d0 = F32[2000.0f0 * t.r[j] for j in act]
@@ -1470,7 +1525,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
         kappa = F32(kappa_init)
         Wd = _Wall(seg, d0, lim, to)
         for _ in 1:12
-            _autoregulate!(S, Wd, F32(kappa), phys, :stress, ctone, true, tg, mu0d, to(empty(sten)), lim, false, sheet)   # healthy geometry
+            _autoregulate!(S, Wd, F32(kappa), phys, :stress, ctone, true, tg, mu0d, to(empty(sten)), lim, false, sheet, dist)   # healthy geometry
             ratio = phys.r_micro_dilated / _micro_resistance(S, mass_g)[1]
             kappa *= ratio
             abs(ratio - 1) < 1.0f-3 && break
@@ -1479,7 +1534,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     kappa = F32(kappa)
     # ---- the state (a bed without active tone is always in its relaxed state)
     phys.regulation === :passive && (state = :stress)
-    iters, dxlast = _autoregulate!(S, W, kappa, phys, state, ctone, reference !== nothing, tg, mu0d, stend, lim, verbose, sheet)
+    iters, dxlast = _autoregulate!(S, W, kappa, phys, state, ctone, reference !== nothing, tg, mu0d, stend, lim, verbose, sheet, dist)
     sheet === nothing || (rcap[tperm] = Array(S.rcap))     # the sheet beds' final resistances
     rmc = _micro_resistance(S, mass_g)
     # back to the caller's numbering

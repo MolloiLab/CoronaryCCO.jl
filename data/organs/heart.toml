@@ -222,3 +222,34 @@ note = "Not used (capillary = tube)."
 value = 0.0
 unit = "cmH2O"
 note = "Not used (capillary = tube)."
+
+# Distensible vessels: not used by the heart model (arteries above d_active are rigid conduits; a model choice).
+[parameters.beta_art_small]
+value = 0.0
+unit = "1/cmH2O"
+note = "Not used (rigid vessels in the heart model)."
+
+[parameters.beta_art_large]
+value = 0.0
+unit = "1/cmH2O"
+note = "Not used (rigid vessels in the heart model)."
+
+[parameters.beta_ven_small]
+value = 0.0
+unit = "1/cmH2O"
+note = "Not used (rigid vessels in the heart model)."
+
+[parameters.beta_ven_large]
+value = 0.0
+unit = "1/cmH2O"
+note = "Not used (rigid vessels in the heart model)."
+
+[parameters.d_alveolus_um]
+value = 0.0
+unit = "um"
+note = "Not used (rigid vessels in the heart model)."
+
+[parameters.p_pleural_cmH2O]
+value = 0.0
+unit = "cmH2O"
+note = "Not used (rigid vessels in the heart model)."
