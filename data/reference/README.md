@@ -253,6 +253,9 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `chilian_layne1990_hypoperfusion_adenosine_by_size.toml` | Per-vessel adenosine dilation vs control diameter, 44–293 µm | Dog, beating heart | mixed |
 | `kanatsuka1989_size_class_dilation_digitized.toml` | Class-mean diameter ratios (≤ 150 vs > 150 µm) with pacing, adenosine and dipyridamole, matched and large doses | Dog, beating heart | fig |
 | `kanatsuka1990_stenosis_size_classes.toml` | Diameter change by size class at reduced distal pressure (stenosis) | Dog, beating heart | mixed |
+| `kuo1995_longitudinal_gradient_shear_adenosine.toml` | Isolated pig coronary arterioles by size (40, 60, 106 µm, 179 µm small artery): adenosine threshold 1e-12 → 1e-9 M, resting tone 63–67% (74% small arteries) of passive at in-vivo pressures, flow dilation +21 / +32 / +52 / +22% | Pig, isolated | FT |
+| `miura2001_human_coronary_flow_induced_dilation.toml` | Flow-induced dilation of human coronary arterioles (91 µm, 40–212) vs pressure gradient; spontaneous tone 10–50% | Human, isolated | FT |
+| `kuochancellor1995_adenosine_flow_interaction.toml` | Adenosine potentiates flow dilation in 50–150 µm arterioles; endothelium/NO/K_ATP dependence | Pig, isolated | abs |
 | `kanatsuka1989_per_vessel_large_dose_digitized.toml` | Per-vessel dilation at large adenosine/dipyridamole doses (flow ×5–7): 44–80 µm +15–53%, 95–150 µm ≈ +3–15%, > 150 µm ≈ 0 | Dog, beating heart (Fig. 8) | fig |
 | `yada1999_adenosine_endo_epi_arterioles.toml` | Arteriolar (< 120 µm) dilation with intracoronary adenosine, subendocardial +17% vs subepicardial +13% | Dog, needle-probe videomicroscope | abs |
 | `yada1993_subendocardial_needle_probe.toml` | Cardiac-cycle diameter change of subendocardial vs subepicardial arterioles (no vasodilator) | Pig, needle probe | abs |

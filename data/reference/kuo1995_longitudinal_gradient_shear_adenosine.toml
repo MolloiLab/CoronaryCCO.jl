@@ -1,0 +1,107 @@
+[meta]
+id = "kuo1995_longitudinal_gradient_shear_adenosine"
+data_type = "experimental"
+validates = "Vessel-size-dependent sensitivity of isolated porcine coronary microvessels to shear stress (flow) and to adenosine, in four size classes from 40 to 180 um: percent dilation vs shear stress, adenosine thresholds and ED50 by size, and resting active tone as a fraction of maximum (nitroprusside) diameter."
+species = "pig"
+preparation = "Pigs 8-12 weeks. India ink-gelatin perfusion of LAD and LCx to visualise microvessels; four consecutive branch orders dissected at 4 C and cannulated at both ends with resistance-matched glass micropipettes (tip ID 20, 30, 40, 60 um for the four classes), PSS-albumin, 36-37 C, in situ length. Dual independent reservoirs allow flow (pressure gradient) to be set without changing mean intraluminal pressure, so flow responses are measured free of the myogenic response."
+conditions = "Each class held at its own luminal pressure chosen from in vivo micropressure data: 50, 60, 70 and 80 cmH2O (36.8, 44.1, 51.5, 58.8 mmHg) for small arterioles, intermediate arterioles, large arterioles and small arteries. Flow steps at delta P = 4, 10, 20, 40, 60 cmH2O; shear stress computed as 4*eta*Q/(pi*r^3) with eta = 0.8 cp and r the pre-flow radius, spanning 0-10 dyn/cm2. Cumulative dose-response curves to substance P, adenosine and sodium nitroprusside at constant pressure with no flow. Maximum diameter from nitroprusside 1e-4 mol/L."
+verification = "FT"
+access = "Full text (HTML) from Wayback Machine capture 20170520022950 of http://circ.ahajournals.org/content/92/3/518; Abstract, Methods, Results and Discussion read in full. Table 1 (active and passive IDs per class) and Figures 1-5 are separate pages that are NOT in the capture, so only the numbers printed in the running text and abstract are recorded here."
+notes = """Data are mean +/- SEM. ED50 obtained by Hill transformation of each vessel's dose-response curve; drugs applied to the bath.
+Shear-induced dilation hierarchy: large arterioles > intermediate arterioles > small arterioles = small arteries. Large arterioles also regulated wall shear stress best (smallest slope of regulated vs theoretical shear stress).
+Adenosine hierarchy is the reverse: sensitivity and magnitude fall as vessel size rises. Large arterioles and small arteries had identical adenosine dose-response curves.
+Nitroprusside was identical in all four classes (threshold 1e-10 mol/L, ED50 9.2e-8 mol/L, maximum at 1e-4 mol/L), which argues the gradients are not an artefact of smooth-muscle cGMP sensitivity or of dissection damage.
+Substance P: no ED50 difference among the three arteriolar classes; ED50 shifted right two orders of magnitude in small arteries."""
+use_in_model = """Primary isolated-vessel source for making adenosine sensitivity and flow (shear) sensitivity functions of vessel diameter in a coronary network model. Adenosine EC50 rises steeply with size (small arterioles lowest threshold 1e-12 M; large arterioles and small arteries ~3e-7 M), while flow-induced dilation peaks near 100 um. Resting tone is ~63-67% of passive diameter for 40-106 um arterioles and ~74% for ~180 um small arteries, i.e. a passive/active diameter ratio of about 1.5 for arterioles and 1.35 for small arteries at in vivo pressures."""
+
+[source]
+authors = ["Kuo L", "Davis MJ", "Chilian WM"]
+year = 1995
+title = "Longitudinal gradients for endothelium-dependent and -independent vascular responses in the coronary microcirculation"
+journal = "Circulation"
+volume = "92"
+issue = "3"
+pages = "518-525"
+doi = "10.1161/01.CIR.92.3.518"
+crossref_verified = "2026-10-16; Crossref title exact match (Circulation 92(3):518-525; authors Kuo, Davis, Chilian)"
+pmid = "7543382"
+
+[data.size_classes]
+description = "The four microvascular size classes, their resting (active) internal diameter, the dissection size range, and the luminal pressure at which each was studied"
+location = "Abstract; Introduction; Methods (Experimental Protocols)"
+provenance = "FT"
+statistic = "mean +/- SEM for resting ID"
+class_name = ["small arterioles", "intermediate arterioles", "large arterioles", "small arteries"]
+resting_id_um = [40, 60, 106, 179]
+resting_id_se_um = [1, 1, 4, 9]
+dissection_range_um = ["25-45", "50-70", "80-130", "140-280"]
+luminal_pressure_cmH2O = [50, 60, 70, 80]
+luminal_pressure_mmHg = [36.8, 44.1, 51.5, 58.8]
+branch_order = ["6th generation", "5th generation", "3rd-4th order", "2nd-3rd order"]
+missing_note = "Per-class n and the paired passive (nitroprusside) diameters are in Table 1, which is not in the archived capture. The Discussion quotes a large-arteriole resting diameter of 98 +/- 5 um (Fig 2 legend) and a small-artery diameter of 175 +/- 18 um (substance P group), so group sizes differ slightly between protocols."
+
+[data.active_tone]
+description = "Resting active diameter as a percentage of maximum (nitroprusside 1e-4 mol/L) diameter at the class's own luminal pressure; this is the myogenic/spontaneous tone of each class"
+location = "Results, Spontaneous Microvascular Tone; Abstract"
+provenance = "FT"
+statistic = "range of class means as printed"
+class_name = ["arterioles 40-106 um (all three classes)", "small arteries ~179 um"]
+active_fraction_of_passive_pct_low = [63.0, 74.0]
+active_fraction_of_passive_pct_high = [67.0, 74.0]
+significant_difference = "small arteries had less tone than arterioles, P < .05"
+missing_note = "The paper prints only the 63-67% range for the three arteriolar classes, not a separate mean +/- SEM per class; those are in Table 1, which is not in the capture. Pressures are 37-59 mmHg, below the 60-100 mmHg band usually quoted for myogenic tone, so these are not directly comparable to tone measured at 60-100 mmHg. About 90% of cannulated vessels developed spontaneous tone within 45 min."
+
+[data.flow_induced_dilation_by_size]
+description = "Percent increase in diameter over the zero-flow resting diameter at the highest shear stress studied (10 dyn/cm2), by size class"
+location = "Abstract; Results, Figure 1 text"
+provenance = "FT"
+statistic = "mean +/- SEM"
+class_name = ["small arterioles", "intermediate arterioles", "large arterioles", "small arteries"]
+resting_id_um = [40, 60, 106, 179]
+dilation_pct = [21.0, 32.0, 52.0, 22.0]
+dilation_se_pct = [3.0, 2.0, 5.0, 6.0]
+shear_stress_dyn_per_cm2 = [10.0, 10.0, 10.0, 10.0]
+missing_note = "Only the top point of each curve is given numerically in the text; the full diameter-shear curves are in Figure 1, which is not in the capture, so no threshold shear or half-maximal shear per class is recorded. Dilation is normalised to the resting diameter, not expressed as a fraction of passive diameter."
+
+[data.flow_induced_dilation_context]
+description = "Flow-induced dilation in neighbouring coronary segments, quoted by the authors for comparison"
+location = "Discussion, Segmental Gradient for Flow-Induced Responses; Introduction"
+provenance = "FT"
+statistic = "as printed, from cited work"
+segment = ["coronary venules ~100 um", "large conduit coronary arteries (LAD, LCx)", "coronary arterioles ~65 um (Kuo 1990)"]
+dilation_pct = [15.0, 6.5, 30.0]
+missing_note = "These are the authors' summaries of other studies (Kuo 1993 Circ Res 72:607 for venules; Drexler 1989 / Holtz 1984 for conduit arteries, quoted as a 3-10% range, recorded here as its midpoint 6.5 with the range in this note; Kuo 1990 AJP 259:H1063 for 65-um arterioles). Not measured in this paper. Species and conditions differ."
+
+[data.adenosine_by_size]
+description = "Threshold concentration, ED50 and concentration for maximal dilation for bath-applied adenosine, by size class"
+location = "Abstract; Results, Figure 4 text"
+provenance = "FT"
+statistic = "threshold and maximum as printed concentrations; ED50 from Hill transformation"
+class_name = ["small arterioles", "intermediate arterioles", "large arterioles", "small arteries"]
+resting_id_um = [40, 60, 106, 179]
+threshold_mol_per_L = [1e-12, 1e-11, 1e-9, 1e-9]
+ed50_mol_per_L = ["not printed", "not printed", 3.0e-7, 2.5e-7]
+max_dilation_at_mol_per_L = [1e-5, 1e-5, 1e-4, 1e-4]
+missing_note = "ED50 is printed numerically only for large arterioles (3.0e-7 M) and small arteries (2.5e-7 M). For intermediate arterioles the text says the ED50 is shifted one order of magnitude right of small arterioles and the threshold two orders right, but gives no number for either; the small-arteriole ED50 is likewise unprinted. Maximal dilation is expressed as a fraction of the nitroprusside maximum in Figure 4, which is not in the capture, so the percent maximal dilation per class is NOT recorded. The paper's own abstract gives the thresholds as 1e-12, 1e-11 and 1e-9 M for small, intermediate and large arterioles."
+
+[data.substance_p_by_size]
+description = "ED50 for substance P, the endothelium-dependent comparison agonist, by size class"
+location = "Results, Segmental Gradient for Pharmacological Responses"
+provenance = "FT"
+statistic = "ED50 with 95% confidence interval"
+class_name = ["small arterioles", "small arteries"]
+ed50_mol_per_L = [1.8e-14, 2.4e-12]
+ci_low_mol_per_L = [4.9e-15, 7.2e-13]
+ci_high_mol_per_L = [6.3e-14, 8.2e-12]
+threshold_mol_per_L = [1e-16, 1e-16]
+missing_note = "No ED50 difference among the three arteriolar classes, so intermediate and large arteriole values are not printed separately. Arterioles 40-100 um were maximally dilated at 1e-9 mol/L; that dose gave only 80% dilation in small arteries."
+
+[data.nitroprusside_control]
+description = "Endothelium-independent control: nitroprusside dose-response was identical in all four classes"
+location = "Results, Figure 5 text"
+provenance = "FT"
+statistic = "as printed"
+threshold_mol_per_L = 1e-10
+ed50_mol_per_L = 9.2e-8
+max_dilation_at_mol_per_L = 1e-4
+missing_note = "No per-class values given because there were no differences in threshold, ED50 or maximum among segments."

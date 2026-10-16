@@ -1,0 +1,48 @@
+[meta]
+id = "kuochancellor1995_adenosine_flow_interaction"
+data_type = "experimental"
+validates = "Resting active tone of isolated porcine coronary arterioles 50-150 um at 60 cmH2O, and the interaction between adenosine and flow-induced dilation: a threshold dose of adenosine (1e-10 M) potentiates flow-induced dilation, and endothelial KATP blockade shifts the adenosine ED50 right by one order of magnitude."
+species = "pig"
+preparation = "Isolated, cannulated subepicardial porcine coronary arterioles, 50-150 um, with intraluminal pressure and flow independently controlled (the Kuo dual-reservoir preparation)."
+conditions = "Intraluminal pressure 60 cmH2O (44.1 mmHg); stepwise increases in flow; adenosine 1e-10 M threshold dose; luminal glibenclamide 1e-6 M, luminal K+ 40 mM, L-NMMA 1e-5 M, indomethacin 1e-5 M, endothelial denudation; nitroprusside 1e-10 M as the endothelium-independent control."
+verification = "abs"
+access = "PubMed abstract (PMID 7653618) via E-utilities, 2026-10-16. AJP full text not accessed: journals.physiology.org is paywalled and the Wayback Machine holds no capture of this DOI's PDF or abstract page (CDX query returned nothing for journals.physiology.org and for ajpheart.physiology.org/content/269/2/H541). The PubMed abstract is truncated at 250 words."
+notes = """All vessels developed active tone to about 67-73% of maximum diameter at 60 cmH2O; the abstract does not break this down by size within the 50-150 um range.
+Flow-induced dilation was potentiated by adenosine 1e-10 M but not by nitroprusside 1e-10 M, so the potentiation is not a simple additive dilation.
+Luminal glibenclamide abolished the adenosine-potentiated component of the flow response; luminal 40 mM K+ blocked flow-induced dilation completely.
+Endothelial denudation, L-NMMA, high luminal K+ and luminal glibenclamide each shifted the adenosine ED50 right by an order of magnitude, i.e. roughly a tenth of the adenosine dilation at submaximal doses is endothelium- and KATP-dependent. Nitroprusside was unaffected by all of these."""
+use_in_model = """Supports treating adenosine sensitivity and flow sensitivity as coupled rather than independent in arterioles of 50-150 um: a subthreshold adenosine concentration raises the gain of the flow response. Also a second porcine estimate of resting tone at ~44 mmHg (active diameter 67-73% of passive, i.e. passive/active ~1.4-1.5), consistent with the 63-67% of kuo1995_longitudinal_gradient_shear_adenosine at 37-52 mmHg."""
+
+[source]
+authors = ["Kuo L", "Chancellor JD"]
+year = 1995
+title = "Adenosine potentiates flow-induced dilation of coronary arterioles by activating KATP channels in endothelium"
+journal = "Am J Physiol"
+volume = "269"
+issue = "2 Pt 2"
+pages = "H541-H549"
+doi = "10.1152/ajpheart.1995.269.2.H541"
+crossref_verified = "2026-10-16; Crossref title exact match (Am J Physiol Heart Circ Physiol 269(2):H541-H549; authors Kuo, Chancellor)"
+pmid = "7653618"
+
+[data.active_tone]
+description = "Resting active diameter as a percentage of maximum diameter in 50-150 um porcine coronary arterioles"
+location = "Abstract"
+provenance = "abs"
+statistic = "range of means as printed"
+size_range_um = ["50", "150"]
+intraluminal_pressure_cmH2O = 60.0
+intraluminal_pressure_mmHg = 44.1
+active_fraction_of_passive_pct_low = 67.0
+active_fraction_of_passive_pct_high = 73.0
+missing_note = "Printed only as a range covering all vessels; no mean, no SEM, no n, and no breakdown by size within 50-150 um. Measured at 44 mmHg, not at 60-100 mmHg."
+
+[data.adenosine_ed50_shift]
+description = "Rightward shift of the adenosine ED50 produced by removing or blocking the endothelial KATP/NO pathway"
+location = "Abstract"
+provenance = "abs"
+statistic = "fold shift as printed"
+intervention = ["endothelial denudation", "L-NMMA 1e-5 M", "luminal K+ 40 mM", "luminal glibenclamide 1e-6 M"]
+ed50_fold_rightward_shift = [10.0, 10.0, 10.0, 10.0]
+nitroprusside_affected = [false, false, false, false]
+missing_note = "The abstract says the shift is 'by an order of magnitude' and that the four interventions produced identical inhibition; it prints no absolute control or treated ED50 value, so the actual adenosine ED50 for 50-150 um porcine arterioles is NOT recorded here. Indomethacin did not alter the adenosine dose-response. The abstract is truncated at 250 words and the full text was not obtained."
