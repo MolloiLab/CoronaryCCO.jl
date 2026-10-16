@@ -1,0 +1,84 @@
+[meta]
+id = "thomas2017_adenosine_cmr_hemodynamics"
+data_type = "experimental"
+validates = "Heart rate, blood pressure, biventricular volumes, stroke volume index and ejection fraction in healthy young adults at baseline and after adenosine 140 ug/kg/min (CMR cine), with the time course over 15 min; percent rise in cardiac output from the same group's conference abstract"
+species = "human"
+preparation = "25 healthy subjects aged 18-45 y (17 men; age 34 +/- 5 y; BMI 26 +/- 4) with normal ECGs, San Antonio Military Medical Center. 1.5 T Siemens Magnetom Espree; SSFP short-axis cine stacks (8 mm slices, 2 mm gap); QMass analysis; volumes indexed to BSA. Caffeine abstinence 48 h, orally verified."
+conditions = "Adenosine 140 ug/kg/min IV for 6 min. Cine stacks and vital signs at baseline, IMMEDIATELY AFTER the end of the infusion, and 5, 10 and 15 min later; then a 10-min washout and regadenoson 0.4 mg (not stored). No gadolinium."
+verification = "mixed"
+access = "Full paper: Europe PMC fullTextXML of PMC5713097 (J Cardiovasc Magn Reson, open access), read 2026-10-15; Table 2 read from the XML markup. Conference abstract (second_source): Europe PMC fullTextXML of PMC4328550, read 2026-10-15."
+notes = """TIMING CAVEAT: the 'immediate post-vasodilator' acquisition was made 'immediately following conclusion of vasodilator stress administration', i.e. after the 6-min infusion ended, not during it. HR was still 96 +/- 13 bpm at that point (baseline 64 +/- 8), so the measurement captures the adenosine state, but the infusion was off during imaging.
+The full paper reports no cardiac output and no aortic flow. The group's 2015 SCMR abstract (Minor, Lee, Steel; same institution, same protocol and n = 25 healthy volunteers, probably the same cohort) measured pulmonic and aortic flow and states 'Cardiac output immediately increased by 28% following adenosine'; no absolute CO, SD or method of calculation is given in the abstract.
+The abstract also states biventricular volumes up to 20% higher than with regadenoson at 5 min and still elevated at 15 min, and RVEF and LVEF +5% at 15 min after adenosine; the full paper's Table 2 instead shows LVEF back to baseline by 10 min after adenosine and LVEDVi below baseline at 15 min. The Table 2 values are stored; the abstract's percent CO rise is stored separately with provenance abs.
+MAP is not reported; SBP and DBP are. Table 1 footnote says 'Median values with standard deviation' for demographics; Table 2 is mean +/- SD."""
+use_in_model = """CMR-based estimate of the CO rise under adenosine for the whole-body bolus model: +28% (abstract), with HR 64 -> 96 bpm and LV stroke volume index 44.8 -> 51.0 mL/m2 immediately after the infusion; SBP and DBP essentially unchanged.
+Use the 5-15 min columns only as wash-out time course (adenosine effect falls within minutes after the infusion stops)."""
+
+[source]
+authors = ["Thomas DM", "Minor MR", "Aden JK", "Lisanti CJ", "Steel KE"]
+year = 2017
+title = "Effects of adenosine and regadenoson on hemodynamics measured using cardiovascular magnetic resonance imaging"
+journal = "J Cardiovasc Magn Reson"
+volume = "19"
+issue = "1"
+pages = "96"
+doi = "10.1186/s12968-017-0409-8"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 19, issue 1, article 96; authors Thomas, Minor, Aden, Lisanti, Steel)"
+pmid = "29202847"
+pmcid = "PMC5713097"
+
+[second_source]
+authors = ["Minor M", "Lee J", "Steel K"]
+year = 2015
+title = "Cardiovascular effects and tolerance of adenosine versus regadenoson during cardiac MRI perfusion testing"
+journal = "J Cardiovasc Magn Reson"
+volume = "17"
+issue = "Suppl 1"
+pages = "P86"
+doi = "10.1186/1532-429X-17-S1-P86"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 17, P86; authors Minor, Lee, Steel)"
+pmid = ""
+pmcid = "PMC4328550"
+role = "Conference abstract (18th SCMR Scientific Sessions) of the same group and protocol; the only source of the cardiac-output change."
+
+[data.hemodynamics_time_course_adenosine]
+description = "Adenosine arm: vital signs, LV and RV volumes (indexed to BSA) and EF at baseline, immediately after the 6-min infusion, and 5, 10, 15 min later"
+location = "Table 2 (adenosine rows)"
+provenance = "FT"
+statistic = "mean +/- SD; n = 25"
+time_point = ["baseline", "immediately after infusion", "5 min", "10 min", "15 min"]
+hr_mean_bpm = [64.0, 96.0, 67.0, 64.0, 65.0]
+hr_sd_bpm = [8.0, 13.0, 8.0, 7.0, 13.0]
+sbp_mean_mmHg = [136.0, 131.0, 133.0, 134.0, 131.0]
+sbp_sd_mmHg = [16.0, 22.0, 18.0, 15.0, 24.0]
+dbp_mean_mmHg = [69.0, 69.0, 64.0, 65.0, 67.0]
+dbp_sd_mmHg = [12.0, 13.0, 10.0, 10.0, 11.0]
+lvef_mean_pct = [63.0, 69.8, 66.6, 63.3, 63.0]
+lvef_sd_pct = [4.6, 6.8, 5.6, 5.4, 6.9]
+lvedvi_mean_mL_per_m2 = [71.2, 72.9, 70.2, 67.3, 66.3]
+lvedvi_sd_mL_per_m2 = [15.6, 15.4, 17.9, 16.0, 17.3]
+lvesvi_mean_mL_per_m2 = [26.4, 22.0, 23.7, 24.3, 25.6]
+lvesvi_sd_mL_per_m2 = [7.0, 6.3, 8.2, 7.9, 9.7]
+lvsvi_mean_mL_per_m2 = [44.8, 51.0, 46.6, 43.0, 41.9]
+lvsvi_sd_mL_per_m2 = [10.1, 11.8, 11.4, 10.4, 12.4]
+rvef_mean_pct = [57.0, 61.7, 59.1, 57.1, 58.5]
+rvef_sd_pct = [7.5, 6.9, 6.1, 7.3, 8.2]
+rvedvi_mean_mL_per_m2 = [74.6, 78.3, 75.7, 72.4, 69.9]
+rvedvi_sd_mL_per_m2 = [16.7, 19.0, 18.7, 15.3, 17.5]
+rvesvi_mean_mL_per_m2 = [32.1, 30.2, 30.8, 31.0, 28.7]
+rvesvi_sd_mL_per_m2 = [9.4, 9.4, 8.3, 8.1, 8.0]
+rvsvi_mean_mL_per_m2 = [42.5, 48.1, 44.9, 41.5, 41.2]
+rvsvi_sd_mL_per_m2 = [10.8, 12.1, 12.8, 10.7, 12.9]
+missing_note = "No cardiac output, cardiac index or MAP in the full paper. Change-from-baseline p at 15 min (Table 2): HR 0.4165, SBP 0.1064, DBP 0.3770, LVEF 0.9623, LVEDVi 0.0023, LVSVi 0.0584."
+
+[data.cardiac_output_change_abstract]
+description = "Percent change in cardiac output immediately after adenosine (pulmonic and aortic flow were measured)"
+location = "Minor, Lee, Steel 2015 abstract P86, Results"
+provenance = "abs"
+statistic = "group mean percent change as printed; no SD; n = 25 healthy volunteers"
+quantity = ["cardiac output change immediately after adenosine infusion"]
+change_pct = [28.0]
+change_sd_pct = [nan]
+rest_co_L_per_min = [nan]
+stress_co_L_per_min = [nan]
+missing_note = "Absolute CO, SD and the method (aortic phase-contrast vs volumetric) are not given in the abstract. Peak pulmonary-arterial and aortic velocities fell by ~0.5 m/s at 5 min with each agent (abstract)."

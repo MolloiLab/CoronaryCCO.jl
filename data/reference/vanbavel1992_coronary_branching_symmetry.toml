@@ -1,0 +1,115 @@
+# VanBavel E, Spaan JAE (1992). Branching patterns in the porcine coronary arterial tree. Estimation of
+# flow heterogeneity. Circ Res 71:1200-1212. Numbers from Tables 1-4 and the text of the publisher PDF.
+
+[meta]
+id = "vanbavel1992_coronary_branching_symmetry"
+data_type = "experimental"
+validates = "Bifurcation symmetry S = ds/dL vs mother diameter (quartiles in six diameter classes), area expansion ratio vs mother diameter, junction exponent by mother-diameter class, and the Strahler ratios (RB, RD, RL) and segments-per-vessel of trees generated from these local statistics. Use for a size-dependent symmetry floor or target distribution in CCO growth."
+species = "pig"
+preparation = "Two porcine hearts; coronary arterial casts made at diastolic arrest and maximal dilation. 1,663 nodes with mother and both daughter diameters measured (heart 1 n = 685, heart 2 n = 978). Diameter range of the analysis about 10-500 um."
+conditions = "Arrested (diastole), maximally dilated, cast."
+verification = "FT"
+access = "Publisher PDF (Circ Res, 14 pages) read via Wayback Machine capture 20180722060912 of circres.ahajournals.org/content/circresaha/71/5/1200.full.pdf. Table 1 checked against a 200 dpi render of page 1204."
+notes = """Symmetry S = ds/dL (small daughter over large daughter diameter, 0 < S <= 1), Eq. 3. Area expansion ratio A = (ds^2 + dL^2)/d0^2, Eq. 2.
+A lower bound of S exists that depends on d0: daughters cannot be thinner than about 5 um, so S >= 5 um / dL (dashed line in Fig. 5 left panel). In the computer generation, S was sampled from the observed S of the same diameter class after normalizing between this lower bound and 1.
+S and A, each corrected for its dependence on d0, are uncorrelated (r2 = 0.001, n = 1,652). Symmetry of sequential nodes shows slight clustering (54% / 53% same-side-of-median, chi2 p < 0.005). No least-squares fit of S vs d0 was made by the authors (distribution too non-normal).
+The generated trees use plain Strahler ordering (not Kassab's diameter-defined ordering), so RD here is not directly comparable to Kassab 1993 diameter-defined orders."""
+use_in_model = """Bin CCO bifurcations by mother diameter using the six classes of symmetry_by_mother_diameter and compare the quartiles of S = ds/dL with S25/median/S75.
+A symmetry floor for growth can be taken from the lower quartile S25 per class (about 0.63 below 30 um falling to 0.23 above 500 um); a sampled target distribution needs the quartiles plus the 5 um lower bound.
+The generated-tree Strahler ratios (RB 3.30, RD 1.51, RL 1.63 at orders 2-8) are the expected outcome of these local rules under plain Strahler ordering."""
+
+[source]
+authors = ["VanBavel E", "Spaan JAE"]
+year = 1992
+title = "Branching patterns in the porcine coronary arterial tree. Estimation of flow heterogeneity"
+journal = "Circ Res"
+volume = "71"
+issue = "5"
+pages = "1200-1212"
+doi = "10.1161/01.RES.71.5.1200"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 71, issue 5, 1200-1212)"
+
+[data.symmetry_by_mother_diameter]
+description = "Distribution of observed symmetry S = ds/dL in six classes of mother segment diameter d0 (both hearts pooled)"
+location = "Table 1"
+provenance = "FT"
+statistic = "lower quartile, median, upper quartile; n = number of nodes"
+mother_diameter_class_um = ["<30", "30-50", "50-75", "75-140", "140-500", ">500"]
+mother_diameter_lo_um = [0.0, 30.0, 50.0, 75.0, 140.0, 500.0]
+mother_diameter_hi_um = [30.0, 50.0, 75.0, 140.0, 500.0, inf]
+n_nodes = [326, 425, 193, 352, 210, 157]
+s_q25 = [0.625, 0.425, 0.369, 0.338, 0.275, 0.233]
+s_median = [0.765, 0.582, 0.546, 0.501, 0.415, 0.400]
+s_q75 = [0.884, 0.738, 0.780, 0.743, 0.635, 0.580]
+missing_note = "Percentiles below the 25th (e.g. 5th/10th) and fractions with S < 0.2/0.3/0.4 are not tabulated; the per-node scatter is only in Fig. 5 (left panel, semilog, not digitized). The <30 um lower edge is not stated (stored as 0)."
+
+[data.symmetry_large_mothers]
+description = "Mean S for nodes with mother diameter d0 > 50 um"
+location = "Results text (Fig. 5 right panel)"
+provenance = "FT"
+statistic = "mean +/- SD; n = nodes"
+group = ["both hearts", "heart 1", "heart 2"]
+n_nodes = [912, 388, 524]
+s_mean = [0.511, 0.473, 0.539]
+s_sd = [0.243, 0.244, 0.238]
+missing_note = ""
+
+[data.area_expansion_ratio]
+description = "Area expansion ratio A = (ds^2 + dL^2)/d0^2 over all measured nodes, and its regression on mother diameter A = a + b*log10(d0[um])"
+location = "Results text (Fig. 4)"
+provenance = "FT"
+statistic = "mean +/- SD; n = nodes"
+group = ["both hearts", "heart 1", "heart 2"]
+n_nodes = [1663, 685, 978]
+a_mean = [1.118, 1.132, 1.108]
+a_sd = [0.302, 0.268, 0.323]
+regression_intercept = 1.279
+regression_slope_per_log10_um = -0.086
+regression_r2 = 0.024
+residual_sd = 0.298
+missing_note = ""
+
+[data.junction_exponent_by_mother_diameter]
+description = "Junction exponent r (d0^r = ds^r + dL^r), estimated by minimizing the shortest distance between data points and the curve of Eq. 10, per mother-diameter group"
+location = "Discussion text"
+provenance = "FT"
+statistic = "single best-fit value per group"
+mother_diameter_class_um = ["<40", "40-200", ">200"]
+exponent = [2.82, 2.50, 2.35]
+missing_note = "No n or confidence interval given for these fits."
+
+[data.generated_tree_strahler_ratios]
+description = "Horton ratios of 30 computer-generated trees (start segment 500 um, grown to 5-10 um) built by sampling the measured length, area-ratio and symmetry distributions. Proc 1: all end segments order 1. Proc 2: end segments > 7.5 um order 2."
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD over 30 generated networks"
+order_range = ["1", "2-8"]
+rb_proc1 = [2.99, 3.30]
+rb_proc1_sd = [0.01, 0.06]
+rb_proc2 = [nan, 3.24]
+rb_proc2_sd = [nan, 0.04]
+rd_proc1 = [1.49, 1.51]
+rd_proc1_sd = [0.00, 0.02]
+rd_proc2 = [1.43, 1.49]
+rd_proc2_sd = [0.00, 0.01]
+rl_proc1 = [2.40, 1.63]
+rl_proc1_sd = [0.02, 0.04]
+rl_proc2 = [1.65, 1.69]
+rl_proc2_sd = [0.00, 0.01]
+missing_note = "Proc 2 RB at order 1 printed as '...'."
+
+[data.bifurcation_ratio_data_vs_model]
+description = "Bifurcation ratio and mean number of segments per Strahler vessel: measured small trees vs model (Proc 1)"
+location = "Table 4"
+provenance = "FT"
+statistic = "data mean +/- SEM; n1 = measured trees, n2 = vessels"
+order = [1, 2, 3, 4]
+rb_data_mean = [2.86, 3.08, 2.53, nan]
+rb_data_sem = [0.10, 0.17, 0.18, nan]
+rb_n_trees = [15.0, 15.0, 15.0, nan]
+rb_model = [2.99, 3.03, 2.82, nan]
+segments_per_vessel_data_mean = [1.0, 1.71, 2.08, 2.10]
+segments_per_vessel_data_sem = [nan, 0.07, 0.14, 0.29]
+segments_per_vessel_n_vessels = [nan, 151.0, 50.0, 20.0]
+segments_per_vessel_model = [1.0, 1.79, 2.32, 2.28]
+missing_note = "Order-1 vessels are one segment by definition (marked * in the table). Order-4 RB not reported."

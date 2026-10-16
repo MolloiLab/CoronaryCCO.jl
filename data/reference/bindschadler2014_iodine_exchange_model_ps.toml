@@ -1,0 +1,67 @@
+[meta]
+id = "bindschadler2014_iodine_exchange_model_ps"
+data_type = "model"
+validates = "Model input, not data: the capillary permeability-surface area product for iodinated contrast assumed as a linear function of flow (PS = slope*F + intercept) in dynamic cardiac CT perfusion models, with the fitted coefficients, the other exchange-model volumes, hematocrits and vessel relative dispersions; a second set of coefficients used for human CT-vs-PET flow estimation"
+species = "model (coefficients fitted to porcine dynamic CT time-attenuation curves with microsphere flow; applied to simulated and human data)"
+preparation = "Bindschadler 2014: axially distributed blood-tissue exchange model (after Kroll et al. 1996) with 20 parallel flow paths, driving iodine dynamics in a modified XCAT phantom; physics-based CT simulation. Alessio 2019: 2-compartment model fitted to human dynamic CT (34 patients, regadenoson stress, 120 kVp) with fixed PS-F relation."
+conditions = "Simulated MBF 0.5, 1, 2, 3 mL/min/g and cardiac output 3, 5, 8 L/min (Bindschadler 2014). Human rest and regadenoson stress (Alessio 2019)."
+verification = "FT"
+access = "Bindschadler 2014: NIH author manuscript HTML on pmc.ncbi.nlm.nih.gov (PMC4057043), read 2026-10-15 (Europe PMC fullTextXML returned no body). Alessio 2019: author manuscript HTML on pmc.ncbi.nlm.nih.gov (PMC6579038), read 2026-10-15."
+notes = """The PS-F slope and intercept in Bindschadler 2014 were 'set ... by simultaneously optimizing them to fit several porcine myocardial TACs with differing MBF values (as measured by fluorescent microspheres; unpublished data shared by So and Lee, Robarts Research Institute)'; Table A1 footnote 1: 'Value estimated based on fitting to porcine dynamic cardiac CT TACs (Lee and So, personal communication)'. Linearity of PS vs F is justified by Cousineau 1983/1994 and Caldwell 1994 (other tracers).
+The PS equation as rendered on the PMC page reads 'PSg(Fp(i)) = PSg_Slope (Fp(i)/(1 - HctTD)) = PSg_Intercept'; the second '=' is presumably '+' (linear relation with intercept). F in the slope term is therefore blood flow Fp/(1 - Hct). Stored as printed; interpret with care.
+These are MODEL ASSUMPTIONS fitted to unpublished pig data, not independent measurements of PS. The underlying pig data (microsphere flow and CT curves) are not published in this paper.
+Alessio 2019 fixes PS = 0.35 F + 0.22 mL/min/g tissue (Table 2) for its human fits; the source of those coefficients is given as the group's prior simulation work (refs 12, 14), not a new measurement."""
+use_in_model = """Default iodine exchange law for the model's capillary-interstitial term: PS(F) = a*F + b with (a, b) = (0.3853, 0.3 mL/min/g) per Bindschadler 2014 or (0.35, 0.22 mL/min/g) per Alessio 2019 (note the different flow variable, see ps_flow_relation). Compare the resulting PS with the CT-measured PS of Ritman 1994 (0.13-0.19 mL/min/g, vasodilated) and the Patlak MPSP of Daghini 2007 (0.37 mL/min/g at baseline) before choosing; run sensitivity over that range.
+Also useful: interstitial volume 0.16 mL/g, capillary plasma volume 0.05 mL/g, relative dispersion 0.18 (large vessels) and 0.48 (small arterioles/venules)."""
+
+[source]
+authors = ["Bindschadler M", "Modgil D", "Branch KR", "La Riviere PJ", "Alessio AM"]
+year = 2014
+title = "Comparison of blood flow models and acquisitions for quantitative myocardial perfusion estimation from dynamic CT"
+journal = "Phys Med Biol"
+volume = "59"
+issue = "7"
+pages = "1533-1556"
+doi = "10.1088/0031-9155/59/7/1533"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 59, issue 7, 1533-1556; authors Bindschadler, Modgil, Branch, La Riviere, Alessio)"
+pmid = "24614352"
+pmcid = "PMC4057043"
+
+[second_source]
+authors = ["Alessio AM", "Bindschadler M", "Busey JM", "Shuman WP", "Caldwell JH", "Branch KR"]
+year = 2019
+title = "Accuracy of myocardial blood flow estimation from dynamic contrast-enhanced cardiac CT compared with PET"
+journal = "Circ Cardiovasc Imaging"
+volume = "12"
+issue = "6"
+pages = "e008323"
+doi = "10.1161/CIRCIMAGING.118.008323"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 12, issue 6, e008323; authors Alessio, Bindschadler, Busey, Shuman, Caldwell, Branch)"
+pmid = "31195817"
+pmcid = "PMC6579038"
+role = "Uses a second fixed PS-F relation (PS = 0.35 F + 0.22 mL/min/g) for human dynamic CT flow fitting."
+
+[data.ps_flow_relation]
+description = "Linear PS-vs-flow relations assumed for iodinated contrast in myocardium"
+location = "Bindschadler 2014 Appendix, PS equation and Table A1; Alessio 2019 Table 2"
+provenance = "FT"
+statistic = "model parameters (no dispersion)"
+model_source = ["Bindschadler 2014 (distributed model; fitted to unpublished porcine CT TACs with microsphere flow)", "Alessio 2019 (2-compartment model for human DCE-CT)"]
+ps_slope = [0.3853, 0.35]
+ps_intercept_mL_per_min_per_g = [0.3, 0.22]
+flow_variable = ["blood flow Fp/(1 - HctTD) (as printed; see notes)", "F = MBF (mL/min/g)"]
+printed_relation = ["PSg(Fp) = PSg_Slope (Fp/(1 - HctTD)) = PSg_Intercept (second '=' as rendered on PMC)", "PS = 0.35 F + 0.22 ml/min/g tissue"]
+missing_note = "Slope is dimensionless. No measured PS values are reported in either paper."
+
+[data.exchange_model_parameters]
+description = "Other fixed parameters of the Bindschadler 2014 iodine exchange model"
+location = "Table A1 and Appendix text"
+provenance = "FT"
+statistic = "model parameters"
+parameter = ["V_cap capillary plasma volume", "L capillary length", "D axial diffusion coefficient", "V_isf interstitial fluid volume", "V_art arteriolar blood volume", "V_ven venular blood volume", "V_FA feeding-artery blood volume", "Hct_bulk", "Hct_tD tissue discharge hematocrit", "Hct_tT tissue tube hematocrit", "relative dispersion, large vessels (LV to tissue)", "relative dispersion, small arterioles and venules"]
+value = [0.05, 0.1, 1.0e-6, 0.16, 0.012, 0.018, 0.016, 0.45, 0.45, 0.3825, 0.18, 0.48]
+unit = ["mL/g tissue", "cm", "cm^2/s", "mL/g tissue", "mL/g tissue", "mL/g tissue", "mL/g tissue", "fraction", "fraction", "fraction", "dimensionless", "dimensionless"]
+reference = ["Bassingthwaighte 1987", "Bassingthwaighte 1987", "estimated", "Vinnakota & Bassingthwaighte 2004", "estimated (fit to porcine CT TACs)", "estimated (fit to porcine CT TACs)", "estimated (fit to porcine CT TACs)", "typical value", "Crystal & Salem 1989; Pries 1990", "Crystal & Salem 1989; Pries 1990", "text (typical arterial value)", "text"]
+alessio2019_fixed_blood_volume_mL_per_g = 0.10
+alessio2019_hematocrit = 0.45
+missing_note = "Flow-level heterogeneity distribution (20 levels) not stored."

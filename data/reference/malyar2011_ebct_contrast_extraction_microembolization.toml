@@ -1,0 +1,76 @@
+[meta]
+id = "malyar2011_ebct_contrast_extraction_microembolization"
+data_type = "experimental"
+validates = "EBCT myocardial perfusion F (mL/g/min), intramyocardial blood volume and an iopamidol microvascular permeability (extraction) index in the pig LAD territory at baseline and during intracoronary adenosine, before microembolization; behaviour of the index when flow roughly doubles"
+species = "pig"
+preparation = "34 anesthetized pigs (32 +/- 3 kg); 30 completed. Catheter in the proximal LAD (between the 2nd and 3rd diagonal) for intracoronary adenosine and microspheres. EBCT (Imatron C-150), 50 ms scans at 4 short-axis levels, triggered at 80% of RR. LAD territory outlined after a 4 mL selective intracoronary iopamidol injection; flow scans after an intravenous bolus of 0.33 mL/kg iopamidol (Isovue-370). Time-density curves split into intravascular and extravascular components; F, blood volume Bv and the permeability index computed (method of Ritman 1994, ref 30). 20-min washout between the four scan sequences."
+conditions = "Baseline: intracoronary saline 1 mL/min. Adenosine: intracoronary adenosine 50 ug/kg/min for 5 min. Then adenosine + microspheres (10, 30 or 100 um at 1/8, 1/4 or 1/2 of the lethal dose; 3 pigs per size and dose) and recovery. Controls: 3 pigs, no microspheres."
+verification = "FT"
+access = "Author manuscript HTML on pmc.ncbi.nlm.nih.gov (PMC3154707), read 2026-10-15; Europe PMC fullTextXML returned an error and NCBI efetch gave no body. Tables 1-3 read from the HTML."
+notes = """Flow is EBCT-derived (indicator dilution), not microspheres. Units printed as ml g myocardium^-1 min^-1.
+The permeability index is in ARBITRARY UNITS (Table 3 caption). The abstract describes it as 'microvascular extraction of a nonionic contrast agent (an index of microvascular permeability)'; the text read does not give its formula, so it is not stored as E and no PS is computed.
+Key finding for normal myocardium: the index is unchanged by intracoronary adenosine although EBCT flow roughly doubles (control pigs 0.40 +/- 0.08 -> 0.37 +/- 0.11 with F 1.09 -> 2.22 mL/g/min).
+Hematocrit not reported. The methods give iopamidol molecular weight as '777.09 kDa' (as printed; iopamidol is 777 Da).
+Embolization columns are included for completeness; only BL and IC AD columns describe intact myocardium."""
+use_in_model = """At rest vs hyperemia in pig myocardium: flow ~1.0 -> ~2.2 mL/g/min (EBCT), blood volume ~0.12 -> ~0.23 mL/g, permeability/extraction index ~0.37 -> ~0.37 (unchanged). If the index tracks first-pass extraction E, an unchanged E with doubled flow implies PS rising roughly in proportion to flow (capillary recruitment), consistent with PS-F relations of the form PS = a*F + b used by CT perfusion models (bindschadler2014_iodine_exchange_model_ps). This interpretation is not stated by the authors."""
+
+[source]
+authors = ["Malyar NM", "Lerman LO", "Gossl M", "Beighley PE", "Ritman EL"]
+year = 2011
+title = "Relationship between surface area of nonperfused myocardium and extravascular extraction of contrast agent following coronary microembolization"
+journal = "Am J Physiol Regul Integr Comp Physiol"
+volume = "301"
+issue = "2"
+pages = "R430-R437"
+doi = "10.1152/ajpregu.00428.2010"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 301, issue 2, R430-R437; authors Malyar, Lerman, Gossl, Beighley, Ritman)"
+pmid = "21543631"
+pmcid = "PMC3154707"
+
+[data.flow_and_blood_volume]
+description = "LAD-territory EBCT flow F and blood volume Bv by scan condition and group"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- 1 SD; n = 3 pigs per group"
+group = ["10um_1.25e6", "10um_2.5e6", "10um_5e6", "30um_3.75e4", "30um_7.5e4", "30um_1.5e5", "100um_1.25e3", "100um_2.5e3", "100um_5e3", "control"]
+flow_baseline_mean_mL_per_g_per_min = [0.97, 1.02, 0.95, 1.00, 0.95, 0.97, 1.09, 1.05, 0.98, 1.09]
+flow_baseline_sd_mL_per_g_per_min = [0.29, 0.24, 0.28, 0.27, 0.24, 0.25, 0.35, 0.31, 0.30, 0.23]
+flow_ic_adenosine_mean_mL_per_g_per_min = [2.28, 2.09, 2.17, 2.33, 2.18, 2.11, 2.29, 2.38, 2.24, 2.22]
+flow_ic_adenosine_sd_mL_per_g_per_min = [0.40, 0.45, 0.45, 0.37, 0.39, 0.56, 0.41, 0.37, 0.42, 0.21]
+flow_adenosine_plus_microspheres_mean_mL_per_g_per_min = [2.11, 1.66, 1.40, 1.62, 1.41, 1.32, 1.57, 1.34, 1.03, 2.10]
+flow_adenosine_plus_microspheres_sd_mL_per_g_per_min = [0.37, 0.42, 0.26, 0.31, 0.49, 0.45, 0.56, 0.43, 0.30, 0.27]
+flow_post_embolization_mean_mL_per_g_per_min = [1.11, 1.13, 1.10, 1.12, 1.20, 1.13, 1.11, 1.12, 1.06, 1.16]
+flow_post_embolization_sd_mL_per_g_per_min = [0.26, 0.36, 0.38, 0.14, 0.29, 0.35, 0.22, 0.28, 0.04, 0.26]
+bv_baseline_mean_mL_per_g = [0.11, 0.12, 0.12, 0.12, 0.11, 0.11, 0.11, 0.13, 0.12, 0.12]
+bv_baseline_sd_mL_per_g = [0.02, 0.03, 0.03, 0.02, 0.02, 0.02, 0.03, 0.02, 0.04, 0.02]
+bv_ic_adenosine_mean_mL_per_g = [0.25, 0.23, 0.24, 0.22, 0.23, 0.23, 0.23, 0.25, 0.23, 0.22]
+bv_ic_adenosine_sd_mL_per_g = [0.05, 0.04, 0.04, 0.02, 0.05, 0.05, 0.05, 0.06, 0.04, 0.02]
+missing_note = "Significance markers omitted (IC adenosine vs baseline P < 0.05 in all groups). Blood volume for the later scan conditions not stored."
+
+[data.permeability_index]
+description = "Coronary microvascular permeability index (arbitrary units; the abstract calls it microvascular extraction of contrast) by scan condition"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- 1 SD; n = 3 pigs per group"
+group = ["10um_1.25e6", "10um_2.5e6", "10um_5e6", "30um_3.75e4", "30um_7.5e4", "30um_1.5e5", "100um_1.25e3", "100um_2.5e3", "100um_5e3", "control_LAD", "LCX_territory"]
+index_baseline_mean = [0.39, 0.37, 0.32, 0.38, 0.36, 0.40, 0.46, 0.36, 0.31, 0.40, 0.33]
+index_baseline_sd = [0.1, 0.06, 0.10, 0.09, 0.16, 0.09, 0.11, 0.11, 0.08, 0.08, 0.07]
+index_adenosine_mean = [0.40, 0.40, 0.30, 0.39, 0.35, 0.36, 0.45, 0.38, 0.31, 0.37, 0.35]
+index_adenosine_sd = [0.08, 0.07, 0.08, 0.09, 0.06, 0.09, 0.13, 0.08, 0.09, 0.11, 0.11]
+index_adenosine_plus_microspheres_mean = [0.57, 0.53, 0.58, 0.52, 0.48, 0.54, 0.53, 0.52, 0.45, 0.37, 0.34]
+index_adenosine_plus_microspheres_sd = [0.11, 0.15, 0.19, 0.08, 0.11, 0.08, 0.09, 0.10, 0.11, 0.07, 0.09]
+index_post_embolization_mean = [0.54, 0.46, 0.51, 0.46, 0.45, 0.50, 0.51, 0.42, 0.37, 0.37, 0.36]
+index_post_embolization_sd = [0.16, 0.06, 0.12, 0.09, 0.07, 0.10, 0.10, 0.06, 0.08, 0.05, 0.12]
+missing_note = "Index formula not given in the text read (cites Ritman 1994); not converted to E or PS. LCX row is the non-embolized territory pooled over animals (n not restated)."
+
+[data.hemodynamics_control]
+description = "Heart rate and mean arterial pressure in the control (no microsphere) group"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- 1 SD; n = 3"
+time_point = ["baseline", "post (no embolization)"]
+heart_rate_mean_bpm = [93.0, 96.0]
+heart_rate_sd_bpm = [7.0, 5.0]
+map_mean_mmHg = [97.0, 96.0]
+map_sd_mmHg = [3.0, 8.0]
+missing_note = "Table 1 has baseline and post-embolization columns only (no separate adenosine column). Hematocrit not reported."

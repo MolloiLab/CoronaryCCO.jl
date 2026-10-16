@@ -199,6 +199,12 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `yang2024_cmr_myocardial_transit_time.toml` | Human aortic-root-to-coronary-sinus arrival delay on CMR | Human, rest | FT |
 | `chatzantonis2020_cmr_myocardial_transit_time.toml` | The same MyoTT measure in controls | Human, rest | abs |
 | `canty1991_contrast_extraction.toml` | First-pass extraction of nonionic contrast (ioversol) 33 ± 2% at vasodilated flow vs 50 ± 3% at ~half flow; intravascular-emulsion blood volume and appearance times. Flow only as circumflex mL/min (rest 20, vasodilated 123, stenotic 67), no per-gram flow or PS | Dog, closed chest, carbocromen vasodilation, fast CT | mixed (text and Table 1 FT; stenotic appearance times fig) |
+| `ritman1994_iohexol_capillary_permeability.toml` | Iohexol PS during coronary adenosine (fast CT vs catheter reference), no concentration effect, bradykinin dose response | Pig | abs |
+| `daghini2007_ct64_myocardial_permeability.toml` | Iopamidol Patlak permeability-surface product (0.37 mL/min/g) and fractional vascular volume at rest, 64-slice CT vs EBCT | Pig, 12 | abs |
+| `malyar2011_ebct_contrast_extraction_microembolization.toml` | EBCT flow, blood volume and an extraction index (arbitrary units) at rest and intracoronary adenosine | Pig, 3 per group | FT |
+| `bindschadler2014_iodine_exchange_model_ps.toml` | **Model assumptions, not data.** PS-vs-flow relations used for iodinated contrast (PS = 0.3853·F + 0.3; Alessio 2019: 0.35·F + 0.22), model volumes and dispersions | Pig-fitted / human | FT |
+| `lassen2023_rb82_adenosine_cardiac_output.toml` | Cardiac output, HR and SV at rest and during adenosine 140 µg/kg/min; pulmonary transit and volume | Human, 33 healthy, Rb-82 PET | FT |
+| `thomas2017_adenosine_cmr_hemodynamics.toml` | HR, blood pressure, SV index and EF after adenosine 140 µg/kg/min; CO +28% (abstract of the same group) | Human, 25 healthy, CMR | mixed |
 
 ## Caveats that matter for comparisons
 
@@ -225,3 +231,7 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 - **Ofili 1995 proximal vs distal APV.** The Am Heart J full text is paywalled and the abstract
   has no numbers.
 - **Abstract-only entries** (`abs`) can be upgraded once the full texts are available.
+| `vanbavel1992_coronary_branching_symmetry.toml` | Bifurcation symmetry d_s/d_L by mother diameter (quartiles), junction exponents 2.82 / 2.50 / 2.35, area expansion; Strahler ratios of trees built from these local statistics | Pig, 1,663 nodes, casts | FT |
+| `kalsho2004_bifurcation_asymmetry.toml` | Diameter asymmetry D_large/D_small and length asymmetry per Strahler order, RCA / LAD / LCx | Pig casts | FT |
+| `kaimovitz2008_diameter_asymmetry.toml` | Smaller daughter ÷ mother diameter per (daughter order, mother order), LAD / LCx / RCA | Pig | FT (one table missing) |
+| `schwarz2020_human_coronary_symmetry.toml` | Bifurcation symmetry d_S/d_L per mother-diameter class (whiskers, quartiles, median), histograms at 75–90 µm and ≥ 400 µm. Lower whisker per class is the growth symmetry floor | Human left coronary cast, ≈ 88,000 bifurcations | fig |

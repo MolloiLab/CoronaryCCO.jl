@@ -24,7 +24,7 @@
 
 module Body
 
-export Segment, Circulation, Injection, human_circulation, organ_only, simulate, curve, transit_table, aif
+export Segment, Circulation, Injection, human_circulation, adenosine, organ_only, simulate, curve, transit_table, aif
 
 const F32 = Float32
 
@@ -344,6 +344,19 @@ aif(r, site::Symbol) = (r.t, curve(r, site))
 
 # ---------------------------------------------------------------------------------------------
 """
+    adenosine(; co = 81.6, beat = 1.0, hr = 96/64, sv = 51.0/44.8) -> (; co, beat)
+
+Cardiac output (mL/s) and beat length (s) during i.v. adenosine 140 µg/kg/min, from the resting
+values. In 25 healthy volunteers heart rate rose from 64 ± 8 to 96 ± 13 /min and stroke volume
+index from 44.8 ± 10.1 to 51.0 ± 11.8 mL/m², so cardiac output rises × 1.71 (Thomas et al. 2017,
+Table 2, [thomas2017]). Blood pressure barely moves (systolic −5, diastolic 0 mmHg), so the coronary
+model keeps its aortic pressure. Other series bracket the rise: +28% (abstract of the same group)
+and × 2.2–2.4 by gated Rb-82 PET, whose resting volumes read low [lassen2023].
+Use as `human_circulation(; adenosine()..., f_cor = q_cor / adenosine().co)`.
+"""
+adenosine(; co = 81.6f0, beat = 1.0f0, hr = 96.0f0 / 64.0f0, sv = 51.0f0 / 44.8f0) = (co = F32(co * hr * sv), beat = F32(beat / hr))
+
+"""
     human_circulation(; kwargs...) -> Circulation
 
 Adult male (ICRP 89 reference, 5.3 L blood) with a named venous tree for every common injection
@@ -426,7 +439,9 @@ function human_circulation(;
     f_other = 1.0f0 - 0.033f0 - fo
     ks = (1.0f0 - f_cor) / (1.0f0 - 0.033f0)          # at stress the heart takes a larger share
     push!(S, Segment(:aortic_root, :av, :root; kind = :artery, v = F(v_aortic_root), plug = 0.8f0, rd = 0.1f0))
-    push!(S, Segment(:coronary, :root, :cs; kind = :bed, q = F(f_cor), v = F(v_cor), ve = F(ve_cor), ps = F(0.4f0 * f_cor * co * (1 - hct))))
+    # lumped coronary bed: capillary PS 0.37 mL/min/g (as `Flow.Physiology.ps`) over the tissue whose
+    # interstitium is ve_cor (interstitial fraction 0.18, density 1.05 g/mL)
+    push!(S, Segment(:coronary, :root, :cs; kind = :bed, q = F(f_cor), v = F(v_cor), ve = F(ve_cor), ps = F(0.37f0 / 60 * ve_cor / 0.18f0 * 1.05f0)))
     push!(S, Segment(:coronary_sinus, :cs, :ra_in; kind = :vein, v = 3.0f0, plug = 0.8f0, rd = 0.1f0))
     push!(S, Segment(:arch, :root, :arch_out; kind = :artery, v = F(v_arch), plug = 0.8f0, rd = 0.1f0))
     push!(S, Segment(:desc_aorta, :arch_out, :abd; kind = :artery, v = F(v_desc), plug = 0.8f0, rd = 0.1f0))

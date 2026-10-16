@@ -1,0 +1,41 @@
+[meta]
+id = "daghini2007_ct64_myocardial_permeability"
+data_type = "experimental"
+validates = "Myocardial microvascular permeability-surface area product (MPSP, Patlak model) and fractional vascular volume (FVV) for iopamidol in normal pig myocardium by EBCT and 64-slice CT, at baseline and during IV adenosine"
+species = "pig"
+preparation = "12 pigs studied with both EBCT and 64-slice helical CT (CT-64), in randomized order 1 week apart. Central-venous injection of iopamidol; myocardial time-attenuation curves analysed with indicator-dilution and Patlak models."
+conditions = "Baseline and during intravenous adenosine infusion (dose not in the abstract)."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 17414522). Full text (Invest Radiol, Lippincott) not open; Wayback Machine holds only redirects (HTTP 301) for the full-text URL."
+notes = """Only baseline Patlak values are given numerically in the abstract. The adenosine response is described only as 'similar' between scanners, with no numbers.
+Myocardial flow (mL/min/g) at which MPSP was measured is not in the abstract.
+The authors conclude that indicator-dilution MPSP and FVV from CT-64 are unreliable (sensitive to scan duration), while Patlak values are feasible. Patlak MPSP is a unidirectional influx constant, not necessarily equal to a capillary PS from a distributed model.
+Same lab (Mayo Clinic, Lerman/Ritman)."""
+use_in_model = """Baseline (rest) iopamidol influx constant of ~0.37 mL/min/g in normal pig myocardium. Use as the PS of an iodinated agent in the model's capillary-interstitial exchange term. A Patlak Ki = E*F_plasma = F_plasma(1 - exp(-PS/F_plasma)) is below both PS and plasma flow, so it is a lower bound on PS. Combine with flow from another source; this abstract gives none."""
+
+[source]
+authors = ["Daghini E", "Primak AN", "Chade AR", "Zhu X", "Ritman EL", "McCollough CH", "Lerman LO"]
+year = 2007
+title = "Evaluation of porcine myocardial microvascular permeability and fractional vascular volume using 64-slice helical computed tomography (CT)"
+journal = "Invest Radiol"
+volume = "42"
+issue = "5"
+pages = "274-282"
+doi = "10.1097/01.rli.0000258086.78179.90"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 42, issue 5, 274-282; authors Daghini, Primak, Chade, Zhu, Ritman, McCollough, Lerman)"
+pmid = "17414522"
+
+[data.patlak_baseline]
+description = "Baseline Patlak-model MPSP and FVV, CT-64 vs EBCT, iopamidol"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD or SE as printed (not specified in the abstract); n = 12 pigs"
+scanner = ["CT-64", "EBCT"]
+mpsp_baseline_mean_mL_per_min_per_g = [0.37, 0.37]
+mpsp_baseline_spread_mL_per_min_per_g = [0.03, 0.04]
+fvv_baseline_mean_mL_blood_per_mL = [0.08, 0.07]
+fvv_baseline_spread_mL_blood_per_mL = [0.02, 0.02]
+mpsp_adenosine_mL_per_min_per_g = [nan, nan]
+flow_mL_per_min_per_g = [nan, nan]
+correlation_ct64_vs_ebct = "MPSP r = 0.87; FVV r = 0.93 (Patlak)"
+missing_note = "Adenosine MPSP and FVV, myocardial flow, and the nature of the +/- (SD or SE) are not in the abstract."

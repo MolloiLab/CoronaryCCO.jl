@@ -1,0 +1,93 @@
+# Kalsho G, Kassab GS (2004). Bifurcation asymmetry of the porcine coronary vasculature and its
+# implications on coronary flow heterogeneity. Am J Physiol Heart Circ Physiol 287:H2493-H2500.
+# Numbers from Tables 1-3 and 6 of the publisher full-text HTML.
+
+[meta]
+id = "kalsho2004_bifurcation_asymmetry"
+data_type = "experimental"
+validates = "Diameter and length asymmetry ratios of the two daughters at each bifurcation, per diameter-defined Strahler order of the mother vessel, for pig RCA, LAD and LCx (orders 1-11), with quadratic-exponential fits ln(S) = a + b*n + c*n^2."
+species = "pig"
+preparation = "Same morphometric database as Kassab et al. 1993 (silicone-elastomer casts for vessels > 50 um; histological optical sectioning for < 50 um). Bifurcations analyzed: 5,082 RCA, 4,014 LAD, 1,946 LCx (arteries); 13,778 sinus and 4,505 thebesian venous bifurcations."
+conditions = "Arrested, maximally vasodilated, cast at 80 mmHg (as Kassab 1993)."
+verification = "FT"
+access = "Publisher full-text HTML (journals.physiology.org) read via Wayback Machine capture 20220615163541; tables are HTML text, not OCR."
+notes = """Asymmetry ratio S_D = D_m / D_k >= 1 by definition: the LARGER daughter diameter over the SMALLER daughter diameter (mother order n >= m >= k, D_n >= D_m >= D_k). This is the inverse of the CCO symmetry index S = ds/dL. Because the mean of a ratio is not the reciprocal of the mean of its inverse, 1/mean(S_D) is only a rough (upward-biased) estimate of mean(ds/dL); no converted values are stored here.
+S_l = l_m / l_k (larger-diameter daughter length over smaller-daughter length) can be < 1.
+Mother order uses the diameter-defined Strahler scheme of Kassab 1993; orders 1-4 come from histology and are shared between the LAD and LCx (rows 1-3 identical).
+Distributions of S_D per order were right skewed; only mean +/- SD are tabulated. Venous tables (sinus orders 1-12, thebesian 1-10; Tables 4-5) are not transcribed here."""
+use_in_model = """For each CCO bifurcation compute S_D = dL/ds and the diameter-defined order of the mother; compare per-order mean +/- SD with diameter_asymmetry_rca/lad/lcx, or compare the fitted curve exp(a + b*n + c*n^2). The ratio is about 1.4 (S ~ 0.7) at orders 1-3, about 1.7-1.8 at order 5 (~70-80 um), 2.4-2.5 at order 6, and 4-7 at orders 7-11 (large trunks give off small branches)."""
+
+[source]
+authors = ["Kalsho G", "Kassab GS"]
+year = 2004
+title = "Bifurcation asymmetry of the porcine coronary vasculature and its implications on coronary flow heterogeneity"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "287"
+issue = "6"
+pages = "H2493-H2500"
+doi = "10.1152/ajpheart.00371.2004"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 287, issue 6, H2493-H2500)"
+
+[data.diameter_asymmetry_rca]
+description = "RCA: mother diameter and daughter diameter asymmetry ratio S_D = D_large/D_small and length asymmetry ratio S_l, per mother order"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD; n = bifurcations (separate n for S_D and S_l)"
+mother_order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+mother_diameter_mean_um = [9.57, 13.2, 19.0, 29.6, 70.1, 139.0, 259.0, 422.0, 712.0, 1399.0, 3227.0]
+mother_diameter_sd_um = [1.03, 1.73, 2.85, 6.14, 15.1, 30.6, 45.4, 62.0, 133.0, 386.0, 258.0]
+sd_ratio_mean = [1.34, 1.39, 1.55, 1.73, 1.74, 2.41, 3.69, 4.77, 5.61, 6.56, 10.4]
+sd_ratio_sd = [0.33, 0.36, 0.46, 0.73, 0.80, 1.43, 2.68, 3.77, 5.24, 4.92, 6.64]
+sd_ratio_n = [521, 460, 373, 240, 447, 1323, 991, 475, 162, 70, 20]
+sl_ratio_mean = [1.60, 1.27, 1.17, 1.21, 1.62, 1.62, 2.50, 2.52, 3.29, 3.33, 4.58]
+sl_ratio_sd = [1.58, 1.19, 1.02, 1.25, 1.18, 1.80, 4.06, 2.94, 3.48, 3.99, 6.23]
+sl_ratio_n = [101, 99, 144, 88, 10, 126, 336, 266, 124, 60, 16]
+missing_note = ""
+
+[data.diameter_asymmetry_lad]
+description = "LAD: mother diameter and daughter diameter asymmetry ratio S_D = D_large/D_small and length asymmetry ratio S_l, per mother order"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD; n = bifurcations (separate n for S_D and S_l)"
+mother_order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+mother_diameter_mean_um = [9.22, 12.8, 18.5, 29.2, 80.4, 156.0, 305.0, 468.0, 713.0, 1532.0, 3369.0]
+mother_diameter_sd_um = [0.95, 1.76, 2.55, 7.35, 17.4, 36.2, 53.0, 56.6, 118.0, 367.0, 1055.0]
+sd_ratio_mean = [1.42, 1.47, 1.52, 1.69, 1.84, 2.53, 4.05, 4.75, 5.06, 5.85, 7.12]
+sd_ratio_sd = [0.36, 0.42, 0.46, 0.60, 1.16, 1.95, 3.42, 4.10, 3.72, 4.36, 3.43]
+sd_ratio_n = [464, 320, 171, 103, 437, 1024, 852, 415, 164, 48, 16]
+sl_ratio_mean = [1.54, 1.20, 1.09, 1.19, 1.61, 1.60, 2.20, 2.02, 2.87, 3.10, 3.62]
+sl_ratio_sd = [1.54, 1.04, 0.80, 1.13, 0.59, 1.45, 2.39, 2.03, 3.04, 2.29, 1.82]
+sl_ratio_n = [87, 95, 58, 38, 6, 124, 239, 217, 115, 38, 15]
+missing_note = ""
+
+[data.diameter_asymmetry_lcx]
+description = "LCx: mother diameter and daughter diameter asymmetry ratio S_D = D_large/D_small and length asymmetry ratio S_l, per mother order"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SD; n = bifurcations (separate n for S_D and S_l)"
+mother_order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+mother_diameter_mean_um = [9.21, 12.8, 18.5, 27.5, 83.6, 149.0, 290.0, 467.0, 1011.0, 2560.0]
+mother_diameter_sd_um = [0.95, 1.76, 2.55, 5.38, 17.1, 30.5, 58.1, 75.4, 268.0, 323.0]
+sd_ratio_mean = [1.43, 1.47, 1.52, 1.67, 1.70, 1.74, 2.61, 3.39, 4.30, 5.8]
+sd_ratio_sd = [0.37, 0.42, 0.46, 0.50, 0.70, 0.80, 1.60, 2.05, 3.39, 4.61]
+sd_ratio_n = [466, 321, 171, 87, 96, 272, 286, 177, 60, 10]
+sl_ratio_mean = [1.64, 1.25, 1.09, 1.19, 1.70, 1.91, 2.01, 2.62, 3.68, 3.27]
+sl_ratio_sd = [1.69, 1.13, 0.80, 1.13, 0.14, 1.70, 2.42, 3.34, 4.52, 3.52]
+sl_ratio_n = [89, 96, 58, 38, 2, 20, 85, 106, 52, 10]
+missing_note = ""
+
+[data.asymmetry_fit_coefficients]
+description = "Quadratic-exponential fits ln(S_x) = a + b*n + c*n^2 vs mother order n, for diameter (S_D) and length (S_l) asymmetry ratios"
+location = "Table 6"
+provenance = "FT"
+statistic = "least-squares fit to the per-order means; R2 as printed"
+tree = ["RCA", "LAD", "LCx", "Thebesian", "Sinus"]
+sd_a = [0.19, 0.13, 0.46, 0.12, -0.11]
+sd_b = [0.036, 0.10, -0.095, -0.17, -0.31]
+sd_c = [0.014, 0.0067, 0.023, 0.0063, -0.011]
+sd_r2 = [0.980, 0.954, 0.983, 0.985, 0.962]
+sl_a = [0.33, 0.28, 0.36, 0.61, 0.56]
+sl_b = [-0.054, -0.044, -0.076, 0.13, 0.068]
+sl_c = [0.015, 0.013, 0.018, 0.017, 0.0087]
+sl_r2 = [0.922, 0.910, 0.864, 0.861, 0.810]
+missing_note = "Venous rows use negative order numbers in the source; the sign convention of n for the venous fits is not restated in Table 6. Area, volume and resistance fits (S_A, S_v, S_R) are in Table 6 but not transcribed."

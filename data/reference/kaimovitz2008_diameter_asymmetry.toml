@@ -1,0 +1,75 @@
+# Kaimovitz B, Huo Y, Lanir Y, Kassab GS (2008). Diameter asymmetry of porcine coronary arterial trees:
+# structural and functional implications. Am J Physiol Heart Circ Physiol 294:H714-H723.
+# Numbers from Tables 1-3 (asymmetry ratio matrices) of the publisher full-text HTML.
+
+[meta]
+id = "kaimovitz2008_diameter_asymmetry"
+data_type = "experimental"
+validates = "Asymmetry ratio matrix (ARM): mean +/- SD of Ds/Dm (smaller-daughter over mother diameter) for inter-element bifurcations, indexed by the diameter-defined order of the smaller daughter (row) and of the mother (column), for pig LAD, LCx and RCA. This is the diameter analogue of Kassab's connectivity matrix and the most direct target for side-branch size vs parent size."
+species = "pig"
+preparation = "Raw bifurcation data of the Kassab et al. 1993 arterial database (casts > 50 um, histology < 50 um), ordered by the original manual diameter-defined Strahler scheme ('raw' tables)."
+conditions = "Arrested, maximally vasodilated, cast (as Kassab 1993)."
+verification = "mixed"
+access = "Publisher full-text HTML (journals.physiology.org) read via Wayback Machine capture 20220305070123; tables parsed from HTML cells (column positions preserved). Supplemental Tables S1-S7 (automatic-scheme ARMs; per-order Dl/Dm, Ds/Dm and AER) were not accessible."
+notes = """Inter-element bifurcations only: each daughter belongs to a different element, so the smaller daughter starts a side branch of lower order. Intra-element Dl/Dm (taper along an element) is shown only in Fig. 1 (minimum at mother order 5, ~70-80 um) and Supplemental Tables S5-S7.
+Row = order of the smaller daughter Ds (0 = capillary), column = order of the mother Dm. Entries are stored as flat parallel arrays (daughter_order, mother_order, value). Empty cells in the printed matrix are simply absent here.
+Some cells print a mean without SD or n (single observation or omitted); those SD/n are stored as nan.
+Rows 0-2 of the LCx table are identical to the LAD table (shared histological data), as in Kalsho & Kassab 2004.
+The authors state (text, data not shown) that S_D = Dl/Ds is uniform over orders 1-5 and increases above order 5; AER is near 1 for orders 6-11 and rises toward order 1."""
+use_in_model = """For each CCO bifurcation assign diameter-defined orders to the mother and smaller daughter and compare the mean Ds/Dm in each (daughter, mother) cell with these matrices; weight by n_mother_vessels. Together with Kassab 1993 connectivity matrices this checks both how often and how large side branches are. The diagonal-adjacent cells (daughter = mother - 1) give near-symmetric junctions (Ds/Dm ~0.45-0.7); cells far from the diagonal give the small side branches off trunks (Ds/Dm < 0.1)."""
+
+[source]
+authors = ["Kaimovitz B", "Huo Y", "Lanir Y", "Kassab GS"]
+year = 2008
+title = "Diameter asymmetry of porcine coronary arterial trees: structural and functional implications"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "294"
+issue = "2"
+pages = "H714-H723"
+doi = "10.1152/ajpheart.00818.2007"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 294, issue 2, H714-H723)"
+
+[data.arm_lad]
+description = "LAD asymmetry ratio matrix: Ds/Dm for smaller daughter of order daughter_order and mother of order mother_order (manual/raw ordering)"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD over n mother vessels"
+daughter_order = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 10]
+mother_order = [1, 2, 3, 4, 2, 3, 4, 6, 3, 4, 5, 6, 7, 8, 4, 5, 6, 7, 8, 9, 5, 6, 7, 8, 9, 10, 6, 7, 8, 9, 10, 7, 8, 9, 10, 8, 9, 10, 11, 9, 10, 11, 10, 11, 11]
+ds_over_dm_mean = [0.663, 0.511, 0.347, 0.181, 0.670, 0.515, 0.342, 0.067, 0.640, 0.485, 0.151, 0.085, 0.048, 0.034, 0.587, 0.280, 0.137, 0.062, 0.05, 0.012, 0.456, 0.243, 0.117, 0.086, 0.067, 0.020, 0.436, 0.237, 0.158, 0.110, 0.064, 0.453, 0.321, 0.224, 0.121, 0.579, 0.369, 0.220, 0.085, 0.592, 0.332, 0.178, 0.470, 0.241, 0.475]
+ds_over_dm_sd = [0.132, 0.106, 0.113, nan, 0.091, 0.063, 0.031, 0.013, 0.090, 0.069, 0.033, 0.023, 0.013, 0.005, 0.126, 0.084, 0.033, 0.020, nan, nan, 0.104, 0.066, 0.030, 0.016, 0.020, nan, 0.125, 0.070, 0.039, 0.034, 0.021, 0.130, 0.078, 0.050, 0.040, 0.160, 0.087, 0.067, 0.034, 0.082, 0.089, 0.031, 0.141, 0.090, 0.185]
+n_mother_vessels = [295.0, 68.0, 10.0, nan, 106.0, 36.0, 3.0, 3.0, 47.0, 36.0, 15.0, 13.0, 5.0, 4.0, 20.0, 33.0, 22.0, 25.0, nan, nan, 166.0, 155.0, 64.0, 27.0, 8.0, nan, 455.0, 334.0, 128.0, 35.0, 3.0, 213.0, 112.0, 45.0, 8.0, 53.0, 27.0, 9.0, 2.0, 32.0, 14.0, 2.0, 12.0, 8.0, 3.0]
+missing_note = "Cells printed without SD and n: (0,4) 0.181, (3,8) 0.05, (3,9) 0.012, (4,10) 0.020."
+
+[data.arm_lcx]
+description = "LCx asymmetry ratio matrix: Ds/Dm for smaller daughter of order daughter_order and mother of order mother_order (manual/raw ordering)"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD over n mother vessels"
+daughter_order = [0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 9]
+mother_order = [1, 2, 3, 4, 2, 3, 4, 3, 4, 4, 5, 7, 5, 6, 7, 8, 6, 7, 8, 9, 7, 8, 9, 10, 8, 9, 10, 9, 10, 10]
+ds_over_dm_mean = [0.663, 0.511, 0.347, 0.181, 0.670, 0.515, 0.342, 0.640, 0.491, 0.606, 0.300, 0.069, 0.507, 0.305, 0.148, 0.106, 0.512, 0.276, 0.175, 0.075, 0.489, 0.304, 0.151, 0.055, 0.550, 0.302, 0.165, 0.437, 0.205, 0.386]
+ds_over_dm_sd = [0.132, 0.106, 0.113, nan, 0.091, 0.063, 0.031, 0.090, 0.061, 0.124, 0.037, nan, 0.141, 0.110, 0.027, 0.009, 0.136, 0.079, 0.041, 0.021, 0.146, 0.084, 0.046, nan, 0.136, 0.092, 0.080, 0.098, 0.054, 0.167]
+n_mother_vessels = [295.0, 68.0, 10.0, nan, 106.0, 36.0, 3.0, 47.0, 35.0, 17.0, 2.0, nan, 44.0, 29.0, 16.0, 4.0, 123.0, 83.0, 34.0, 6.0, 89.0, 65.0, 15.0, nan, 27.0, 13.0, 2.0, 20.0, 5.0, 2.0]
+missing_note = "Cells printed without SD and n: (0,4) 0.181, (3,7) 0.069, (6,10) 0.055."
+
+[data.arm_rca]
+description = "RCA asymmetry ratio matrix: Ds/Dm for smaller daughter of order daughter_order and mother of order mother_order (manual/raw ordering)"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SD over n mother vessels"
+daughter_order = [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 10]
+mother_order = [1, 2, 3, 4, 2, 3, 4, 5, 6, 3, 4, 5, 6, 7, 4, 5, 6, 7, 8, 9, 5, 6, 7, 8, 9, 6, 7, 8, 9, 10, 7, 8, 9, 10, 11, 8, 9, 10, 11, 9, 10, 11, 10, 11]
+ds_over_dm_mean = [0.679, 0.544, 0.387, 0.238, 0.706, 0.530, 0.322, 0.163, 0.073, 0.649, 0.481, 0.219, 0.117, 0.056, 0.623, 0.323, 0.161, 0.083, 0.052, 0.038, 0.473, 0.260, 0.142, 0.083, 0.050, 0.420, 0.241, 0.148, 0.093, 0.079, 0.465, 0.314, 0.191, 0.114, 0.030, 0.566, 0.354, 0.198, 0.083, 0.539, 0.293, 0.133, 0.389, 0.322]
+ds_over_dm_sd = [0.130, 0.107, 0.089, 0.031, 0.099, 0.085, 0.062, 0.003, 0.013, 0.088, 0.074, 0.051, 0.025, 0.010, 0.108, 0.073, 0.040, 0.017, 0.017, 0.003, 0.114, 0.084, 0.034, 0.018, 0.010, 0.118, 0.065, 0.045, 0.022, 0.045, 0.128, 0.108, 0.056, 0.035, nan, 0.098, 0.085, 0.048, 0.013, 0.091, 0.073, 0.02, 0.125, 0.017]
+n_mother_vessels = [271.0, 83.0, 21.0, 3.0, 169.0, 91.0, 20.0, 2.0, 2.0, 115.0, 56.0, 13.0, 7.0, 9.0, 69.0, 48.0, 52.0, 18.0, 6.0, 2.0, 179.0, 231.0, 108.0, 28.0, 5.0, 532.0, 318.0, 142.0, 27.0, 6.0, 222.0, 114.0, 43.0, 2.0, nan, 79.0, 33.0, 19.0, 9.0, 23.0, 13.0, 7.0, 7.0, 3.0]
+missing_note = "Cell (6,11) printed as 0.030 without SD and n."
+
+[data.taper_and_aer_per_order]
+description = "Intra-element Dl/Dm, Ds/Dm and AER = (Dl^2 + Ds^2)/Dm^2 per mother order; bifurcation exponent k per order"
+location = "Figs. 1-4; Supplemental Tables S5-S7"
+provenance = "missing"
+statistic = "mean +/- SD per mother order"
+mother_order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+dl_over_dm_mean = [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
+missing_note = "Values exist in Supplemental Tables S5-S7 (not accessed) and Figs. 1-4 (not digitized). Text: Dl/Dm has a significant minimum at mother order 5 (Dm ~70-80 um); AER ~1 for orders 6-11, rising toward order 1."

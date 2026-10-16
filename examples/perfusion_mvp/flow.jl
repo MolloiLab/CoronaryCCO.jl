@@ -20,7 +20,7 @@
 #   0.18). The unresolved volumes are the Kassab targets minus what the tree resolves, shared by
 #   territory volume. Capillary exchange follows the adiabatic approximation to the tissue
 #   homogeneity model (St Lawrence & Lee 1998), with first-pass extraction from a constant
-#   permeability (Renkin–Crone, E = 1 − e^{−PS/F}; Canty et al. 1991).
+#   permeability (Renkin–Crone, E = 1 − e^{−PS/F}; PS from Daghini et al. 2007).
 # - Iodine moves with plasma. A segment's plasma transit is τ = V(1 − H_T)/(Q(1 − H_D)).
 #   Plug flow through a fixed network is a pure delay per segment, so every iodine mass below is
 #   a closed form of the cumulative input A(t) = ∫ C_p. Nothing is time-stepped.
@@ -138,13 +138,13 @@ Volumes and exchange
 - `cap_length_mm`, `cap_diameter_um`: functional capillary 0.5 mm × 6 µm (Kassab & Fung 1994),
   used for the capillary-bed resistance.
 - `ve`: interstitial volume fraction 0.18 (ECV ≈ 0.25 minus plasma).
-- `ps`: capillary permeability–surface product for iodinated contrast, mL/min per g. Each bed's
-  first-pass extraction follows Renkin–Crone, E = 1 − exp(−PS·m/F_p). Canty et al. (1991)
-  measured E = 0.33 for ioversol in normally perfused muscle at full vasodilation and 0.50 where
-  a stenosis halved the flow, which a constant PS reproduces (0.55); the paper reports flow only
-  as mL/min, so the anchor is the state: PS = −ln(1 − 0.33)·F_p at maximal dilation of the
-  healthy heart (computed by the driver from its own stress circuit; 1.07 mL/min/g for the XCAT
-  forest). At rest E is then ≈ 0.8.
+- `ps`: capillary permeability–surface product for iodinated contrast, 0.37 mL/min per g: the
+  Patlak influx constant of iopamidol in normal pig myocardium, the same by 64-slice CT and by
+  electron-beam CT, and "similar" during adenosine (Daghini et al. 2007). Each bed's first-pass
+  extraction follows Renkin–Crone, E = 1 − exp(−PS·m/F_p), so E ≈ 0.5 at rest and ≈ 0.12 at
+  maximal dilation. A Patlak constant is E·F_p, a lower bound on PS. Other measurements spread
+  around it: 0.13–0.19 for iohexol under coronary adenosine (Ritman 1994), and E = 0.33 at full
+  vasodilation in dogs (Canty et al. 1991, whose per-gram flow is unknown). These are checks.
 - `rho`: myocardial density 1.05 g/mL.
 - `radius_cv`: biological diameter variability. CCO sets every radius exactly from its flow;
   real vessels of one order scatter by 10–25% (Kassab et al. 1993, Table 2). Each segment's
@@ -208,7 +208,7 @@ Base.@kwdef struct Physiology
     cap_diameter_um::F32 = 6.0f0
     cap_ht_ratio::F32 = 0.85f0
     ve::F32 = 0.18f0
-    ps::F32 = 1.07f0
+    ps::F32 = 0.37f0
     rho::F32 = 1.05f0
     plasma_viscosity_mPas::F32 = 1.2f0
     radius_cv::F32 = 0.12f0

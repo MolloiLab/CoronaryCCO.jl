@@ -1,0 +1,68 @@
+[meta]
+id = "lassen2023_rb82_adenosine_cardiac_output"
+data_type = "experimental"
+validates = "Cardiac output, heart rate, stroke volume and LV volumes at rest and during adenosine 140 ug/kg/min in healthy young adults (ECG-gated Rb-82 PET), by sex; pulmonary mean bolus transit time and pulmonary blood volume at rest and under adenosine"
+species = "human"
+preparation = "33 young healthy volunteers (15 female; median age 22-23 y, BMI 22), recruited Sept 2016 - Mar 2017; 25 with test-retest sessions (14 days apart, median). Siemens Biograph mCT 128-slice PET/CT, ~1100 MBq Rb-82 per session. LV volumes from 8-gate ECG-gated reconstructions (Cedars QPS/QGS); HR averaged from the list file over the first 40 s of acquisition. Mean bolus transit time = delay of Rb-82 bolus arrival from the pulmonary trunk to the left atrium; PBV = CO x MBTT."
+conditions = "Rest, and adenosine 140 ug/kg/min IV for 6 min with PET emission starting 2.5 min into the infusion. Caffeine abstinence >= 24 h; sessions with plasma caffeine >= 1 ug/L excluded (8 of 66 sessions). Supine."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC10682170 (J Nucl Cardiol, open access), read 2026-10-15; Table 2 read from the XML table markup."
+notes = """CO is SV x HR as computed by the authors from gated-PET volumes (QGS) and list-mode HR; the stress gated series uses data from bolus arrival + 90 s to 210 s of the acquisition, i.e. during the infusion.
+Gated Rb-82 PET volumes are smaller than CMR volumes; resting CO here (2.7 L/min women, 3.9 L/min men) is low for healthy adults. The stress/rest RATIO is therefore the more transferable quantity, and it is large here (CO roughly doubles), larger than the ~28% rise reported by CMR (thomas2017_adenosine_cmr_hemodynamics).
+Values are mean +/- SD by sex; for participants with repeat scans the mean of the two scans is used (Table 2 footnote). Table 2 does not restate n; the full cohort is 33 (15 F, 18 M).
+'Reserve' columns are stress minus rest as printed by the authors (not ratios). No blood pressure is reported in the text read."""
+use_in_model = """Hyperemic scaling of cardiac output in the whole-body bolus model: adenosine raises HR (58 -> 92 F, 57 -> 84 M) and SV (47 -> 72 mL F, 69 -> 101 mL M), and CO by +3.9 / +4.5 L/min. Use with caution as an upper bound on the CO rise; CMR-based data (thomas2017) suggest a smaller relative rise.
+Pulmonary MBTT falls from 12-15 s to 9-11 s and PBV rises under adenosine; use to check the lung segment's response to raised CO."""
+
+[source]
+authors = ["Lassen ML", "Byrne C", "Hartmann JP", "Kjaer A", "Berg RMG", "Hasbak P"]
+year = 2023
+title = "Pulmonary blood volume assessment from a standard cardiac rubidium-82 imaging protocol: impact of adenosine-induced hyperemia"
+journal = "J Nucl Cardiol"
+volume = "30"
+issue = "6"
+pages = "2504-2513"
+doi = "10.1007/s12350-023-03308-1"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 30, issue 6, 2504-2513; authors Lassen, Byrne, Hartmann, Kjaer, Berg, Hasbak)"
+pmid = "37349559"
+pmcid = "PMC10682170"
+
+[data.central_hemodynamics_by_sex]
+description = "Rest and adenosine-stress LV volumes, SV, HR, CO, pulmonary mean bolus transit time and PBV, by sex"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD; n = 15 female, 18 male (full cohort; not restated in Table 2)"
+sex = ["female", "male"]
+n = [15, 18]
+rest_edv_mean_mL = [75.0, 126.0]
+rest_edv_sd_mL = [16.0, 22.0]
+stress_edv_mean_mL = [93.0, 153.0]
+stress_edv_sd_mL = [19.0, 26.0]
+rest_esv_mean_mL = [27.0, 58.0]
+rest_esv_sd_mL = [8.0, 15.0]
+stress_esv_mean_mL = [21.0, 52.0]
+stress_esv_sd_mL = [7.0, 14.0]
+rest_sv_mean_mL = [47.0, 69.0]
+rest_sv_sd_mL = [9.0, 11.0]
+stress_sv_mean_mL = [72.0, 101.0]
+stress_sv_sd_mL = [13.0, 15.0]
+rest_hr_mean_bpm = [58.0, 57.0]
+rest_hr_sd_bpm = [10.0, 12.0]
+stress_hr_mean_bpm = [92.0, 84.0]
+stress_hr_sd_bpm = [16.0, 19.0]
+rest_co_mean_L_per_min = [2.7, 3.9]
+rest_co_sd_L_per_min = [0.6, 0.8]
+stress_co_mean_L_per_min = [6.6, 8.4]
+stress_co_sd_L_per_min = [1.6, 2.1]
+co_reserve_mean_L_per_min = [3.9, 4.5]
+co_reserve_sd_L_per_min = [1.2, 1.7]
+co_ratio_stress_over_rest = [nan, nan]
+rest_mbtt_mean_s = [12.0, 15.0]
+rest_mbtt_sd_s = [2.0, 3.0]
+stress_mbtt_mean_s = [9.0, 11.0]
+stress_mbtt_sd_s = [2.0, 3.0]
+rest_pbv_mean_mL = [544.0, 926.0]
+rest_pbv_sd_mL = [98.0, 105.0]
+stress_pbv_mean_mL = [914.0, 1458.0]
+stress_pbv_sd_mL = [182.0, 338.0]
+missing_note = "No stress/rest CO ratio is printed (stored as nan; reserve = stress - rest is printed). Blood pressure not reported. Stress-rest changes significant (p < 0.05) for EDV, HR, CO, MBTT and PBV in both sexes as marked in Table 2; the table marks SV change via Figure 3 text ('Stroke volume was observed to elevate significantly during adenosine stressing')."

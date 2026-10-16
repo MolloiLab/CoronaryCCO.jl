@@ -1,0 +1,74 @@
+# Schwarz JCV, van Lier MGJTB, van den Wijngaard JPHM, Siebes M, VanBavel E (2020). Topologic and
+# hemodynamic characteristics of the human coronary arterial circulation. Front Physiol 10:1611.
+# Symmetry quartiles digitized from Fig. 3A; group sizes printed in Fig. 4; histograms from Fig. 3B-C.
+
+[meta]
+id = "schwarz2020_human_coronary_symmetry"
+data_type = "experimental"
+validates = "Daughter symmetry S = dS/dL vs mother diameter class (ten classes, 30 um to >= 400 um) in a human left coronary tree, number of bifurcations per class split at S = 0.5, and the full S histograms for mothers 75-90 um and >= 400 um. Use for a size-dependent symmetry floor or target distribution in CCO growth (human)."
+species = "human"
+preparation = "One post-mortem human heart; coronary arteries filled with fluorescent replica material; imaging cryomicrotome; 3-D reconstruction of the left coronary tree: 202,184 segments, diameters 30 um to 4 mm; 91% of nodes are bifurcations."
+conditions = "Post-mortem cast; resolution about 30 um (segments < 30 um not reconstructed)."
+verification = "mixed"
+access = "Open-access full text (CC BY) via Europe PMC JATS XML (PMC6989553); Fig. 3 and Fig. 4 images from the publisher (frontiersin.org files/Articles/485791/xml-images, 2500 px wide) for digitization."
+notes = """S = dS/dL (smaller over larger daughter diameter), Eq. 1. Area growth A = (dL^2 + dS^2)/dM^2, Eq. 2.
+Fig. 3A box plots: box = 25th-75th percentile, line = median; whiskers follow the Tukey 1.5 IQR rule (the Fig. 2 legend states 1.5 IQR; digitized lower whiskers equal max(min, Q1 - 1.5 IQR) within 0.003). Upper whiskers end at S = 1 in every class. Outliers are not shown, so the lower whisker is not a percentile.
+Text: for mother diameter > 500 um the median S was 0.59 (vs < 0.40 in porcine data); bifurcations become more symmetric and less variable with decreasing diameter. 'Very asymmetric branches generally reflected consecutive segments of large vessels having small side branches.'
+Class sizes in Fig. 4 are bifurcations by mother diameter class (n = 867 in 30-45 um, 18,281 in 120-150 um, 1,396 in >= 400 um; 86,964 in total)."""
+use_in_model = """Bin CCO bifurcations by mother diameter into the ten classes and compare Q1/median/Q3 of S = dS/dL with symmetry_by_mother_diameter, and the fraction with S < 0.5 with fraction_s_below_0p5. A floor at about the lower Tukey whisker (Q1 - 1.5 IQR) excludes only outliers; a floor at Q1 removes a quarter of real junctions. For a sampled target use the full histograms (75-90 um and >= 400 um) and interpolate the quartiles for other classes."""
+
+[source]
+authors = ["Schwarz JCV", "van Lier MGJTB", "van den Wijngaard JPHM", "Siebes M", "VanBavel E"]
+year = 2020
+title = "Topologic and Hemodynamic Characteristics of the Human Coronary Arterial Circulation"
+journal = "Front Physiol"
+volume = "10"
+issue = ""
+pages = "1611"
+doi = "10.3389/fphys.2019.01611"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 10, article 1611, published 2020-01-23)"
+
+[data.symmetry_by_mother_diameter]
+description = "Daughter symmetry S = dS/dL per mother diameter class: quartiles and lower Tukey whisker"
+location = "Fig. 3A"
+provenance = "fig"
+digitization_error = "Digitized from the 2500 x 2460 px publisher image: x axis calibrated on 21 tick marks (0 to 1, 207.8 px per 0.1, residual < 1 px); box edges, medians and whisker caps located as dark-pixel runs on the box mid-row. Error about +/-0.003 in S. Check: >= 400 um median 0.594 vs 0.59 in the text; S < 0.5 fractions from Fig. 3B-C histograms match the Fig. 4 counts within 0.001."
+figure = "Fig. 3A"
+statistic = "median, 25th and 75th percentile, lower whisker (= max(min, Q1 - 1.5 IQR)); n = bifurcations from Fig. 4"
+mother_diameter_class_um = ["30-45", "45-60", "60-75", "75-90", "90-105", "105-120", "120-150", "150-200", "200-400", ">=400"]
+mother_diameter_lo_um = [30.0, 45.0, 60.0, 75.0, 90.0, 105.0, 120.0, 150.0, 200.0, 400.0]
+mother_diameter_hi_um = [45.0, 60.0, 75.0, 90.0, 105.0, 120.0, 150.0, 200.0, 400.0, inf]
+n_bifurcations = [867, 1233, 4401, 9603, 13344, 12297, 18281, 15517, 10025, 1396]
+s_lower_whisker = [0.278, 0.411, 0.347, 0.314, 0.272, 0.242, 0.175, 0.131, 0.068, 0.019]
+s_q25 = [0.711, 0.706, 0.679, 0.663, 0.644, 0.626, 0.589, 0.534, 0.480, 0.419]
+s_median = [0.909, 0.806, 0.799, 0.787, 0.779, 0.764, 0.734, 0.684, 0.652, 0.594]
+s_q75 = [1.000, 0.907, 0.901, 0.894, 0.892, 0.883, 0.865, 0.839, 0.827, 0.787]
+missing_note = "n_bifurcations is the sum of the two printed group sizes in Fig. 4 (S 0.5-1.0 plus S 0.0-0.5). The 30-45 um Q3 coincides with S = 1. Means and SDs are not reported."
+
+[data.fraction_s_below_0p5]
+description = "Bifurcations per mother diameter class split into S 0.5-1.0 and S 0.0-0.5 (numbers printed above the bars of the area-growth box plots)"
+location = "Fig. 4"
+provenance = "fig"
+digitization_error = "Integers printed in the figure; read exactly. Fractions are counts as printed (no digitization)."
+figure = "Fig. 4"
+statistic = "counts of bifurcations"
+mother_diameter_class_um = ["30-45", "45-60", "60-75", "75-90", "90-105", "105-120", "120-150", "150-200", "200-400", ">=400"]
+n_s_ge_0p5 = [816, 1196, 4199, 9031, 12373, 11109, 15892, 12437, 7230, 884]
+n_s_lt_0p5 = [51, 37, 202, 572, 971, 1188, 2389, 3080, 2795, 512]
+missing_note = "Fractions S < 0.5 = n_s_lt_0p5 / (n_s_ge_0p5 + n_s_lt_0p5): 0.059, 0.030, 0.046, 0.060, 0.073, 0.097, 0.131, 0.198, 0.279, 0.367."
+
+[data.symmetry_histograms]
+description = "Relative frequency of S in 0.05-wide bins for mother diameter 75-90 um (Fig. 3B) and >= 400 um (Fig. 3C)"
+location = "Fig. 3B, Fig. 3C"
+provenance = "fig"
+digitization_error = "Bar tops located as the first dark pixel row per bin centre; y axis calibrated on 15 ticks (0 to 0.14, 69.2 px per 0.01). About +/-0.0015 per bin; bars below ~0.0005 (e.g. 75-90 um bins at S 0.10-0.20) read as 0. Each histogram sums to 1.000 +/- 0.001."
+figure = "Fig. 3B-C"
+statistic = "relative frequency per bin (sums to 1)"
+bin_lo = [0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+freq_mother_75_90um = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0013, 0.0052, 0.0100, 0.0158, 0.0267, 0.0386, 0.0594, 0.0708, 0.0876, 0.1031, 0.1113, 0.1113, 0.1208, 0.1217, 0.1164]
+freq_mother_ge_400um = [0.0022, 0.0058, 0.0085, 0.0085, 0.0236, 0.0451, 0.0523, 0.0688, 0.0724, 0.0795, 0.0666, 0.0789, 0.0523, 0.0652, 0.0688, 0.0645, 0.0610, 0.0659, 0.0552, 0.0552]
+cumulative_s_lt_0p2 = [0.000, 0.025]
+cumulative_s_lt_0p3 = [0.001, 0.094]
+cumulative_s_lt_0p4 = [0.017, 0.215]
+cumulative_s_lt_0p5 = [0.059, 0.367]
+missing_note = "Cumulative arrays are [75-90 um, >= 400 um], summed from the digitized bins. Histograms for the other eight classes are not shown in the paper."

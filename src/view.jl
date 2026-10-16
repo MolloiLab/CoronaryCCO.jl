@@ -69,7 +69,11 @@ struct ParamView{T}
     kamiya_tol::T
     side_branch_bias::T
     term_flow_cv::T
+    sym_n::Int                 # symmetry floor knots (see CCOParams.symmetry_floor)
+    sym_ld::NTuple{12, T}
+    sym_s::NTuple{12, T}
 end
+symmetry_min(p::ParamView{T}, d::T) where {T} = _symmetry_min(p.sym_ld, p.sym_s, p.sym_n, d)
 
 struct TreeView{T, M, F, G, D, VI8, VB, VU8, VR, VT}
     m::M
@@ -168,7 +172,7 @@ function tree_view(E::Engine{T}, vc::ViewCache; to = identity) where {T}
     D = DomainView(vc.dom[1], vc.dom[2], vc.dom[3], E.dom.lower, E.dom.upper, E.dom.min_dist)
     P = ParamView{T}(
         p.num_neighbors, p.anywhere_mode, p.kamiya_iters, T(p.kamiya_tol), T(p.side_branch_bias),
-        T(p.term_flow_cv)
+        T(p.term_flow_cv), _symmetry_knots(T, p.symmetry_floor)...
     )
     return TreeView(
         M, F, G, D, P, up(:tcount, E.tcount), up(:middle, E.middle), up(:isbase, E.isbase), up(:treeid, E.treeid), E.cscale,

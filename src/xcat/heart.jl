@@ -187,6 +187,51 @@ function heart_masks(S::Dict{String, NurbsSurface}, g::VoxelGrid; phase::Abstrac
 end
 
 """
+    label_masks(L, origin, h, g; roi = trues(g.dims), lv = 15, rv = 16, lvpool = 19, rvpool = 20,
+                pools = (19, 20, 21, 22, 24, 25)) -> NamedTuple of Array{Bool,3}
+
+Heart masks on the coarse grid `g` from a fine XCAT label volume `L` (voxel size `h` mm, voxel
+(1,1,1) centred at `origin`). Each coarse voxel looks at the fine voxels whose centres fall
+inside it:
+- `lvmyo` / `rvmyo`: at least half of them are LV / RV myocardium (the larger count wins);
+- `lvcav` / `rvcav`: at least half are LV / RV blood pool;
+- `pool`: any of them is blood (the four chamber pools, great arteries and veins by default);
+- `domain`: myocardium with no blood at all, so a vessel grown inside it cannot enter a chamber.
+XCAT reuses some label values for distant organs (e.g. 16 for the kidneys), so `roi` limits the
+muscle and cavity masks to the heart region; `pool` covers the whole grid. The default label values are those of the XCAT heart phantom.
+"""
+function label_masks(
+        L::AbstractArray{UInt8, 3}, origin, h::Real, g::VoxelGrid; roi::AbstractArray{Bool, 3} = trues(g.dims),
+        lv = 15, rv = 16, lvpool = 19, rvpool = 20, pools = (19, 20, 21, 22, 24, 25)
+    )
+    lvmyo = falses(g.dims); rvmyo = falses(g.dims); lvcav = falses(g.dims); rvcav = falses(g.dims); pool = falses(g.dims)
+    isp = falses(256); for p in pools
+        isp[p + 1] = true
+    end
+    Threads.@threads for k in 1:g.dims[3]
+        for j in 1:g.dims[2], i in 1:g.dims[1]
+            c = center(g, i, j, k)
+            r = ntuple(d -> (ceil(Int, (c[d] - g.h / 2 - origin[d]) / h - 1.0e-9) + 1):(ceil(Int, (c[d] + g.h / 2 - origin[d]) / h - 1.0e-9)), 3)
+            n = 0; nl = 0; nr = 0; npl = 0; npr = 0; anyp = false
+            for kk in r[3], jj in r[2], ii in r[1]
+                checkbounds(Bool, L, ii, jj, kk) || continue
+                l = L[ii, jj, kk]; n += 1
+                nl += l == lv; nr += l == rv; npl += l == lvpool; npr += l == rvpool; anyp |= isp[l + 1]
+            end
+            n == 0 && continue
+            pool[i, j, k] = anyp            # blood anywhere on the grid (the aorta leaves the pericardium)
+            roi[i, j, k] || continue
+            if 2(nl + nr) >= n
+                nl >= nr ? (lvmyo[i, j, k] = true) : (rvmyo[i, j, k] = true)
+            end
+            2npl >= n && (lvcav[i, j, k] = true)
+            2npr >= n && (rvcav[i, j, k] = true)
+        end
+    end
+    return (; lvmyo, rvmyo, lvcav, rvcav, pool, domain = (lvmyo .| rvmyo) .& .!pool)
+end
+
+"""
     vessel_tube(t::BaseTree, g; margin = 1.5) -> Array{Bool,3}
 
 Voxels of `g` within `r + margin` mm of the base tree's centerline. Epicardial arteries run in

@@ -1,0 +1,54 @@
+[meta]
+id = "ritman1994_iohexol_capillary_permeability"
+data_type = "experimental"
+validates = "Myocardial capillary permeability-surface area product (PS) for iohexol measured by fast x-ray CT during coronary adenosine vasodilation, PS = -F ln(1 - E), compared with catheter-sampled dual-dilution curves; dependence on iohexol concentration; response to intracoronary bradykinin"
+species = "pig"
+preparation = "Anesthetized pigs; fast x-ray CT (Mayo Clinic, Ritman lab) during coronary infusion of adenosine and an aortic-root injection of iohexol. CT gave myocardial perfusion F and capillary extraction factor E; PS = -F ln(1 - E). Reference: catheter-sampled dual-dilution curves after simultaneous injection of cobalt-58 EDTA and iodine-125 albumin. Second group: intracoronary bradykinin 5, 10 or 20 ng/kg/min."
+conditions = "Coronary adenosine infusion (maximal vasodilation intended; dose not in the abstract). Iohexol at 350, 230 and 175 mgI/mL."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 8088969). Full text (Invest Radiol, Lippincott) not open; the Wayback Machine has only the abstract page (journals.lww.com .../abstract/1994/06000/myocardial_capillary_permeability_to_iohexol_.3.aspx)."
+notes = """The abstract gives PS but NOT the per-gram flow F or the extraction E behind it, nor n or the units of PS. Units are taken as mL/min/g (ml/min per g) by convention of this group (Daghini 2007 reports MPSP in mL/min/g) but are not printed in the abstract.
+The dual-dilution reference (DDC) used cobalt-58 EDTA as the diffusible tracer, not iohexol: the DDC PS values are for EDTA (MW 292 vs iohexol 821), so DDC and CT agreement is a method comparison across two different small solutes.
+Pairs in the abstract are printed as 'DDC, CT' for each iohexol concentration; the order is inferred from the sentence 'The DDC and CT-based PS values ... were as follows' and should be checked against the full text.
+Bradykinin regression: PS = 0.22 [bradykinin] + 0.083, r = 0.845 (bradykinin in ng/kg/min; PS units as above).
+Related, later work of the same lab uses an 'index of microvascular permeability' instead of PS (malyar2011_ebct_contrast_extraction_microembolization) and a Patlak MPSP (daghini2007_ct64_myocardial_permeability)."""
+use_in_model = """Order-of-magnitude PS for iohexol in vasodilated pig myocardium: about 0.13-0.19 mL/min/g by CT (flow not given). Compare with the Patlak MPSP of ~0.37 mL/min/g at baseline (daghini2007_ct64_myocardial_permeability), the PS-F relations assumed in CT perfusion models (bindschadler2014_iodine_exchange_model_ps), and the first-pass extractions of canty1991_contrast_extraction. The sources use different methods and do not agree closely, so test model sensitivity over the whole range rather than adopting one value."""
+
+[source]
+authors = ["Ritman EL"]
+year = 1994
+title = "Myocardial capillary permeability to iohexol. Evaluation with fast x-ray computed tomography"
+journal = "Invest Radiol"
+volume = "29"
+issue = "6"
+pages = "612-617"
+doi = "10.1097/00004424-199406000-00003"
+crossref_verified = "2026-10-15; Crossref main-title match ('Myocardial Capillary Permeability to Iohexol'; vol 29, issue 6, 612-617; author Ritman). The subtitle is not in the Crossref title field."
+pmid = "8088969"
+
+[data.ps_by_iohexol_concentration]
+description = "PS during coronary adenosine infusion, catheter dual-dilution (Co-58 EDTA / I-125 albumin) vs CT (iohexol), for three iohexol concentrations"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD; n not given in the abstract"
+iohexol_concentration_mgI_per_mL = [350.0, 230.0, 175.0]
+ps_dual_dilution_mean_mL_per_min_per_g = [0.149, 0.127, 0.132]
+ps_dual_dilution_sd_mL_per_min_per_g = [0.107, 0.072, 0.043]
+ps_ct_mean_mL_per_min_per_g = [0.125, 0.129, 0.190]
+ps_ct_sd_mL_per_min_per_g = [0.067, 0.053, 0.111]
+flow_mL_per_min_per_g = [nan, nan, nan]
+extraction_fraction = [nan, nan, nan]
+p_concentration_effect = "P > 0.1 (concentration has little impact on PS)"
+missing_note = "Flow F, extraction E, n and PS units are not in the abstract. PS units assumed mL/min/g (see notes). DDC values are for Co-58 EDTA, not iohexol."
+
+[data.bradykinin_response]
+description = "CT-derived PS vs intracoronary bradykinin dose"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "linear regression"
+bradykinin_dose_ng_per_kg_per_min = [5.0, 10.0, 20.0]
+regression = "PS = 0.22 [bradykinin] + 0.083, r = 0.845"
+ps_slope_per_bradykinin = 0.22
+ps_intercept_mL_per_min_per_g = 0.083
+r = 0.845
+missing_note = "Per-dose PS values, n and flow not given in the abstract. Units of the slope are not stated (PS units per ng/kg/min as printed)."
