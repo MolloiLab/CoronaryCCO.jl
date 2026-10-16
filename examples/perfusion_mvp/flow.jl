@@ -127,9 +127,9 @@ diameters (see [`circuit`](@ref)). Values are data, not code: they are read from
 `data/reference/`; keyword arguments override single values. The values below are the heart's.
 
 Boundary conditions and blood
-- `p_in`: mean inflow pressure. Heart: aortic pressure at the ostia, 90 mmHg (Chilian et al.
-  1989, cat, the preparation of the resistance anchor below; normal human mean arterial pressure
-  is similar).
+- `p_in`: mean inflow pressure. Heart: aortic pressure at the ostia, 90 mmHg (normal human mean
+  arterial pressure; the PET subjects of the resistance anchor below had 86–89 mmHg, Kaufmann
+  et al. 1999; Chilian et al. 1989 used 90 mmHg in the cat).
 - `p_out`: effective outflow pressure. Heart: 13.6 mmHg, the zero-flow pressure of the maximally
   dilated beating heart (Kanatsuka et al. 1990). It lumps coronary-sinus pressure and the
   waterfall effect of intramyocardial pressure into one steady back pressure.
@@ -1561,15 +1561,16 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     end
     tg = to(terr_g[tperm]); mu0d = to(mu0[perm]); stend = to(sten)
 
-    # ---- microvascular scale κ at maximal dilation (vessels on their passive curves): the
-    # Chilian-style resistance between arteriolar inlets and venular outlets equals the measurement
+    # ---- microvascular scale κ at maximal dilation (vessels on their passive curves): the whole bed's
+    # resistance (inlet pressure ÷ flow per gram) equals the measured human value, r_total_dilated; the older
+    # anchor, Chilian's inlet-to-outlet microvascular resistance (r_micro_dilated), is used only when that is 0
     ctone = reference === nothing ? F32[-5.0f0] : copy(reference.ctone)
     kappa === nothing && reference !== nothing && (kappa = reference.resist.kappa)
     kappa === nothing && phys.r_micro_dilated <= 0 && phys.r_total_dilated <= 0 && (kappa = 1.0f0)       # no anchor: pure Poiseuille
-    # the κ anchor is Chilian's resistance between arteriolar inlets and venular outlets of tube capillaries; with
-    # sheet-flow beds that resistance is pressure-dependent, so the two are not combined (audit A2-5)
-    phys.capillary === :sheet && kappa === nothing && phys.r_micro_dilated > 0 &&
-        throw(ArgumentError("r_micro_dilated (κ anchor) is defined for tube capillaries; set it to 0 for capillary = :sheet"))
+    # both κ anchors were measured in beds of tube capillaries; with sheet-flow beds the capillary resistance is
+    # pressure-dependent and is not scaled by κ, so neither anchor is combined with them (audits A2-5, A14-2)
+    phys.capillary === :sheet && kappa === nothing && (phys.r_micro_dilated > 0 || phys.r_total_dilated > 0) &&
+        throw(ArgumentError("r_total_dilated and r_micro_dilated (κ anchors) are defined for tube capillaries; set both to 0 for capillary = :sheet"))
     if kappa === nothing
         kappa = F32(kappa_init)
         Wd = _Wall(seg, d0, lim, to)

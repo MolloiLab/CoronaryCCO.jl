@@ -8,8 +8,8 @@ description = "Human (and dog/cat where human data are missing) coronary circula
 [parameters.p_in]
 value = 90.0
 unit = "mmHg"
-note = "Mean aortic pressure, control state of the same cat preparation that gives the microvascular resistance anchor (Chilian 1989 Table 2: 90 mmHg; dipyridamole ~91). Normal human mean arterial pressure is similar."
-sources = ["chilian1989_dipyridamole_resistance"]
+note = "Mean aortic pressure. Normal human mean arterial pressure; the PET subjects of the whole-bed resistance anchor (r_total_dilated) had 86-89 mmHg (Kaufmann 1999). Chilian 1989 Table 2 gives 90 mmHg in the cat (dipyridamole ~91)."
+sources = ["kaufmann1999_o15_water_reproducibility", "chilian1989_dipyridamole_resistance"]
 
 [parameters.p_out]
 value = 13.6
