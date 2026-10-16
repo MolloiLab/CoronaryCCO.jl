@@ -107,6 +107,7 @@ sampled at `h/8` and the candidate is rejected if any sample lies in a forbidden
 finer than the domain grid, so thin walls keep their terminals while no vessel crosses into
 what the mask forbids.
 """
+set_forbidden!(d::MaskDomain, mask::AbstractArray{Bool, 3}, origin, h::Real) = set_forbidden!(d, UInt8.(mask), origin, h)   # true = forbidden
 function set_forbidden!(d::MaskDomain{T}, mask::Array{UInt8, 3}, origin, h::Real) where {T}
     d.fine = mask; d.fine_origin = T.(Tuple(origin)); d.fine_h = T(h)
     return d

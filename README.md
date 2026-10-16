@@ -5,7 +5,7 @@
 
 | Heart: contrast through the grown coronary tree | Lung: contrast through the grown pulmonary trees |
 |:---:|:---:|
-| ![heart](docs/assets/heart_flow.gif) | ![lung](docs/assets/lung_flow.gif) |
+| ![heart](docs/assets/heart_flow.webp) | ![lung](docs/assets/lung_flow.webp) |
 
 Grow a complete vascular tree inside any organ from the few vessels a scan shows, compute its blood flow from the
 pressures alone, send a contrast injection through it, and export a voxelized perfusion phantom for CT simulation.
@@ -22,17 +22,31 @@ Pkg.add(url = "https://github.com/MolloiLab/Vasculature.jl")
 
 ![grown heart tree](docs/assets/step1_grow.png)
 
-Give the organ (a closed surface mesh, or a mask), the imaged inlet vessels (one tree per inlet, as GXL centrelines) and
-a `GrowthSpec`. Everything else is the same for every organ.
+You give four things; everything else is the same for every organ:
+
+1. **The organ**: a closed surface mesh of the tissue to perfuse (`mesh_domain` turns it into a 1 mm voxel domain), or a
+   ready voxel mask (`.vol`). Terminals are placed only inside it.
+2. **The inlets**: the vessels the scan shows, one tree per inlet, as GXL centrelines with radii. Growth starts from
+   them and never moves them.
+3. **The regions to avoid** (optional): anything inside or next to the organ that a vessel must not cross, such as the
+   heart's chambers and great vessels, the lung's airways or the brain's ventricles. Give them as a fine voxel mask
+   (`true` = forbidden) with its origin and cell size; every new vessel segment is checked against it.
+4. **A `GrowthSpec`**: how many terminals, the tissue volume, the imaged inlet radii.
 
 ```julia
 using Vasculature
 
-domain = mesh_domain("heart.vol", vertices, triangles)     # organ surface → 1 mm growth domain
-spec = GrowthSpec(nterm = 1_000_000, tissue_ml = 148.1,     # terminals, tissue volume
-                  root_caps = [2.54, 1.59])                 # imaged inlet radii (mm): LCA, RCA
-tree = grow(spec, domain, ["lca.xml", "rca.xml"])           # ≈ 1 min for 10⁶ terminals on a laptop GPU
+domain = mesh_domain("heart.vol", vertices, triangles)   # organ surface → 1 mm growth domain
+spec = GrowthSpec(
+    nterm = 1_000_000,          # terminals
+    tissue_ml = 148.1,          # tissue volume (mL)
+    root_caps = [2.54, 1.59],   # imaged inlet radii (mm): LCA, RCA
+)
+avoid = (chambers, origin_mm, 0.4)   # Bool mask of chambers + great vessels, its corner (mm), cell size (mm)
+tree = grow(spec, domain, ["lca.xml", "rca.xml"]; blockers = avoid)
 ```
+
+On a laptop GPU (Apple M4) the heart grows 10⁶ terminals in about a minute.
 
 | | `nterm` | `tissue_ml` | inlets | `root_caps` |
 |---|---|---|---|---|
@@ -41,8 +55,7 @@ tree = grow(spec, domain, ["lca.xml", "rca.xml"])           # ≈ 1 min for 10�
 | any other organ | your choice (more = finer) | its segmented volume | each imaged inlet (femoral artery, carotids + basilar, ...) | their imaged radii |
 
 More inlets are just more files: `grow(spec, brain, ["lica.xml", "rica.xml", "basilar.xml"])`.
-Walls the vessels must not cross (heart chambers, lung airways, brain ventricles) go in `blockers`. Veins grow the
-same way from their imaged outlet trees (`grow(spec, domain, ["left_pulmonary_veins.xml", "right_pulmonary_veins.xml"])`).
+Veins grow the same way from their imaged outlet trees (`grow(spec, domain, ["left_pulmonary_veins.xml", "right_pulmonary_veins.xml"])`).
 
 ## 2. Flow
 
