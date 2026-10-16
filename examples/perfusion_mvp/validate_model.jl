@@ -33,8 +33,10 @@ let
     end
     terr, tshare = territory_shares(tree.b[:, terms], q)
     terr .= max.(terr, 1.0f-7)
+    # solved circuits: the pipeline session's shared copy when it has one, else the file
+    loadcirc() = isdefined(@__MODULE__, :circuits) ? circuits() : deserialize(ENV["CIRC"])
     veins = length(ARGS) >= 4 ? load_vtree(ARGS[4]) : nothing
-    vleaf = veins === nothing ? nothing : haskey(ENV, "CIRC") ? deserialize(ENV["CIRC"]).Cr.vleaf : (
+    vleaf = veins === nothing ? nothing : haskey(ENV, "CIRC") ? loadcirc().Cr.vleaf : (
             vn = zeros(Int, length(veins.r)); foreach(p -> p > 0 && (vn[p] += 1), veins.parent);
             couple_veins(tree, terr, veins, terms, findall(==(0), vn); phys = Physiology(organ = "heart"))[1]
         )
@@ -96,7 +98,7 @@ let
     for (st, state) in (("rest", :rest), ("stress", :stress))
         rcv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))
         C = if haskey(ENV, "CIRC")                 # solved circuits (; Cs, Cr) from an earlier run on the same inputs
-            (cc = deserialize(ENV["CIRC"]); state === :rest ? cc.Cr : cc.Cs)
+            (cc = loadcirc(); state === :rest ? cc.Cr : cc.Cs)
         else
             state === :rest ? circuit(tree, terr; state, veins, vleaf, phys = Physiology(organ = "heart", radius_cv = rcv), kappa = Cstress.resist.kappa) : Cstress
         end
