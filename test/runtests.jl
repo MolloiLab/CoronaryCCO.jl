@@ -119,6 +119,21 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test_throws ArgumentError grow_case0(100; T = Float64, mode = :exact, growth = :batched)
     end
 
+    @testset "root_fixed, upow, ordering reference" begin
+        # the root sits exactly at its cap after growth, and every radius scales by the same factor
+        kw = (; T = Float32, volume = :full, sampling = :continuous, collision = :final, root_radius_max = 3.0)
+        a = grow_case0(600; kw...); b = grow_case0(600; kw..., root_fixed = true)
+        ra = a.m.radius[a.roots[1]]; rb = b.m.radius[b.roots[1]]
+        @test rb ≈ 3.0f0
+        @test a.m.pos == b.m.pos
+        @test all(isapprox.(b.m.radius[2:end] ./ a.m.radius[2:end], rb / ra; rtol = 1.0e-5))
+        # C pow semantics for Float32: negative base, non-integer exponent → NaN (no throw)
+        @test isnan(Vasculature.upow(-1.0f0, 0.5f0))
+        @test Vasculature.upow(-2.0f0, 2.0f0) == 4.0f0
+        # the default ordering reference is upstream's Kassab arrays
+        @test Vasculature._literature_boundaries(Vasculature.LITERATURE_MU, Vasculature.LITERATURE_SD) == Vasculature._LITERATURE_DB
+    end
+
     @testset "export round trip" begin
         E = grow_case0(100; T = Float64)
         path = tempname() * ".xml"

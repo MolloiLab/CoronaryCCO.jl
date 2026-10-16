@@ -100,12 +100,16 @@ function generate(
     )
     if root_fixed
         # one shared scale for the whole forest (all trees at the same pressure), set by the tree
-        # whose cap binds; collision = :final already tested at this scale during growth
-        s = Inf
+        # whose cap binds; collision = :final already tested at (or above) this scale during growth
+        mode === :fast && fast_refresh_radii!(E)              # current radii also after sequential growth
+        R = eltype(m.radius); s = typemax(R)
         for (k, c) in enumerate(E.roots)
-            E.rcaps[k] > 0 && (s = min(s, Float64(E.rcaps[k]) / Float64(m.radius[c])))
+            E.rcaps[k] > 0 && (s = min(s, R(E.rcaps[k]) / m.radius[c]))
         end
-        isfinite(s) && (m.radius .*= eltype(m.radius)(s))
+        if isfinite(s)
+            m.radius .*= s
+            update_rmax!(E); grid_refresh_radii!(E.g, m)     # spatial bounds follow the new radii
+        end
     end
     export_xml === nothing || export_gxl(E.m, export_xml)
     return E
