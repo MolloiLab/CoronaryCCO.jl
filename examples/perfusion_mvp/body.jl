@@ -374,11 +374,13 @@ pure delay before its mixing volume.
 Lungs: `v_pa` 40 mL pulmonary trunk and main branches (plug), `v_lung` 510 mL (ICRP 89: pulmonary
 blood 10.5% of 5.3 L ≈ 550 mL in all), `lung_plug` and `lung_rd` give its transit-time shape.
 The lung exchanges contrast with its interstitium like any bed, so it washes in and out with the plasma. `e_lung`
-151 mL: accessible extravascular lung water in normal humans at rest, 2.16 g/kg × 70 kg (Goresky 1975,
-[goresky1975]), the same value as `data/organs/lung.toml` ve. An extracellular solute can reach at most that water, so it
-is an upper bound; the other estimates are 86 mL (Levitt's standard human, [levitt2003]) and pig extravascular ECV 21% of
-non-air tissue ≈ 240 mL [seemann2025]. Human lung DCE-MRI ve 0.33 of non-air tissue [cheriyan2022] would give ≈ 376 mL, more
-than all the extravascular water, so it is not read as a volume. `ps_lung` 3.83 mL/s: the same DCE-MRI Ktrans, 0.234 /min
+151 mL: the extravascular water reachable from the blood of perfused lung in normal humans at rest, 2.16 g/kg × 70 kg
+by indicator dilution (Goresky 1975, [goresky1975]), the same value as `data/organs/lung.toml` ve. Indicator dilution
+sees only perfused lung, so it reads below gravimetric lung water (≈ 7.4 mL/kg ≈ 520 mL, the Tagami note in the same
+file); a solute carried in by the blood reaches the perfused part, so 151 mL is the measured volume to use. Other
+estimates: 86 mL (Levitt's standard human, [levitt2003]), pig extravascular ECV 21% of non-air tissue ≈ 240 mL
+[seemann2025], and human lung DCE-MRI ve 0.33 of non-air tissue ≈ 376 mL [cheriyan2022], a model-fit ve at the edge of
+DCE-MRI's sensitivity. The body curves barely depend on the choice (PA/aorta peak ratio 1.844–1.854 from 86 to 376 mL). `ps_lung` 3.83 mL/s: the same DCE-MRI Ktrans, 0.234 /min
 per mL of non-air tissue (≈ 1146 mL around the 510 mL of lung blood at vp 0.445), with Ktrans ≈ PS at the lung's high
 flow, gives 4.47 mL/s for gadobutrol (MW 605); PS falls with solute size as MW^-0.51 (human forearm EDTA vs inulin,
 [keiding1988]), so for iohexol (MW 821) 4.47 × (821/605)^-0.51 ≈ 3.83 mL/s. Set both to 0 for a blood-only lung.

@@ -1,0 +1,36 @@
+[meta]
+id = "asakura1990_lesion_location_flow_patterns"
+data_type = "experimental"
+validates = "Where plaques sit in human coronary arteries relative to branch points and curves: on the outer wall of the daughter vessels at bifurcations and T-junctions, with the flow divider free of lesions, and on the inner wall of curves. Qualitative placement rule for a synthetic plaque."
+species = "human"
+preparation = "Five isolated, transparent human coronary arterial trees prepared post-mortem (left and right coronary arteries)."
+conditions = "Flow visualization and high-speed cinemicrography in the isolated trees; lesion locations mapped against the flow patterns."
+verification = "abs"
+access = "PubMed abstract (PMID 2317887, NCBI efetch, read 2026-10-16). Circ Res full text not read."
+notes = """Abstract wording: plaques and wall thickenings 'were localized almost exclusively on the outer wall of one or both daughter vessels at major bifurcations and T-junctions, which left the flow-divider free of lesions, and along the inner wall of curved segments.'
+These sites had slow or disturbed flow, recirculation, secondary flow and low wall shear stress.
+The abstract gives no counts, angles or thicknesses. Only n = 5 trees is stored."""
+use_in_model = """Placement rule only: at a bifurcation put the plaque on the outer (lateral) wall of the daughter branch, opposite the carina, and leave the flow divider clear. In a curved segment put it on the inner curve. Use Kimura 1996 for the angle and thickness numbers in the proximal LAD."""
+
+[source]
+authors = ["Asakura T", "Karino T"]
+year = 1990
+title = "Flow patterns and spatial distribution of atherosclerotic lesions in human coronary arteries"
+journal = "Circ Res"
+volume = "66"
+issue = "4"
+pages = "1045-1066"
+doi = "10.1161/01.RES.66.4.1045"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 66, issue 4, 1045-1066; authors Asakura, Karino)"
+pmid = "2317887"
+
+[data.lesion_location_rule]
+description = "Qualitative lesion location relative to bifurcations and curvature"
+location = "Abstract"
+provenance = "abs"
+statistic = "Qualitative; n = 5 post-mortem coronary trees"
+n_trees = 5.0
+bifurcation_site = "outer wall of one or both daughter vessels"
+flow_divider = "free of lesions"
+curved_segment_site = "inner wall"
+missing_note = "No quantitative values in the abstract. Lesion maps and flow measurements are in the full text, which was not read."

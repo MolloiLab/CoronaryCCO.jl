@@ -1,0 +1,48 @@
+[meta]
+id = "vanvelzen2012_lesion_length_cta_qca"
+data_type = "experimental"
+validates = "Length of stented coronary lesions measured on CT angiography (plaque shoulder to shoulder) and on quantitative coronary angiography (lumen shoulder to shoulder). Sets the axial length of a synthetic focal stenosis and shows how much longer the plaque is than the angiographic narrowing."
+species = "human"
+preparation = "Leiden University Medical Center. 89 patients retrospectively analyzed who had CTA, then invasive angiography and PCI with stenting; 83 patients and 119 lesions included."
+conditions = "CTA: 64-row (n = 47) or 320-row (n = 36) Toshiba scanners; length measured on curved MPRs in two angles from the proximal to the distal shoulder of the plaque; plaque = a structure >= 1 mm2; a tandem lesion within 4 mm counted as part of the lesion; two readers in consensus. QCA: QCA-CMS 6.0 (Medis), catheter calibration, two orthogonal projections, proximal to distal shoulder, longest value kept."
+verification = "FT"
+access = "Open access (Springer, PMC3485532); NCBI efetch db=pmc XML, read 2026-10-16."
+notes = """Lesion location: LAD 56 (47%), LCx 35 (29%), RCA 28 (24%). Lengths are not reported per vessel.
+Mean QCA diameter stenosis 71 +/- 11%.
+Plaque type on CTA: non-calcified 27 (23%), mixed 72 (60%), calcified 20 (17%).
+Only 2 lesions were longer on QCA than on CTA.
+The paper quotes Yamagishi et al. for IVUS: QCA 12.4 +/- 6.1 mm vs IVUS 16.3 +/- 8.9 mm. That is a secondary citation and is not stored as data here.
+No entrance or exit taper lengths are reported."""
+use_in_model = """Axial size of a synthetic stenosis: the lumen narrowing (what angiography sees) about 12.5 +/- 6.1 mm long, and the plaque (what CT sees, including the outwardly remodelled shoulders) about 21.4 +/- 8.4 mm long. So the plaque should extend beyond the visible lumen narrowing, by 8.8 +/- 6.7 mm in total. The split between the proximal and distal ends is not reported."""
+
+[source]
+authors = ["van Velzen JE", "de Graaf MA", "Ciarka A", "de Graaf FR", "Schalij MJ", "Kroft LJ", "de Roos A", "Jukema JW", "Reiber JHC", "Schuijf JD", "Bax JJ", "van der Wall EE"]
+year = 2012
+title = "Non-invasive assessment of atherosclerotic coronary lesion length using multidetector computed tomography angiography: comparison to quantitative coronary angiography"
+journal = "Int J Cardiovasc Imaging"
+volume = "28"
+issue = "8"
+pages = "2065-2071"
+doi = "10.1007/s10554-012-0015-7"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 28, issue 8, 2065-2071; first author van Velzen)"
+pmid = "22271073"
+pmcid = "PMC3485532"
+
+[data.lesion_length]
+description = "Lesion length by CTA and by QCA, and stent length"
+location = "Results, 'Lesion length' and Fig. 2-3"
+provenance = "FT"
+statistic = "mean +/- SD; n = 119 lesions in 83 patients"
+n_lesions = 119.0
+method = ["CTA (plaque)", "QCA (lumen)", "stent deployed"]
+length_mm = [21.4, 12.5, 17.5]
+length_sd_mm = [8.4, 6.1, 5.3]
+cta_minus_qca_mm = 8.8
+cta_minus_qca_sd_mm = 6.7
+bland_altman_loa_mm = [-4.3, 22.0]
+stent_length_range_mm = [8.0, 33.0]
+stent_diameter_mm = 3.1
+stent_diameter_sd_mm = 0.3
+qca_diameter_stenosis_percent = 71.0
+qca_diameter_stenosis_sd_percent = 11.0
+missing_note = "Lengths per vessel (LAD, RCA) and entrance/exit taper lengths are not reported."

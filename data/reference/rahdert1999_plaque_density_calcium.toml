@@ -1,0 +1,47 @@
+[meta]
+id = "rahdert1999_plaque_density_calcium"
+data_type = "experimental"
+validates = "Measured wet density of human atherosclerotic plaque specimens, non-calcified vs calcified (AHA class VII), and its correlation with calcium content. Sets the bulk density of fibrous and calcified plaque materials in a CT phantom."
+species = "human"
+preparation = "33 cadaver plaque specimens (18 coronary, 15 non-coronary), classified by histology."
+conditions = "Density by hydrostatic weighing (mass submerged in water vs mass in air). Calcium assayed by inductively coupled plasma optical emission spectroscopy (ICP-OES)."
+verification = "abs"
+access = "PubMed abstract (PMID 10828566, NCBI efetch, read 2026-10-16). Cardiovasc Radiat Med full text not accessible."
+notes = """The abstract gives n = 19 non-calcified and n = 13 calcified (32), but 33 specimens were harvested. The missing specimen is not explained in the abstract.
+Coronary and non-coronary specimens are pooled in the abstract values.
+The calcium weight percentages themselves are not in the abstract, only the correlation: density vs calcium weight % R2 = 0.67; density vs histologic % area calcification R2 = 0.58.
+The authors note that the density of the calcified portions 'may be even higher because plaque specimens are heterogeneous.'"""
+use_in_model = """Bulk plaque densities: non-calcified (fibrous / lipid mix) 1.22 +/- 0.03 g/cm3; calcified 1.45 +/- 0.06 g/cm3. Use these as the target densities when mixing basis materials (soft tissue, adipose, hydroxyapatite) for whole-plaque voxels. The calcified value is a specimen average, so a pure calcium nodule should be denser."""
+
+[source]
+authors = ["Rahdert DA", "Sweet WL", "Tio FO", "Janicki C", "Duggan DM"]
+year = 1999
+title = "Measurement of density and calcium in human atherosclerotic plaque and implications for arterial brachytherapy"
+journal = "Cardiovasc Radiat Med"
+volume = "1"
+issue = "4"
+pages = "358-367"
+doi = "10.1016/S1522-1865(00)00030-5"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 1, issue 4, 358-367; first author Rahdert)"
+pmid = "10828566"
+
+[data.plaque_density]
+description = "Wet density of plaque specimens by histologic class"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- spread; the abstract does not say whether the +/- is SD or SE; n = specimens"
+group = ["non-calcified (non-class VII)", "calcified (class VII)"]
+n_specimens = [19.0, 13.0]
+density_g_per_cm3 = [1.22, 1.45]
+density_plusminus_g_per_cm3 = [0.03, 0.06]
+missing_note = "Whether +/- is SD or SE is not stated in the abstract."
+
+[data.density_calcium_correlation]
+description = "Correlation of specimen density with calcium content"
+location = "Abstract"
+provenance = "abs"
+statistic = "Coefficient of determination"
+r2_density_vs_calcium_weight_percent = 0.67
+r2_density_vs_histologic_area_calcification = 0.58
+calcium_weight_percent = nan
+missing_note = "Calcium weight % per specimen or per class and the regression slope are in the full text, which was not read."

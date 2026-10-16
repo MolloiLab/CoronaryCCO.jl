@@ -1,0 +1,40 @@
+[meta]
+id = "mintz1997_inadequate_remodeling"
+data_type = "experimental"
+validates = "Lesion / proximal reference EEM area ratio at 603 focal coronary stenoses by IVUS, and the cut-off for inadequate (inward) remodelling. Gives the population mean and SD of the remodelling ratio for significant stenoses."
+species = "human"
+preparation = "Washington Hospital Center. Preintervention IVUS of 603 focal, new, nonostial significant coronary stenoses in patients with chronic stable angina."
+conditions = "Reference = the most normal-looking cross section within 10 mm proximal to the lesion but distal to any side branch. P&M (plaque plus media) = EEM - lumen."
+verification = "abs"
+access = "PubMed abstract (PMID 9107165, NCBI efetch, read 2026-10-16). Circulation full text not accessible (AHA returned HTTP 403)."
+notes = """Inadequate remodelling was defined as lesion/reference EEM CSA <= 0.78, the upper limit of normal arterial tapering ('a 21% reduction in EEM CSA per 10-mm length').
+'37% of the 603 lesions had less plaque than expected' (abstract wording; the expectation model is in the full text).
+The only predictor of inadequate remodelling was the arc of superficial lesion calcium.
+Stable angina only, and lesions selected for intervention."""
+use_in_model = """Default remodelling ratio for a focal significant stenosis: lesion EEM / reference EEM = 1.00 +/- 0.22 (mean +/- SD). A ratio <= 0.78 marks inward remodelling. The 21% per 10 mm figure is also a usable bound on normal EEM taper along a proximal segment."""
+
+[source]
+authors = ["Mintz GS", "Kent KM", "Pichard AD", "Satler LF", "Popma JJ", "Leon MB"]
+year = 1997
+title = "Contribution of inadequate arterial remodeling to the development of focal coronary artery stenoses. An intravascular ultrasound study"
+journal = "Circulation"
+volume = "95"
+issue = "7"
+pages = "1791-1798"
+doi = "10.1161/01.CIR.95.7.1791"
+crossref_verified = "2026-10-16; Crossref title match on main title ('Contribution of Inadequate Arterial Remodeling to the Development of Focal Coronary Artery Stenoses'; vol 95, issue 7, 1791-1798; first author Mintz)"
+pmid = "9107165"
+
+[data.remodeling_ratio]
+description = "Lesion / reference EEM cross-sectional area ratio over all lesions"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD; n = 603 lesions"
+n_lesions = 603.0
+eem_ratio_mean = 1.00
+eem_ratio_sd = 0.22
+inadequate_remodeling_cutoff_ratio = 0.78
+normal_taper_eem_reduction_percent_per_10mm = 21.0
+inadequate_remodeling_percent_of_lesions = 15.0
+less_plaque_than_expected_percent_of_lesions = 37.0
+missing_note = "Lumen and P&M areas, % area stenosis and the RR vs plaque-burden relation are in the full text, which was not read."

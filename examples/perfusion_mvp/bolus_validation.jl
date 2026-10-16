@@ -18,6 +18,9 @@ rows = Dict{String, Any}[]
 function row!(id, quantity, model, mean, sd; unit = "", note = "", score = true, calibrated = false)
     # one rule page-wide (Dale's decision B2, 2026-10-16): one model subject passes inside the population's ±2 SD
     pass = calibrated ? "calibrated" : score && isfinite(sd) ? abs(model - mean) <= 2 * sd : missing
+    # a pass within 1% of the 2-SD bound flips on noise far inside the reference's own spread: say so (audit A16-3)
+    pass === true && 2 * sd - abs(model - mean) < 0.01 * 2 * sd &&
+        (note = (isempty(note) ? "" : note * "; ") * @sprintf("edge pass: %.3g inside the 2-SD bound %.4g, not counted as a gain", 2 * sd - abs(model - mean), mean + sign(model - mean) * 2 * sd))
     push!(rows, Dict("ref" => id, "quantity" => quantity, "model" => model, "mean" => mean, "sd" => sd, "unit" => unit, "pass" => pass, "note" => note))
     return @printf("%-40s %-44s model %7.2f  ref %7.2f ± %-6.2f %s %s\n", id, quantity, model, mean, sd, unit, pass === missing ? "info" : pass == "calibrated" ? "CAL" : pass ? "PASS" : "FAIL")
 end

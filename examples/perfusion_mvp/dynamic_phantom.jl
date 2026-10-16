@@ -18,6 +18,7 @@ module DynamicPhantom
 
 using DelimitedFiles, TOML, Unitful, Printf, Random, Statistics
 import XrayAttenuation as XA
+import AcceleratedKernels as AK
 
 export compartment_classes, class_error, VolumeWriter, write_slice!, write_phantom_csv, scan_times_from_curve, load, iodine,
     scan_times, materials_at, bs_phantom, iodinated
@@ -48,14 +49,15 @@ function compartment_classes(X::AbstractMatrix{F32}, K::Integer; iters = 40, see
     end
     a = zeros(Int32, n)
     for _ in 1:iters
-        c2 = vec(sum(abs2, C; dims = 1)); G = C' * X; changed = Threads.Atomic{Int}(0)
-        Threads.@threads for v in 1:n
-            best = typemax(F32); bk = 1
+        c2 = vec(sum(abs2, C; dims = 1)); G = C' * X; anew = similar(a)
+        AK.foreachindex(anew; min_elems = 4096) do v
+            best = typemax(F32); bk = Int32(1)
             for k in 1:K
-                dd = c2[k] - 2 * G[k, v]; dd < best && (best = dd; bk = k)
+                dd = c2[k] - 2 * G[k, v]; dd < best && (best = dd; bk = Int32(k))
             end
-            a[v] != bk && (Threads.atomic_add!(changed, 1); a[v] = bk)
+            anew[v] = bk
         end
+        changed = count(anew .!= a); a .= anew
         S = zeros(F32, d, K); cnt = zeros(Int, K)
         for v in 1:n
             S[:, a[v]] .+= @view X[:, v]; cnt[a[v]] += 1
@@ -63,7 +65,7 @@ function compartment_classes(X::AbstractMatrix{F32}, K::Integer; iters = 40, see
         for k in 1:K
             cnt[k] > 0 && (C[:, k] = S[:, k] ./ cnt[k])
         end
-        changed[] == 0 && break
+        changed == 0 && break
     end
     return a, C
 end
@@ -206,7 +208,7 @@ function load(csv::AbstractString; volume::Bool = true)
         key = rows[r]
         if key in ("rest", "stress")
             push!(get!(trows, key, Int[]), r)
-        elseif any(!isempty(string(A[r, c])) for c in 3:size(A, 2))
+        elseif isempty(string(A[r, 2]))             # per-column rows leave `value` empty (even when every cell is blank)
             tab[key] = A[r, :]
         else
             facts[key] = string(A[r, 2])
@@ -307,10 +309,11 @@ error in mg/mL.
 """
 function materials_at(ph::Dyn, state, t; max_materials = 64, tol0 = 1.0e-4)
     conc = iodine(ph, state, t); tol = tol0
+    nbase = length(unique(ph.table[l].base for l in keys(ph.counts)))
+    nbase > max_materials && error("$nbase base materials in the volume, more than max_materials = $max_materials")
     while true
         lut, mats, err = _assign(ph, conc, tol); length(mats) <= max_materials && return (; lut, materials = mats, tol, err); tol *= 1.25
     end
-    return
 end
 
 """

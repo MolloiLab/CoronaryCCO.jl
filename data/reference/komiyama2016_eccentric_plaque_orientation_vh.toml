@@ -1,0 +1,94 @@
+[meta]
+id = "komiyama2016_eccentric_plaque_orientation_vh"
+data_type = "experimental"
+validates = "Orientation (myocardial, lateral, epicardial) and VH-IVUS tissue composition of eccentric plaques in non-branching coronary segments. Sets the myocardial-side bias of a synthetic plaque and its fibrous / fibro-fatty / necrotic core / calcium area mix."
+species = "human"
+preparation = "Nippon Medical School. 30 consecutive patients with stable angina before elective PCI; 30 vessels (11 LAD, 8 LCx, 11 RCA); 1441 IVUS cross sections (497 LAD, 325 LCx, 619 RCA)."
+conditions = "20 MHz phased-array IVUS (Volcano EagleEye), 0.5 mm/s pullback, intracoronary nitroglycerin. Cross sections within twice the vessel diameter of a side branch excluded. Cross sections with calcium arc >= 90 deg excluded. Eccentric = eccentricity index (max / min plaque thickness) >= 3, or a disease-free arc. Orientation from perivascular landmarks into myocardial, epicardial and two lateral quadrants. VH-IVUS tissue maps by pcVH 2.1."
+verification = "FT"
+access = "Open access (BMC, CC BY 4.0; PMC5120430); NCBI efetch db=pmc XML, read 2026-10-16."
+notes = """All values are mean +/- SEM (Methods, statistics).
+Two sets of per-patient orientation percentages are printed. Results text: myocardial 50.2 +/- 7.0%, epicardial 25.6 +/- 5.4%, lateral 14.2 +/- 4.4%. Abstract and Fig. 2 legend: myocardial 46.7 +/- 7.5%, lateral 20.8 +/- 5.0%, epicardial 12.5 +/- 4.2%. They disagree. Both are stored as printed. The cross-section counts (401 / 237 / 80) agree better with the abstract ordering (lateral > epicardial).
+Concentric 723 (50.2%) and eccentric 718 (49.9% in the abstract, 49.8% in the Results).
+A 'normal' wall was intimal thickening < 0.2 mm."""
+use_in_model = """Eccentric plaque away from branches: orient it to the myocardial side most often (401 of 718 eccentric sections), then laterally (237 of 718), and least often epicardially (80 of 718). Use an eccentricity index (max / min thickness) of at least 3 for an eccentric plaque. VH area mix for a fibrous-dominant plaque: fibrous 55-61%, fibro-fatty 10-14%, necrotic core 15-18%, dense calcium 10-13%."""
+
+[source]
+authors = ["Komiyama H", "Takano H", "Nakamura S", "Takano M", "Hata N", "Miyauchi Y", "Seino Y", "Mizuno K", "Shimizu W"]
+year = 2016
+title = "Geographical predisposition influences on the distribution and tissue characterisation of eccentric coronary plaques in non-branching coronary arteries: cross-sectional study of coronary plaques analysed by intravascular ultrasound"
+journal = "Cardiovasc Ultrasound"
+volume = "14"
+issue = "1"
+pages = "47"
+doi = "10.1186/s12947-016-0090-3"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 14, article 47; first author Komiyama). Crossref lists the 6th author as family 'Yasushi', given 'Miyauchi'; the PMC record gives 'Yasushi Miyauchi' with the same swap. Stored as Miyauchi Y."
+pmid = "27876049"
+pmcid = "PMC5120430"
+
+[data.orientation_counts]
+description = "Cross sections by plaque distribution and orientation of eccentric plaque"
+location = "Results, 'Orientation of distributed atherosclerotic plaque'; Table 2"
+provenance = "FT"
+statistic = "Counts of cross sections"
+n_cross_sections = 1441.0
+concentric_n = 723.0
+eccentric_n = 718.0
+orientation = ["myocardial", "lateral", "epicardial"]
+orientation_n = [401.0, 237.0, 80.0]
+missing_note = ""
+
+[data.orientation_percent_per_patient]
+description = "Per-patient percentage of plaque by orientation (two printed versions)"
+location = "Results text vs Abstract and Fig. 2 legend"
+provenance = "FT"
+statistic = "mean +/- SEM over 30 patients"
+orientation = ["myocardial", "lateral", "epicardial"]
+results_text_percent = [50.2, 14.2, 25.6]
+results_text_sem_percent = [7.0, 4.4, 5.4]
+abstract_fig2_percent = [46.7, 20.8, 12.5]
+abstract_fig2_sem_percent = [7.5, 5.0, 4.2]
+p_myocardial_vs_epicardial = 0.003
+missing_note = "The two versions disagree; see notes. Neither is preferred."
+
+[data.greyscale_ivus_by_orientation]
+description = "Grey-scale IVUS dimensions at eccentric plaques by orientation"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SEM; n = cross sections (401, 237, 80)"
+orientation = ["myocardial", "lateral", "epicardial"]
+min_lumen_diameter_mm = [2.55, 2.51, 2.59]
+min_lumen_diameter_sem_mm = [0.03, 0.05, 0.07]
+min_vessel_diameter_mm = [4.17, 3.92, 4.26]
+min_vessel_diameter_sem_mm = [0.04, 0.05, 0.07]
+max_lumen_diameter_mm = [3.14, 2.98, 3.13]
+max_lumen_diameter_sem_mm = [0.04, 0.06, 0.08]
+max_vessel_diameter_mm = [4.66, 4.38, 4.70]
+max_vessel_diameter_sem_mm = [0.04, 0.06, 0.07]
+avg_lumen_diameter_mm = [2.84, 2.73, 2.84]
+avg_lumen_diameter_sem_mm = [0.03, 0.05, 0.07]
+avg_vessel_diameter_mm = [4.43, 4.15, 4.48]
+avg_vessel_diameter_sem_mm = [0.04, 0.05, 0.07]
+lumen_area_mm2 = [6.72, 6.42, 6.71]
+lumen_area_sem_mm2 = [0.16, 0.25, 0.38]
+missing_note = ""
+
+[data.vh_composition_by_orientation]
+description = "VH-IVUS plaque area and tissue composition of eccentric plaques by orientation"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SEM; n = cross sections. Component values are percent of plaque area."
+orientation = ["myocardial", "lateral", "epicardial"]
+plaque_area_mm2 = [6.10, 4.78, 6.31]
+plaque_area_sem_mm2 = [0.22, 0.17, 0.33]
+plaque_burden_percent = [44.93, 43.72, 47.66]
+plaque_burden_sem_percent = [1.08, 1.18, 2.06]
+fibrous_percent = [55.08, 60.93, 60.48]
+fibrous_sem_percent = [0.76, 0.94, 1.71]
+fibrofatty_percent = [14.25, 9.83, 11.22]
+fibrofatty_sem_percent = [0.51, 0.41, 0.69]
+necrotic_core_percent = [18.26, 18.02, 15.33]
+necrotic_core_sem_percent = [0.45, 0.61, 0.97]
+dense_calcium_percent = [11.91, 9.96, 12.98]
+dense_calcium_sem_percent = [0.72, 0.65, 1.23]
+missing_note = "Table 3 row 'Plaque area (%)' is stored as plaque_burden_percent (plaque / EEM area); the table label does not say so explicitly."

@@ -1,0 +1,105 @@
+[meta]
+id = "hubbell1995_nist_icru44_tissue_compositions"
+data_type = "model input (reference tissue compositions)"
+validates = "Elemental mass fractions and densities of ICRU-44 reference tissues used for X-ray attenuation: adipose tissue, soft tissue, skeletal muscle, whole blood, cortical bone and water. These are the published proxies for the plaque materials of a CT phantom (lipid-rich core ~ adipose, fibrous plaque ~ soft tissue, calcified plaque ~ cortical bone)."
+species = "human (reference tissue compositions)"
+preparation = "Tabulated reference compositions. NIST Table 2 states that 'The compositions of various human tissues was taken from ICRU Report 44 (1989).'"
+conditions = "Mass fractions by element (Z: fraction by weight) and nominal density. NIST notes that 'Some density values are only nominal.'"
+verification = "FT"
+access = "NIST X-Ray Mass Attenuation Coefficients, Table 2 (physics.nist.gov/PhysRefData/XrayMassCoef/tab2.html), the online version of NISTIR 5632; read 2026-10-16 as HTML. ICRU Report 44 itself was not read."
+notes = """These are reference compositions for normal tissue. None is a measured composition of coronary plaque. No measured elemental composition of human coronary plaque was found.
+Proxies for a phantom, by analogy only: lipid-rich necrotic core ~ adipose tissue (0.95 g/cm3); fibrous plaque ~ soft tissue or muscle (1.05-1.06 g/cm3); calcified plaque ~ cortical bone (1.92 g/cm3, Ca 22.5% by mass) or pure hydroxyapatite (see zehbe2010_hydroxyapatite_density.toml).
+Measured plaque densities (Rahdert 1999): non-calcified 1.22 +/- 0.03, calcified 1.45 +/- 0.06 g/cm3. Both are higher than the soft-tissue proxy and lower than cortical bone.
+Element order in each table follows the NIST listing. Mass fractions sum to 1.000 within rounding."""
+use_in_model = """Material definitions for the XA materials per voxel: use these element / mass-fraction lists with the stated densities. Blood (ICRU-44) and water are included so the lumen and the calibration materials use the same source. For iodinated blood, mix iodine into the blood composition by mass."""
+
+[source]
+authors = ["Hubbell JH", "Seltzer SM"]
+year = 1995
+title = "Tables of x-ray mass attenuation coefficients and mass energy-absorption coefficients 1 keV to 20 MeV for elements Z = 1 to 92 and 48 additional substances of dosimetry interest"
+journal = "NIST Interagency/Internal Report (NISTIR) 5632"
+volume = ""
+issue = ""
+pages = ""
+doi = "10.6028/NIST.IR.5632"
+crossref_verified = "2026-10-16; Crossref title exact match (report, NIST 1995; authors Hubbell JH, Seltzer SM)"
+url = "https://physics.nist.gov/PhysRefData/XrayMassCoef/tab2.html"
+primary_origin = "ICRU Report 44 (1989), Tissue Substitutes in Radiation Dosimetry and Measurement. Not read. Cited by NIST as the source of the tissue compositions."
+
+[data.adipose_tissue_icru44]
+description = "Adipose tissue (ICRU-44): proxy for a lipid-rich necrotic core"
+location = "NIST Table 2, row 'Adipose Tissue (ICRU-44)'"
+provenance = "FT"
+statistic = "Reference composition (no spread)"
+density_g_per_cm3 = 0.95
+z_over_a = 0.55579
+mean_excitation_energy_eV = 64.8
+element = ["H", "C", "N", "O", "Na", "S", "Cl"]
+z = [1.0, 6.0, 7.0, 8.0, 11.0, 16.0, 17.0]
+mass_fraction = [0.114, 0.598, 0.007, 0.278, 0.001, 0.001, 0.001]
+missing_note = ""
+
+[data.soft_tissue_icru44]
+description = "Soft tissue (ICRU-44): proxy for fibrous plaque"
+location = "NIST Table 2, row 'Tissue, Soft (ICRU-44)'"
+provenance = "FT"
+statistic = "Reference composition (no spread)"
+density_g_per_cm3 = 1.06
+z_over_a = 0.54996
+mean_excitation_energy_eV = 74.7
+element = ["H", "C", "N", "O", "Na", "P", "S", "Cl", "K"]
+z = [1.0, 6.0, 7.0, 8.0, 11.0, 15.0, 16.0, 17.0, 19.0]
+mass_fraction = [0.102, 0.143, 0.034, 0.708, 0.002, 0.003, 0.003, 0.002, 0.003]
+missing_note = ""
+
+[data.muscle_skeletal_icru44]
+description = "Skeletal muscle (ICRU-44): alternative proxy for fibrous plaque or myocardium"
+location = "NIST Table 2, row 'Muscle, Skeletal (ICRU-44)'"
+provenance = "FT"
+statistic = "Reference composition (no spread)"
+density_g_per_cm3 = 1.05
+z_over_a = 0.55000
+mean_excitation_energy_eV = 74.6
+element = ["H", "C", "N", "O", "Na", "P", "S", "Cl", "K"]
+z = [1.0, 6.0, 7.0, 8.0, 11.0, 15.0, 16.0, 17.0, 19.0]
+mass_fraction = [0.102, 0.143, 0.034, 0.710, 0.001, 0.002, 0.003, 0.001, 0.004]
+missing_note = ""
+
+[data.blood_whole_icru44]
+description = "Whole blood (ICRU-44): lumen material before iodine is added"
+location = "NIST Table 2, row 'Blood, Whole (ICRU-44)'"
+provenance = "FT"
+statistic = "Reference composition (no spread)"
+density_g_per_cm3 = 1.06
+z_over_a = 0.54999
+mean_excitation_energy_eV = 75.2
+element = ["H", "C", "N", "O", "Na", "P", "S", "Cl", "K", "Fe"]
+z = [1.0, 6.0, 7.0, 8.0, 11.0, 15.0, 16.0, 17.0, 19.0, 26.0]
+mass_fraction = [0.102, 0.110, 0.033, 0.745, 0.001, 0.001, 0.002, 0.003, 0.002, 0.001]
+missing_note = ""
+
+[data.bone_cortical_icru44]
+description = "Cortical bone (ICRU-44): proxy for dense calcified plaque"
+location = "NIST Table 2, row 'Bone, Cortical (ICRU-44)'"
+provenance = "FT"
+statistic = "Reference composition (no spread)"
+density_g_per_cm3 = 1.92
+z_over_a = 0.51478
+mean_excitation_energy_eV = 112.0
+element = ["H", "C", "N", "O", "Na", "Mg", "P", "S", "Ca"]
+z = [1.0, 6.0, 7.0, 8.0, 11.0, 12.0, 15.0, 16.0, 20.0]
+mass_fraction = [0.034, 0.155, 0.042, 0.435, 0.001, 0.002, 0.103, 0.003, 0.225]
+missing_note = ""
+
+[data.water_liquid]
+description = "Liquid water"
+location = "NIST Table 2, row 'Water, Liquid'"
+provenance = "FT"
+statistic = "Reference composition (no spread)"
+density_g_per_cm3 = 1.00
+z_over_a = 0.55508
+mean_excitation_energy_eV = 75.0
+element = ["H", "O"]
+z = [1.0, 8.0]
+mass_fraction = [0.111898, 0.888102]
+missing_note = ""

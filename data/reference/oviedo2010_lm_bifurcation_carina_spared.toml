@@ -1,0 +1,41 @@
+[meta]
+id = "oviedo2010_lm_bifurcation_carina_spared"
+data_type = "experimental"
+validates = "IVUS plaque distribution at the distal left main bifurcation: the carina (flow divider) is always disease-free, and plaque runs continuously from the left main into the proximal LAD in most patients. Supports placing a proximal-LAD plaque as an extension of left main plaque on the wall away from the carina."
+species = "human"
+preparation = "140 patients with distal left main and ostial LAD and LCx lesions, with preintervention IVUS of the LAD, the LCx and the left main."
+conditions = "IVUS pullbacks from both the LAD and the LCx into the left main; angiograms reviewed for comparison."
+verification = "abs"
+access = "PubMed abstract (PMID 20197513, NCBI efetch, read 2026-10-16). Circ Cardiovasc Interv full text not accessible (AHA)."
+notes = """Abstract: 'both sides of the flow divider were always disease-free' and 'IVUS shows that the carina is always spared and that the disease is diffuse rather than focal.'
+Plaque distribution was not influenced by the LAD/LCx angiographic angle, lesion severity, left main length or remodelling.
+92.9% of patients had at least one cross section with >= 40% IVUS plaque burden, vs 57.2% with angiographic diameter stenosis >= 50%."""
+use_in_model = """At the left main bifurcation keep the carina clear of plaque. In about 90% of patients make the proximal-LAD plaque continuous with left main plaque rather than an isolated ostial lesion."""
+
+[source]
+authors = ["Oviedo C", "Maehara A", "Mintz GS", "Araki H", "Choi SY", "Tsujita K", "Kubo T", "Doi H", "Templin B", "Lansky AJ", "Dangas G", "Leon MB", "Mehran R", "Tahk SJ", "Stone GW", "Ochiai M", "Moses JW"]
+year = 2010
+title = "Intravascular ultrasound classification of plaque distribution in left main coronary artery bifurcations: where is the plaque really located?"
+journal = "Circ Cardiovasc Interv"
+volume = "3"
+issue = "2"
+pages = "105-112"
+doi = "10.1161/CIRCINTERVENTIONS.109.906016"
+crossref_verified = "2026-10-16; Crossref title match on main title ('Intravascular Ultrasound Classification of Plaque Distribution in Left Main Coronary Artery Bifurcations'; Crossref omits the subtitle; vol 3, issue 2, 105-112; first author Oviedo)"
+pmid = "20197513"
+
+[data.plaque_continuity]
+description = "Longitudinal continuity of plaque across the left main bifurcation and sparing of the carina"
+location = "Abstract"
+provenance = "abs"
+statistic = "Percent of patients; n = 140"
+n_patients = 140.0
+carina_spared_percent = 100.0
+continuous_lm_to_lad_percent = 90.0
+continuous_lm_to_lcx_percent = 66.4
+continuous_lm_to_both_percent = 62.0
+ostial_lad_only_percent = 9.3
+ostial_lcx_only_percent = 17.1
+any_section_plaque_burden_ge40_percent = 92.9
+angiographic_ds_ge50_percent = 57.2
+missing_note = "The abstract says the carina was 'always' spared; 100 is stored for that wording. Circumferential angles and plaque burden by site are in the full text, which was not read."

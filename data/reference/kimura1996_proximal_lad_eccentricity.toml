@@ -1,0 +1,44 @@
+[meta]
+id = "kimura1996_proximal_lad_eccentricity"
+data_type = "experimental"
+validates = "Circumferential position and eccentricity of atheroma in the very proximal LAD just after the circumflex takeoff, by IVUS: maximal plaque thickness lies opposite the flow divider, and the flow divider is spared. Sets where to put the plaque around the lumen in a proximal-LAD stenosis."
+species = "human"
+preparation = "UC San Diego. 42 consecutive high-quality IVUS studies of patients with atherosclerosis in the proximal LAD just distal to the left main bifurcation."
+conditions = "Measured at the cross section immediately after the circumflex takeoff: lesion % area stenosis; maximal, minimal and flow-divider intimal-medial thickness; angle between the midpoint of the flow divider, the centre of gravity and the point of maximal plaque thickness."
+verification = "abs"
+access = "PubMed abstract (PMID 8613610, NCBI efetch, read 2026-10-16). JACC full text not accessible (ScienceDirect returned HTTP 403)."
+notes = """The abstract says the angle used 'the human center of gravity'. This is presumably the lumen (or vessel) centre of gravity; the full text was not read.
+An angle of 180 deg means the plaque peak is diametrically opposite the flow divider (on the outer, lateral wall away from the LCx).
+'Eccentric morphology was maintained across the 24% to 80% range of area stenosis.'
+Maximal plaque thickness spared the flow-divider region in 100% of cases."""
+use_in_model = """Proximal-LAD stenosis just past the LCx takeoff: centre the plaque at 193 +/- 49 deg from the flow divider (i.e. on the wall opposite the LCx). Use maximal wall thickness about 1.42 mm, minimal about 0.17 mm, and about 0.26 mm at the flow divider. Keep the plaque eccentric at all severities from about 24% to 80% area stenosis."""
+
+[source]
+authors = ["Kimura BJ", "Russo RJ", "Bhargava V", "McDaniel MB", "Peterson KL", "DeMaria AN"]
+year = 1996
+title = "Atheroma morphology and distribution in proximal left anterior descending coronary artery: in vivo observations"
+journal = "J Am Coll Cardiol"
+volume = "27"
+issue = "4"
+pages = "825-831"
+doi = "10.1016/0735-1097(95)00551-X"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 27, issue 4, 825-831; first author Kimura)"
+pmid = "8613610"
+
+[data.wall_thickness_and_angle]
+description = "Intimal-medial thickness and angular position of the maximal plaque thickness relative to the flow divider"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD; n = 42 patients (one cross section each)"
+n_patients = 42.0
+max_wall_thickness_mm = 1.42
+max_wall_thickness_sd_mm = 0.50
+min_wall_thickness_mm = 0.17
+min_wall_thickness_sd_mm = 0.098
+flow_divider_thickness_mm = 0.26
+flow_divider_thickness_sd_mm = 0.16
+angle_flow_divider_to_max_thickness_deg = 193.0
+angle_sd_deg = 49.0
+flow_divider_spared_percent = 100.0
+area_stenosis_range_percent = [24.0, 80.0]
+missing_note = "Per-patient angles, the area-stenosis distribution and any myocardial vs epicardial orientation are in the full text, which was not read."

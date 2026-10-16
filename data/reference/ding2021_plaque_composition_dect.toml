@@ -1,0 +1,54 @@
+[meta]
+id = "ding2021_plaque_composition_dect"
+data_type = "model (simulation inputs with literature ranges)"
+validates = "Water, lipid, protein and calcium fractions of non-calcified and calcified coronary plaque used as CT-simulation inputs, with the literature ranges they were chosen from, and the basis-material densities (water, lipid, protein). Gives a four-basis description of plaque materials for a CT phantom."
+species = "human (literature ranges); digital phantom"
+preparation = "UC Irvine (Molloi lab). Dual-energy CT simulation of a 32 cm digital chest with coronary plaques 2-5 mm in diameter; 95 plaques per lesion size."
+conditions = "Simulated Canon Aquilion One, 80 and 135 kVp, ray tracing (ASTRA), Poisson noise, 0.9 mm focal spot blur, FBP. Attenuation from NIST data. Non-calcified plaque = water + lipid + protein; calcified plaque adds calcium."
+verification = "FT"
+access = "NIH author manuscript (PMC7880863); NCBI efetch db=pmc XML, read 2026-10-16."
+notes = """Table 2 gives 'literature' and 'simulation' ranges in percent. The paper decomposes into VOLUMETRIC fractions, so these are read as volume percent. The table itself does not state volume vs mass.
+The literature ranges are credited to Hoffmann et al. and Leber et al. (refs 31, 32), which are CT attenuation studies. How those papers yield water / lipid / protein / calcium percentages is not explained.
+The non-calcified 'literature' column has no calcium entry.
+Basis densities assumed: water 1.00, lipid 0.92, protein 1.35 g/cm3. The text says 'Ca has a mass density of 1.55 g/cm3' (elemental calcium metal).
+The authors state that calcification is hydroxyapatite and that they converted the Ca volume fraction using the Ca mass ratio in hydroxyapatite; the conversion factor is not printed.
+Myocardial density about 1.05 g/cm3 is quoted from Vinnakota & Bassingthwaighte 2004 (secondary here)."""
+use_in_model = """Four-basis plaque recipe: fibrous / non-calcified plaque from water 50-90%, lipid 3.7-36%, protein 6.2-15.4%; calcified plaque from water 36-83%, lipid 8.6-34.6%, protein 5.2-13.6%, calcium 3-17% (literature columns, volume %). Densities water 1.00, lipid 0.92, protein 1.35 g/cm3. The elemental compositions of lipid and protein are not given here; they must come from another source."""
+
+[source]
+authors = ["Ding H", "Wang C", "Malkasian S", "Johnson T", "Molloi S"]
+year = 2021
+title = "Characterization of arterial plaque composition with dual energy computed tomography: a simulation study"
+journal = "Int J Cardiovasc Imaging"
+volume = "37"
+issue = "1"
+pages = "331-341"
+doi = "10.1007/s10554-020-01961-y"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 37, issue 1, 331-341; first author Ding; Crossref issued 2020-09-02 online)"
+pmid = "32876901"
+pmcid = "PMC7880863"
+
+[data.plaque_composition_ranges]
+description = "Plaque composition ranges from the literature and used in the simulation"
+location = "Table 2"
+provenance = "FT"
+statistic = "Ranges (min, max), percent; volume fraction implied by the Methods"
+component = ["water", "lipid", "protein", "calcium"]
+noncalcified_literature_min_percent = [50.0, 3.7, 6.2, nan]
+noncalcified_literature_max_percent = [90.0, 36.0, 15.4, nan]
+noncalcified_simulation_min_percent = [35.0, 5.0, 5.0, nan]
+noncalcified_simulation_max_percent = [65.0, 60.0, 40.0, nan]
+calcified_literature_min_percent = [36.0, 8.6, 5.2, 3.0]
+calcified_literature_max_percent = [83.0, 34.6, 13.6, 17.0]
+calcified_simulation_min_percent = [36.0, 1.7, 5.2, 2.0]
+calcified_simulation_max_percent = [83.0, 47.2, 15.2, 17.0]
+missing_note = "No calcium entry for non-calcified plaque (by design). Volume vs mass basis not stated in the table."
+
+[data.basis_densities]
+description = "Assumed densities of the basis materials"
+location = "Discussion"
+provenance = "FT"
+statistic = "Assumed values (no spread)"
+component = ["water", "lipid", "protein", "calcium (element)"]
+density_g_per_cm3 = [1.00, 0.92, 1.35, 1.55]
+missing_note = "Elemental compositions of the lipid and protein basis materials are not printed."

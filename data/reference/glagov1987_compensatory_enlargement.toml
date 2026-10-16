@@ -1,0 +1,50 @@
+[meta]
+id = "glagov1987_compensatory_enlargement"
+data_type = "experimental"
+validates = "Outward (compensatory) remodelling of human coronary arteries vs plaque size. The area inside the internal elastic lamina (IEL) grows with lesion area, so the lumen is preserved until the lesion fills about 40% of the IEL area. Sets how a synthetic plaque should push the wall outward before it narrows the lumen."
+species = "human"
+preparation = "Autopsy. Histologic sections of the left main coronary artery from 136 hearts."
+conditions = "Post-mortem histology. IEL area was taken as the lumen area the artery would have without plaque. Percent stenosis = lesion area / IEL area x 100 (a plaque-burden measure, not an angiographic diameter stenosis)."
+verification = "abs"
+access = "PubMed abstract (PMID 3574413, NCBI efetch, read 2026-10-16). NEJM full text not accessible (paywalled)."
+notes = """Abstract wording: lumen area 'did not decrease in relation to the percentage of stenosis ... for values between zero and 40 percent but did diminish markedly ... for values above 40 percent (r = -0.73, P less than 0.001)'.
+Regression from the abstract: IEL area = 9.26 + 0.88 (lesion area) + 0.026 (age) + 0.005 (heart weight). Only the lesion-area coefficient was significant (P < 0.001). Units of the regression (mm2, years, g) are not stated in the abstract.
+IEL area vs lesion area: r = 0.44, P < 0.001.
+'Percent stenosis' in this paper is lesion area / IEL area. This equals IVUS plaque burden, except that IVUS uses the external elastic membrane (EEM) and includes the media.
+Left main only. Remodelling in the LAD, LCx and RCA may differ.
+Fixed tissue; shrinkage from fixation is not described in the abstract."""
+use_in_model = """Remodelling rule for a synthetic stenosis: hold lumen area at the reference value while plaque burden (plaque area / IEL area) rises from 0 to about 40%, by enlarging the IEL. Above about 40% burden, let the lumen shrink. The slope 0.88 says IEL area grows by about 0.88 mm2 per 1 mm2 of plaque (units assumed mm2; not stated in the abstract). This is a population trend with r = 0.44, not a law for each lesion."""
+
+[source]
+authors = ["Glagov S", "Weisenberg E", "Zarins CK", "Stankunavicius R", "Kolettis GJ"]
+year = 1987
+title = "Compensatory enlargement of human atherosclerotic coronary arteries"
+journal = "N Engl J Med"
+volume = "316"
+issue = "22"
+pages = "1371-1375"
+doi = "10.1056/NEJM198705283162204"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 316, issue 22, 1371-1375; authors Glagov, Weisenberg, Zarins, Stankunavicius, Kolettis)"
+pmid = "3574413"
+
+[data.lumen_preservation_threshold]
+description = "Plaque burden (lesion area / IEL area) up to which lumen area does not fall"
+location = "Abstract"
+provenance = "abs"
+statistic = "Threshold read from the abstract text; no CI given. n = 136 hearts"
+n_hearts = 136.0
+lumen_preserved_up_to_percent_stenosis = 40.0
+r_lumen_vs_percent_stenosis_above_threshold = -0.73
+missing_note = "The per-heart scatter and the binned lumen areas are in the full text, which was not read."
+
+[data.iel_area_regression]
+description = "Multiple regression of IEL area on lesion area, age and heart weight"
+location = "Abstract"
+provenance = "abs"
+statistic = "Regression coefficients as printed; n = 136"
+intercept = 9.26
+coef_lesion_area = 0.88
+coef_age = 0.026
+coef_heart_weight = 0.005
+r_iel_vs_lesion_area = 0.44
+missing_note = "Units of the regression terms and the standard errors of the coefficients are not given in the abstract."

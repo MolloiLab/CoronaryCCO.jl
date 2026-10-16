@@ -1,0 +1,62 @@
+[meta]
+id = "cury2022_cadrads2_stenosis_grading"
+data_type = "reporting standard (expert consensus)"
+validates = "Clinical grading of coronary stenosis by percent LUMINAL DIAMETER stenosis (0, 1-24, 25-49, 50-69, 70-99, 100%), the 50% and 70% thresholds for obstructive disease, and the CT definitions of positive remodelling (ratio > 1.1) and low-attenuation plaque (< 30 HU). Sets how a synthetic stenosis should be labelled so it matches clinical reporting."
+species = "human (clinical standard)"
+preparation = "Expert consensus document of SCCT, ACC, ACR and NASCI for coronary CT angiography reporting (CAD-RADS 2.0)."
+conditions = "Coronary CTA. Stenosis graded per patient by the most severe luminal stenosis."
+verification = "FT"
+access = "PMC9627235 (free full text, Radiology: Cardiothoracic Imaging version; HTML read 2026-10-16). Table 1 read from the PMC table image ryct.220183.tbl1.jpg (800 x 1175 px)."
+notes = """Table 1 header: 'Degree of luminal diameter stenosis'. So CAD-RADS grades DIAMETER stenosis, the same convention as invasive angiography and QCA.
+The text uses '>70%' for three-vessel obstructive disease and 'at least 50%' for left main, while Table 1 uses 70-99% for severe and 50-69% for moderate. Both are stored as printed.
+Positive remodelling here is a DIAMETER ratio of the outer vessel: Av / [(Ap + Ad) / 2] > 1.1, with Ap and Ad the proximal and distal outer diameters. This differs from the IVUS AREA ratio (lesion EEM area / reference EEM area) used by Mintz 1997 and Schoenhagen 2000.
+High-risk plaque (HRP) needs two or more of: positive remodelling, low attenuation (< 30 HU), spotty calcification, napkin-ring sign.
+The published document does not state the area-diameter conversion. For a circular lumen whose reference and minimal sections are both circles, area stenosis = 1 - (1 - DS)^2 follows from geometry. This formula is geometry, not data from this source, and it fails for eccentric or non-circular lumens.
+IVUS reports area stenosis and plaque burden instead. The ACC IVUS consensus (Mintz et al. 2001, J Am Coll Cardiol 37(5):1478-1492, doi 10.1016/S0735-1097(01)01175-5; Crossref-verified 2026-10-16) was not read."""
+use_in_model = """Label each synthetic stenosis by % diameter stenosis = (1 - MLD / reference diameter) x 100, and map it to the CAD-RADS grade. Build test lesions at 50% and 70% DS. When the plaque is outwardly remodelled, report the outer-diameter ratio and check it against the > 1.1 positive-remodelling cut-off. A lipid-rich core should read below 30 HU on the non-contrast-equivalent image."""
+
+[source]
+authors = ["Cury RC", "Leipsic J", "Abbara S", "Achenbach S", "Berman D", "Bittencourt M", "Budoff M", "Chinnaiyan K", "Choi AD", "Ghoshhajra B", "Jacobs J", "Koweek L", "Lesser J", "Maroules C", "Rubin GD", "Rybicki FJ", "Shaw LJ", "Williams MC", "Williamson E", "White CS", "Villines TC", "Blankstein R"]
+year = 2022
+title = "CAD-RADS 2.0 - 2022 Coronary Artery Disease - Reporting and Data System: An Expert Consensus Document of the Society of Cardiovascular Computed Tomography (SCCT), the American College of Cardiology (ACC), the American College of Radiology (ACR) and the North America Society of Cardiovascular Imaging (NASCI)"
+journal = "Radiol Cardiothorac Imaging"
+volume = "4"
+issue = "5"
+pages = "e220183"
+doi = "10.1148/ryct.220183"
+crossref_verified = "2026-10-16; Crossref title match ('CAD-RADS 2.0 - 2022 Coronary Artery Disease - Reporting and Data System ...'; vol 4, issue 5, e220183; first author Cury, 22 authors)"
+pmid = "36339062"
+pmcid = "PMC9627235"
+also_published_in = "J Cardiovasc Comput Tomogr (doi 10.1016/j.jcct.2022.07.002), JACC Cardiovasc Imaging (doi 10.1016/j.jcmg.2022.07.002), J Am Coll Radiol (doi 10.1016/j.jacr.2022.09.012). All three Crossref-verified 2026-10-16 (JCCT 16(6):536-557; JACC Cardiovasc Imaging 15(11):1974-2001; JACR 19(11):1185-1212)."
+
+[data.stenosis_grading]
+description = "Grading scale for luminal diameter stenosis"
+location = "Table 1"
+provenance = "FT"
+statistic = "Category bounds (percent diameter stenosis)"
+grade_term = ["no visible stenosis", "minimal", "mild", "moderate", "severe", "occluded"]
+cad_rads_category = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
+diameter_stenosis_min_percent = [0.0, 1.0, 25.0, 50.0, 70.0, 100.0]
+diameter_stenosis_max_percent = [0.0, 24.0, 49.0, 69.0, 99.0, 100.0]
+missing_note = "CAD-RADS 4 is split into 4A (one or two vessels 70-99%) and 4B (left main >= 50% or three-vessel > 70%); the category mapping to 0-5 above follows the text and Tables 4-5, which were not read as images."
+
+[data.obstructive_thresholds]
+description = "Thresholds for obstructive disease named in the text"
+location = "Section 3.1.1 (CAD-RADS 4A / 4B text)"
+provenance = "FT"
+statistic = "Thresholds as printed"
+left_main_threshold_diameter_stenosis_percent = 50.0
+three_vessel_threshold_diameter_stenosis_percent = 70.0
+moderate_range_percent = [50.0, 69.0]
+missing_note = ""
+
+[data.high_risk_plaque_definitions]
+description = "CT definitions of positive remodelling and low-attenuation plaque"
+location = "Section on modifier HRP (figure legend text)"
+provenance = "FT"
+statistic = "Definitions as printed"
+positive_remodeling_outer_diameter_ratio_gt = 1.1
+positive_remodeling_formula = "Av / [(Ap + Ad) / 2] > 1.1 (outer vessel diameters at plaque, proximal and distal)"
+low_attenuation_plaque_hu_lt = 30.0
+hrp_min_features = 2.0
+missing_note = ""

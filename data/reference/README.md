@@ -332,6 +332,26 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `goresky1975_extravascular_lung_water.toml` | Accessible extravascular lung water 2.16 g/kg at rest, 2.55 g/kg at low exercise; central blood volume +50% at 3× cardiac output | Human, 11 normal adults, triple indicator dilution | abs |
 | `brigham1983_lung_urea_ps.toml` | Closest analogue for lung contrast exchange: [¹⁴C]urea PS 0.50 ± 0.16 (survivors) and 3.44 ± 0.36 mL/s per L TLC (deaths); states no normal-human lung PSu exists. No lung PS for iodinated contrast found | Human, 14 with acute respiratory failure, multiple-indicator dilution | FT |
 
+### Synthetic stenosis design: remodelling, lesion geometry, plaque location and plaque materials
+
+| File | What it validates | Species / conditions | Status |
+|---|---|---|---|
+| `glagov1987_compensatory_enlargement.toml` | Lumen preserved until the lesion fills about 40% of the IEL area; IEL area = 9.26 + 0.88 (lesion area) + … ; r = 0.44 | Human, 136 autopsy left main arteries, histology | abs |
+| `schoenhagen2000_remodeling_stable_unstable.toml` | IVUS remodelling ratio (lesion / proximal reference EEM area) 1.06 ± 0.2 unstable vs 0.94 ± 0.2 stable; positive remodelling 51.8% vs 19.6% | Human, 85 unstable + 46 stable, IVUS before PCI | abs |
+| `mintz1997_inadequate_remodeling.toml` | Lesion / reference EEM ratio 1.00 ± 0.22; inadequate remodelling ≤ 0.78 (15% of lesions); normal taper 21% EEM loss per 10 mm | Human, 603 focal stenoses, stable angina, IVUS | abs |
+| `vanvelzen2012_lesion_length_cta_qca.toml` | Lesion length 21.4 ± 8.4 mm on CTA (plaque) vs 12.5 ± 6.1 mm on QCA (lumen); difference 8.8 ± 6.7 mm; DS 71 ± 11% | Human, 119 stented lesions (47% LAD) | FT |
+| `yang2025_qca_lesion_geometry.toml` | QCA lumen profile: reference 2.8–2.9 mm, MLD 1.3–1.4 mm, length 14–20 mm, inflow 12.8–17.3° and outflow 12.0–13.5° angles, plaque symmetry 0.6 ± 0.3; DS and AS formulas | Human, 303 vessels with FFR, two cohorts | FT |
+| `kimura1996_proximal_lad_eccentricity.toml` | Proximal LAD after the LCx takeoff: maximal plaque 1.42 ± 0.50 mm at 193 ± 49° from the flow divider; flow divider 0.26 ± 0.16 mm, spared in 100% | Human, 42 patients, IVUS | abs |
+| `asakura1990_lesion_location_flow_patterns.toml` | Plaque on the outer wall of daughter vessels at bifurcations, flow divider free, inner wall of curves (low shear sites); qualitative | Human, 5 post-mortem coronary trees, flow visualization | abs |
+| `oviedo2010_lm_bifurcation_carina_spared.toml` | Carina always spared; plaque continuous from the left main into the LAD in 90%, into the LCx in 66.4% | Human, 140 patients, IVUS | abs |
+| `jeremias2000_plaque_orientation_myocardial.toml` | Non-branching segments: 47.6% eccentric; of those 62.6% myocardial, 17.3% epicardial, 19.5% lateral; same plaque size either side | Human, 30 patients, 613 IVUS sections | abs |
+| `komiyama2016_eccentric_plaque_orientation_vh.toml` | Eccentric plaque orientation (401 myocardial / 237 lateral / 80 epicardial sections) and VH composition by side (fibrous 55–61%, necrotic core 15–18%, calcium 10–13%) | Human, 30 vessels, 1441 IVUS / VH-IVUS sections | FT |
+| `rahdert1999_plaque_density_calcium.toml` | Wet plaque density: non-calcified 1.22 ± 0.03, calcified (class VII) 1.45 ± 0.06 g/cm³; density vs calcium weight % R² = 0.67 | Human, 33 cadaver plaques (18 coronary) | abs |
+| `hubbell1995_nist_icru44_tissue_compositions.toml` | **Model input, not data.** ICRU-44 element mass fractions and densities: adipose 0.95, soft tissue 1.06, muscle 1.05, blood 1.06, cortical bone 1.92 g/cm³, water | Reference tissues (NIST Table 2, from ICRU 44) | FT |
+| `zehbe2010_hydroxyapatite_density.toml` | **Model input, not data.** Hydroxyapatite Ca10(PO4)6(OH)2, theoretical density 3.16 g/cm³; Ca/P/O/H mass fractions derived from the formula | Mineral | FT (mass fractions derived) |
+| `ding2021_plaque_composition_dect.toml` | **Model inputs with literature ranges.** Plaque water / lipid / protein / calcium ranges (non-calcified and calcified); basis densities water 1.00, lipid 0.92, protein 1.35 g/cm³ | Dual-energy CT simulation, 2–5 mm plaques | FT |
+| `cury2022_cadrads2_stenosis_grading.toml` | CAD-RADS 2.0 grades by luminal DIAMETER stenosis (0, 1–24, 25–49, 50–69, 70–99, 100%); left main ≥ 50%, three-vessel > 70%; positive remodelling diameter ratio > 1.1; low attenuation < 30 HU | Clinical reporting standard, coronary CTA | FT (Table 1 image) |
+
 ## Caveats that matter for comparisons
 
 - **Kassab orders are diameter-defined Strahler orders** (Eq. 1 of Kassab 1993), not generations.

@@ -1,0 +1,43 @@
+[meta]
+id = "zehbe2010_hydroxyapatite_density"
+data_type = "model input (mineral reference)"
+validates = "Formula and maximum theoretical density of calcium hydroxyapatite, Ca10(PO4)6(OH)2, the mineral of calcified plaque. Gives the pure-mineral end member for calcified-plaque materials in a CT phantom."
+species = "not applicable (mineral)"
+preparation = "Statement in the Discussion of a synchrotron micro-CT study of cartilage and subchondral bone."
+conditions = "Not applicable."
+verification = "FT"
+access = "Open access (Royal Society, PMC2839371); NCBI efetch db=pmc XML, read 2026-10-16."
+notes = """Text: subchondral bone 'is composed of hydroxyapatite (Ca10(PO4)6(OH)2), with a maximum theoretical density of 3.16 g cm-3'.
+The paper gives the formula and density only. The element mass fractions below are DERIVED here from the formula, using IUPAC standard atomic weights (Ca 40.078, P 30.973762, O 15.999, H 1.008). Molar mass from these weights = 1004.61 g/mol. They are stoichiometry, not measurements.
+Biological apatite is carbonated and calcium-deficient, so real plaque mineral differs from this ideal formula.
+PubChem (CID 14781, HSDB, citing Hawley's Condensed Chemical Dictionary 13th ed.) gives 'Density: 3.1 to 3.2 /Apatite/'. That agrees with 3.16 and is noted only as a cross-check.
+Crossref dates the article 2009 (online); the print issue is vol 7, issue 42, 2010."""
+use_in_model = """Pure-mineral end member for calcified plaque: hydroxyapatite at 3.16 g/cm3 with Ca 0.3989, P 0.1850, O 0.4141, H 0.0020 by mass. Mix it by mass with a soft-tissue or collagen-like matrix to reach a target calcified-plaque density (for example Rahdert 1999, 1.45 g/cm3 for whole class VII specimens)."""
+
+[source]
+authors = ["Zehbe R", "Haibel A", "Riesemeier H", "Gross U", "Kirkpatrick CJ", "Schubert H", "Brochhausen C"]
+year = 2010
+title = "Going beyond histology. Synchrotron micro-computed tomography as a methodology for biological tissue characterization: from tissue morphology to individual cells"
+journal = "J R Soc Interface"
+volume = "7"
+issue = "42"
+pages = "49-59"
+doi = "10.1098/rsif.2008.0539"
+crossref_verified = "2026-10-16; Crossref title match on main title (vol 7, issue 42, 49-59; first author Zehbe; Crossref issued date 2009-03-25, online)"
+pmid = "19324670"
+pmcid = "PMC2839371"
+
+[data.hydroxyapatite]
+description = "Calcium hydroxyapatite: formula and maximum theoretical density (FT); element mass fractions derived from the formula"
+location = "Discussion (density and formula)"
+provenance = "FT (density, formula); mass fractions derived by stoichiometry"
+statistic = "Theoretical value (no spread)"
+formula = "Ca10(PO4)6(OH)2"
+density_g_per_cm3 = 3.16
+element = ["Ca", "P", "O", "H"]
+z = [20.0, 15.0, 8.0, 1.0]
+atoms_per_formula_unit = [10.0, 6.0, 26.0, 2.0]
+atomic_weight_used = [40.078, 30.973762, 15.999, 1.008]
+mass_fraction_derived = [0.398940, 0.184989, 0.414064, 0.002007]
+molar_mass_derived_g_per_mol = 1004.61
+missing_note = "Mass fractions and molar mass are derived, not read; see notes."

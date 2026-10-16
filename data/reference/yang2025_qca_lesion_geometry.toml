@@ -1,0 +1,62 @@
+[meta]
+id = "yang2025_qca_lesion_geometry"
+data_type = "experimental"
+validates = "QCA geometry of intermediate-to-severe coronary stenoses: reference diameter, minimal lumen diameter, lesion length, inflow (entrance) and outflow (exit) angles, area and diameter stenosis, and plaque symmetry. Gives the lumen profile shape of a synthetic focal stenosis."
+species = "human"
+preparation = "Two cohorts with invasive FFR. Development: 113 patients, 170 vessels (two centres in Singapore, prospective, 2016-2020). Validation: 107 patients, 133 vessels (China, retrospective, 2014-2021). Visual diameter stenosis 30-90%; left main, in-stent restenosis and myocardial bridges excluded."
+conditions = "QCA with QAngio XA 7.3 (Medis) in a core lab, end-diastolic frame, single best projection, catheter-tip calibration. For sequential lesions the most severe one represented the vessel."
+verification = "FT"
+access = "Open access (Frontiers, PMC12226509); NCBI efetch db=pmc XML, read 2026-10-16. Supplementary Table S1 (QCA parameter definitions, including the inflow and outflow angles) was not read."
+notes = """Definitions from the Methods: lesion length = distance from the proximal lesion-free segment to the distal lesion-free segment. Reference diameter and area = computer-generated estimate at the stenosis assuming no lesion. DS_QCA = [1 - (MLD / reference lumen diameter)] x 100%. Area stenosis = [1 - (minimal lumen area / reference lumen area)] x 100%. Plaque symmetry = ratio of the plaque areas on the two sides in the 2-D projection (0 = fully asymmetric, 1 = fully symmetric).
+Table 2 prints the area stenosis unit as 'mm 2'. The values (about 76) and the Methods formula show it is a percent. Stored as percent with this note.
+Inflow and outflow angles are not defined in the main text (Supplementary Table S1). They are presumably the wall angles of the converging and diverging parts of the lumen profile.
+Vessel distribution (LAD vs other) per cohort is not given in the main text read here; a subgroup analysis by LAD vs non-LAD exists."""
+use_in_model = """Lumen profile of a synthetic stenosis: reference diameter about 2.8-2.9 mm, MLD about 1.3-1.4 mm (DS_QCA about 52-54%), lesion length 14-20 mm, with converging (inflow) and diverging (outflow) wall angles of about 12-17 deg and 12-14 deg. The near-equal angles support a roughly symmetric entrance and exit taper. Plaque symmetry 0.6 +/- 0.3 says the plaque is usually eccentric in projection."""
+
+[source]
+authors = ["Yang S", "Leng S", "Wang Z", "Fam JM", "Low AFH", "Tan RS", "Chai P", "Teo L", "Chin CY", "Allen JC", "Chan MY", "Yeo KK", "Wong ASL", "Lim ST", "Wu Q", "Zhong L"]
+year = 2025
+title = "Development and external validation of a nomogram prediction model based on quantitative coronary angiography for predicting ischemic lesions: a multi-centre study"
+journal = "Front Cardiovasc Med"
+volume = "12"
+issue = ""
+pages = "1550550"
+doi = "10.3389/fcvm.2025.1550550"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 12, article 1550550; first author Yang)"
+pmid = "40621065"
+pmcid = "PMC12226509"
+
+[data.lesion_geometry]
+description = "QCA lesion characteristics per interrogated vessel"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD; n = vessels"
+cohort = ["development", "validation"]
+n_vessels = [170.0, 133.0]
+reference_diameter_mm = [2.8, 2.9]
+reference_diameter_sd_mm = [0.6, 0.6]
+reference_area_mm2 = [6.5, 6.8]
+reference_area_sd_mm2 = [2.8, 3.0]
+minimal_lumen_diameter_mm = [1.3, 1.4]
+minimal_lumen_diameter_sd_mm = [0.5, 0.5]
+minimal_lumen_area_mm2 = [1.5, 1.7]
+minimal_lumen_area_sd_mm2 = [1.3, 1.2]
+lesion_length_mm = [20.0, 14.3]
+lesion_length_sd_mm = [11.0, 6.4]
+inflow_angle_deg = [12.8, 17.3]
+inflow_angle_sd_deg = [7.4, 8.6]
+outflow_angle_deg = [12.0, 13.5]
+outflow_angle_sd_deg = [7.7, 7.4]
+area_stenosis_percent = [76.6, 76.1]
+area_stenosis_sd_percent = [14.1, 10.9]
+diameter_stenosis_qca_percent = [54.0, 52.4]
+diameter_stenosis_qca_sd_percent = [14.8, 11.0]
+diameter_stenosis_visual_percent = [61.4, 71.6]
+diameter_stenosis_visual_sd_percent = [18.3, 11.0]
+plaque_symmetry = [0.6, 0.6]
+plaque_symmetry_sd = [0.3, 0.3]
+plaque_area_mm2 = [13.0, 9.9]
+plaque_area_sd_mm2 = [8.0, 6.0]
+ffr = [0.80, 0.81]
+ffr_sd = [0.14, 0.11]
+missing_note = "Area stenosis unit printed as mm2 in Table 2 (see notes). Angle definitions are in Supplementary Table S1 (not read). Plaque area units as printed (mm2); its definition ('plaque area within lesion length') is a QCA estimate, not IVUS."

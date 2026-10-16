@@ -146,4 +146,5 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
     include("test_kamiya.jl")
     include("test_parity.jl")
     include("test_postprocess.jl")
+    include("test_supply_gaps.jl")
 end
