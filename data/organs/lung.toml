@@ -80,10 +80,10 @@ note = "Mean arteriole-to-venule path length in the sheet: cat 556 um scaled by 
 sources = ["huang2011_human_sheet_flow_parameters", "clark2010_acinar_sheet_flow_parameters"]
 
 [parameters.sheet_pmax_cmH2O]
-value = 15.0
+value = 32.0
 unit = "cmH2O"
-note = "Transmural pressure above which the sheet no longer thickens (Clark 2010 P_CU; cat 25, an earlier human estimate up to 32)."
-sources = ["clark2010_acinar_sheet_flow_parameters"]
+note = "Transmural pressure above which the sheet no longer thickens: 32 cmH2O for human lungs (Clark 2011, from Sobin et al. 1979 human septa; the reported 7.7 um maximum sheet height with h0 3.5 um and 0.127 um/cmH2O gives about 33). Clark 2010 used 15 with no measurement behind it; cat sheets stay linear to 27 cmH2O (Sobin 1972, Fung & Sobin 1972)."
+sources = ["clark2011_capillary_compliance_lung_volume", "fung1972_alveolar_sheet_elasticity", "sobin1972_cat_sheet_elasticity"]
 
 [parameters.hd]
 value = 0.45
@@ -172,6 +172,11 @@ unit = "um"
 note = "Not used (see d_art_micro)."
 
 [parameters.r_micro_dilated]
+value = 0.0
+unit = "mmHg min g/mL"
+note = "Not used: 0 = no kappa anchor, so the lung's resistance is a prediction, not a fit."
+
+[parameters.r_total_dilated]
 value = 0.0
 unit = "mmHg min g/mL"
 note = "Not used: 0 = no kappa anchor, so the lung's resistance is a prediction, not a fit."

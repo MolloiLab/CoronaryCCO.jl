@@ -124,10 +124,16 @@ note = "Venous microcirculation cut-off of Chilian's resistance classes."
 sources = ["chilian1989_dipyridamole_resistance"]
 
 [parameters.r_micro_dilated]
-value = 4.0
+value = 0.0
 unit = "mmHg min g/mL"
-note = "Microvascular resistance at maximal dilation (dipyridamole). Anchors the scale kappa of grown microvessels (accepted calibration). 0 disables the anchor (kappa = 1)."
+note = "Not used: the scale kappa is anchored to the human whole-bed resistance (r_total_dilated). Chilian 1989's dilated cat microvascular resistance (4.0) is now an emergent check."
 sources = ["chilian1989_dipyridamole_resistance"]
+
+[parameters.r_total_dilated]
+value = 24.0
+unit = "mmHg min g/mL"
+note = "Whole-bed coronary resistance at maximal dilation in healthy men, MAP / MBF with no back pressure (Kaufmann 1999 PET: 25 +/- 4 and 23 +/- 4 on two adenosine scans; mean 24). Anchors the scale kappa of the grown microvessels (accepted calibration; Dale's decision A2, 2026-10-16); the stress-MBF row is therefore calibrated."
+sources = ["kaufmann1999_o15_water_reproducibility"]
 
 [parameters.d_active]
 value = 150.0

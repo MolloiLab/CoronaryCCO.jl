@@ -16,7 +16,8 @@ const CO0 = human_circulation().co
 
 rows = Dict{String, Any}[]
 function row!(id, quantity, model, mean, sd; unit = "", note = "", score = true, calibrated = false)
-    pass = calibrated ? "calibrated" : score && isfinite(sd) ? abs(model - mean) <= sd : missing
+    # one rule page-wide (Dale's decision B2, 2026-10-16): one model subject passes inside the population's ±2 SD
+    pass = calibrated ? "calibrated" : score && isfinite(sd) ? abs(model - mean) <= 2 * sd : missing
     push!(rows, Dict("ref" => id, "quantity" => quantity, "model" => model, "mean" => mean, "sd" => sd, "unit" => unit, "pass" => pass, "note" => note))
     return @printf("%-40s %-44s model %7.2f  ref %7.2f ± %-6.2f %s %s\n", id, quantity, model, mean, sd, unit, pass === missing ? "info" : pass == "calibrated" ? "CAL" : pass ? "PASS" : "FAIL")
 end

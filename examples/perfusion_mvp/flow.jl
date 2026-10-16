@@ -241,6 +241,7 @@ struct Physiology
     d_art_micro::F32
     d_ven_micro::F32
     r_micro_dilated::F32
+    r_total_dilated::F32
     # autoregulation
     d_active::F32
     # vessel wall (Carlson & Secomb 2005 fits as functions of D₀ in µm; tensions dyn/cm)
@@ -1564,7 +1565,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     # Chilian-style resistance between arteriolar inlets and venular outlets equals the measurement
     ctone = reference === nothing ? F32[-5.0f0] : copy(reference.ctone)
     kappa === nothing && reference !== nothing && (kappa = reference.resist.kappa)
-    kappa === nothing && phys.r_micro_dilated <= 0 && (kappa = 1.0f0)       # no anchor: pure Poiseuille
+    kappa === nothing && phys.r_micro_dilated <= 0 && phys.r_total_dilated <= 0 && (kappa = 1.0f0)       # no anchor: pure Poiseuille
     # the κ anchor is Chilian's resistance between arteriolar inlets and venular outlets of tube capillaries; with
     # sheet-flow beds that resistance is pressure-dependent, so the two are not combined (audit A2-5)
     phys.capillary === :sheet && kappa === nothing && phys.r_micro_dilated > 0 &&
@@ -1572,10 +1573,20 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     if kappa === nothing
         kappa = F32(kappa_init)
         Wd = _Wall(seg, d0, lim, to)
-        for _ in 1:12
+        for _ in 1:20
             _autoregulate!(S, Wd, F32(kappa), phys, :stress, ctone, true, tg, mu0d, to(empty(sten)), lim, false, sheet, dist)   # healthy geometry
-            ratio = phys.r_micro_dilated / _micro_resistance(S, mass_g)[1]
-            kappa *= ratio
+            if phys.r_total_dilated > 0
+                # whole-bed resistance at full dilation, inlet pressure ÷ flow per gram (as PET reports MAP ÷ MBF). Only
+                # the microvessels scale with κ, so the step uses their share wk of the bed's resistance
+                fpg = 60.0f0 * AK.reduce(+, S.qt; init = 0.0f0) / mass_g
+                rt = phys.p_in / fpg
+                wk = clamp(_micro_resistance(S, mass_g)[1] / ((phys.p_in - phys.p_out) / fpg), 0.1f0, 1.0f0)
+                ratio = phys.r_total_dilated / rt
+                kappa *= ratio^(1 / wk)
+            else
+                ratio = phys.r_micro_dilated / _micro_resistance(S, mass_g)[1]
+                kappa *= ratio
+            end
             abs(ratio - 1) < 1.0f-3 && break
         end
     end
