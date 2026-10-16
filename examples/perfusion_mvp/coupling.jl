@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+import AcceleratedKernels as AK
 # Which venule drains each capillary bed. Start from the nearest venous terminal; a capillary
 # network connects each terminal arteriole to several venules, and blood leaves through the
 # lowest-pressure one, so a bed whose paired venule sits above its arterial pressure (reversed
@@ -15,8 +16,8 @@ function couple_veins(F, terr, VT, terms, vterms; reach = 3.0f0, passes = 24, to
         @printf("coupling pass %d: %d beds with reversed flow\n", pass, length(bad)); flush(stdout)
         (length(bad) <= tol * length(terms) || length(bad) > 0.9 * last) && return vleaf, C
         last = length(bad)
-        Threads.@threads for i in bad
-            p = F.b[:, terms[i]]; pa = C.pa[C.terminals[i]]
+        AK.foreachindex(1:length(bad); min_elems = 1) do ii
+            i = bad[ii]; p = F.b[:, terms[i]]
             best = (Inf32, vleaf[i])
             for k in eachindex(vterms)
                 d2 = (VB[1, k] - p[1])^2 + (VB[2, k] - p[2])^2 + (VB[3, k] - p[3])^2

@@ -33,6 +33,7 @@ module Flow
 
 import AcceleratedKernels as AK
 using Atomix: @atomic
+using TOML
 
 export VTree, vtree, save_vtree, load_vtree, merge_vtrees, Physiology, Circuit, circuit, with_extraction, InputCurve,
     gamma_input, Transport, transport, frame_masses, sinus_outflow
@@ -117,17 +118,23 @@ end
 # ---------------------------------------------------------------------------------------------
 
 """
-    Physiology(; kwargs...)
+    Physiology(; organ = "heart", kwargs...)
 
-Boundary conditions, tissue constants and vessel-wall mechanics. Flow is not prescribed: it
-follows from the geometry, the two pressures and the arteriolar diameters (see [`circuit`](@ref)).
+Boundary conditions, tissue constants and vessel-wall mechanics of one organ's vascular bed.
+Flow is not prescribed: it follows from the geometry, the two pressures and the arteriolar
+diameters (see [`circuit`](@ref)). Values are data, not code: they are read from
+`data/organs/<organ>.toml` (or from a path), where each one names its sources in
+`data/reference/`; keyword arguments override single values. The values below are the heart's.
 
 Boundary conditions and blood
-- `p_ao`: mean aortic pressure at the ostia, 93 mmHg (Chilian et al. 1986, cat; normal human
-  mean arterial pressure is similar).
-- `p_back`: effective outflow pressure, 13.6 mmHg: the zero-flow pressure of the maximally
+- `p_in`: mean inflow pressure. Heart: aortic pressure at the ostia, 93 mmHg (Chilian et al.
+  1986, cat; normal human mean arterial pressure is similar).
+- `p_out`: effective outflow pressure. Heart: 13.6 mmHg, the zero-flow pressure of the maximally
   dilated beating heart (Kanatsuka et al. 1990). It lumps coronary-sinus pressure and the
   waterfall effect of intramyocardial pressure into one steady back pressure.
+- `regulation`: `:o2` (arteriolar tone follows the O₂ state of each bed, below) or `:passive`
+  (no active tone: every state is the relaxed one).
+- `capillary`: `:tube` (parallel functional capillaries, below).
 - `hd`: discharge hematocrit 0.45. Tube hematocrit from the Fåhræus law (Pries et al. 1992).
 
 Volumes and exchange
@@ -196,34 +203,66 @@ Arteriolar wall mechanics (autoregulation; Carlson, Arciero & Secomb 2008, Arcie
   flow, its distribution and every response to pressure or a stenosis follow. Pass the healthy
   rest circuit as `reference` to keep C_tone fixed (then the extraction is free to change).
 """
-Base.@kwdef struct Physiology
-    p_ao::F32 = 93.0f0
-    p_back::F32 = 13.6f0
-    hd::F32 = 0.45f0
-    fb::F32 = 0.1f0
-    share_art::F32 = 0.29f0
-    share_cap::F32 = 0.31f0
-    share_ven::F32 = 0.4f0
-    cap_length_mm::F32 = 0.5f0
-    cap_diameter_um::F32 = 6.0f0
-    cap_ht_ratio::F32 = 0.85f0
-    ve::F32 = 0.18f0
-    ps::F32 = 0.37f0
-    rho::F32 = 1.05f0
-    plasma_viscosity_mPas::F32 = 1.2f0
-    radius_cv::F32 = 0.12f0
-    d_art_micro::F32 = 170.0f0
-    d_ven_micro::F32 = 150.0f0
-    r_micro_dilated::F32 = 4.0f0
+struct Physiology
+    p_in::F32
+    p_out::F32
+    regulation::Symbol
+    capillary::Symbol
+    hd::F32
+    fb::F32
+    share_art::F32
+    share_cap::F32
+    share_ven::F32
+    cap_length_mm::F32
+    cap_diameter_um::F32
+    cap_ht_ratio::F32
+    ve::F32
+    ps::F32
+    rho::F32
+    plasma_viscosity_mPas::F32
+    radius_cv::F32
+    d_art_micro::F32
+    d_ven_micro::F32
+    r_micro_dilated::F32
     # autoregulation
-    d_active::F32 = 150.0f0
-    oef::F32 = 0.73f0
-    g_meta::F32 = 15.0f0
-    mvo2::F32 = 0.116f0
-    sao2::F32 = 0.97f0
-    hb::F32 = 14.5f0
-    atp_r1::F32 = 1.026f0
-    atp_l0::F32 = 1.0f0
+    d_active::F32
+    oef::F32
+    g_meta::F32
+    mvo2::F32
+    sao2::F32
+    hb::F32
+    atp_r1::F32
+    atp_l0::F32
+end
+
+const ORGAN_DIR = normpath(joinpath(@__DIR__, "..", "..", "data", "organs"))
+const REFERENCE_DIR = normpath(joinpath(@__DIR__, "..", "..", "data", "reference"))
+const _REGULATION = (:o2, :passive)
+const _CAPILLARY = (:tube,)
+
+# One organ's parameter set: name → value, every cited reference file checked to exist.
+function organ_parameters(organ::AbstractString)
+    path = isfile(organ) ? organ : joinpath(ORGAN_DIR, organ * ".toml")
+    isfile(path) || throw(ArgumentError("no organ parameter file $path"))
+    d = TOML.parsefile(path)["parameters"]
+    for (k, v) in d, id in get(v, "sources", String[])
+        isfile(joinpath(REFERENCE_DIR, id * ".toml")) || throw(ArgumentError("$path: $k cites missing reference $id"))
+    end
+    return Dict(Symbol(k) => v["value"] for (k, v) in d)
+end
+
+function Physiology(; organ::AbstractString = "heart", kwargs...)
+    d = organ_parameters(organ)
+    bad = setdiff(keys(kwargs), fieldnames(Physiology))
+    isempty(bad) || throw(ArgumentError("unknown Physiology fields $(collect(bad))"))
+    vals = map(fieldnames(Physiology)) do f
+        v = haskey(kwargs, f) ? kwargs[f] : haskey(d, f) ? d[f] : throw(ArgumentError("organ $organ: no value for $f"))
+        fieldtype(Physiology, f) === Symbol ? Symbol(v) : F32(v)
+    end
+    p = Physiology(vals...)
+    p.regulation in _REGULATION || throw(ArgumentError("regulation must be one of $_REGULATION"))
+    p.capillary in _CAPILLARY || throw(ArgumentError("capillary must be one of $_CAPILLARY"))
+    return p
 end
 
 # Tube/discharge hematocrit ratio (Pries, Neuhaus & Gaehtgens 1992), D in µm.
@@ -293,10 +332,10 @@ end
 
 """
     circuit(tree, territory_ml; phys = Physiology(), state = :rest, veins = nothing, vleaf = nothing,
-            reference = nothing, kappa = nothing, stenosis = nothing) -> Circuit
+            reference = nothing, kappa = nothing, stenosis = nothing, demand = nothing, to = identity) -> Circuit
 
-Steady coronary circuit driven by pressures: aortic pressure `phys.p_ao` at every ostium,
-`phys.p_back` at the coronary-sinus ostium. Every terminal `i` (perfusing `territory_ml[i]`)
+Steady coronary circuit driven by pressures: inflow pressure `phys.p_in` at every ostium,
+outflow pressure `phys.p_out` at the coronary-sinus ostium. Every terminal `i` (perfusing `territory_ml[i]`)
 feeds a capillary bed whose resistance follows its capillary count (Kassab capillary
 dimensions), then drains into the venous tree.
 
@@ -326,11 +365,14 @@ varies across the wall and local flow follows it (Bassingthwaighte, Beard & Li 2
 1973; Gould 1978): viscous f = 8πμL_s/A_s², separation s = ρ·k_e/(2A₀²)·(A₀/A_s − 1)² with
 k_e = 1.52 (counted once, at the narrowing's exit). It is solved with the rest of the network, so the flow through it (and its loss) is
 whatever the pressures and the distal arterioles make it.
+
+`to` moves the solver's arrays to a device (for example `to = MtlArray` or `CuArray`), where the
+whole iteration then runs; the returned `Circuit` holds host arrays either way.
 """
 function circuit(
         t::VTree, territory_ml::AbstractVector; phys::Physiology = Physiology(), state::Symbol = :rest,
         veins::Union{Nothing, VTree} = nothing, vleaf = nothing, reference::Union{Nothing, Circuit} = nothing,
-        kappa = nothing, stenosis = nothing, demand = nothing, verbose::Bool = false
+        kappa = nothing, stenosis = nothing, demand = nothing, verbose::Bool = false, to = identity
     )
     state in (:rest, :stress) || throw(ArgumentError("state must be :rest or :stress"))
     cv(t, salt) = phys.radius_cv <= 0 ? t : (
@@ -339,7 +381,7 @@ function circuit(
         )
     t = cv(t, 0)
     veins === nothing || (veins = cv(veins, 1 << 40))
-    return _circuit(t, territory_ml; phys, state, veins, vleaf, reference, kappa, stenosis, demand, verbose)
+    return _circuit(t, territory_ml; phys, state, veins, vleaf, reference, kappa, stenosis, demand, verbose, to)
 end
 
 # Fixed standard normal per segment index (SplitMix64 + Box–Muller), so results are reproducible.
@@ -390,136 +432,551 @@ function _lengths(t::VTree)
     return len, vol
 end
 
-# Arterial tree + terminal beds + venous tree, solved for flows and pressures.
-struct _Solver
-    parent::Vector{Int32}; order::Vector{Int32}; ptr::Vector{Int32}; kids::Vector{Int32}
-    terminals::Vector{Int32}; tidx::Vector{Int32}
-    vparent::Vector{Int32}; vorder::Vector{Int32}; vleaf::Vector{Int32}
-    ra::Vector{F32}; rv::Vector{F32}; rcap::Vector{F32}; ma::Vector{Bool}; mv::Vector{Bool}
-    fa::Vector{F32}              # arterial resistance factor from the current diameters, (D₀/D)⁴·μ(D)/μ(D₀)
-    Pa::F32; Pb::F32
-    G::Vector{F32}; E::Vector{F32}; I::Vector{F32}
-    q::Vector{F32}; pa::Vector{F32}; qt::Vector{F32}; qv::Vector{F32}; pv::Vector{F32}
-    pvt::Vector{F32}; vE::Vector{F32}; vI::Vector{F32}; iters::Base.RefValue{Int}
-    lev::Vector{Int32}           # start of each depth level in `order` (breadth-first), plus n + 1
-    rr::Vector{F32}              # effective arterial resistances of the current solve
+# ---------------------------------------------------------------------------------------------
+# Network solver: tree passes as prefix scans
+# ---------------------------------------------------------------------------------------------
+#
+# The solver renumbers both trees in depth-first preorder, so that every subtree is a contiguous
+# range. Arterial segments with children come first (1..ni, in preorder), then the terminal
+# segments (ni + i is terminal i, also in preorder), so the terminals below any segment are a
+# contiguous range of terminal numbers as well. Every tree pass is then a fixed number of kernels,
+# however deep the tree:
+# - a subtree sum (the flow through a segment is the sum of its terminals' flows) is the
+#   difference of one prefix sum over the terminals at the two ends of the subtree's range;
+# - a path sum from the root (the pressure drop down to a segment) is one prefix sum over the
+#   Euler tour of the tree: entering segment k adds its value, leaving it subtracts it again. In
+#   preorder, k is entered at position 2k − depth(k) and left 2·size(k) − 1 positions later.
+# Both scans run in 64-bit integers, on a fixed-point scale (a power of two chosen from a bound on
+# the result, so every result is below 2⁶¹), which makes them exact and independent of the order
+# in which the scan adds: a difference of two prefix sums loses nothing, where in Float32 a
+# terminal's flow (~10⁻⁶ of the total) would drown in the rounding of the total. Every other
+# value is Float32.
+#
+# All per-iteration arrays live on the device of `to` (plain `Array`s and Julia threads by default).
+
+# Power of two σ with σ·a·b < 2⁶¹ (a, b ≥ 0 and finite)
+@inline _expo(a::F32) = Int32((reinterpret(UInt32, a) >> 23) & 0xff) - Int32(127)
+@inline function _scale(a::F32, b::F32 = 1.0f0)
+    k = clamp(Int32(59) - _expo(a) - _expo(b), Int32(-126), Int32(126))
+    return reinterpret(F32, UInt32(k + Int32(127)) << 23)
 end
+@inline _fix(x::F32, σ::F32) = unsafe_trunc(Int64, x * σ)
+@inline _unfix(v::Int64, σ::F32) = F32(v) / σ
 
-function _Solver(parent, order, ptr, kids, terminals, tidx, vparent, vorder, vleaf, ra, rv, rcap, ma, mv, Pa, Pb)
-    n = length(parent); nv = length(vparent); nt = length(terminals)
-    z(k) = zeros(F32, k)
-    # depth levels are contiguous in the breadth-first order
-    dep = zeros(Int32, n); lev = Int32[1]
-    for h in 1:n
-        j = order[h]; p = parent[j]; dep[j] = p == 0 ? 1 : dep[p] + 1
-        h > 1 && dep[j] != dep[order[h - 1]] && push!(lev, h)
-    end
-    push!(lev, n + 1)
-    return _Solver(
-        parent, order, ptr, kids, terminals, tidx, vparent, vorder, vleaf, ra, rv, rcap, ma, mv, ones(F32, n), F32(Pa), F32(Pb),
-        z(n), z(n), z(n), z(n), z(n), z(nt), z(nv), z(nv), fill(F32(Pb), nt), z(nv), z(nv), Ref(0), lev, z(n)
-    )
-end
+const _CHUNK = 256      # largest subtree (segments with children) that one thread reduces alone
 
-# Level-synchronous tree pass: every segment of one depth level at once (a 1 M-terminal CCO
-# tree is only ~150 levels deep, and most segments sit on a few dozen wide levels). `up` runs
-# from the deepest level to the roots (children before parents), otherwise roots first.
-@inline function _levels(f::F, S::_Solver, up::Bool) where {F}
-    nl = length(S.lev) - 1
-    for l in (up ? (nl:-1:1) : (1:nl))
-        lo = S.lev[l]; m = S.lev[l + 1] - lo
-        AK.foreachindex(1:m; min_elems = 2048) do k
-            f(lo + k - 1)
-        end
-    end
-    return nothing
-end
-
-@inline _ra(S::_Solver, kappa::F32, j) = (S.ma[j] ? kappa * S.ra[j] : S.ra[j]) * S.fa[j]
-
-# Terminal-path operator: out_i = Σ_j∈path(i) r_j Q_j (+ bed resistance × q_i for `bed`), where Q_j
-# is the sum of q over the terminals below segment j. For the arteries the path runs root → i,
-# for the veins from the sinus to the vein draining i.
-function _apply_art!(out, S::_Solver, kappa::F32, q, bed::Bool)
-    Q = S.I; D = S.E; ptr = S.ptr; kids = S.kids
-    _levels(S, true) do h
+_get(r) = Array(r)[1]                               # a device scalar on the host
+# Reduction of f(1), …, f(m) with `op` into the device scalar R[1]: partial results in `part`,
+# each over runs of 16 consecutive elements spaced 16·length(part) apart (neighbouring threads
+# read neighbouring runs), then one small reduction. Nothing returns to the host.
+function _reduce!(R, part, op, init::F32, m::Int, f::F) where {F}
+    B = length(part)
+    AK.foreachindex(part; min_elems = 64) do b
         @inbounds begin
-            j = S.order[h]
-            if ptr[j + 1] == ptr[j]
-                Q[j] = q[S.tidx[j]]
-            else
-                s = 0.0f0
-                for c in ptr[j]:(ptr[j + 1] - 1)
-                    s += Q[kids[c]]
+            acc = init
+            for i0 in (16 * (b - 1)):(16 * B):(m - 1)
+                for i in (i0 + 1):min(i0 + 16, m)
+                    acc = op(acc, f(i))
                 end
-                Q[j] = s
             end
+            part[b] = acc
         end
     end
-    _levels(S, false) do h
-        @inbounds begin
-            j = S.order[h]; p = S.parent[j]
-            D[j] = (p == 0 ? 0.0f0 : D[p]) + Q[j] * S.rr[j]
-            if ptr[j + 1] == ptr[j]
-                i = S.tidx[j]
-                out[i] = D[j] + (bed ? kappa * S.rcap[i] * q[i] : 0.0f0)
-            end
+    AK.mapreducedim!(identity, op, R, part; init)
+    return R
+end
+_dot!(R, S, a, b) = _reduce!(R, S.part, +, 0.0f0, length(a), i -> a[i] * b[i])
+
+# Depth-first preorder of a forest (children in index order)
+function _preorder(parent::Vector{Int32}, ptr, kids)
+    n = length(parent); pre = Vector{Int32}(undef, n); h = 0
+    stack = Int32[j for j in n:-1:1 if parent[j] == 0]
+    while !isempty(stack)
+        j = pop!(stack); h += 1; pre[h] = j
+        for c in (ptr[j + 1] - 1):-1:ptr[j]
+            push!(stack, kids[c])
         end
     end
-    return out
+    h == n || throw(ArgumentError("parent pointers do not form a forest"))
+    return pre
 end
 
-function _apply_ven!(out, S::_Solver, kappa::F32, q)
-    nv = length(S.vparent); nt = length(S.terminals); Q = S.vI; D = S.vE
-    fill!(Q, 0.0f0)
-    @inbounds for i in 1:nt
-        Q[S.vleaf[i]] += q[i]
+# Arterial tree + terminal beds + venous tree, solved for flows and pressures, in the solver's own
+# numbering (see above). Venous segments are numbered in preorder; `vsorted` lists the terminals
+# by the preorder number of the vein they drain into, those of vein k at vcum[k]+1 .. vcum[k+1].
+struct _Solver{VF <: AbstractVector{F32}, VI <: AbstractVector{Int32}, VB <: AbstractVector{Bool}, VL <: AbstractVector{Int64}, MF, BE}
+    n::Int; ni::Int; nt::Int; nv::Int
+    be::BE                        # backend of the arrays
+    lev::Vector{Int32}            # start of each depth level in `lord`, plus its length + 1 (host)
+    # arterial layout
+    par::VI                       # parent (0 at a root), all segments
+    sz::VI; dep::VI               # subtree size (segments with children) and depth, segments 1..ni
+    tb::VI; te::VI                # terminals below segment k are tb[k]+1 .. te[k]
+    cptr::VI; ckid::VI            # children of segments 1..ni (CSR)
+    croot::VI                     # roots of the maximal subtrees of ≤ _CHUNK segments with children
+    lord::VI                      # the larger segments sorted by depth
+    # venous layout
+    vpar::VI; vsz::VI; vdep::VI; vcum::VI
+    vsorted::VI                   # terminals sorted by their draining vein
+    vdrain::VI                    # draining vein of terminal i
+    # resistances
+    ra::VF; rv::VF; rcap::VF; ma::VB; mv::VB
+    fa::VF                        # arterial resistance factor from the current diameters, (D₀/D)⁴·μ(D)/μ(D₀)
+    rr::VF; rvv::VF               # effective arterial and venous resistances of the current solve
+    Pa::F32; Pb::F32
+    # scan buffers
+    X::VL                         # 0, terminal flows, the flows draining into each vein
+    Xm::VL                        # 0, metabolic signal of the terminals, by band
+    Eu::VL                        # Euler tours: arterial (segments 1..ni), then venous
+    Xp::VL; Ep::VL; Xv::VL; Ev::VL
+    Qa::VF; Qv::VF; Dv::VF
+    # preconditioner (Norton factors of the arterial tree)
+    G::VF                         # conductance through each segment, G = g/(1 + g·r)
+    lc::VF                        # log c, c = 1/(1 + g·r)
+    gi::VF                        # conductance g below each segment with children
+    lpi::VF                       # log π, π the path product of c (segments with children)
+    lF::VF; lFt::VF               # log F, F = π·g, at the segments with children and the terminals
+    Ek::VF; Pk::VF                # Norton sources and pressures of one application
+    nbu::Base.RefValue{Int}; nbd::Base.RefValue{Int}   # bands of the two passes (see `_precond!`)
+    # solution
+    q::VF; pa::VF; qt::VF; qv::VF; pv::VF
+    x::VF; r::VF; z::VF; p::VF; Ap::VF; Mp::VF
+    # metabolic signal (static weights, see `_metabolic!`)
+    mlf::VF; mbw::VF; mnf::VF; mband::VI; nband::Int
+    val::VF; sig::VF; so2::VF
+    # wall-mechanics tables on the device, and the apparent viscosity μ_rel(D) on a log D grid
+    lhi::MF; llo::MF
+    mut::VF; mua::F32; mudl::F32
+    # device scalars
+    part::VF                      # partial results of reductions
+    s_x::VF; s_rz::VF; s_rz2::VF; s_pap::VF; s_rn::VF; s_Ra::VF; s_Rv::VF; s_lF::VF; s_lFm::VF; s_lpm::VF; s_w0::VF; s_wn::VF; s_b::VF; s_v::VF
+    iters::Base.RefValue{Int}
+    solved::Base.RefValue{Bool}
+    kv::Base.RefValue{F32}        # κ of the current venous resistances
+    # host copies for the summaries
+    hpar::Vector{Int32}; hvpar::Vector{Int32}; hma::Vector{Bool}; hmv::Vector{Bool}
+end
+
+# Builds the solver in its own numbering. Returns it and the permutations back to the caller's
+# numbering: `perm[k]` is the caller's arterial segment k of the solver, `tperm[i]` the caller's
+# terminal i, `vperm[k]` the caller's vein k.
+function _solver(
+        parent, nchild, ptr, kids, vparent, vptr, vkids, vleaf, tidx, ra, rv, rcap, ma, mv, len, lim, Pa, Pb, l0, hd, to
+    )
+    n = length(parent); nv = length(vparent)
+    # arteries: segments with children first, then the terminals, both in preorder
+    ni = count(>(0), nchild); nt = n - ni
+    perm = Vector{Int32}(undef, n); tb = zeros(Int32, ni); a = 0; b = ni
+    for j in _preorder(parent, ptr, kids)
+        if nchild[j] > 0
+            a += 1; perm[a] = j; tb[a] = b - ni
+        else
+            b += 1; perm[b] = j
+        end
     end
-    @inbounds for h in nv:-1:1
-        k = S.vorder[h]; p = S.vparent[k]
-        p == 0 || (Q[p] += Q[k])
+    iperm = similar(perm); iperm[perm] = 1:n
+    par = Int32[parent[perm[k]] == 0 ? 0 : iperm[parent[perm[k]]] for k in 1:n]
+    sz = ones(Int32, ni); nl = zeros(Int32, ni)
+    for k in n:-1:(ni + 1)
+        p = par[k]; p > 0 && (nl[p] += 1)
     end
-    @inbounds for h in 1:nv
-        k = S.vorder[h]; p = S.vparent[k]
-        D[k] = (p == 0 ? 0.0f0 : D[p]) + Q[k] * (S.mv[k] ? kappa * S.rv[k] : S.rv[k])
+    for k in ni:-1:1
+        p = par[k]; p > 0 && (sz[p] += sz[k]; nl[p] += nl[k])
     end
-    @inbounds for i in 1:nt
-        out[i] = D[S.vleaf[i]]
+    te = tb .+ nl
+    dep = zeros(Int32, ni)
+    for k in 1:ni
+        p = par[k]; dep[k] = p == 0 ? 1 : dep[p] + 1
+    end
+    # bottom-up passes: small subtrees one per thread, the segments above them by depth level
+    croot = Int32[k for k in 1:ni if sz[k] <= _CHUNK && (par[k] == 0 || sz[par[k]] > _CHUNK)]
+    big = Int32[k for k in 1:ni if sz[k] > _CHUNK]
+    nd = maximum(view(dep, big); init = Int32(0))
+    lev = zeros(Int32, nd + 1); lev[1] = 1
+    for k in big
+        lev[dep[k] + 1] += 1
+    end
+    lev = accumulate(+, lev); fillp = lev[1:nd] .+ 0; lord = Vector{Int32}(undef, length(big))
+    for k in big
+        lord[fillp[dep[k]]] = k; fillp[dep[k]] += 1
+    end
+    cptr = zeros(Int32, ni + 1); cptr[1] = 1
+    for k in 1:n
+        p = par[k]; p > 0 && (cptr[p + 1] += 1)
+    end
+    cptr = accumulate(+, cptr); fillp = cptr[1:ni] .+ 0; ckid = Vector{Int32}(undef, n)
+    for k in 1:n
+        p = par[k]; p > 0 && (ckid[fillp[p]] = k; fillp[p] += 1)
+    end
+    resize!(ckid, cptr[end] - 1)
+    tperm = Int32[tidx[perm[ni + i]] for i in 1:nt]
+    # veins: preorder
+    vperm = _preorder(vparent, vptr, vkids)
+    viperm = similar(vperm); viperm[vperm] = 1:nv
+    vpar = Int32[vparent[vperm[k]] == 0 ? 0 : viperm[vparent[vperm[k]]] for k in 1:nv]
+    vsz = ones(Int32, nv)
+    for k in nv:-1:1
+        p = vpar[k]; p > 0 && (vsz[p] += vsz[k])
+    end
+    vdep = zeros(Int32, nv)
+    for k in 1:nv
+        p = vpar[k]; vdep[k] = p == 0 ? 1 : vdep[p] + 1
+    end
+    vdrain = Int32[viperm[vleaf[tperm[i]]] for i in 1:nt]
+    vsorted = Int32.(sortperm(vdrain))
+    vcum = zeros(Int32, nv + 1)
+    for i in 1:nt
+        vcum[vdrain[i] + 1] += 1
+    end
+    vcum = accumulate(+, vcum)
+    # path lengths ℓ for the conducted metabolic signal, whose subtree sums run in bands of ℓ
+    lp = len[perm]; Lp = zeros(F32, n)
+    for k in 1:n
+        p = par[k]; Lp[k] = (p == 0 ? 0.0f0 : Lp[p]) + lp[k]
+    end
+    band = 12.0f0 * l0
+    nband = floor(Int, maximum(view(Lp, 1:ni); init = 0.0f0) / band) + 1
+    mlf = Vector{F32}(undef, nt); mbw = Vector{F32}(undef, nt * nband)
+    mnf = Vector{F32}(undef, ni); mband = Vector{Int32}(undef, ni)
+    AK.foreachindex(mlf; min_elems = 4096) do i
+        @inbounds begin
+            L = Lp[ni + i]; mlf[i] = exp(-0.5f0 * lp[ni + i] / l0)
+            for b in 0:(nband - 1)
+                mbw[b * nt + i] = L >= b * band ? exp(-(L - b * band) / l0) : 0.0f0
+            end
+        end
+    end
+    AK.foreachindex(mnf; min_elems = 4096) do k
+        @inbounds begin
+            bk = floor(Int32, Lp[k] / band); mband[k] = bk
+            mnf[k] = exp((Lp[k] - bk * band) / l0) * exp(-0.5f0 * lp[k] / l0) / F32(te[k] - tb[k])
+        end
+    end
+    # μ_rel on a log-spaced grid of diameters from 2 µm (where `mu_rel` clamps) to 400 µm
+    nmu = 16384; mua = log(2.0f0); mudl = (log(400.0f0) - mua) / (nmu - 1)
+    mut = F32[mu_rel(exp(mua + (m - 1) * mudl), hd) for m in 1:nmu]
+    z(k) = to(zeros(F32, k)); zl(k) = to(zeros(Int64, k)); s() = to(zeros(F32, 1))
+    S = _Solver(
+        n, ni, nt, nv, AK.get_backend(to(zeros(F32, 1))), lev,
+        to(par), to(sz), to(dep), to(tb), to(te), to(cptr), to(ckid), to(croot), to(lord),
+        to(vpar), to(vsz), to(vdep), to(vcum), to(vsorted), to(vdrain),
+        to(ra[perm]), to(rv[vperm]), to(F32.(rcap[tperm])), to(ma[perm]), to(mv[vperm]),
+        to(ones(F32, n)), z(n), z(nv), F32(Pa), F32(Pb),
+        zl(1 + nt + nv), zl(1 + nband * nt), zl(2ni + 2nv), zl(1 + nt), zl(2ni), zl(1 + nv), zl(2nv),
+        z(ni), z(nv), z(nv),
+        z(n), z(n), z(ni), z(ni), z(ni), z(nt), z(ni), z(ni), Ref(1), Ref(1),
+        z(n), z(n), z(nt), z(nv), z(nv),
+        z(nt), z(nt), z(nt), z(nt), z(nt), z(nt),
+        to(mlf), to(mbw), to(mnf), to(mband), nband, z(nt), z(n), z(nt),
+        to(lim.hi), to(lim.lo), to(mut), mua, mudl,
+        z(4096), s(), s(), s(), s(), s(), s(), s(), s(), s(), s(), s(), to(F32[3nt]), s(), s(),
+        Ref(0), Ref(false), Ref(-1.0f0),
+        par, vpar, ma[perm], mv[vperm]
+    )
+    return S, perm, iperm, tperm, vperm
+end
+
+# Path sums D[k] = Σ w over the path from the root to segment k (inclusive), for the first
+# length(D) segments of a preorder tree with subtree sizes `sz` and depths `dep`; E is the
+# Euler-tour buffer (2·length(D)) and `bnd` a device scalar for the bound Σ|w|.
+function _pathsum!(D, w, bnd, part, E, sz, dep)
+    _reduce!(bnd, part, +, 0.0f0, length(w), i -> abs(w[i]))
+    AK.foreachindex(D) do k
+        @inbounds begin
+            v = _fix(w[k], _scale(bnd[1])); e = 2k - dep[k]
+            E[e] = v; E[e + 2sz[k] - 1] = -v
+        end
+    end
+    AK.accumulate!(+, E)
+    AK.foreachindex(D) do k
+        @inbounds begin
+            D[k] = _unfix(E[2k - dep[k]], _scale(bnd[1]))
+        end
+    end
+    return D
+end
+
+# Resistances of the current diameters, the bounds for the fixed-point scale of the operator,
+# and the factors of the preconditioner. (Keeping the factors of an earlier solve for a few solves
+# was tried: at rest the arterioles move enough between steps that CG then needs ~25× more
+# iterations.)
+function _resistances!(S::_Solver, kappa::F32)
+    ni = S.ni; rr = S.rr; ma = S.ma; ra = S.ra; fa = S.fa
+    G = S.G; lc = S.lc; gi = S.gi; rcap = S.rcap; cptr = S.cptr; ckid = S.ckid; sz = S.sz
+    # resistances; and at the terminals the start of the Norton reduction below
+    AK.foreachindex(rr) do k
+        @inbounds begin
+            r = (ma[k] ? kappa * ra[k] : ra[k]) * fa[k]; rr[k] = r
+            if k > ni
+                g = 1.0f0 / (kappa * rcap[k - ni])
+                G[k] = g / (1.0f0 + g * r); lc[k] = -log1p(g * r)
+            end
+        end
+    end
+    if S.kv[] != kappa
+        rvv = S.rvv; mv = S.mv; rv = S.rv
+        AK.foreachindex(rvv) do k
+            @inbounds begin
+                rvv[k] = mv[k] ? kappa * rv[k] : rv[k]
+            end
+        end
+        _pathsum!(S.Dv, rvv, S.s_b, S.part, S.Ev, S.vsz, S.vdep)
+        Dv = S.Dv; _reduce!(S.s_Rv, S.part, max, 0.0f0, S.nv, k -> Dv[k])
+        S.kv[] = kappa
+    end
+    # |path sum of r·Q| ≤ Σ|x| · Σ r over the segments with children (a loose bound costs bits,
+    # not accuracy: the scale keeps ~2⁶⁰ quanta for it)
+    _reduce!(S.s_Ra, S.part, +, 0.0f0, ni, k -> rr[k])
+    # Norton reduction of the arterial tree with every terminal draining through its bed to 0:
+    # conductance below segment k, g, and through it, G = g/(1 + g·r). It is nonlinear, so it runs
+    # bottom-up: every small subtree on one thread (children follow their parent in preorder),
+    # then the few larger segments above them level by level.
+    lpi = S.lpi
+    @inline function norton!(k)
+        @inbounds begin
+            g = 0.0f0
+            for c in cptr[k]:(cptr[k + 1] - 1)
+                g += G[ckid[c]]
+            end
+            G[k] = g / (1.0f0 + g * rr[k]); gi[k] = g
+            l = -log1p(g * rr[k]); lc[k] = l; lpi[k] = l
+        end
+        return nothing
+    end
+    croot = S.croot
+    AK.foreachindex(croot; min_elems = 64) do c
+        @inbounds begin
+            k0 = croot[c]
+            for k in (k0 + sz[k0] - Int32(1)):Int32(-1):k0
+                norton!(k)
+            end
+        end
+    end
+    lev = S.lev; lord = S.lord
+    for l in (length(lev) - 1):-1:1
+        lo = lev[l]
+        AK.foreachindex(1:(lev[l + 1] - lo); backend = S.be, min_elems = 2048) do h
+            @inbounds begin
+                norton!(lord[lo + h - 1])
+            end
+        end
+    end
+    # π[k]: product of c = 1/(1 + g·r) from the root down to k, the pressure at the distal end of k
+    # as a fraction of the inlet pressure when the beds drain to 0, and F = π·g, the flow through
+    # k in that problem. Both span many decades when beds are narrow and arteries wide, so they
+    # are kept as logarithms and the preconditioner works in bands of them.
+    lF = S.lF; lFt = S.lFt; par = S.par
+    _pathsum!(lpi, lpi, S.s_b, S.part, S.Ep, S.sz, S.dep)        # log π
+    AK.foreachindex(rr) do k
+        @inbounds begin
+            if k <= ni
+                lF[k] = lpi[k] + log(gi[k])
+            else
+                p = par[k]; i = k - ni
+                lFt[i] = (p == 0 ? 0.0f0 : lpi[p]) + lc[k] - log(kappa * rcap[i])
+            end
+        end
+    end
+    _reduce!(S.s_lF, S.part, max, -Inf32, ni, k -> lF[k])
+    _reduce!(S.s_lFm, S.part, min, Inf32, ni, k -> lF[k])
+    _reduce!(S.s_lpm, S.part, max, 0.0f0, ni, k -> -lpi[k])
+    s_lF = S.s_lF
+    _reduce!(S.s_w0, S.part, +, 0.0f0, S.nt, i -> exp(min(lFt[i] - s_lF[1], 1.0f0)))
+    span = _get(s_lF) - _get(S.s_lFm)
+    S.nbu[] = span <= _BAND_UP ? 1 : 2 + floor(Int, (span - _BAND_UP) / _BAND_UP2)
+    S.nbd[] = max(1, ceil(Int, _get(S.s_lpm) / _BAND_DOWN))
+    return S
+end
+
+# Terminal-path operator: out_i = Σ_j∈path(i) r_j Q_j (+ bed resistance × x_i for `bed`), where Q_j
+# is the sum of x over the terminals below segment j; arterial path from the root to terminal i
+# plus venous path from the sinus to the vein draining i. With `final`, the flows and pressures of
+# every segment and vein are stored.
+function _apply!(out, S::_Solver, kappa::F32, x, bed::Bool, final::Bool = false)
+    ni = S.ni; nt = S.nt; n = S.n; nv = S.nv
+    s_x = S.s_x; s_Ra = S.s_Ra; s_Rv = S.s_Rv
+    _reduce!(s_x, S.part, +, 0.0f0, nt, i -> abs(x[i]))
+    X = S.X; vsorted = S.vsorted; vcum = S.vcum
+    AK.foreachindex(1:(nt + nv); backend = S.be) do i
+        @inbounds begin
+            σ = _scale(s_x[1])
+            if i <= nt
+                X[i + 1] = _fix(x[i], σ)
+            else
+                k = i - nt; s = 0.0f0
+                for m in (vcum[k] + 1):vcum[k + 1]
+                    s += x[vsorted[m]]
+                end
+                X[i + 1] = _fix(s, σ)
+            end
+        end
+    end
+    AK.accumulate!(+, X)
+    # flow through every segment with children and every vein, times its resistance, on the Euler tours
+    Eu = S.Eu; tb = S.tb; te = S.te; sz = S.sz; dep = S.dep; rr = S.rr; Qa = S.Qa
+    vsz = S.vsz; vdep = S.vdep; rvv = S.rvv; Qv = S.Qv
+    AK.foreachindex(1:(ni + nv); backend = S.be) do k
+        @inbounds begin
+            σ = _scale(s_x[1]); σw = _scale(s_x[1], s_Ra[1] + s_Rv[1])
+            if k <= ni
+                Q = _unfix(X[te[k] + 1] - X[tb[k] + 1], σ); Qa[k] = Q
+                v = _fix(rr[k] * Q, σw); e = 2k - dep[k]
+                Eu[e] = v; Eu[e + 2sz[k] - 1] = -v
+            else
+                m = k - ni
+                Q = _unfix(X[nt + m + vsz[m]] - X[nt + m], σ); Qv[m] = Q
+                v = _fix(rvv[m] * Q, σw); e = 2ni + 2m - vdep[m]
+                Eu[e] = v; Eu[e + 2vsz[m] - 1] = -v
+            end
+        end
+    end
+    AK.accumulate!(+, Eu)
+    par = S.par; vdrain = S.vdrain; rcap = S.rcap
+    AK.foreachindex(out) do i
+        @inbounds begin
+            σw = _scale(s_x[1], s_Ra[1] + s_Rv[1])
+            L = ni + i; p = par[L]; m = vdrain[i]
+            D = (p == 0 ? Int64(0) : Eu[2p - dep[p]]) + Eu[2ni + 2m - vdep[m]]
+            out[i] = _unfix(D, σw) + rr[L] * x[i] + (bed ? kappa * rcap[i] * x[i] : 0.0f0)
+        end
+    end
+    if final
+        q = S.q; pa = S.pa; qv = S.qv; pv = S.pv; Pa = S.Pa; Pb = S.Pb
+        AK.foreachindex(1:(n + nv); backend = S.be) do k
+            @inbounds begin
+                σw = _scale(s_x[1], s_Ra[1] + s_Rv[1])
+                if k <= ni
+                    q[k] = Qa[k]; pa[k] = Pa - _unfix(Eu[2k - dep[k]], σw)
+                elseif k <= n
+                    p = par[k]; i = k - ni
+                    Dp = p == 0 ? 0.0f0 : _unfix(Eu[2p - dep[p]], σw)
+                    q[k] = x[i]; pa[k] = Pa - (Dp + rr[k] * x[i])
+                else
+                    m = k - n
+                    qv[m] = Qv[m]; pv[m] = Pb + _unfix(Eu[2ni + 2m - vdep[m]], σw)
+                end
+            end
+        end
     end
     return out
 end
 
 # Preconditioner z = M_a⁻¹ r: the arterial tree with its root at 0 and terminal i draining
-# through its bed into pressure −r_i (exact Norton solve).
-function _precond!(z, S::_Solver, kappa::F32, r)
-    G = S.G; E = S.E; ptr = S.ptr; kids = S.kids
-    _levels(S, true) do h
-        @inbounds begin
-            j = S.order[h]
-            if ptr[j + 1] == ptr[j]
-                i = S.tidx[j]
-                g = 1.0f0 / (kappa * S.rcap[i]); e = -r[i]
-            else
-                g = 0.0f0; ge = 0.0f0
-                for c in ptr[j]:(ptr[j + 1] - 1)
-                    k = kids[c]; g += G[k]; ge += G[k] * E[k]
-                end
-                e = g > 0 ? ge / g : 0.0f0
+# through its bed into pressure −r_i (exact Norton solve). With the conductances G fixed by
+# `_resistances!`, the two tree passes are linear in r and become scans:
+# - upward, the Norton source of segment k is the flow-weighted mean E_k = Σ_{i below k} F_i (−r_i) / F_k;
+# - downward, the pressure at its distal end is P_k = Σ_{a on the path to k} (π_k/π_a)(1 − c_a) E_a.
+# F and π can span many decades, more than one fixed-point scale resolves, so each pass runs in
+# bands of its log weight. Upward, a band of segments (log F within `_BAND_UP` below its top) scans
+# the terminals weighted by F/F_top ≲ 1, leaving out the terminals above the band (no subtree of
+# the band holds them) and those `_FAR` below it (they carry < e^-_FAR of any band segment's
+# flow). Downward, a band (log π within `_BAND_DOWN` below its top) weighs ancestor a by
+# (1 − c_a) π_top/π_a = G_a r_a π_top/π_a: these weights stay below e^_BAND_DOWN and so does their
+# sum along any path; ancestors more than `_FAR` above the band add < e^-_FAR·max|r| and are left
+# out. With the
+# usual dynamic range each pass is a single band.
+const _BAND_UP = 20.0f0      # first upward band; the further ones are `_BAND_UP2` wide
+const _BAND_UP2 = 8.0f0
+const _BAND_DOWN = 20.0f0
+const _FAR = 40.0f0
+# upward band of a segment from log(F/F_max) ≤ 0, and the top of band b
+@inline _bandup(λ0::F32, nb::Int) = λ0 > -_BAND_UP ? 0 : clamp(1 + floor(Int, (-_BAND_UP - λ0) / _BAND_UP2), 0, nb - 1)
+@inline _topup(b::Int) = b == 0 ? 0.0f0 : -_BAND_UP - (b - 1) * _BAND_UP2
+function _precond!(z, S::_Solver, r)
+    ni = S.ni
+    s_r = S.s_rn; s_lF = S.s_lF          # max|r| ≤ ‖r‖ = √(r·r), which the caller formed
+    Xp = S.Xp; lFt = S.lFt; lF = S.lF; tb = S.tb; te = S.te; Ek = S.Ek; s_w0 = S.s_w0
+    nbu = S.nbu[]; nbd = S.nbd[]; one = nbu == 1      # one upward band: E is formed where it is used
+    for b in 0:(nbu - 1)
+        # weights F_i/F_top: their sum is below 3 Σ F_i/F_max (first band, about 3 × the number of
+        # roots) or 3·(number of terminals)
+        top = _topup(b); wid = b == 0 ? _BAND_UP : _BAND_UP2
+        bnd = b == 0 ? s_w0 : S.s_wn; bf = b == 0 ? 3.0f0 : 1.0f0
+        AK.foreachindex(r) do i
+            @inbounds begin
+                λ = lFt[i] - s_lF[1] - top
+                w = -wid - 1 - _FAR < λ <= 1 ? exp(λ) * -r[i] : 0.0f0
+                Xp[i + 1] = _fix(w, _scale(sqrt(s_r[1]), bf * bnd[1]))
             end
-            G[j] = g / (1.0f0 + g * S.rr[j]); E[j] = e
+        end
+        AK.accumulate!(+, Xp)
+        one && break
+        AK.foreachindex(Ek) do k
+            @inbounds begin
+                λ0 = lF[k] - s_lF[1]
+                if _bandup(λ0, nbu) == b
+                    Ek[k] = _unfix(Xp[te[k] + 1] - Xp[tb[k] + 1], _scale(sqrt(s_r[1]), bf * bnd[1])) * exp(top - λ0)
+                end
+            end
         end
     end
-    P = S.pa
-    _levels(S, false) do h
+    lpi = S.lpi; G = S.G; rr = S.rr; Pk = S.Pk; Ep = S.Ep; dep = S.dep; sz = S.sz
+    eB = exp(_BAND_DOWN + 1)
+    for b in 0:(nbd - 1)
+        top = -b * _BAND_DOWN
+        AK.foreachindex(Ek) do a
+            @inbounds begin
+                l = lpi[a]
+                E = one ? _unfix(Xp[te[a] + 1] - Xp[tb[a] + 1], _scale(sqrt(s_r[1]), 3.0f0 * s_w0[1])) * exp(s_lF[1] - lF[a]) : Ek[a]
+                w = top - _BAND_DOWN - 1 < l <= top + _FAR ? G[a] * rr[a] * exp(top - l) * E : 0.0f0
+                v = _fix(w, _scale(sqrt(s_r[1]), eB)); e = 2a - dep[a]
+                Ep[e] = v; Ep[e + 2sz[a] - 1] = -v
+            end
+        end
+        AK.accumulate!(+, Ep)
+        nbd == 1 && break
+        AK.foreachindex(Pk) do k
+            @inbounds begin
+                l = lpi[k]
+                if clamp(floor(Int, -l / _BAND_DOWN), 0, nbd - 1) == b
+                    Pk[k] = exp(l - top) * _unfix(Ep[2k - dep[k]], _scale(sqrt(s_r[1]), eB))
+                end
+            end
+        end
+    end
+    par = S.par; oned = nbd == 1                      # one downward band: P is read off the scan
+    AK.foreachindex(z) do i
         @inbounds begin
-            j = S.order[h]; p = S.parent[j]
-            pin = p == 0 ? 0.0f0 : P[p]
-            qj = G[j] * (pin - E[j])
-            P[j] = pin - qj * S.rr[j]
-            ptr[j + 1] == ptr[j] && (z[S.tidx[j]] = qj)
+            p = par[ni + i]
+            P = p == 0 ? 0.0f0 : oned ? exp(lpi[p]) * _unfix(Ep[2p - dep[p]], _scale(sqrt(s_r[1]), eB)) : Pk[p]
+            z[i] = G[ni + i] * (P + r[i])
         end
     end
     return z
+end
+
+# Venous path operator alone: out_i = Σ_k∈path(i) r_k Q_k from the sinus to the vein draining
+# terminal i, Q_k the sum of x over the terminals draining into the venous subtree of k.
+function _venous!(out, S::_Solver, x)
+    nt = S.nt
+    s_x = S.s_x; s_Rv = S.s_Rv; Xv = S.Xv; Ev = S.Ev
+    vsorted = S.vsorted; vcum = S.vcum; vsz = S.vsz; vdep = S.vdep; rvv = S.rvv; vdrain = S.vdrain
+    _reduce!(s_x, S.part, +, 0.0f0, nt, i -> abs(x[i]))
+    AK.foreachindex(rvv) do k
+        @inbounds begin
+            s = 0.0f0
+            for m in (vcum[k] + 1):vcum[k + 1]
+                s += x[vsorted[m]]
+            end
+            Xv[k + 1] = _fix(s, _scale(s_x[1]))
+        end
+    end
+    AK.accumulate!(+, Xv)
+    AK.foreachindex(rvv) do k
+        @inbounds begin
+            Q = _unfix(Xv[k + vsz[k]] - Xv[k], _scale(s_x[1]))
+            v = _fix(rvv[k] * Q, _scale(s_x[1], s_Rv[1])); e = 2k - vdep[k]
+            Ev[e] = v; Ev[e + 2vsz[k] - 1] = -v
+        end
+    end
+    AK.accumulate!(+, Ev)
+    AK.foreachindex(out) do i
+        @inbounds begin
+            m = vdrain[i]
+            out[i] = _unfix(Ev[2m - vdep[m]], _scale(s_x[1], s_Rv[1]))
+        end
+    end
+    return out
 end
 
 # One steady solve for the current resistances.
@@ -527,47 +984,60 @@ end
 # Unknowns are the terminal flows q. Arterial pressure drop to terminal i plus its own bed is
 # (M_a q)_i (shared path resistances + bed), the venous rise from the sinus is (M_v q)_i, and
 # continuity at every bed is (M_a + M_v) q = P_ao − P_back. Both matrices are symmetric positive
-# definite and applied in O(N) by two tree passes, so the system is solved by conjugate gradients
+# definite and applied in O(N) by tree passes, so the system is solved by conjugate gradients
 # preconditioned with the exact arterial tree solve (M_a⁻¹ is the Norton solve of the arterial
 # tree); its condition number is 1 + λ(M_a⁻¹M_v), a few, so it converges in tens of iterations.
+# As z = M_a⁻¹ r, the search directions p = z + β p satisfy M_a p = r + β M_a p, so an iteration
+# needs the preconditioner and the venous operator only; the full operator runs once for the
+# starting residual and once at the end for the flows and pressures of every segment.
 # `warm` starts from the previous terminal flows.
 function _solve!(S::_Solver, kappa::F32; warm::Bool = false, tol::F32 = 1.0f-6)
-    nt = length(S.terminals); dP = S.Pa - S.Pb
-    rr = S.rr
-    AK.foreachindex(rr; min_elems = 4096) do j
-        rr[j] = _ra(S, kappa, j)
+    nt = S.nt; dP = S.Pa - S.Pb
+    _resistances!(S, kappa)
+    x = S.x; r = S.r; z = S.z; p = S.p; Ap = S.Ap; Mp = S.Mp
+    s_rz = S.s_rz; s_rz2 = S.s_rz2; s_pap = S.s_pap; s_rn = S.s_rn
+    if warm
+        copyto!(x, S.qt)
+    else                                                # cold start: arteries alone
+        fill!(r, dP); _dot!(s_rn, S, r, r); _precond!(x, S, r)
     end
-    t1 = zeros(F32, nt); t2 = zeros(F32, nt)
-    Aop!(out, x) = (_apply_art!(t1, S, kappa, x, true); _apply_ven!(t2, S, kappa, x); out .= t1 .+ t2; out)
-    b = fill(dP, nt)
-    x = warm ? copy(S.qt) : _precond!(zeros(F32, nt), S, kappa, b)     # cold start: arteries alone
-    r = similar(x); z = similar(x); p = similar(x); Ap = similar(x)
-    Aop!(Ap, x); @. r = b - Ap
-    _precond!(z, S, kappa, r); p .= z
-    rz = sum(r .* z); bn = sqrt(sum(abs2, b))
-    for it in 1:500
-        sqrt(sum(abs2, r)) < tol * bn && break
-        S.iters[] += 1
-        Aop!(Ap, p)
-        α = rz / sum(p .* Ap)
-        @. x += α * p; @. r -= α * Ap
-        _precond!(z, S, kappa, r)
-        rz2 = sum(r .* z); β = rz2 / rz; rz = rz2
-        @. p = z + β * p
+    _apply!(Ap, S, kappa, x, true)
+    AK.foreachindex(r) do i
+        @inbounds begin
+            r[i] = dP - Ap[i]
+        end
     end
-    S.qt .= x
-    # flows and pressures from the terminal flows
-    _apply_art!(t1, S, kappa, x, false)
-    @inbounds for j in eachindex(S.parent)
-        S.q[j] = S.I[j]; S.pa[j] = S.Pa - S.E[j]
+    _dot!(s_rn, S, r, r)
+    bn = sqrt(F32(nt)) * dP
+    if sqrt(_get(s_rn)) >= tol * bn
+        _precond!(z, S, r); copyto!(p, z); copyto!(Mp, r)
+        _dot!(s_rz, S, r, z)
+        for it in 1:500
+            S.iters[] += 1
+            _venous!(Ap, S, p)                          # A p = M_a p + M_v p
+            _reduce!(s_pap, S.part, +, 0.0f0, nt, i -> p[i] * (Mp[i] + Ap[i]))
+            AK.foreachindex(x) do i
+                @inbounds begin
+                    α = s_rz[1] / s_pap[1]
+                    x[i] += α * p[i]; r[i] -= α * (Mp[i] + Ap[i])
+                end
+            end
+            _dot!(s_rn, S, r, r)
+            (sqrt(_get(s_rn)) < tol * bn || it == 500) && break
+            _precond!(z, S, r)
+            _dot!(s_rz2, S, r, z)
+            AK.foreachindex(p) do i
+                @inbounds begin
+                    β = s_rz2[1] / s_rz[1]
+                    p[i] = z[i] + β * p[i]; Mp[i] = r[i] + β * Mp[i]
+                end
+            end
+            copyto!(s_rz, s_rz2)
+        end
     end
-    _apply_ven!(t2, S, kappa, x)
-    @inbounds for k in eachindex(S.vparent)
-        S.qv[k] = S.vI[k]; S.pv[k] = S.Pb + S.vE[k]
-    end
-    @inbounds for i in 1:nt
-        S.pvt[i] = S.pv[S.vleaf[i]]
-    end
+    copyto!(S.qt, x)
+    _apply!(Ap, S, kappa, x, false, true)               # flows and pressures of every segment
+    S.solved[] = true
     return S
 end
 
@@ -575,22 +1045,25 @@ end
 # arterioles leave the larger arteries minus that where venules join the larger veins, divided by
 # the flow per gram (mmHg·min·g/mL).
 function _micro_resistance(S::_Solver, mass_g)
+    q = Array(S.q); pa = Array(S.pa); qv = Array(S.qv); pv = Array(S.pv)
+    par = S.hpar; ma = S.hma; vpar = S.hvpar; mv = S.hmv
     sa = 0.0f0; wa = 0.0f0; sv = 0.0f0; wv = 0.0f0
-    @inbounds for j in eachindex(S.parent)
-        p = S.parent[j]
-        if S.ma[j] && (p == 0 || !S.ma[p])
-            pin = p == 0 ? S.Pa : S.pa[p]; sa += S.q[j] * pin; wa += S.q[j]
+    @inbounds for j in eachindex(par)
+        p = par[j]
+        if ma[j] && (p == 0 || !ma[p])
+            pin = p == 0 ? S.Pa : pa[p]; sa += q[j] * pin; wa += q[j]
         end
     end
-    @inbounds for k in eachindex(S.vparent)
-        p = S.vparent[k]
-        if S.mv[k] && (p == 0 || !S.mv[p])
-            pout = p == 0 ? S.Pb : S.pv[p]; sv += S.qv[k] * pout; wv += S.qv[k]
+    @inbounds for k in eachindex(vpar)
+        p = vpar[k]
+        if mv[k] && (p == 0 || !mv[p])
+            pout = p == 0 ? S.Pb : pv[p]; sv += qv[k] * pout; wv += qv[k]
         end
     end
-    qtot = sum(S.qt)
+    qtot = AK.reduce(+, S.qt; init = 0.0f0)
     return (sa / wa - sv / wv) / (60.0f0 * qtot / mass_g), sa / wa, sv / wv
 end
+
 
 # ---------------------------------------------------------------------------------------------
 # Arteriolar wall mechanics and the metabolic signal
@@ -598,15 +1071,13 @@ end
 
 # Vasoactive arteries. Wall constants follow D₀ (µm; tensions dyn/cm): the Carlson & Secomb
 # (2005) fits as tabulated by Fry et al. (2013, Table 1).
-struct _Wall
-    seg::Vector{Int32}           # arterial segment
-    d0::Vector{F32}              # passive diameter at 100 mmHg, µm
-    xd::Vector{F32}              # D/D₀
-    act::Vector{F32}             # activation A
-    xhi::Vector{F32}             # D/D₀ of the relaxed wall (A = 0) at the current pressure
-    xlo::Vector{F32}             # D/D₀ of the fully contracted wall (A = 1) at the current pressure
+struct _Wall{VI <: AbstractVector{Int32}, VF <: AbstractVector{F32}}
+    seg::VI                      # arterial segment (solver numbering)
+    d0::VF                       # passive diameter at 100 mmHg, µm
+    u::VF                        # its coordinate on the D₀ grid of the `_Limits` tables
+    xd::VF                       # D/D₀
+    act::VF                      # activation A
 end
-_Wall(seg, d0) = (n = length(seg); _Wall(seg, d0, ones(F32, n), zeros(F32, n), ones(F32, n), fill(0.5f0, n)))
 
 # The relaxed and fully contracted equilibria depend only on D₀ and pressure, so they are
 # tabulated once (log D₀ × P, followed along each branch as pressure rises from 1 mmHg) and
@@ -620,7 +1091,7 @@ function _Limits(dmin::F32, dmax::F32, pmax::F32)
     nd = 96; ld0 = log(dmin) - 0.01f0; dld = (log(dmax) + 0.01f0 - ld0) / (nd - 1)
     dp = 0.25f0; np = ceil(Int, (pmax + 5.0f0 - 1.0f0) / dp) + 1
     hi = Matrix{F32}(undef, np, nd); lo = similar(hi)
-    Threads.@threads for k in 1:nd
+    AK.foreachindex(1:nd; min_elems = 1) do k
         d0 = exp(ld0 + (k - 1) * dld); xh = 1.0f0; xl = 0.5f0
         for i in 1:np
             P = 1.0f0 + (i - 1) * dp
@@ -630,12 +1101,18 @@ function _Limits(dmin::F32, dmax::F32, pmax::F32)
     end
     return _Limits(ld0, dld, nd, dp, np, hi, lo)
 end
-@inline function _limits(L::_Limits, d0::F32, P::F32)
-    u = clamp((log(d0) - L.ld0) / L.dld, 0.0f0, F32(L.nd - 1) - 1.0f-4); k = floor(Int, u); fu = u - k
-    v = clamp((P - 1.0f0) / L.dp, 0.0f0, F32(L.np - 1) - 1.0f-4); i = floor(Int, v); fv = v - i
+function _Wall(seg, d0::Vector{F32}, L::_Limits, to = identity)
+    n = length(d0); u = F32[clamp((log(d) - L.ld0) / L.dld, 0.0f0, F32(L.nd - 1) - 1.0f-4) for d in d0]
+    return _Wall(to(seg), to(d0), to(u), to(ones(F32, n)), to(zeros(F32, n)))
+end
+# (tables `hi`, `lo` of a `_Limits`, passed apart so that they can live on a device; `u` is the
+# vessel's coordinate on the D₀ grid)
+@inline function _limits(hi, lo, u::F32, dp::F32, np::Int, P::F32)
+    k = floor(Int, u); fu = u - k
+    v = clamp((P - 1.0f0) / dp, 0.0f0, F32(np - 1) - 1.0f-4); i = floor(Int, v); fv = v - i
     @inbounds begin
-        h = (1 - fu) * ((1 - fv) * L.hi[i + 1, k + 1] + fv * L.hi[i + 2, k + 1]) + fu * ((1 - fv) * L.hi[i + 1, k + 2] + fv * L.hi[i + 2, k + 2])
-        l = (1 - fu) * ((1 - fv) * L.lo[i + 1, k + 1] + fv * L.lo[i + 2, k + 1]) + fu * ((1 - fv) * L.lo[i + 1, k + 2] + fv * L.lo[i + 2, k + 2])
+        h = (1 - fu) * ((1 - fv) * hi[i + 1, k + 1] + fv * hi[i + 2, k + 1]) + fu * ((1 - fv) * hi[i + 1, k + 2] + fv * hi[i + 2, k + 2])
+        l = (1 - fu) * ((1 - fv) * lo[i + 1, k + 1] + fv * lo[i + 2, k + 1]) + fu * ((1 - fv) * lo[i + 1, k + 2] + fv * lo[i + 2, k + 2])
     end
     return h, l
 end
@@ -682,32 +1159,47 @@ end
 # bed is short of O₂). It is conducted upstream along the vessel wall with length constant L₀,
 # and each artery takes the mean over the beds it feeds, each decayed by its distance to them
 # (Namani et al. 2018).
-function _metabolic!(sig::Vector{F32}, so2::Vector{F32}, S::_Solver, phys::Physiology, terr_g::Vector{F32}, len::Vector{F32})
-    nt = length(S.terminals); n = length(S.parent)
-    cO2 = 1.34f0 * phys.hb / 100.0f0; r1 = phys.atp_r1; l0 = 10.0f0 * phys.atp_l0      # L₀ in mm
+#
+# With path lengths ℓ from the root, the decayed sum over the beds below segment k is
+# e^{ℓ_k/L₀} Σ_i s_i e^{−ℓ_i/L₀}, a subtree sum. Path lengths span ~20 L₀, more than one
+# fixed-point scale holds, so the sums run in bands of 12 L₀ of ℓ_k: a band's scan weighs bed i by
+# e^{−(ℓ_i − ℓ_band)/L₀} ≤ 1 and leaves out the beds above the band, which no subtree of the band
+# contains. The weights are fixed (`_solver`).
+function _metabolic!(S::_Solver, phys::Physiology, terr_g)
+    ni = S.ni; nt = S.nt
+    cO2 = 1.34f0 * phys.hb / 100.0f0; r1 = phys.atp_r1
     rref = 1.0f0 - r1 * phys.sao2 * (1 - phys.oef)
-    AK.foreachindex(so2; min_elems = 4096) do i
-        qi = max(S.qt[i], 1.0f-12)
-        so2[i] = clamp(phys.sao2 - phys.mvo2 * terr_g[i] / 60.0f0 / (qi * cO2), 0.0f0, phys.sao2)
-    end
-    sumv = S.G; cnt = S.E                         # scratch (overwritten by the next solve)
-    _levels(S, true) do h
+    sao2 = phys.sao2; mvo2 = phys.mvo2
+    qt = S.qt; so2 = S.so2; val = S.val; sig = S.sig; mlf = S.mlf
+    AK.foreachindex(so2) do i
         @inbounds begin
-            j = S.order[h]
-            if S.ptr[j + 1] == S.ptr[j]
-                sumv[j] = (1.0f0 - r1 * so2[S.tidx[j]]) / rref - 1.0f0; cnt[j] = 1.0f0
-            else
-                s = 0.0f0; c = 0.0f0
-                for cc in S.ptr[j]:(S.ptr[j + 1] - 1)
-                    k = S.kids[cc]
-                    s += exp(-len[k] / l0) * sumv[k]; c += cnt[k]
-                end
-                sumv[j] = s; cnt[j] = c
-            end
-            sig[j] = sumv[j] * exp(-0.5f0 * len[j] / l0) / cnt[j]
+            qi = max(qt[i], 1.0f-12)
+            s = clamp(sao2 - mvo2 * terr_g[i] / 60.0f0 / (qi * cO2), 0.0f0, sao2)
+            so2[i] = s
+            v = (1.0f0 - r1 * s) / rref - 1.0f0; val[i] = v
+            sig[ni + i] = v * mlf[i]
         end
     end
-    return sig
+    s_v = S.s_v; Xm = S.Xm; tb = S.tb; te = S.te; ntf = F32(nt); nb = S.nband
+    mbw = S.mbw; mnf = S.mnf; mband = S.mband
+    _reduce!(s_v, S.part, max, 0.0f0, nt, i -> abs(val[i]))
+    # all bands in one scan, one after the other (each band's sums are differences within it)
+    AK.foreachindex(val) do i
+        @inbounds begin
+            σ = _scale(s_v[1], ntf)
+            for b in 0:(nb - 1)
+                Xm[b * nt + i + 1] = _fix(val[i] * mbw[b * nt + i], σ)
+            end
+        end
+    end
+    AK.accumulate!(+, Xm)
+    AK.foreachindex(mnf) do k
+        @inbounds begin
+            o = mband[k] * nt + 1
+            sig[k] = _unfix(Xm[o + te[k]] - Xm[o + tb[k]], _scale(s_v[1], ntf)) * mnf[k]
+        end
+    end
+    return S
 end
 
 # Autoregulated (or maximally dilated) steady state: flows and diameters solved together.
@@ -719,90 +1211,111 @@ end
 # equals the measured resting extraction (`phys.oef`).
 function _autoregulate!(
         S::_Solver, W::_Wall, kappa::F32, phys::Physiology, state::Symbol, ctone::Vector{F32}, fixtone::Bool,
-        terr_g, len, mu0, sten, lim, verbose
+        terr_g, mu0, sten, lim::_Limits, verbose
     )
-    n = length(S.parent); nw = length(W.seg); hd = phys.hd
-    sig = zeros(F32, n); so2 = zeros(F32, length(S.terminals))
+    nw = length(W.seg); hd = phys.hd; stress = state === :stress
     sref = phys.sao2 * (1 - phys.oef); gain = 2.0f0; lasterr = 0.0f0
     # Activation relaxes toward its stimulus with a step per vessel: the loop through a terminal
     # arteriole's own bed has a gain of ~20, so a fixed explicit step either crawls or makes some
     # vessels flip back and forth. A vessel's step halves whenever its activation reverses
     # direction and grows by 10% otherwise (bounded 0.005–0.3).
-    ωw = fill(0.1f0, nw); dA = zeros(F32, nw)
+    seg = W.seg; d0 = W.d0; uw = W.u; xd = W.xd; act = W.act
+    ωw = similar(xd); fill!(ωw, 0.1f0); dA = similar(xd); fill!(dA, 0.0f0)
+    stim = similar(xd); xold = similar(xd)
+    fa = S.fa; ra = S.ra; q = S.q; par = S.par; pa = S.pa; Pa = S.Pa; sig = S.sig
+    lhi = S.lhi; llo = S.llo; dp = lim.dp; np = lim.np
+    mut = S.mut; mua = S.mua; mudl = S.mudl; numax = F32(length(mut) - 1) - 1.0f-3
+    gmeta = phys.g_meta
     function setfa!()
-        @inbounds for w in 1:nw
-            j = W.seg[w]; d = W.d0[w] * W.xd[w]
-            S.fa[j] = mu_rel(d, hd) / mu0[j] / W.xd[w]^4
+        # μ_rel(D) interpolated in log D (relative error < 10⁻⁷)
+        AK.foreachindex(xd) do w
+            @inbounds begin
+                j = seg[w]; u = clamp((log(d0[w] * xd[w]) - mua) / mudl, 0.0f0, numax)
+                m = unsafe_trunc(Int, u); f = u - m
+                fa[j] = (mut[m + 1] + f * (mut[m + 2] - mut[m + 1])) / mu0[j] / xd[w]^4
+            end
         end
         # stenoses: unchanged lumen outside the narrowing plus the f·Q + s·Q² loss of the throat
-        for (j, frac, f, s2) in sten
-            S.fa[j] = (1 - frac) + (f + s2 * abs(S.q[j])) / S.ra[j]
+        if length(sten) > 0
+            AK.foreachindex(sten) do m
+                @inbounds begin
+                    j, frac, f, s2 = sten[m]
+                    fa[j] = (1 - frac) + (f + s2 * abs(q[j])) / ra[j]
+                end
+            end
         end
         return nothing
     end
-    setfa!(); _solve!(S, kappa; warm = sum(S.qt) > 0)   # warm when called again (κ loop)
-    qprev = sum(S.qt); iters = 0; dx = 0.0f0; ssin = 0.0f0; qhist = fill(qprev, 10); dq1 = 1.0f0
-    maxit = state === :stress ? 60 : 600
-    stim = zeros(F32, nw)
+    qsum() = AK.reduce(+, S.qt; init = 0.0f0)
+    k99 = max(1, ceil(Int, 0.99 * nw))
+    # 99th percentile of the last step |ΔD/D₀| (exact, on the host)
+    p99() = nw > 0 ? partialsort!(abs.(Array(xd) .- Array(xold)), k99) : 0.0f0
+    setfa!(); _solve!(S, kappa; warm = S.solved[])   # warm when called again (κ loop)
+    qprev = qsum(); iters = 0; dxok = true; ssin = 0.0f0; qhist = fill(qprev, 10); dq1 = 1.0f0
+    maxit = stress ? 60 : 600
     for it in 1:maxit
         iters = it
-        if state === :rest
-            _metabolic!(sig, so2, S, phys, terr_g, len)
-            ssin = sum(max.(S.qt, 0.0f0) .* so2) / sum(max.(S.qt, 0.0f0))
+        if !stress
+            _metabolic!(S, phys, terr_g)
+            ssin = AK.mapreduce((a, b) -> max(a, 0.0f0) * b, +, S.qt, S.so2; init = 0.0f0) /
+                AK.mapreduce(a -> max(a, 0.0f0), +, S.qt; init = 0.0f0)
         end
-        Threads.@threads for w in 1:nw
-            @inbounds begin
-                j = W.seg[w]; p = S.parent[j]
-                P = max(((p == 0 ? S.Pa : S.pa[p]) + S.pa[j]) / 2, 1.0f0)
-                stim[w] = 0.09128f0 * P * W.xd[w] - phys.g_meta * sig[j]
-            end
-        end
-        if state === :rest && !fixtone
-            if it == 1
-                ctone[1] = -sort(stim)[(nw + 1) ÷ 2]          # start from half activation on average
+        if !stress && !fixtone
+            if it == 1                                           # start from half activation on average
+                AK.foreachindex(stim) do w
+                    @inbounds begin
+                        j = seg[w]; p = par[j]
+                        P = max(((p == 0 ? Pa : pa[p]) + pa[j]) / 2, 1.0f0)
+                        stim[w] = 0.09128f0 * P * xd[w] - gmeta * sig[j]
+                    end
+                end
+                ctone[1] = -sort!(Array(stim))[(nw + 1) ÷ 2]
             else
                 err = ssin - sref                                # too much flow → more tone
                 err * lasterr < 0 && (gain *= 0.7f0)
                 ctone[1] += clamp(gain * err, -0.5f0, 0.5f0); lasterr = err
             end
         end
-        xold = copy(W.xd)
-        Threads.@threads for w in 1:nw
+        copyto!(xold, xd)
+        ct = ctone[1]
+        AK.foreachindex(xd) do w
             @inbounds begin
-                j = W.seg[w]; p = S.parent[j]
-                P = max(((p == 0 ? S.Pa : S.pa[p]) + S.pa[j]) / 2, 1.0f0)
-                if state === :stress
-                    W.act[w] = 0.0f0
+                j = seg[w]; p = par[j]
+                P = max(((p == 0 ? Pa : pa[p]) + pa[j]) / 2, 1.0f0)
+                if stress
+                    act[w] = 0.0f0
                 else
-                    d = 1.0f0 / (1.0f0 + exp(-(stim[w] + ctone[1]))) - W.act[w]
+                    sw = 0.09128f0 * P * xd[w] - gmeta * sig[j]
+                    d = 1.0f0 / (1.0f0 + exp(-(sw + ct))) - act[w]
                     ωw[w] = d * dA[w] < 0 ? max(0.005f0, 0.5f0 * ωw[w]) : min(0.3f0, 1.1f0 * ωw[w])
-                    dA[w] = d; W.act[w] += ωw[w] * d
+                    dA[w] = d; act[w] += ωw[w] * d
                 end
-                W.xhi[w], W.xlo[w] = _limits(lim, W.d0[w], P)
-                W.xd[w] = W.xlo[w] + (W.xhi[w] - W.xlo[w]) * (1.0f0 - W.act[w])
+                h, l = _limits(lhi, llo, uw[w], dp, np, P)
+                xd[w] = l + (h - l) * (1.0f0 - act[w])
             end
         end
         # a few arterioles may keep cycling (vasomotion), so convergence is judged on total flow
-        # (and on the diameters' 99th-percentile step at maximal dilation, which has no cycling)
-        dx = nw > 0 ? (dd = abs.(W.xd .- xold); partialsort!(dd, max(1, ceil(Int, 0.99 * nw)))) : 0.0f0
+        # (and on the diameters' 99th-percentile step at maximal dilation, which has no cycling):
+        # the 99th percentile is below 10⁻³ when at least 99% of the steps are
+        stress && (dxok = nw == 0 || AK.mapreduce((a, b) -> abs(a - b) < 1.0f-3 ? 1 : 0, +, xd, xold; init = 0) >= k99)
         # inexact network solves while the diameters are still moving; exact once they settle
         setfa!(); _solve!(S, kappa; warm = true, tol = clamp(0.1f0 * dq1, 1.0f-6, 1.0f-3))
-        qt = sum(S.qt); dq = abs(qt - qhist[mod1(it, 10)]) / qt; qhist[mod1(it, 10)] = qt
+        qt = qsum(); dq = abs(qt - qhist[mod1(it, 10)]) / qt; qhist[mod1(it, 10)] = qt
         dq1 = abs(qt - qprev) / qt; qprev = qt
-        verbose && (it % 10 == 0 || it < 5) && (println("  autoregulation $it: flow $(round(60qt, digits = 3)) mL/min, sinus SO₂ $(round(ssin, digits = 3)), C_tone $(round(ctone[1], digits = 3)), p99 |ΔD/D₀| $(round(dx, sigdigits = 2)), mean A $(round(sum(W.act) / max(nw, 1), digits = 3))"); flush(stdout))
+        verbose && (it % 10 == 0 || it < 5) && (println("  autoregulation $it: flow $(round(60qt, digits = 3)) mL/min, sinus SO₂ $(round(ssin, digits = 3)), C_tone $(round(ctone[1], digits = 3)), p99 |ΔD/D₀| $(round(p99(), sigdigits = 2)), mean A $(round(AK.reduce(+, act; init = 0.0f0) / max(nw, 1), digits = 3))"); flush(stdout))
         # maximal dilation has no vasomotion: consecutive steps decide; at rest, ten steps
-        if state === :stress
-            it > 2 && dq1 < 1.0f-5 && dx < 1.0f-3 && break
+        if stress
+            it > 2 && dq1 < 1.0f-5 && dxok && break
         else
             it > 10 && dq < 1.0f-4 && (fixtone || abs(ssin - sref) < 1.0f-3) && break
         end
     end
     _solve!(S, kappa; warm = true)
-    state === :rest && _metabolic!(sig, so2, S, phys, terr_g, len)
-    return so2, iters, dx
+    stress || _metabolic!(S, phys, terr_g)
+    return iters, p99()
 end
 
-function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, state::Symbol, veins, vleaf, reference, kappa, stenosis, demand, verbose)
+function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, state::Symbol, veins, vleaf, reference, kappa, stenosis, demand, verbose, to)
     n = nseg(t)
     nchild, ptr, kids, order = _topology(t.parent)
     terminals = Int32[j for j in 1:n if nchild[j] == 0]
@@ -819,7 +1332,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     s = sqrt(phys.share_ven / phys.share_art)
     if veins === nothing
         vt = VTree(t.parent, t.a, t.b, s .* t.r, t.isbase); vl = terminals
-        vorder = order; vlen = len; vvol = (s * s) .* vol
+        vptr = ptr; vkids = kids; vorder = order; vlen = len; vvol = (s * s) .* vol
     else
         length(vleaf) == nt || throw(ArgumentError("vleaf needs one venous segment per terminal"))
         vl = Int32.(vleaf)
@@ -829,7 +1342,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
         vlen, vvol = _lengths(veins)
         fr = sqrt(s * s * vart / sum(vvol))
         vt = VTree(veins.parent, veins.a, veins.b, veins.r .* F32(fr), veins.isbase)
-        vorder = _topology(vt.parent)[4]; vlen, vvol = _lengths(vt)
+        _, vptr, vkids, vorder = _topology(vt.parent); vlen, vvol = _lengths(vt)
     end
     nv = nseg(vt); vven = sum(vvol)
     vv_unres = max(0.0f0, phys.share_ven * vblood - vven)
@@ -852,17 +1365,19 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     # microcirculation: arteries < d_art_micro, veins < d_ven_micro and the capillary beds
     ma = [2000.0f0 * t.r[j] < phys.d_art_micro for j in 1:n]
     mv = [2000.0f0 * vt.r[k] < phys.d_ven_micro for k in 1:nv]
-    S = _Solver(t.parent, order, ptr, kids, terminals, tidx, vt.parent, vorder, vl, ra, rv, rcap, ma, mv, phys.p_ao, phys.p_back)
     # vasoactive arteries
-    act = Int32[j for j in 1:n if 2000.0f0 * t.r[j] < phys.d_active]
+    d0c = F32[2000.0f0 * t.r[j] for j in 1:n if 2000.0f0 * t.r[j] < phys.d_active]
+    lim = _Limits(isempty(d0c) ? 1.0f0 : minimum(d0c), isempty(d0c) ? 2.0f0 : maximum(d0c), max(phys.p_in, 1.0f0))
+    S, perm, iperm, tperm, vperm = _solver(
+        t.parent, nchild, ptr, kids, vt.parent, vptr, vkids, vl, tidx, ra, rv, rcap, ma, mv, len, lim,
+        phys.p_in, phys.p_out, 10.0f0 * phys.atp_l0, hd, to
+    )
+    seg = Int32[k for k in 1:n if 2000.0f0 * t.r[perm[k]] < phys.d_active]   # solver numbering
+    act = perm[seg]                                                          # caller numbering
     d0 = F32[2000.0f0 * t.r[j] for j in act]
-    W = _Wall(act, d0)
-    lim = _Limits(isempty(d0) ? 1.0f0 : minimum(d0), isempty(d0) ? 2.0f0 : maximum(d0), max(phys.p_ao, 1.0f0))
+    W = _Wall(seg, d0, lim, to)
     if reference !== nothing
-        rx = reference.xd; ra_ = reference.act
-        for (w, j) in enumerate(act)
-            W.xd[w] = rx[j]; W.act[w] = ra_[j]
-        end
+        copyto!(W.xd, to(reference.xd[act])); copyto!(W.act, to(reference.act[act]))
     end
     # O₂ use of each terminal's tissue: its mass × the local relative demand (mean 1)
     demand === nothing && reference !== nothing && (demand = reference.demand)
@@ -882,36 +1397,43 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
         f = 8.0f0 * F32(π) * mu * Ls * 1.0f-3 / As^2 * 1.0f-6 / 133.322f0
         exit = !any(k -> t.parent[k] == j, segs)
         s2 = exit ? 1060.0f0 * 1.52f0 / (2A0^2) * (1 / F32(area) - 1)^2 * 1.0f-12 / 133.322f0 : 0.0f0
-        push!(sten, (Int32(j), Ls / len[j], f, s2))
+        push!(sten, (iperm[j], Ls / len[j], f, s2))
     end
+    tg = to(terr_g[tperm]); mu0d = to(mu0[perm]); stend = to(sten)
 
     # ---- microvascular scale κ at maximal dilation (vessels on their passive curves): the
     # Chilian-style resistance between arteriolar inlets and venular outlets equals the measurement
     ctone = reference === nothing ? F32[-5.0f0] : copy(reference.ctone)
     kappa === nothing && reference !== nothing && (kappa = reference.resist.kappa)
+    kappa === nothing && phys.r_micro_dilated <= 0 && (kappa = 1.0f0)       # no anchor: pure Poiseuille
     if kappa === nothing
         kappa = 1.0f0
-        Wd = _Wall(act, d0)
+        Wd = _Wall(seg, d0, lim, to)
         for _ in 1:12
-            _autoregulate!(S, Wd, F32(kappa), phys, :stress, ctone, true, terr_g, len, mu0, empty(sten), lim, false)   # healthy geometry
+            _autoregulate!(S, Wd, F32(kappa), phys, :stress, ctone, true, tg, mu0d, to(empty(sten)), lim, false)   # healthy geometry
             ratio = phys.r_micro_dilated / _micro_resistance(S, mass_g)[1]
             kappa *= ratio
             abs(ratio - 1) < 1.0f-3 && break
         end
     end
     kappa = F32(kappa)
-    # ---- the state
-    so2, iters, dxlast = _autoregulate!(S, W, kappa, phys, state, ctone, reference !== nothing, terr_g, len, mu0, sten, lim, verbose)
-    q = S.q; pa = S.pa; qt = S.qt; qv = S.qv; pv = S.pv
+    # ---- the state (a bed without active tone is always in its relaxed state)
+    phys.regulation === :passive && (state = :stress)
+    iters, dxlast = _autoregulate!(S, W, kappa, phys, state, ctone, reference !== nothing, tg, mu0d, stend, lim, verbose)
+    rmc = _micro_resistance(S, mass_g)
+    # back to the caller's numbering
+    q = Vector{F32}(undef, n); pa = similar(q); rr = similar(q); qt = Vector{F32}(undef, nt); so2 = similar(qt)
+    qv = Vector{F32}(undef, nv); pv = similar(qv)
+    q[perm] = Array(S.q); pa[perm] = Array(S.pa); rr[perm] = Array(S.rr)
+    qt[tperm] = Array(S.qt); so2[tperm] = Array(S.so2); qv[vperm] = Array(S.qv); pv[vperm] = Array(S.pv)
     nneg = count(<=(0), qt)
     nneg > 0 && @warn "$nneg terminals with reversed or zero flow (venous pressure above arterial); their beds are treated as stagnant"
     @inbounds for i in 1:nt
         qt[i] = max(qt[i], 1.0f-9)
     end
+    wx = Array(W.xd); wa = Array(W.act)
     xd = ones(F32, n); av = zeros(F32, n)
-    for (w, j) in enumerate(act)
-        xd[j] = W.xd[w]; av[j] = W.act[w]
-    end
+    xd[act] = wx; av[act] = wa
     # constricted arterioles hold less blood; the unresolved arterial volume is what the dilated
     # tree leaves of the Kassab target, constricted with the terminal's own arteriole
     vol .*= xd .^ 2; vart_now = sum(vol)
@@ -956,19 +1478,19 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     end
 
     # ---- pressure-drop shares (flow-weighted) and summary flows
-    dpa = sum(q[j] * _ra(S, kappa, j) * q[j] for j in 1:n)
+    dpa = sum(q[j] * rr[j] * q[j] for j in 1:n)
     dpv = sum(qv[k]^2 * (mv[k] ? kappa : 1.0f0) * rv[k] for k in 1:nv); dpc = sum(qt .^ 2 .* rcap) * kappa
     roots = Int32[j for j in 1:n if t.parent[j] == 0]
     qtot = sum(q[roots])
     nw = length(act)
     resist = (;
-        dp_total = phys.p_ao - phys.p_back, art_share = dpa / (dpa + dpv + dpc),
+        dp_total = phys.p_in - phys.p_out, art_share = dpa / (dpa + dpv + dpc),
         cap_share = dpc / (dpa + dpv + dpc), ven_share = dpv / (dpa + dpv + dpc),
         mbf = 60 * qtot / mass_g, root_flow = q[roots], kappa, iters, sweeps = S.iters[], residual_dx = dxlast,
-        r_micro = (rmc = _micro_resistance(S, mass_g); rmc[1]),
-        chilian_shares = ((phys.p_ao - rmc[2]), (rmc[2] - rmc[3]), (rmc[3] - phys.p_back)) ./ (phys.p_ao - phys.p_back),
-        so2_sinus = sum(qt .* so2) / sum(qt), starved = count(<(0.05f0), so2) / nt, mean_act = nw > 0 ? sum(W.act) / nw : 0.0f0,
-        n_dilated = count(<(0.01f0), W.act), n_max_tone = count(>(0.99f0), W.act),
+        r_micro = rmc[1],
+        chilian_shares = ((phys.p_in - rmc[2]), (rmc[2] - rmc[3]), (rmc[3] - phys.p_out)) ./ (phys.p_in - phys.p_out),
+        so2_sinus = sum(qt .* so2) / sum(qt), starved = count(<(0.05f0), so2) / nt, mean_act = nw > 0 ? sum(wa) / nw : 0.0f0,
+        n_dilated = count(<(0.01f0), wa), n_max_tone = count(>(0.99f0), wa),
         art_volume_ml = vart_now,
     )
     return Circuit(
@@ -980,6 +1502,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
         ), resist
     )
 end
+
 
 """
     with_extraction(c::Circuit, E) -> Circuit
@@ -1181,7 +1704,7 @@ function sinus_outflow(c::Circuit, inp::InputCurve, times::AbstractVector; to = 
     for c0 in 1:chunk:nt
         m = min(chunk, nt - c0 + 1)
         fill!(out, 0.0f0)
-        AK.foreachindex(1:m; min_elems = 1024) do ii
+        AK.foreachindex(1:m; backend = AK.get_backend(out), min_elems = 1024) do ii
             i = c0 + ii - 1
             for f in 1:nf
                 out[f, ii] = _gout(A, Y, logk, dt, fp[i], tc[i], kk[i], ex[i], tm[f] - off[i])

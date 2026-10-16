@@ -1,0 +1,132 @@
+[meta]
+id = "stoel2003_frame_count_reserve"
+data_type = "experimental"
+validates = "TIMI frame count at rest and during IV adenosine hyperemia in the LAD and LCx, guidewire-measured catheter-tip-to-landmark path length, frame count velocity (path length / transit time) vs simultaneous Doppler average peak velocity, and the implied resting and hyperemic volume flow"
+species = "human"
+preparation = "38 patients with stable angina or for diagnostic angiography/PCI (Free University Amsterdam). At least one of LAD/LCx visually normal; all TIMI 3 flow. 7F guiding catheters without side holes; ionic contrast (Hexabrix); MANUAL injections through the contrast-filled guide, synchronized to an acoustic heartbeat signal; Philips Integris 3000 at 25 frames/s. Doppler wire (Cardiometrics) in a normal proximal segment. Path length measured by marking a guidewire placed 1-3 mm into the TIMI landmark and pulled back to the catheter tip (Gibson 1997 method)."
+conditions = "Intracoronary nitroglycerin 0.2-0.4 mg > 5 min before angiography (epicardial vessels dilated). Angiography >= 2 min after the last contrast injection 'to prevent reactive hyperemia attributable to ischemia or contrast agent'. Hyperemia: IV adenosine 140 ug/kg/min for >= 3 min. During adenosine MAP fell 100.7 +/- 10.8 -> 93.4 +/- 10.4 mmHg and HR rose 67.4 +/- 9.0 -> 76.3 +/- 9.9 bpm. 71% on beta-blockers."
+verification = "FT"
+access = "Full-text HTML (Methods, Results, Tables 1-3, Discussion) read via Wayback Machine capture 20231119033755 of https://www.ahajournals.org/doi/10.1161/01.CIR.0000074279.44131.DE. Tables are HTML text, not images. Figures 1-3 (scatter plots) not digitized."
+notes = """TFC at 25 frames/s (multiply by 1.2 for 30 fps, as the paper notes). TFC is uncorrected (LAD not divided by 1.7).
+Frame count velocity FCV = guidewire length * 25 / TFC (cm/s); volume flow = FCV * pi * (proximal QCA diameter / 2)^2.
+Key relation: FCV / Doppler APV = 0.63 for the whole population (FCV vs APV r = 0.75, n = 174). APV is the Doppler spectral PEAK velocity;
+the paper notes that mean velocity is about 0.5 * APV, so the contrast front moves at roughly 1.26x the cross-sectional mean velocity
+(an inference from 0.63 / 0.5, not stated as such in the paper).
+LAD/LCx TFC ratio 1.4 vs length ratio 1.3: once TFC is divided by path length, LAD and LCx velocities, flows and resistance are equal.
+Hyperemia shortens TFC ~3x (FCR 3.3 in arteries without >50% stenosis) and the front can then cross the artery within one diastole,
+which the authors say inflates FCR relative to CVR above ~3.
+Injection was manual; the paper cites Dodge 1998 for the minor impact of injection rate. Injection rate and volume are not reported.
+Mean QRS-to-first-TFC-frame interval 0.38 +/- 0.09 s (injections began near the end of the T wave, just before diastole).
+Related abstracts (not tabulated here): Manginas 1999 (doi 10.1016/s0002-9149(99)00149-6) found FCR with IC adenosine correlated well with
+Doppler CFR; Tanedo 2001 (doi 10.1002/ccd.1203; 46 heart-transplant LADs) found TFC correlates with Doppler APV (r = -0.42) but NOT with
+Doppler x IVUS volume flow (r = -0.01); Chugh 2004 (doi 10.1016/j.jacc.2004.05.048) found no CTFC-CFVR correlation after PCI."""
+use_in_model = """(1) Resting transit: compare model ostium-to-landmark arrival time with basal TFC/25 s and model path length with
+guidewire_length_cm. (2) Hyperemic transit: rerun the model at adenosine flow and compare with hyperemic TFC (FCR ~3.3).
+(3) Front-speed rule: model front arrival should correspond to ~0.63 * Doppler peak velocity, i.e. ~1.2-1.3x the mean velocity, not the
+Poiseuille centerline (2x mean). (4) Volume flow per artery at rest ~1.1-1.2 mL/s (LAD, LCx) and ~3.5 mL/s at hyperemia.
+Caveat: nitroglycerin was given, so epicardial diameters are dilated relative to the no-drug resting model."""
+
+[source]
+authors = ["Stoel MG", "Zijlstra F", "Visser CA"]
+year = 2003
+title = "Frame count reserve"
+journal = "Circulation"
+volume = "107"
+issue = "24"
+pages = "3034-3039"
+doi = "10.1161/01.CIR.0000074279.44131.DE"
+crossref_verified = "2026-10-15; Crossref title 'Frame Count Reserve', Circulation 107(24):3034-3039, 2003, first author Stoel match"
+pmid = "12796130"
+
+[data.patient_vessel_characteristics]
+description = "Proximal diameter (QCA) and guidewire-measured catheter-tip-to-TIMI-landmark length"
+location = "Table 1; Results 'Characteristics'"
+provenance = "FT"
+statistic = "mean +/- SD (range)"
+artery = ["LAD", "LCx"]
+n_arteries = [35, 35]
+proximal_diameter_mean_mm = [3.2, 3.3]
+proximal_diameter_sd_mm = [0.6, 0.6]
+guidewire_length_mean_cm = [14.3, 11.4]
+guidewire_length_sd_cm = [1.6, 1.8]
+guidewire_length_min_cm = [9.5, 7.2]
+guidewire_length_max_cm = [18.0, 15.6]
+missing_note = "Length not measured in 3 LADs and 3 LCx (tortuosity). The wire takes the inner curve, so length may be underestimated (Discussion)."
+
+[data.no_stenosis_rest_vs_hyperemia]
+description = "Arteries without visual >50% stenosis (20 patients at baseline + 10 paired post-PCI measurements): TFC, frame count velocity (FCV), Doppler APV, volume flow and resistance index, basal and during IV adenosine"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SD (range)"
+artery = ["LAD", "LCx"]
+n_measurements = [30, 30]
+frame_rate_fps = 25.0
+tfc_basal_mean_frames = [35.1, 25.1]
+tfc_basal_sd_frames = [17.0, 9.5]
+tfc_basal_min_frames = [13.0, 12.0]
+tfc_basal_max_frames = [78.0, 60.0]
+tfc_hyperemic_mean_frames = [10.3, 8.3]
+tfc_hyperemic_sd_frames = [3.6, 2.7]
+tfc_hyperemic_min_frames = [5.0, 4.0]
+tfc_hyperemic_max_frames = [21.0, 14.0]
+frame_count_reserve_mean = [3.4, 3.2]
+frame_count_reserve_sd = [1.3, 1.0]
+fcv_basal_mean_cm_per_s = [12.5, 12.7]
+fcv_basal_sd_cm_per_s = [5.3, 3.6]
+fcv_hyperemic_mean_cm_per_s = [38.3, 37.6]
+fcv_hyperemic_sd_cm_per_s = [10.8, 10.3]
+apv_basal_mean_cm_per_s = [22.3, 19.1]
+apv_basal_sd_cm_per_s = [9.5, 7.4]
+apv_hyperemic_mean_cm_per_s = [65.7, 54.1]
+apv_hyperemic_sd_cm_per_s = [22.8, 21.2]
+cvr_doppler_mean = [3.2, 2.9]
+cvr_doppler_sd = [0.9, 0.7]
+flow_basal_mean_ml_per_min = [65.7, 71.8]
+flow_basal_sd_ml_per_min = [35.2, 34.4]
+flow_hyperemic_mean_ml_per_min = [209.1, 214.3]
+flow_hyperemic_sd_ml_per_min = [95.4, 102.8]
+resistance_index_basal_mean_mmHg_min_per_ml = [2.0, 1.8]
+resistance_index_basal_sd_mmHg_min_per_ml = [1.1, 0.9]
+resistance_index_hyperemic_mean_mmHg_min_per_ml = [0.6, 0.6]
+resistance_index_hyperemic_sd_mmHg_min_per_ml = [0.4, 0.3]
+missing_note = "LAD vs LCx TFC differ (P < 0.02); FCV, APV, flow and resistance do not. Pooled LAD+LCx (n = 60): FCV 12.6 +/- 4.5 basal, 38.0 +/- 10.5 hyperemic cm/s; APV 20.7 +/- 8.6 and 59.9 +/- 22.6 cm/s; FCR 3.3 +/- 1.1, CVR 3.1 +/- 0.8. Discussion gives LCA (LAD + LCx) volume flow 137.5 +/- 69.6 mL/min basal and 423.4 +/- 198.2 mL/min hyperemic. Flow is FCV x proximal area, not measured directly."
+
+[data.all_vessels_rest_vs_hyperemia]
+description = "All 48 paired LAD/LCx measurements (including 13 stenosed vessels and post-PCI repeats)"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD"
+artery = ["LAD", "LCx"]
+n_measurements = [48, 48]
+frame_rate_fps = 25.0
+tfc_basal_mean_frames = [32.5, 23.6]
+tfc_basal_sd_frames = [15.1, 9.1]
+tfc_hyperemic_mean_frames = [12.1, 8.7]
+tfc_hyperemic_sd_frames = [6.6, 3.2]
+frame_count_reserve_mean = [2.9, 2.8]
+frame_count_reserve_sd = [1.3, 1.0]
+fcv_basal_mean_cm_per_s = [13.1, 12.9]
+fcv_basal_sd_cm_per_s = [5.1, 4.1]
+fcv_hyperemic_mean_cm_per_s = [35.2, 35.3]
+fcv_hyperemic_sd_cm_per_s = [11.5, 10.7]
+apv_basal_mean_cm_per_s = [23.3, 19.3]
+apv_basal_sd_cm_per_s = [9.4, 7.2]
+apv_hyperemic_mean_cm_per_s = [61.9, 51.8]
+apv_hyperemic_sd_cm_per_s = [24.7, 20.1]
+flow_basal_mean_ml_per_min = [62.2, 67.3]
+flow_basal_sd_ml_per_min = [33.4, 32.0]
+flow_hyperemic_mean_ml_per_min = [177.8, 187.2]
+flow_hyperemic_sd_ml_per_min = [94.9, 97.0]
+missing_note = "FCV, flow and resistance from 44 paired measurements."
+
+[data.fcv_vs_doppler]
+description = "Relation of angiographic frame count velocity to Doppler average peak velocity (basal and hyperemic pooled)"
+location = "Results (Figure 3 caption and text); Discussion 'Flow Velocity Measurements'"
+provenance = "FT"
+statistic = "Pearson r; ratio of means"
+r_fcv_vs_apv = 0.75
+n_measurements = 174
+ratio_fcv_to_apv = 0.63
+ratio_note = "Paper: 'In this population the ratio of mean APV and FCV was 0.63'; numerically FCV/APV = 13.0/20.9 = 0.62 (Table 2 pooled), so 0.63 is FCV relative to APV."
+mean_velocity_to_apv_factor_cited = 0.5
+missing_note = "Regression slope/intercept not given. The 0.5 mean/peak factor is cited by the paper (its ref 18), not measured."

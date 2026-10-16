@@ -1,0 +1,52 @@
+[meta]
+id = "hodgson1985_contrast_flow_first_6s"
+data_type = "experimental"
+validates = "Change in coronary blood flow during the first 6 s after an intracoronary contrast injection (the window in which angiographic transit is measured), vs injection rate, volume and concentration"
+species = "dog"
+preparation = "16 open-chest dogs, electromagnetic flow probe on the LAD; ECG-gated intracoronary contrast injections."
+conditions = "Injection rates 1-6 mL/s, volumes 0.5-6 mL, half- and full-strength contrast (agent not stated in the abstract; 1985, likely ionic)."
+verification = "abs"
+access = "PubMed abstract (PMID 4030261). Full text (Invest Radiol, Wolters Kluwer) not accessed."
+notes = """Abstract: 'a characteristic decrease in coronary blood flow to approximately 45% of preinjection levels was seen an average of 1.9 seconds
+after intracoronary contrast injection. The timing of the depression in coronary flow was most influenced by the rate of contrast injection,
+and the magnitude of depression in flow was influenced by both the volume and concentration of the contrast injection.'
+Stoel 2009 cites this paper for 'only a small increase (<1.5%) in coronary blood flow during the initial phase of dye injection'; that number
+is not in the abstract (secondary). Abaci 1999 summarizes the same literature: slight initial increase, nadir 45% at 1.9 s, hyperemia peaking
+~153% at 5-10 s, baseline within 60 s. In humans the ionic-contrast hyperemia peaks later (17 s, range 12-22 s; wilson1985_doppler_catheter_cfr)
+and nonionic agents give mean-velocity increases of ~118-136% at peak (Tatineni 1992, doi 10.1016/0002-8703(92)90499-l, 4-6 mL LCA injections, abs).
+The flow dip is attributed to viscous contrast filling the bed (higher viscosity than blood)."""
+use_in_model = """Within the TFC window (0.5-1.5 s after the column enters the ostium) flow is at most marginally raised and may already be
+falling as viscous contrast fills the tree; contrast-induced hyperemia arrives seconds later. So neither injection-driven inflow nor
+contrast hyperemia should shorten the model arrival time; if anything, contrast viscosity lengthens it."""
+
+[source]
+authors = ["Hodgson JM", "Mancini GB", "Legrand V", "Vogel RA"]
+year = 1985
+title = "Characterization of changes in coronary blood flow during the first six seconds after intracoronary contrast injection"
+journal = "Investigative Radiology"
+volume = "20"
+issue = "3"
+pages = "246-252"
+doi = "10.1097/00004424-198505000-00004"
+crossref_verified = "2026-10-15; Crossref title exact match, Invest Radiol 20(3):246-252, 1985, first author Hodgson"
+pmid = "4030261"
+
+[data.flow_nadir]
+description = "Coronary (LAD) flow nadir after intracoronary contrast injection"
+location = "Abstract"
+provenance = "abs"
+statistic = "average over injections (n of injections not stated)"
+nadir_flow_fraction_of_baseline = 0.45
+time_to_nadir_s = 1.9
+n_dogs = 16
+injection_rate_range_ml_per_s = [1.0, 6.0]
+injection_volume_range_ml = [0.5, 6.0]
+missing_note = "SDs and per-rate results are in the full text, not read. 'Approximately 45%' as stated."
+
+[data.initial_flow_increase]
+description = "Coronary flow increase during the initial phase of dye injection, as quoted by Stoel 2009"
+location = "Stoel 2009 EuroIntervention, Discussion (citing this paper, ref 8)"
+provenance = "secondary"
+statistic = "upper bound"
+flow_increase_upper_bound_pct = 1.5
+missing_note = "Not verified against Hodgson 1985 full text."

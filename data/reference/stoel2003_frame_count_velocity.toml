@@ -1,0 +1,40 @@
+[meta]
+id = "stoel2003_frame_count_velocity"
+data_type = "experimental"
+validates = "Guidewire-measured catheter-tip-to-TIMI-landmark path length for LAD, LCx and RCA, and frame count velocity (length / transit time) per artery"
+species = "human"
+preparation = "119 coronary vessels after angioplasty (50 LAD, 27 LCx, 42 RCA). Length measured with an intracoronary guidewire from the catheter tip to the TIMI landmark (Gibson 1997 method)."
+conditions = "Immediately after PCI (post-PCI flow can be transiently high). Frame rate presumably 25 frames/s (same group as Stoel 2003 Circulation); not stated in the abstract."
+verification = "abs"
+access = "PMC abstract page (PMC2499881; Neth Heart J backfile scan). The scanned PDF could not be downloaded (PMC/Europe PMC returned an HTML challenge page)."
+notes = """The abstract notes that LCx and RCA lengths are 'considerably longer than in previous reports on which the CTFC is based' (Gibson 1996 quoted
+Dodge-model lengths LAD 14.7, LCx 9.3, RCA 9.8 cm). FCV is the contrast-front velocity, which Stoel 2003 Circulation found to be ~0.63x Doppler
+peak velocity. RCA FCV is ~30-40% higher than LAD/LCx. No DOI registered in Crossref for this article."""
+use_in_model = """Compare model ostium-to-landmark path lengths (LAD distal apical bifurcation, LCx distal-most marginal landmark, RCA first
+posterolateral branch) with length_mean_cm, and model front velocity (path length / arrival time) with fcv_mean_cm_per_s.
+Note post-PCI state; resting no-PCI FCV in normal LAD/LCx is lower (~12.6 cm/s, Stoel 2003 Circulation)."""
+
+[source]
+authors = ["Stoel MG", "de Cock CC", "Spruijt HJ", "Zijlstra F", "Visser CA"]
+year = 2003
+title = "Corrected TIMI frame count and frame count velocity"
+journal = "Netherlands Heart Journal"
+volume = "11"
+issue = "3"
+pages = "109-112"
+doi = ""
+crossref_verified = "2026-10-15; no Crossref DOI found (bibliographic query returned no match); citation from PubMed PMID 25696191 / PMC2499881"
+pmid = "25696191"
+
+[data.length_and_velocity]
+description = "Catheter-tip-to-landmark length and frame count velocity per artery after PCI"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD"
+artery = ["LAD", "LCx", "RCA"]
+n_vessels = [50, 27, 42]
+length_mean_cm = [14.5, 12.8, 11.3]
+length_sd_cm = [1.6, 1.9, 1.4]
+fcv_mean_cm_per_s = [17.6, 16.4, 23.0]
+fcv_sd_cm_per_s = [7.4, 6.3, 7.9]
+missing_note = "Per-artery TFC/CTFC values and the frame rate are in the full text, not read. Length differences P < 0.001 for all pairs; RCA FCV higher than LAD and LCx (P < 0.001)."

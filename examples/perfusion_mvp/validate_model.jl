@@ -54,7 +54,7 @@ coverage = Dict(
     coverage["gap_p99_mm"], coverage["gap_max_mm"], 100coverage["frac_voxels_gt_1p5mm"], coverage["density_cv_4mm"]
 )
 
-const P_AO = Physiology().p_ao     # mean aortic pressure, mmHg (pressures are reported relative to it)
+const P_AO = Physiology().p_in     # mean aortic pressure, mmHg (pressures are reported relative to it)
 
 js(x) = x isa AbstractString ? "\"" * x * "\"" : x isa AbstractDict ? "{" * join(["\"$k\":" * js(v) for (k, v) in x], ",") * "}" :
     x isa Union{AbstractVector, Tuple} ? "[" * join(js.(collect(x)), ",") * "]" : x isa AbstractFloat ? (isfinite(x) ? @sprintf("%.5g", x) : "null") : string(x)

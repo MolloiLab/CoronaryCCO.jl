@@ -1,0 +1,72 @@
+[meta]
+id = "stoel2009_dye_injection_pressure"
+data_type = "experimental"
+validates = "Rise of ostial and distal intracoronary pressure during a manual contrast injection for angiography, and the implied (small) acceleration of contrast transit (TIMI frame count) caused by the injection itself"
+species = "human"
+preparation = "25 consecutive patients in sinus rhythm with intermediate lesions that proved non-significant (FFR > 0.75). 6F guiding catheters without side holes (femoral), iodixanol 320 (Visipaque), MANUAL injections. Pressure wire (Radi) a few mm distal to the ostium and distal to the lesion; guide pressure on the manifold. Extra group of 6 patients: wire at ostium and 3, 6 and 9 cm distal."
+conditions = "IV heparin 5000 IU; IC nitroglycerin 200-300 ug. Measurements after adenosine hyperemia (for FFR) had resolved. Recordings from >= 1 beat before to >= 1 beat after the injection. Mean pressure = (systolic + 2 diastolic)/3."
+verification = "FT"
+access = "Publisher full-text HTML at https://eurointervention.pcronline.com/article/impact-of-dye-injection-on-intracoronary-pressure (read 2026-10-15). Table 3 (systolic/diastolic before/during/after) was not rendered in the HTML; text values used."
+notes = """Injection rate and volume were not recorded (manual). The authors stress that the catheter must allow easy backflow of dye into the
+ascending aorta; with a non-wedged 6F catheter most of the injectate that the coronary cannot take refluxes into the aorta, so the
+coronary sees a small pressure rise, not the full injector flow. 8F catheters or ostial disease may raise pressure more (not studied).
+The authors estimate that the 6.7% ostial pressure rise, lasting the whole TFC window, raises velocity ~6.7% at constant resistance,
+i.e. TFC falls by 2.3 (LAD), 1.9 (LCx) and 1.1 (RCA) frames at 25 fps, using baseline TFC from their ref 4 (Stoel et al.; the LAD and LCx values equal Stoel 2003 Circulation Table 3).
+Cites Hodgson 1985 (dogs): only a small (<1.5%) increase in coronary flow during the initial phase of dye injection.
+Limitation noted: contrast viscosity exceeds blood and may reduce velocity; not addressed."""
+use_in_model = """Represent injection in the transport model as a pressure boundary condition at the ostium raised by ~6 mmHg (~7%) for the
+duration of the TFC window, NOT as an added inflow equal to the injector rate. Expected effect on model arrival time: about -6% (-2 frames
+LAD at 25 fps). The ostium-to-9 cm pressure profile (6.9 -> 3.1 mmHg rise) can check the model's epicardial pressure drop under a
+proximal pressure perturbation."""
+
+[source]
+authors = ["Stoel M", "Kandhai-Ragunath J", "Van Houwelingen G", "Von Birgelen C"]
+year = 2009
+title = "Impact of dye injection on intracoronary pressure"
+journal = "EuroIntervention"
+volume = "5"
+issue = "2"
+pages = "272-276"
+doi = "10.4244/EIJV5I2A42"
+crossref_verified = "2026-10-15; Crossref title exact match, EuroIntervention 5(2):272-276, 2009, first author Stoel"
+pmid = "20449935"
+
+[data.pressure_rise_during_injection]
+description = "Mean intracoronary pressure before vs during manual dye injection"
+location = "Abstract; Results; Discussion 'Implications for TIMI frame count'"
+provenance = "FT"
+statistic = "mean +/- SD"
+site = ["ostium", "distal_to_lesion"]
+n_measurements = [26, 32]
+pressure_before_mean_mmHg = [90.8, 89.7]
+pressure_before_sd_mmHg = [17.2, 15.3]
+pressure_during_mean_mmHg = [96.8, 93.6]
+pressure_during_sd_mmHg = [18.5, 17.3]
+rise_mean_mmHg = [6.0, 3.9]
+rise_sd_mmHg = [4.2, 5.5]
+rise_mean_pct = [6.7, 4.2]
+rise_sd_pct = [4.9, 5.7]
+missing_note = "Ostial n: 21 left main + 5 RCA (Figure 2 caption says n = 26). Ostial rise LCA 6.6 +/- 4.4 vs RCA 3.6 +/- 2.8 mmHg (NS). P < 0.001 ostium; P < 0.02 distal (Results)."
+
+[data.pressure_rise_vs_distance]
+description = "Rise of mean intracoronary pressure during injection vs distance from the ostium (6 patients: 3 LAD, 2 LCx, 2 RCA)"
+location = "Results; Figure 4"
+provenance = "FT"
+statistic = "mean +/- SD"
+distance_from_ostium_cm = [0.0, 3.0, 6.0, 9.0]
+rise_mean_mmHg = [6.9, 4.0, 4.5, 3.1]
+rise_sd_mmHg = [1.2, 1.4, 1.3, 1.5]
+missing_note = ""
+
+[data.estimated_tfc_change]
+description = "Authors' estimate of TFC shortening due to the injection pressure rise (velocity +6.7% at constant resistance), at 25 frames/s"
+location = "Discussion 'Implications for TIMI frame count'"
+provenance = "FT"
+statistic = "derived by the authors from mean values"
+artery = ["LAD", "LCx", "RCA"]
+baseline_tfc_frames = [35.1, 25.1, 17.0]
+baseline_tfc_sd_frames = [17.0, 9.5, 2.5]
+tfc_decrease_frames = [2.3, 1.9, 1.1]
+velocity_increase_pct = 6.7
+frame_rate_fps = 25.0
+missing_note = "Model estimate, not a measured TFC change."

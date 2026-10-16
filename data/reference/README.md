@@ -136,6 +136,11 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 |---|---|---|---|
 | `gibson1996_timi_frame_count.toml` | TIMI frame count per artery in normal flow (LAD 36.2 ± 2.6, RCA 20.4 ± 3.0, LCx 22.2 ± 4.1 frames at 30 fps), CTFC and the 1.7 LAD correction, landmarks | Human, normal arteries | FT (full text via Web Archive) |
 | `abaci1999_tfc_confounders.toml` | Sensitivity of frame count to injection rate, catheter size, nitrate, heart rate and phase | Human | FT |
+| `dodge1998_injection_rate_tfc.toml` | A 1 mL/s rise in injection rate (10th to 90th percentile of hand injections) shortens the frame count by < 2 frames (< 7%) | Human, power injector | abs |
+| `stoel2009_dye_injection_pressure.toml` | Manual injection raises ostial pressure 6.0 ± 4.2 mmHg (6.7%) and distal pressure 3.9 mmHg; the implied TFC shortening is 1–2 frames. Pressure rise at 0, 3, 6 and 9 cm | Human, n = 25, 6F, nitroglycerin | FT |
+| `hodgson1985_contrast_flow_first_6s.toml` | Coronary flow in the first 6 s after IC contrast: little rise during injection, nadir about 45% of baseline at 1.9 s | Dog, n = 16, flow probe, 1–6 mL/s | abs (one value secondary) |
+| `stoel2003_frame_count_reserve.toml` | Rest vs IV adenosine frame count (LAD 35.1 → 10.3, LCx 25.1 → 8.3 frames at 25 fps), guidewire landmark lengths (LAD 14.3, LCx 11.4 cm), front velocity = 0.63 × Doppler APV, flow about 66–72 mL/min per artery at rest | Human, n = 38, manual injection, nitroglycerin | FT (Web Archive) |
+| `stoel2003_frame_count_velocity.toml` | Guidewire landmark path lengths LAD 14.5, LCx 12.8, RCA 11.3 cm and frame count velocity per artery | Human, 119 vessels after PCI | abs |
 
 ### Contrast transit (whole-body bolus, CT and MRI)
 

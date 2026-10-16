@@ -1,0 +1,40 @@
+[meta]
+id = "dodge1998_injection_rate_tfc"
+data_type = "experimental"
+validates = "Sensitivity of angiographic contrast transit time (TIMI frame count) to contrast injection rate over the range of hand-injection rates used by angiographers"
+species = "human"
+preparation = "Mechanical (power) injection used to vary injection rate in a controlled way; range of hand-injection rates taken from angiographers (Brigham and Women's / West Roxbury VA, Gibson TIMI group)."
+conditions = "Not available (abstract only): injection rates, volumes, catheter size, artery, frame rate and patient number are not stated in the abstract."
+verification = "abs"
+access = "PubMed abstract (PMID 9604968). Publisher full text (ajconline.org) returned HTTP 403; no Wayback capture found."
+notes = """Abstract in full: 'A mechanical injection was used to determine the impact of injection rate on the TIMI frame count. The 1.0-ml/s
+increase in hand injection rates from the 10th to 90th percentiles for angiographers is associated with a minor decrease of <2 frames that
+is <7% of the corrected TIMI frame count.'
+So hand-injection rates span about 1 mL/s between the 10th and 90th percentiles of operators (absolute rates not given in the abstract).
+Consistent with Abaci 1999 (power injector, +1 mL/s, TFC 28.2 -> 27.2 frames, P = 0.47) and Stoel 2009 (injection raises ostial
+pressure only ~6.7%)."""
+use_in_model = """Bound on the injection effect: if the model added the injected flow to coronary inflow, +1 mL/s at a resting LAD/LCx
+flow of ~1.1-1.2 mL/s (Stoel 2003) would nearly double flow and cut arrival time ~45%; the measured effect is < 7%. Hence injection must
+not be modeled as an additive coronary inflow."""
+
+[source]
+authors = ["Dodge JT Jr", "Rizzo M", "Nykiel M", "Altmann J", "Hobkirk K", "Brennan M", "Gibson CM"]
+year = 1998
+title = "Impact of injection rate on the Thrombolysis in Myocardial Infarction (TIMI) trial frame count"
+journal = "American Journal of Cardiology"
+volume = "81"
+issue = "10"
+pages = "1268-1270"
+doi = "10.1016/S0002-9149(98)00138-6"
+crossref_verified = "2026-10-15; Crossref title exact match ('Impact of Injection Rate on the Thrombolysis In Myocardial Infarction (TIMI) Trial Frame Count'), Am J Cardiol 81(10):1268-1270, 1998, first author Dodge"
+pmid = "9604968"
+
+[data.injection_rate_effect]
+description = "Change in TIMI frame count for a 1.0 mL/s increase in injection rate (10th -> 90th percentile of angiographers' hand-injection rates)"
+location = "Abstract"
+provenance = "abs"
+statistic = "upper bound as stated in the abstract"
+injection_rate_increase_ml_per_s = 1.0
+tfc_decrease_upper_bound_frames = 2.0
+tfc_decrease_upper_bound_pct_of_ctfc = 7.0
+missing_note = "Absolute hand-injection rates, mean TFC values, n, frame rate and artery are in the full text, which could not be read."

@@ -184,8 +184,9 @@ function _blur!(f::Array{Float32, 3}, σ::Float32)
     r = max(1, ceil(Int, 3σ)); w = Float32[exp(-(i / σ)^2 / 2) for i in -r:r]; w ./= sum(w)
     for d in 1:3
         g = similar(f); n = size(f, d)
-        Threads.@threads for I in CartesianIndices(f)
-            i = I[d]; s = 0.0f0
+        CI = CartesianIndices(f)
+        AK.foreachindex(g; min_elems = 4096) do li
+            I = CI[li]; i = I[d]; s = 0.0f0
             for o in -r:r
                 ii = clamp(i + o, 1, n)
                 J = Base.setindex(Tuple(I), ii, d)

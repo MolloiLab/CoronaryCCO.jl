@@ -1,0 +1,167 @@
+# Physiology of one organ's vascular bed, as data. `Physiology(organ = "heart")` reads this file.
+# Every value names its sources: `sources` are file stems in data/reference/ (checked on load);
+# `cite` holds sources that are not yet in the repo as TOMLs.
+[meta]
+organ = "heart"
+description = "Human (and dog/cat where human data are missing) coronary circulation and myocardium."
+
+[parameters.p_in]
+value = 93.0
+unit = "mmHg"
+note = "Mean aortic pressure at the ostia (cat; normal human mean arterial pressure is similar)."
+sources = ["chilian1986_microvascular_pressure"]
+
+[parameters.p_out]
+value = 13.6
+unit = "mmHg"
+note = "Effective outflow pressure: zero-flow pressure of the maximally dilated beating heart. Lumps coronary-sinus pressure and the intramyocardial waterfall into one steady back pressure. Human values agree (Nanto 2001, van Herck 2007)."
+sources = ["kanatsuka1990_microvessel_velocity", "nanto2001_human_zero_flow_pressure", "vanherck2007_hyperemic_zero_flow_pressure"]
+
+[parameters.regulation]
+value = "o2"
+note = "Coronary flow is matched to O2 demand; the regulated quantity is coronary venous O2."
+cite = ["Feigl 1983 Physiol Rev 63:1", "Tune et al. 2004 J Appl Physiol 97:404"]
+
+[parameters.hd]
+value = 0.45
+unit = "1"
+note = "Discharge hematocrit. Tube hematocrit from the Fahraeus law."
+cite = ["Pries, Neuhaus & Gaehtgens 1992 Am J Physiol 263:H1770"]
+
+[parameters.fb]
+value = 0.10
+unit = "mL/mL"
+note = "Intramyocardial blood volume fraction (human rest 0.09; pig 0.078-0.10; Kassab's dilated cast 0.122)."
+sources = ["mccommis2007_myocardial_blood_volume", "crystal1981_myocardial_blood_volume"]
+cite = ["Larsson et al. 1996", "Jerosch-Herold 1999"]
+
+[parameters.share_art]
+value = 0.29
+unit = "1"
+note = "Arterial share of intramyocardial blood volume."
+sources = ["kassab1994_capillary_network"]
+
+[parameters.share_cap]
+value = 0.31
+unit = "1"
+note = "Capillary share of intramyocardial blood volume."
+sources = ["kassab1994_capillary_network"]
+
+[parameters.share_ven]
+value = 0.40
+unit = "1"
+note = "Venous share of intramyocardial blood volume."
+sources = ["kassab1994_capillary_network"]
+
+[parameters.capillary]
+value = "tube"
+note = "Capillary bed resistance from parallel functional capillary tubes."
+
+[parameters.cap_length_mm]
+value = 0.5
+unit = "mm"
+note = "Functional capillary length."
+sources = ["kassab1994_capillary_network"]
+
+[parameters.cap_diameter_um]
+value = 6.0
+unit = "um"
+note = "Functional capillary diameter."
+sources = ["kassab1994_capillary_network"]
+
+[parameters.cap_ht_ratio]
+value = 0.85
+unit = "1"
+note = "Tube/discharge hematocrit in unresolved microvessels."
+sources = ["bindschadler2014_iodine_exchange_model_ps"]
+
+[parameters.ve]
+value = 0.18
+unit = "mL/mL"
+note = "Interstitial volume fraction (ECV about 0.25 minus plasma)."
+
+[parameters.ps]
+value = 0.37
+unit = "mL/min/g"
+note = "Capillary permeability-surface product for iodinated contrast: Patlak influx constant of iopamidol in normal pig myocardium, by 64-slice CT and EBCT, similar during adenosine."
+sources = ["daghini2007_ct64_myocardial_permeability"]
+
+[parameters.rho]
+value = 1.05
+unit = "g/mL"
+note = "Myocardial density."
+
+[parameters.plasma_viscosity_mPas]
+value = 1.2
+unit = "mPa s"
+note = "Plasma viscosity."
+
+[parameters.radius_cv]
+value = 0.12
+unit = "1"
+note = "Biological diameter variability of one order (10-25%)."
+sources = ["kassab1993_arterial_morphometry"]
+
+[parameters.d_art_micro]
+value = 170.0
+unit = "um"
+note = "Arterial microcirculation cut-off of Chilian's resistance classes."
+sources = ["chilian1989_dipyridamole_resistance"]
+
+[parameters.d_ven_micro]
+value = 150.0
+unit = "um"
+note = "Venous microcirculation cut-off of Chilian's resistance classes."
+sources = ["chilian1989_dipyridamole_resistance"]
+
+[parameters.r_micro_dilated]
+value = 4.0
+unit = "mmHg min g/mL"
+note = "Microvascular resistance at maximal dilation (dipyridamole). Anchors the scale kappa of grown microvessels (accepted calibration). 0 disables the anchor (kappa = 1)."
+sources = ["chilian1989_dipyridamole_resistance"]
+
+[parameters.d_active]
+value = 150.0
+unit = "um"
+note = "Arteries below this passive diameter carry smooth-muscle tone; adenosine and dipyridamole dilate only these."
+sources = ["kanatsuka1989_adenosine_microvessels"]
+
+[parameters.oef]
+value = 0.73
+unit = "1"
+note = "Resting coronary-sinus O2 extraction: sets the single tone constant at rest (accepted calibration)."
+sources = ["mccommis2010_myocardial_oxygenation"]
+
+[parameters.g_meta]
+value = 15.0
+unit = "1"
+note = "Metabolic sensitivity C_meta * S_CR of the control state."
+sources = ["carlson2008_autoregulation_model"]
+
+[parameters.mvo2]
+value = 0.116
+unit = "mL O2/min/g"
+note = "Myocardial O2 use (5.2 umol/g/min, healthy volunteers)."
+sources = ["mccommis2010_myocardial_oxygenation"]
+
+[parameters.sao2]
+value = 0.97
+unit = "1"
+note = "Inflow (systemic arterial) O2 saturation."
+
+[parameters.hb]
+value = 14.5
+unit = "g/dL"
+note = "Hemoglobin."
+
+[parameters.atp_r1]
+value = 1.026
+unit = "1"
+note = "ATP release slope with desaturation."
+cite = ["Arciero, Carlson & Secomb 2008 Am J Physiol 295:H1562"]
+
+[parameters.atp_l0]
+value = 1.0
+unit = "cm"
+note = "Length constant of the conducted metabolic signal."
+cite = ["Arciero, Carlson & Secomb 2008", "Namani et al. 2018"]
