@@ -22,6 +22,11 @@ value = "passive"
 note = "Normoxic pulmonary vessels carry little tone (Naeije 2012; distensibility ~2 %/mmHg, Reeves 2005). In the model only the capillary sheet distends; arteries and veins are rigid tubes (OPEN). Hypoxic vasoconstriction is not modelled."
 sources = ["naeije2012_pulmonary_circulation_exercise", "reeves2005_human_pulmonary_distensibility"]
 
+[parameters.venous_scale]
+value = "grown"
+note = "Grown pulmonary veins keep their own radii: their root is anchored at two Huang 1996 order-15 veins per lung (lung/pulm_veins.jl), not at a volume share."
+sources = ["huang1996_human_pulmonary_morphometry"]
+
 [parameters.capillary]
 value = "sheet"
 note = "Alveolar-wall capillaries as Fung-Sobin sheet flow."

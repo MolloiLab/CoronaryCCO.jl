@@ -135,6 +135,8 @@ Boundary conditions and blood
   waterfall effect of intramyocardial pressure into one steady back pressure.
 - `regulation`: `:o2` (arteriolar tone follows the O₂ state of each bed, below) or `:passive`
   (no active tone: every state is the relaxed one).
+- `venous_scale`: `:volume_share` (a grown venous tree is scaled to `share_ven/share_art` of the
+  arterial volume) or `:grown` (its radii stay as grown, e.g. anchored at an imaged root).
 - `capillary`: `:tube` (parallel functional capillaries, below) or `:sheet` (Fung & Sobin sheet
   flow, for alveolar walls): a bed of sheet area A between arterial pressure P_a and venous
   pressure P_v passes Q = S·A/(4µ·kf·L̄²·α)·[h(P_a)⁴ − h(P_v)⁴], with sheet thickness
@@ -217,6 +219,7 @@ struct Physiology
     p_out::F32
     regulation::Symbol
     capillary::Symbol
+    venous_scale::Symbol
     hd::F32
     fb::F32
     share_art::F32
@@ -259,6 +262,7 @@ const REFERENCE_DIR = normpath(joinpath(@__DIR__, "..", "..", "data", "reference
 const _REGULATION = (:o2, :passive)
 const _WARNED = Set{String}()
 const _CAPILLARY = (:tube, :sheet)
+const _VENOUS_SCALE = (:volume_share, :grown)
 
 # One organ's parameter set: name → value, every cited reference file checked to exist.
 function organ_parameters(organ::AbstractString)
@@ -285,6 +289,7 @@ function Physiology(; organ::AbstractString, kwargs...)
     p = Physiology(vals...)
     p.regulation in _REGULATION || throw(ArgumentError("regulation must be one of $_REGULATION"))
     p.capillary in _CAPILLARY || throw(ArgumentError("capillary must be one of $_CAPILLARY"))
+    p.venous_scale in _VENOUS_SCALE || throw(ArgumentError("venous_scale must be one of $_VENOUS_SCALE"))
     return p
 end
 
@@ -1380,11 +1385,12 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     else
         length(vleaf) == nt || throw(ArgumentError("vleaf needs one venous segment per terminal"))
         vl = Int32.(vleaf)
-        # A grown venous tree is sized by CCO's arterial law; scale its radii uniformly so it holds
-        # share_ven/share_art of the resolved arterial volume (Kassab et al. 1994), as companion
-        # veins do. Veins are wider and lower-resistance than their arteries.
+        # A grown venous tree is sized by CCO's arterial law. With venous_scale = :volume_share its
+        # radii are scaled uniformly so it holds share_ven/share_art of the resolved arterial volume
+        # (Kassab et al. 1994), as companion veins do; with :grown its own (anatomically anchored)
+        # radii stay.
         vlen, vvol = _lengths(veins)
-        fr = sqrt(s * s * vart / sum(vvol))
+        fr = phys.venous_scale === :grown ? 1.0f0 : sqrt(s * s * vart / sum(vvol))
         vt = VTree(veins.parent, veins.a, veins.b, veins.r .* F32(fr), veins.isbase)
         _, vptr, vkids, vorder = _topology(vt.parent); vlen, vvol = _lengths(vt)
     end

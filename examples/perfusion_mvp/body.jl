@@ -363,6 +363,9 @@ Adult male (ICRP 89 reference, 5.3 L blood) with a named venous tree for every c
 site, the four heart chambers, the lungs, the coronary bed, and the systemic organs. All numbers
 are keyword arguments; sources are in `docs` of each block below.
 
+Coronary bed: `cor = (; ml, fb, ve, ps, rho)` (required): myocardial tissue volume and the heart's
+blood fraction, interstitial fraction, contrast PS and density (`Flow.Physiology(organ = "heart")`).
+
 Heart (from the XCAT phantom): `co` 81.6 mL/s (stroke volume 132.2 − 50.6 mL at 60/min),
 chamber volumes `v_ra` 52.0, `v_rv` 85.4, `v_la` 37.6, `v_lv` 95.2 mL, `beat` 1 s. Blood that
 enters a ventricle in diastole leaves at the next systole, so each ventricle adds half a beat of
@@ -414,7 +417,7 @@ function human_circulation(;
         vein_plug = 0.95f0, vein_rd = 0.04f0, arm_c = 0.88f0, arm_r = 1.76f0,
         v_arm = 3.8f0, v_axillary = 6.0f0, v_subclavian = 3.1f0, v_bc_r = 3.5f0, v_bc_l = 7.3f0, v_ij_r = 11.5f0, v_ij_l = 7.8f0, v_svc = 15.4f0,
         v_leg = 17.0f0, v_iliac = 7.7f0, v_ivc_infra = 35.0f0, v_ivc_renal = 27.0f0, v_ivc_hep = 21.0f0,
-        f_cor = 0.033f0, v_cor = 16.0f0, ve_cor = 9.0f0,
+        f_cor = 0.033f0, cor,
         f_brain = 0.12f0, v_brain = 64.0f0, f_kidney = 0.19f0, v_kidney = 106.0f0, e_kidney = 100.0f0, gfr = 2.0f0,
         f_hepart = 0.065f0, f_portal = 0.185f0, v_portal = 250.0f0, e_portal = 600.0f0, v_liver = 530.0f0, e_liver = 500.0f0,
         tissues = (
@@ -439,9 +442,10 @@ function human_circulation(;
     f_other = 1.0f0 - 0.033f0 - fo
     ks = (1.0f0 - f_cor) / (1.0f0 - 0.033f0)          # at stress the heart takes a larger share
     push!(S, Segment(:aortic_root, :av, :root; kind = :artery, v = F(v_aortic_root), plug = 0.8f0, rd = 0.1f0))
-    # lumped coronary bed: capillary PS 0.37 mL/min/g (as `Flow.Physiology.ps`) over the tissue whose
-    # interstitium is ve_cor (interstitial fraction 0.18, density 1.05 g/mL)
-    push!(S, Segment(:coronary, :root, :cs; kind = :bed, q = F(f_cor), v = F(v_cor), ve = F(ve_cor), ps = F(0.37f0 / 60 * ve_cor / 0.18f0 * 1.05f0)))
+    # lumped coronary bed from the heart's own physiology: `cor = (; ml, fb, ve, ps, rho)` with the
+    # myocardial tissue volume (mL) and the blood fraction, interstitial fraction, contrast PS
+    # (mL/min/g) and density of `Flow.Physiology(organ = "heart")`
+    push!(S, Segment(:coronary, :root, :cs; kind = :bed, q = F(f_cor), v = F(cor.fb * cor.ml), ve = F(cor.ve * cor.ml), ps = F(cor.ps / 60 * cor.ml * cor.rho)))
     push!(S, Segment(:coronary_sinus, :cs, :ra_in; kind = :vein, v = 3.0f0, plug = 0.8f0, rd = 0.1f0))
     push!(S, Segment(:arch, :root, :arch_out; kind = :artery, v = F(v_arch), plug = 0.8f0, rd = 0.1f0))
     push!(S, Segment(:desc_aorta, :arch_out, :abd; kind = :artery, v = F(v_desc), plug = 0.8f0, rd = 0.1f0))

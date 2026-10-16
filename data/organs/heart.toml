@@ -53,6 +53,11 @@ unit = "1"
 note = "Derived: venous 4.1 of 10.4 mL (Kassab 1994); 0.394 rounded so the three shares sum to 1."
 sources = ["kassab1994_venous_morphometry"]
 
+[parameters.venous_scale]
+value = "volume_share"
+note = "Grown coronary veins take Kassab's venous/arterial cast volume ratio (the venous tree has no imaged anatomical scale of its own)."
+sources = ["kassab1994_venous_morphometry"]
+
 [parameters.capillary]
 value = "tube"
 note = "Capillary bed resistance from parallel functional capillary tubes (Kassab & Fung 1994 dimensions)."
