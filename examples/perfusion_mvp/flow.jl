@@ -1540,6 +1540,10 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     ctone = reference === nothing ? F32[-5.0f0] : copy(reference.ctone)
     kappa === nothing && reference !== nothing && (kappa = reference.resist.kappa)
     kappa === nothing && phys.r_micro_dilated <= 0 && (kappa = 1.0f0)       # no anchor: pure Poiseuille
+    # the κ anchor is Chilian's resistance between arteriolar inlets and venular outlets of tube capillaries; with
+    # sheet-flow beds that resistance is pressure-dependent, so the two are not combined (audit A2-5)
+    phys.capillary === :sheet && kappa === nothing && phys.r_micro_dilated > 0 &&
+        throw(ArgumentError("r_micro_dilated (κ anchor) is defined for tube capillaries; set it to 0 for capillary = :sheet"))
     if kappa === nothing
         kappa = F32(kappa_init)
         Wd = _Wall(seg, d0, lim, to)
