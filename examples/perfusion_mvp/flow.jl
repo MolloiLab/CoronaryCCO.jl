@@ -173,17 +173,17 @@ Volumes and exchange
   real vessels of one order scatter by 10–25% (Kassab et al. 1993, Table 2). Each segment's
   radius is multiplied by a fixed lognormal factor with this coefficient of variation.
 
-Microvascular resistance at maximal dilation
-- `d_art_micro`, `d_ven_micro`, `r_micro_dilated`: the microcirculation (arteries below 170 µm,
-  capillaries, veins below 150 µm, Chilian et al. 1989's classes) has a measured resistance at
-  maximal vasodilation of 4 mmHg·min·g/mL (Chilian et al. 1989, dipyridamole, Table 2 / Fig. 5).
-  Grown microvessels keep their Poiseuille resistances relative to each other, so flow
-  heterogeneity still comes from the geometry, but one factor κ sets their absolute level to the
-  measurement: CCO's smallest arterioles are about 2.4× longer than Kassab's (CCO runs each
-  terminal to the centre of its territory, where real tissue uses the capillary network), so
-  their raw Poiseuille resistance is far too high. Vessels above the cut-offs are pure Poiseuille.
-  This anchors the scaled quantity itself to its own measurement; stress flow and flow reserve
-  stay predictions.
+Microvascular scale κ (resistance at maximal dilation)
+- Grown microvessels (arteries below `d_art_micro` 170 µm, capillaries, veins below `d_ven_micro` 150 µm, Chilian et al.
+  1989's classes) keep their Poiseuille resistances relative to each other, so flow heterogeneity still comes from the
+  geometry, but one factor κ sets their absolute level: CCO's smallest arterioles are about 2.4× longer than Kassab's (CCO
+  runs each terminal to the centre of its territory, where real tissue uses the capillary network), so their raw
+  Poiseuille resistance is far too high. Vessels above the cut-offs are pure Poiseuille.
+- `r_total_dilated` (heart: 24 mmHg·min·g/mL): κ is set so that the whole bed's resistance at maximal dilation, inlet
+  pressure ÷ flow per gram (as PET reports MAP ÷ MBF), equals that of healthy men (Kaufmann et al. 1999). Maximal flow is
+  therefore calibrated; flow reserve, stenosis thresholds and every other state stay predictions.
+- `r_micro_dilated` (0 = off): the earlier anchor, Chilian's microvascular resistance at maximal dilation in the cat
+  (4 mmHg·min·g/mL); used only when `r_total_dilated` is 0. With neither, κ = 1 (the lung: its resistance is a prediction).
 
 Arteriolar wall mechanics (autoregulation; Carlson, Arciero & Secomb 2008, Arciero et al. 2008)
 - `d_active`: arteries whose passive diameter is below 150 µm carry smooth-muscle tone. In the
