@@ -38,6 +38,13 @@ include("qc.jl")
 include("generate.jl")
 include("postprocess.jl")
 include("spec.jl")
+# perfusion model: flow from pressures, territories, whole-body contrast, coronary flow capacity, CT frames, phantom
+include("perfusion/flow.jl")
+include("perfusion/territory.jl")
+include("perfusion/body.jl")
+include("perfusion/cfc.jl")
+include("perfusion/organct.jl")
+include("perfusion/dynamic_phantom.jl")
 
 export CCOParams, CCOModel, MaskDomain, Engine, nsegments
 export GrowthSpec, grow, size_scale
