@@ -1,0 +1,43 @@
+[meta]
+id = "ishida2011_universal_dual_bolus"
+data_type = "experimental"
+validates = "Rationale for dual bolus (T1-saturation attenuates LV AIF at standard doses); width of the 10%-dilute LV AIF bolus at rest vs stress and its relation to cardiac output"
+species = "human"
+preparation = "161 dual-bolus perfusion scans in 86 patients (70 at the original site, 16 at three remote sites). 1.5 and 3 T Philips Achieva/Intera and Siemens Avanto; non-slice-selective SR TFE, b-TFE, k-t TFE, k-t b-TFE (prep-to-k-space-centre 100-110 ms on Philips; 255 ms on Siemens TurboFLASH as printed) and TurboFLASH. Doses 0.025-0.1 mmol/kg; dilute bolus 10% of neat, equal volumes, 4 mL/s, 25 mL saline, antecubital vein, predefined pause 25 s. Width analysis: 36 patients, 0.1 mmol/kg gadobutrol (dilute bolus = 0.01 mmol/kg)."
+conditions = "Rest and adenosine stress"
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC3118114 (CC BY 2.0), read 2026-10-16."
+notes = """Introduction states that at Gd concentrations in current first-pass use, T1-saturation causes substantial signal attenuation mainly in the LV cavity (cited, not measured here). No quantitative saturation data.
+TW_dilute is NOT an FWHM: TW = 2 x (T_peak - T_start) of the dilute LV curve (assumes symmetry). Siemens TurboFLASH TR printed as 156 ms and delay 255 ms in Table 1; likely typesetting, recorded only in prose here.
+In all patients with EF < 30% the dilute and neat curves overlapped despite the 25 s pause."""
+use_in_model = "Gives an approximately linear-regime LV bolus width (dilute 0.01 mmol/kg): ~15.6 s rest, 11.8 s stress, from a 4 mL/s injection; useful as a width reference that is not saturation-broadened."
+
+[source]
+authors = ["Ishida M", "Schuster A", "Morton G", "Chiribiri A", "Hussain S", "Paul M", "Merkle N", "Steen H", "Lossnitzer D", "Schnackenburg B", "Alfakih K", "Plein S", "Nagel E"]
+year = 2011
+title = "Development of a universal dual-bolus injection scheme for the quantitative assessment of myocardial perfusion cardiovascular magnetic resonance"
+journal = "J Cardiovasc Magn Reson"
+volume = "13"
+issue = "1"
+pages = "28"
+doi = "10.1186/1532-429X-13-28"
+crossref_verified = "2026-10-16; Crossref title match (vol 13, issue 1, article 28; 13 authors Ishida ... Nagel)"
+pmid = "21609423"
+pmcid = "PMC3118114"
+
+[data.dilute_bolus_width]
+description = "Time width of the dilute (0.01 mmol/kg) LV AIF bolus, TW = 2*(Tpeak - Tstart)"
+location = "Results; Fig. 6"
+provenance = "FT"
+statistic = "mean +/- SD, n = 36 patients (rest and stress scans)"
+condition = ["rest", "stress"]
+tw_dilute_mean_s = [15.6, 11.8]
+tw_dilute_sd_s = [4.6, 4.2]
+regression_tw_vs_co = "TW_dilute (s) = -1.2978 * CO (L/min) + 22.559, r = 0.511, P < 0.001"
+cardiac_output_mean_l_min = [5.6, 7.4]
+cardiac_output_sd_l_min = [1.5, 2.1]
+heart_rate_mean_bpm = [68.0, 90.0]
+heart_rate_sd_bpm = [13.0, 17.0]
+ef_mean_percent = 57.0
+ef_sd_percent = 15.0
+missing_note = "CO, HR and EF are for all patients; stress CO estimated as rest SV x stress HR (overestimates). TW is not FWHM."

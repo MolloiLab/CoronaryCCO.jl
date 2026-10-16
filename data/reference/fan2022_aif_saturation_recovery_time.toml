@@ -1,0 +1,39 @@
+[meta]
+id = "fan2022_aif_saturation_recovery_time"
+data_type = "experimental"
+validates = "Underestimation of peak LV AIF [Gd] versus saturation-recovery time (TS 10-21.2 ms) after a single 0.075-0.1 mmol/kg bolus; peak blood [Gd] magnitude at 1.5 T"
+species = "human"
+preparation = "18 patients enrolled for rest perfusion (14 analysed; 59 +/- 14 y; LVEF > 50%) plus 1 stress-rest subject. 1.5 T Siemens Aera. Gadobutrol 0.075 mmol/kg (eGFR 45-60) or 0.1 mmol/kg (eGFR > 60) at 3 mL/s. Radial SR GRE (TE/TR 1.5/2.8 ms, FA 15 deg, min TS 10 ms, 38 spokes/frame), KWIC filters to reconstruct five AIF image sets with effective TS 10, 12.8, 15.6, 18.4, 21.2 ms from the same data. Signal/PD normalized, Bloch-equation signal-to-T1, fast-exchange T1-to-[Gd] (r1 5.3 /mM/s blood), T2* corrected."
+conditions = "Rest (n = 14); one stress-rest subject shown in figure only"
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC9321550 (CC BY-NC-ND 4.0), read 2026-10-16."
+notes = """Even AFTER Bloch-model conversion to [Gd], the estimated peak AIF falls steadily as TS lengthens (13.73 mM at 10 ms to 7.95 mM at 21.2 ms), so the model correction does not remove the saturation bias. TS 10 ms vs 21.2 ms (close to the 23.8 ms of Kellman 2017) raised peak AIF by 73% and lowered rest MBF by 43%. Authors state LV [Gd] at peak is typically > 5 mM. True peak [Gd] is unknown (no ground truth); 13.7 mM is a lower bound for a 0.075-0.1 mmol/kg bolus at 3 mL/s.
+Dose is mixed (0.075 or 0.1 mmol/kg) and the per-dose split is not reported."""
+use_in_model = "Peak blood [Gd] for a single standard bolus is >~8-14 mM, well above the ~1-2 mM range where long-TS SR signal is near-linear; supports treating standard-TS (~100 ms) SR-SSFP blood curves at 0.1 mmol/kg as peak-clipped."
+
+[source]
+authors = ["Fan L", "Hong K", "Hsu LY", "Carr JC", "Allen BD", "Lee DC", "Kim D"]
+year = 2022
+title = "Optimal saturation recovery time for minimizing the underestimation of arterial input function in quantitative cardiac perfusion MRI"
+journal = "Magn Reson Med"
+volume = "88"
+issue = "2"
+pages = "832-839"
+doi = "10.1002/mrm.29240"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 88, issue 2, 832-839; authors Fan, Hong, Hsu, Carr, Allen, Lee, Kim)"
+pmid = "35377476"
+pmcid = "PMC9321550"
+
+[data.peak_aif_vs_ts]
+description = "Peak LV AIF [Gd] and rest MBF for five effective saturation-recovery times, same raw data"
+location = "Table 1; Abstract"
+provenance = "FT"
+statistic = "mean +/- SD, n = 14"
+ts_ms = [10.0, 12.8, 15.6, 18.4, 21.2]
+peak_aif_mean_mM = [13.73, 11.24, 9.56, 8.55, 7.95]
+peak_aif_sd_mM = [2.25, 1.77, 1.45, 1.32, 1.24]
+rest_mbf_mean_ml_g_min = [0.73, 0.89, 1.05, 1.17, 1.27]
+rest_mbf_sd_ml_g_min = [0.12, 0.15, 0.17, 0.19, 0.21]
+aif_increase_ts10_vs_ts21p2_percent = 73.0
+mbf_decrease_ts10_vs_ts21p2_percent = 43.0
+missing_note = "All TS > 10 ms differ significantly from TS 10 ms (P < 0.05). Curve widths (FWHM) not reported; representative curves in Fig. 3B only."

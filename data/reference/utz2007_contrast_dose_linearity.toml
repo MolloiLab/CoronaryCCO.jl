@@ -1,0 +1,35 @@
+[meta]
+id = "utz2007_contrast_dose_linearity"
+data_type = "experimental"
+validates = "Dose at which LV blood-pool and myocardial SR first-pass signal stops increasing linearly with Gd dose"
+species = "human"
+preparation = "10 healthy subjects, 1.5 T. Gd-DTPA, seven doses 0.00125-0.1 mmol/kg, equal volumes, rapid bolus 6 mL/s; 15-min rests after doses > 0.01 mmol/kg. Two multislice saturation-recovery perfusion sequences per subject (rest). Maximum enhancement and maximum upslope in LV cavity and myocardium."
+conditions = "Rest"
+verification = "abs"
+access = "PubMed abstract (PMID 17520736) read 2026-10-16; full text paywalled (Wiley), not read."
+notes = """LV blood-pool signal was linear in dose only up to 0.01 mmol/kg; myocardium up to 0.05 mmol/kg. Above these, signal response was not linear with dose. So a 0.1 mmol/kg single bolus is 10x above the blood-pool linear limit for standard SR sequences.
+Sequence parameters (TS, flip) and the magnitude of peak underestimation were not available from the abstract."""
+use_in_model = "Key number: blood-pool SR signal linear only to 0.01 mmol/kg; treat 0.1 mmol/kg LV/SVC signal peaks as saturated."
+
+[source]
+authors = ["Utz W", "Niendorf T", "Wassmuth R", "Messroghli D", "Dietz R", "Schulz-Menger J"]
+year = 2007
+title = "Contrast-dose relation in first-pass myocardial MR perfusion imaging"
+journal = "J Magn Reson Imaging"
+volume = "25"
+issue = "6"
+pages = "1131-1135"
+doi = "10.1002/jmri.20910"
+crossref_verified = "2026-10-16; Crossref title match (vol 25, issue 6, 1131-1135; authors Utz, Niendorf, Wassmuth, Messroghli, Dietz, Schulz-Menger)"
+pmid = "17520736"
+
+[data.linear_dose_limit]
+description = "Upper dose of linear signal-dose relation"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "group regression threshold"
+compartment = ["LV blood pool", "myocardium"]
+linear_up_to_dose_mmol_per_kg = [0.01, 0.05]
+dose_range_tested_mmol_per_kg = [0.00125, 0.1]
+injection_rate_ml_s = 6.0
+missing_note = "Per-dose enhancement values and sequence TS not available (abstract only)."

@@ -161,6 +161,17 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 
 | File | What it validates | Species / conditions | Status |
 |---|---|---|---|
+| `utz2007_contrast_dose_linearity.toml` | Saturation-recovery first-pass signal linear in dose only to 0.01 mmol/kg (LV blood) and 0.05 (myocardium) | Human CMR | abs |
+| `kellman2017_dual_sequence_aif_linearity.toml` | Dual-sequence AIF: raw blood-pool peak-to-valley 5.6 vs 8.3 after conversion to [Gd] at half dose | Human CMR | FT |
+| `fan2022_aif_saturation_recovery_time.toml` | AIF peak [Gd] 13.7 ± 2.3 mM at TS 10 ms vs 7.95 mM at 21.2 ms (0.075–0.1 mmol/kg) | Human CMR | FT |
+| `li2023_saturated_aif_correction_pet.toml` | Clinical SR-turboFLASH AIF clipped from 40–90% of its peak; raw AIF overestimates rest MBF ≈ 4× vs PET | Human CMR + PET | FT |
+| `sanchezgonzalez2015_dual_saturation_aif.toml` | Signal linearity vs saturation delay; 200 ms delay resolves only [Gd] < ≈ 4.2 mM | Phantom, pig | FT |
+| `kimaxel2006_dual_imaging_aif.toml` | Dual-imaging AIF to avoid blood-pool saturation | Human CMR | abs |
+| `elkington2005_aif_peak_gd_injection_rate.toml` | Aortic peak [Gd] at 0.1 mmol/kg: 5.0 mM (3 mL/s), 7.1 mM (5 mL/s) | Human CMR | abs |
+| `gatehouse2004_high_dose_aif_dual_sequence.toml` | High-dose perfusion with a dual-sequence AIF | Human CMR | abs |
+| `christian2004_dual_bolus_canine.toml` | Dual-bolus AIF validation | Dog CMR | abs |
+| `ishida2011_universal_dual_bolus.toml` | Universal dual bolus; dilute (0.01 mmol/kg) LV curve widths | Human CMR | FT |
+| `hsu2008_nonlinear_myocardial_si_correction.toml` | Correction of nonlinear myocardial signal intensity | CMR | abs |
 | `deng2026_port_vs_peripheral_ct.toml` | Aortic HU and subclavian streak artifact, arm cannula vs chest port (same patients, same dose and rate) | Human, 195 | FT |
 | `wang2025_arm_position_cta.toml` | Arterial HU with arms raised vs at the side (thoracic outlet) | Human, 185, 80 kV | FT |
 | `nishiyama2024_arm_position_contrast.toml` | Collateral venous diversion and subclavian vein area, conventional vs crossed raised arms | Human, 92 | abs |

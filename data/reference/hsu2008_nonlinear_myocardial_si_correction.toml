@@ -1,0 +1,34 @@
+[meta]
+id = "hsu2008_nonlinear_myocardial_si_correction"
+data_type = "experimental"
+validates = "Myocardial (not blood) SR signal nonlinearity at TD 70 vs 150 ms and peak myocardial [Gd] in dual-bolus studies"
+species = "human"
+preparation = "10 healthy volunteers, rest and stress dual-bolus perfusion, SR EPI at TD 70 and TD 150 ms; magnetization-model correction validated in phantoms."
+conditions = "Rest and stress"
+verification = "abs"
+access = "PubMed abstract (PMID 18302205) read 2026-10-16; full text paywalled (Wiley), not read."
+notes = """Even myocardial [Gd] < 1 mM produces nonlinearity large enough that TD70 and TD150 stress MBF differ before correction (P < 0.01) and agree after. Corrections were larger for stress than rest and for TD150 than TD70. This concerns tissue, not the AIF; blood at 5-14 mM is far more affected."""
+use_in_model = "Context only: SR nonlinearity is already relevant at ~0.6-0.9 mM with TD 150 ms."
+
+[source]
+authors = ["Hsu LY", "Kellman P", "Arai AE"]
+year = 2008
+title = "Nonlinear myocardial signal intensity correction improves quantification of contrast-enhanced first-pass MR perfusion in humans"
+journal = "J Magn Reson Imaging"
+volume = "27"
+issue = "4"
+pages = "793-801"
+doi = "10.1002/jmri.21286"
+crossref_verified = "2026-10-16; Crossref title match (vol 27, issue 4, 793-801; authors Hsu, Kellman, Arai)"
+pmid = "18302205"
+
+[data.peak_myocardial_gd]
+description = "Peak myocardial [Gd], TD70 (similar for TD150)"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD, n = 10"
+condition = ["rest", "stress"]
+peak_myocardial_gd_mean_mM = [0.64, 0.91]
+peak_myocardial_gd_sd_mM = [0.10, 0.21]
+phantom_corrected_r2 = [1.00, 0.99]
+missing_note = "Dual-bolus doses and blood-pool values not in abstract."

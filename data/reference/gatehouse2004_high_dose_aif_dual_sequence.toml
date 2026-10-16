@@ -1,0 +1,31 @@
+[meta]
+id = "gatehouse2004_high_dose_aif_dual_sequence"
+data_type = "experimental"
+validates = "Qualitative statement that high-dose single-bolus SR perfusion distorts the AIF peak; dual-sequence (short-SR AIF image) vs dual-bolus MPR"
+species = "human"
+preparation = "15 subjects. Each cardiac cycle: low-res short-axis image with short SR time immediately after the R wave for LV blood signal, then one high-res short-axis image with long SR time for myocardium. Compared with dual-bolus (low-dose AIF bolus + high-dose myocardial bolus)."
+conditions = "Rest and stress (MPR)"
+verification = "abs"
+access = "PubMed abstract (PMID 15221807) read 2026-10-16; full text paywalled (Wiley), not read."
+notes = """Abstract: fast injection of high-dose Gd with highly T1-sensitive perfusion imaging is normally incompatible with quantitative modeling because of distortion of the PEAK of the AIF caused by full recovery of blood magnetization. Only a 'small significant difference' in MPR between methods; no numeric AIF values in the abstract."""
+use_in_model = "Citation for the mechanism (full recovery of blood magnetization flattens the AIF peak)."
+
+[source]
+authors = ["Gatehouse PD", "Elkington AG", "Ablitt NA", "Yang GZ", "Pennell DJ", "Firmin DN"]
+year = 2004
+title = "Accurate assessment of the arterial input function during high-dose myocardial perfusion cardiovascular magnetic resonance"
+journal = "J Magn Reson Imaging"
+volume = "20"
+issue = "1"
+pages = "39-45"
+doi = "10.1002/jmri.20054"
+crossref_verified = "2026-10-16; Crossref title match (vol 20, issue 1, 39-45; authors Gatehouse, Elkington, Ablitt, Yang, Pennell, Firmin)"
+pmid = "15221807"
+
+[data.study]
+description = "Study size only"
+location = "Abstract"
+provenance = "abs"
+statistic = "count"
+n_subjects = 15
+missing_note = "SR times, dose, injection rate and MPR values are in the full text only."

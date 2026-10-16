@@ -1,0 +1,53 @@
+[meta]
+id = "li2023_saturated_aif_correction_pet"
+data_type = "experimental"
+validates = "Extent of peak clipping in a single-bolus, single-sequence clinical SR-turboFLASH LV AIF (fraction of the peak that is saturated) and the MBF error it causes versus simultaneous 13N-ammonia PET"
+species = "human"
+preparation = "16 patients with SPECT-confirmed reversible ischemia (58 +/- 12 y, 7 men). Integrated 3 T PET-MRI (Siemens Biograph mMR). Gadobenate dimeglumine (MultiHance) 0.075 mmol/kg at 5 mL/s + 15 mL saline, antecubital vein, with simultaneous 10 mCi 13N-ammonia. SR turboFLASH, TR/TE 1.52/0.98 ms, 3 short-axis slices, 70 frames, non-selective SR prep with TI = 100 ms, 124 ms per image. Rest and regadenoson stress. AIF from LV blood-pool ROI; saturated part replaced by a gamma-variate fitted with myocardial curve constraints."
+conditions = "Rest and regadenoson stress, ~60 min apart"
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC10286396 (CC BY 4.0), read 2026-10-16."
+notes = """Direct evidence of peak flattening in a standard clinical sequence: the authors found experimentally that most original AIFs contained saturated points from 40% (heavily saturated) to 90% (slightly saturated) of the saturated peak, i.e. the top 10-60% of the signal curve is distorted. This is at 0.075 mmol/kg and TI 100 ms, so 0.1 mmol/kg would clip at least as much.
+Using the raw saturated AIF overestimated rest MBF about 4-fold (4.37 vs PET 1.06 mL/min/g), consistent with a strongly underestimated AIF peak/area.
+Text notes T2* would underestimate AIF ~3.5% at TE 0.98 ms (cited, not measured here). No FWHM values reported."""
+use_in_model = "Use as the strongest clinical-sequence evidence that SR (TI ~100 ms) blood signal at standard doses is clipped across the upper part of the curve; a clipped peak widens the signal FWHM relative to the concentration FWHM."
+
+[source]
+authors = ["Li R", "Edalati M", "Muccigrosso D", "Lau JMC", "Laforest R", "Woodard PK", "Zheng J"]
+year = 2023
+title = "A simplified method to correct saturation of arterial input function for cardiac magnetic resonance first-pass perfusion imaging: validation with simultaneously acquired PET"
+journal = "J Cardiovasc Magn Reson"
+volume = "25"
+issue = "1"
+pages = "35"
+doi = "10.1186/s12968-023-00945-w"
+crossref_verified = "2026-10-16; Crossref title match (vol 25, issue 1, article 35; authors Li, Edalati, Muccigrosso, Lau, Laforest, Woodard, Zheng)"
+pmid = "37344848"
+pmcid = "PMC10286396"
+
+[data.saturation_extent]
+description = "Range of the saturated portion of raw LV AIF signal curves"
+location = "Methods (AIF interpolation)"
+provenance = "FT"
+statistic = "range observed across subjects"
+saturated_portion_lower_bound_fraction_of_peak = [0.40, 0.90]
+saturated_portion_label = ["heavily saturated", "slightly saturated"]
+missing_note = "Fraction of the observed (saturated) signal peak above which points were judged saturated; per-subject values not given."
+
+[data.mbf_uncorrected_vs_corrected]
+description = "Mean MBF from raw saturated AIF, gamma-variate corrected AIF, and PET"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD over segments (256 segments, 16 patients)"
+condition = ["rest", "stress", "overall"]
+mbf_uncorrected_mri_mean = [4.37, 4.71, 4.50]
+mbf_uncorrected_mri_sd = [2.49, 1.82, 2.26]
+mbf_corrected_mri_mean = [1.04, 2.12, 1.45]
+mbf_corrected_mri_sd = [0.30, 0.76, 0.74]
+mbf_pet_mean = [1.06, 2.00, 1.42]
+mbf_pet_sd = [0.34, 0.74, 0.70]
+units = "mL/min/g"
+mfr_pet_mean = 1.88
+mfr_corrected_mri_mean = 1.95
+mfr_uncorrected_mri_mean = 1.44
+missing_note = "Uncorrected stress MBF overestimate is smaller than at rest, consistent with saturation affecting rest and stress AIFs differently (MFR uncorrected 1.44 vs PET 1.88)."

@@ -1,0 +1,32 @@
+[meta]
+id = "elkington2005_aif_peak_gd_injection_rate"
+data_type = "experimental"
+validates = "Peak ascending-aorta [Gd] after a single 0.1 mmol/kg bolus measured with multi-delay SR (T1-fitted, not single-point signal), by injection rate"
+species = "human"
+preparation = "35 patients, 1.5 T. Gd 0.1 mmol/kg at 3, 5 or 7 mL/s. Each cardiac cycle: series of low-res SR FLASH images with exponentially increasing SR delays; T1 and [Gd] from fitting ROI signal vs delay in the ascending aorta."
+conditions = "Clinical; breath-hold in expiration or inspiration compared"
+verification = "abs"
+access = "PubMed abstract (PMID 15779035) read 2026-10-16; full text paywalled (Wiley), not read."
+notes = """Mean peak aortic [Gd] 5.0 mM at 3 mL/s and 7.1 mM at 5 mL/s. The 7 mL/s value is printed as '4 mM' in the PubMed abstract although the text says peak [Gd] increased with rate; this looks like a typesetting loss (e.g. '9.4') and is NOT recorded as a number. Peak [Gd] rose with LV stroke volume; breath-hold phase had no effect; AIF duration was not significantly shortened by faster injection."""
+use_in_model = "Peak arterial [Gd] after 0.1 mmol/kg is ~5-7 mM (or higher at 7 mL/s), i.e. far beyond the range where long-delay single-point SR signal is linear."
+
+[source]
+authors = ["Elkington AG", "He T", "Gatehouse PD", "Prasad SK", "Firmin DN", "Pennell DJ"]
+year = 2005
+title = "Optimization of the arterial input function for myocardial perfusion cardiovascular magnetic resonance"
+journal = "J Magn Reson Imaging"
+volume = "21"
+issue = "4"
+pages = "354-359"
+doi = "10.1002/jmri.20294"
+crossref_verified = "2026-10-16; Crossref title match (vol 21, issue 4, 354-359; authors Elkington, He, Gatehouse, Prasad, Firmin, Pennell)"
+pmid = "15779035"
+
+[data.peak_gd_vs_rate]
+description = "Mean peak ascending-aorta [Gd] by injection rate, 0.1 mmol/kg"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "group mean"
+injection_rate_ml_s = [3.0, 5.0]
+peak_gd_mean_mM = [5.0, 7.1]
+missing_note = "7 mL/s value garbled in abstract ('4 mM'); SDs, n per group and AIF widths only in full text."

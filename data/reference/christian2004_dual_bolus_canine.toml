@@ -1,0 +1,37 @@
+[meta]
+id = "christian2004_dual_bolus_canine"
+data_type = "experimental"
+validates = "Dual-bolus doses used to keep the AIF linear (0.0025 then 0.10 mmol/kg); microsphere validation; semi-quantitative indices plateau"
+species = "dog"
+preparation = "16 beagles, coronary occlusion or intracoronary adenosine; fluorescent microspheres. First-pass MR during dual-bolus Gd-DTPA 0.0025 mmol/kg followed by 0.10 mmol/kg; Fermi deconvolution."
+conditions = "Occlusion / regional hyperemia"
+verification = "abs"
+access = "PubMed abstract (PMID 15284436) read 2026-10-16; RSNA full text not accessible (no Wayback capture)."
+notes = """The low dose for the AIF bolus is 1/40 of the tissue dose, reflecting that the blood signal is only usable at very low dose. Abstract gives no AIF saturation numbers. Semi-quantitative measures plateaued around 3.0 mL/min/g and qualitative ones underestimated hyperemic flow."""
+use_in_model = "Citation for the dual-bolus dose ratio; no numbers on curve-width distortion."
+
+[source]
+authors = ["Christian TF", "Rettmann DW", "Aletras AH", "Liao SL", "Taylor JL", "Balaban RS", "Arai AE"]
+year = 2004
+title = "Absolute myocardial perfusion in canines measured by using dual-bolus first-pass MR imaging"
+journal = "Radiology"
+volume = "232"
+issue = "3"
+pages = "677-684"
+doi = "10.1148/radiol.2323030573"
+crossref_verified = "2026-10-16; Crossref title match (vol 232, issue 3, 677-684; authors Christian, Rettmann, Aletras, Liao, Taylor, Balaban, Arai)"
+pmid = "15284436"
+
+[data.protocol_and_validation]
+description = "Doses and MR vs microsphere agreement"
+location = "Abstract"
+provenance = "abs"
+statistic = "as printed"
+n_dogs = 16
+aif_bolus_dose_mmol_per_kg = 0.0025
+tissue_bolus_dose_mmol_per_kg = 0.10
+mbf_mr_vs_microsphere_r = 0.95
+mbf_range_ml_min_g = [0.0, 5.0]
+semiquantitative_r_range = [0.69, 0.89]
+semiquantitative_plateau_ml_min_g = 3.0
+missing_note = "No AIF peak or width values in abstract."

@@ -1,0 +1,62 @@
+[meta]
+id = "sanchezgonzalez2015_dual_saturation_aif"
+data_type = "experimental"
+validates = "Saturation-recovery delay at which blood signal stops tracking high [Gd] (phantom to 22 mM; in vivo aortic first pass after 0.1 mmol/kg); R2* at peak"
+species = "pig"
+preparation = "3 T Philips Achieva TX. Phantom: 15 tubes of Gd-DTPA in water 0-22.5 mM; single-shot TFE TR/TE/FA 2.26/1.07 ms/15 deg; TS = 10-90 and 200 ms; signal normalized to PD image. In vivo: healthy pigs, 0.1 mmol/kg Gd-DTPA at 3 mL/s + 20 mL saline, 6 TS (3.2-328.2 ms) and 4 TE (0.8-3.8 ms) in slices along the descending aorta every second. 11 pigs (6 post-MI, hyperemia models) compared dual-saturation (AIF TS 20 ms, tissue TS 100 ms) with dual-bolus (0.01 and 0.1 mmol/kg)."
+conditions = "Anesthetized pigs; phantom"
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC4332925 (CC BY), read 2026-10-16."
+notes = """Phantom: at TS 10 ms S/SPD rose linearly with [Gd] (R2 = 0.986); for TS above 40 ms the signal fully recovered at high [Gd] (S/SPD near 1), saturating the response. In vivo (aorta, single 0.1 mmol/kg bolus): with longer TS the signal reaches a plateau that cannot track the highest concentrations, while short-TS signal follows the bolus. Authors conclude TS < 30 ms is needed to avoid AIF saturation, and that TS 200 ms resolves only [Gd] below ~4.24 mM (R1 13.95 Hz).
+Upper phantom [Gd] 22 mM was chosen as the upper limit observed in humans for 0.1 mmol/kg at 6 mL/s (cited work, not measured here).
+Peak delta-R2* 39 Hz underestimated AIF 3.5% at TE 0.9 ms."""
+use_in_model = "Places the linearity limit: standard SR readouts with TS ~100 ms saturate for blood [Gd] above a few mM, far below single-bolus peaks; peak plateau shape is shown in vivo."
+
+[source]
+authors = ["Sánchez-González J", "Fernandez-Jiménez R", "Nothnagel ND", "López-Martín G", "Fuster V", "Ibañez B"]
+year = 2015
+title = "Optimization of dual-saturation single bolus acquisition for quantitative cardiac perfusion and myocardial blood flow maps"
+journal = "J Cardiovasc Magn Reson"
+volume = "17"
+issue = "1"
+pages = "21"
+doi = "10.1186/s12968-015-0116-2"
+crossref_verified = "2026-10-16; Crossref title match (vol 17, issue 1, article 21; authors Sánchez-González, Fernandez-Jiménez, Nothnagel, López-Martín, Fuster, Ibañez)"
+pmid = "25880970"
+pmcid = "PMC4332925"
+
+[data.phantom_linearity]
+description = "Signal linearity vs saturation time in Gd-DTPA phantoms"
+location = "Results (Evaluation of saturation times), Fig. 3; Discussion"
+provenance = "FT"
+statistic = "single phantom series"
+ts_linear_ms = 10.0
+ts_linear_r2 = 0.986
+ts_saturating_above_ms = 40.0
+ts_no_substantial_saturation_max_ms = 30.0
+max_r1_tested_hz = 71.69
+max_gd_equiv_water_mM = 21.8
+max_gd_equiv_blood_mM = 19.97
+ts200_resolvable_gd_below_mM = 4.24
+ts200_resolvable_r1_below_hz = 13.95
+missing_note = "Signal values per tube vs TS not tabulated (Fig. 3 only)."
+
+[data.phantom_t1]
+description = "Reference T1/R1 of phantom tubes"
+location = "Table 1"
+provenance = "FT"
+statistic = "single measurement per tube"
+t1_ms = [3693.0, 2685.0, 641.0, 581.0, 451.0, 400.0, 335.0, 304.0, 255.0, 208.0, 138.0, 70.0, 34.0, 21.0, 14.0]
+r1_hz = [0.27, 0.37, 1.56, 1.72, 2.22, 2.50, 2.98, 3.29, 3.92, 4.80, 7.22, 14.31, 29.01, 48.71, 71.69]
+missing_note = "Tube [Gd] values not listed per row; range 0-22.5 mM."
+
+[data.in_vivo_r2star]
+description = "Peak R2* change in aortic blood during 0.1 mmol/kg first pass and resulting AIF loss"
+location = "Results; Discussion"
+provenance = "FT"
+statistic = "single maximum"
+peak_delta_r2star_hz = 39.0
+aif_underestimate_te0p9ms_percent = 3.5
+aif_underestimate_te0p58ms_percent = 2.2
+delta_r2star_vs_delta_r1 = "dR2* = 0.0332 dR1^2 + 0.165 dR1 - 0.0003"
+missing_note = "Peak aortic [Gd] in pigs not stated numerically in text."

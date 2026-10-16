@@ -1,0 +1,60 @@
+[meta]
+id = "kellman2017_dual_sequence_aif_linearity"
+data_type = "experimental"
+validates = "Size of SR blood-pool signal nonlinearity at first-pass peak: peak LV [Gd] after 0.05 mmol/kg, raw-signal vs LUT-corrected peak-to-valley ratio, residual saturation vs [Gd], blood T2* at peak, first-pass duration"
+species = "human"
+preparation = "29 healthy volunteers, 1.5 T Siemens Aera. Gadobutrol 0.05 mmol/kg at 4 mL/s + 20 mL saline; rest and adenosine stress (140 ug/kg/min). Dual sequence: low-res AIF image right after the R wave (6-pulse SR prep, dual-echo FLASH, FA 5 deg, TE 0.76/1.76 ms, saturation delay 23.8 ms, linear PE order, 64x34 matrix) plus high-res myocardial SR-SSFP (FA 50 deg, TS 95 ms) or SR-FLASH (FA 14 deg, TS 100 ms). Signal normalized to PD image and converted to [Gd] by Bloch-simulation look-up table (LUT) with T2* correction."
+conditions = "Rest and adenosine stress"
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC5383963 (CC BY 4.0), read 2026-10-16."
+notes = """Even with a dedicated short-delay (TS 23.8 ms) low-flip AIF readout and only HALF dose (0.05 mmol/kg), the raw blood signal is compressed at the peak: peak-to-valley ratio 5.6 raw vs 8.3 after LUT conversion to [Gd] (~48% correction). So raw SR signal underweights the peak relative to the tail; the normalized raw curve is flatter/wider than the concentration curve. A standard long-TS (~95-100 ms) SR-SSFP myocardial readout at 0.1 mmol/kg is expected to be far more saturated (not measured here).
+Abstract states stress myocardial peak SNR 17.7 +/- 6.6; the Results text says 21.8 +/- 7.6. Both recorded as printed.
+Blood T2* at peak ~10 ms at 1.5 T (vs ~25 ms in saline at the same [Gd]); omitting T2* correction overestimates MBF ~10%."""
+use_in_model = "Gives the expected peak LV [Gd] for a half dose (~4.4 mM rest) and a measured index of raw-signal peak compression; use to argue that SR-SSFP signal-time FWHM at 0.1 mmol/kg (e.g. Lehmonen 2022) overstates the concentration FWHM."
+
+[source]
+authors = ["Kellman P", "Hansen MS", "Nielles-Vallespin S", "Nickander J", "Themudo R", "Ugander M", "Xue H"]
+year = 2017
+title = "Myocardial perfusion cardiovascular magnetic resonance: optimized dual sequence and reconstruction for quantification"
+journal = "J Cardiovasc Magn Reson"
+volume = "19"
+issue = "1"
+pages = "43"
+doi = "10.1186/s12968-017-0355-5"
+crossref_verified = "2026-10-16; Crossref title match, vol 19 issue 1 article 43; Crossref issued year 2016 (online) vs journal year 2017"
+pmid = "28385161"
+pmcid = "PMC5383963"
+
+[data.aif_in_vivo]
+description = "LV blood-pool AIF in 29 healthy volunteers, gadobutrol 0.05 mmol/kg at 4 mL/s"
+location = "Results (Invivo AIF data); Abstract"
+provenance = "FT"
+statistic = "mean +/- SD (peak [Gd], T2*, duration); group values for peak-to-valley ratio"
+condition = ["stress", "rest"]
+peak_gd_mean_mM = [3.5, 4.4]
+peak_gd_sd_mM = [1.2, 1.2]
+blood_t2star_at_peak_mean_ms = [10.0, 9.9]
+blood_t2star_at_peak_sd_ms = [2.4, 1.7]
+first_pass_duration_mean_s = [10.3, 14.7]
+first_pass_duration_sd_s = [2.1, 3.2]
+peak_to_valley_ratio_raw_signal = 5.6
+peak_to_valley_ratio_lut_corrected_gd = 8.3
+linearity_correction_percent = 48.0
+example_t2star_signal_gain_percent = 8.0
+example_t2star_gd_gain_percent = 10.0
+myocardial_peak_gd_stress_mean_mM = 0.49
+myocardial_peak_gd_stress_sd_mM = 0.15
+missing_note = "First-pass duration = foot of upslope to foot of downslope (not FWHM). Peak-to-valley ratio pooled over 29 subjects; condition not split. No FWHM of raw vs corrected curves reported."
+
+[data.saturation_prep_residual]
+description = "Simulated residual magnetization after 6-pulse SR prep over the design range (+/-150 Hz, 65-110% B1)"
+location = "Results (Simulations and Look-up table calculations), Fig. 5"
+provenance = "FT"
+statistic = "upper bound"
+blood_gd_upper_mM = [2.5, 5.0, 10.0]
+blood_residual_magnetization_max_percent = [0.5, 1.0, 2.5]
+myocardium_gd_upper_mM = 1.0
+myocardium_residual_magnetization_max_percent = 0.5
+lut_gd_error_blood_upto_10mM_max_percent = 3.0
+lut_gd_error_myocardium_upto_1mM_max_percent = 10.0
+missing_note = "Residual-magnetization numbers describe imperfect saturation, not readout nonlinearity. The LUT curve itself (Fig. 6) was not digitized."

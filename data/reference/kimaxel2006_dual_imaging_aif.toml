@@ -1,0 +1,36 @@
+[meta]
+id = "kimaxel2006_dual_imaging_aif"
+data_type = "experimental"
+validates = "Underestimation of peak AIF [Gd] with a long vs short saturation-recovery delay during a single high-dose bolus at 3 T"
+species = "human"
+preparation = "5 healthy subjects, 3 T, hybrid EPI dual-imaging sequence (AIF and myocardium after one saturation pulse with two different TDs), 3 short-axis levels per beat, high-dose bolus; blood signal converted to [Gd] by phantom-derived conversion tables."
+conditions = "Rest"
+verification = "abs"
+access = "PubMed abstract (PMID 16331593) read 2026-10-16; full text paywalled (Wiley), not read. Erratum: J Magn Reson Imaging 2007;25:878 (not read)."
+notes = """Long-TD AIF peak was 40% lower than short-TD peak (3.0 vs 5.0 mM) and described as more distorted. Dose, TD values and curve-shape metrics are in the full text only."""
+use_in_model = "Shows a long-delay SR blood curve under-reads the peak by ~40% even after table-based conversion."
+
+[source]
+authors = ["Kim D", "Axel L"]
+year = 2006
+title = "Multislice, dual-imaging sequence for increasing the dynamic range of the contrast-enhanced blood signal and CNR of myocardial enhancement at 3T"
+journal = "J Magn Reson Imaging"
+volume = "23"
+issue = "1"
+pages = "81-86"
+doi = "10.1002/jmri.20471"
+crossref_verified = "2026-10-16; Crossref title match (vol 23, issue 1, 81-86; authors Kim, Axel); Crossref issued year 2005 (online) vs issue year 2006"
+pmid = "16331593"
+
+[data.peak_aif]
+description = "Peak AIF concentration for short-TD vs long-TD protocol"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD, n = 5"
+protocol = ["short TD", "long TD"]
+peak_gd_mean_mM = [5.0, 3.0]
+peak_gd_sd_mM = [1.0, 0.6]
+p_value = "< 0.01"
+myocardial_cnr_mean = 11.9
+myocardial_cnr_sd = 3.3
+missing_note = "Exact TDs and dose not in abstract."
