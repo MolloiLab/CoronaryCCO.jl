@@ -1,0 +1,46 @@
+
+# Brigham KL, Kariman K, Harris TR, Snapper JR, Bernard GR, Young SL (1983). Correlation of oxygenation with vascular
+# permeability-surface area but not with lung water in humans with acute respiratory failure and pulmonary edema.
+# Single-pass multiple-indicator dilution with [14C]urea. Full text read from the JCI PDF (jci.org, free).
+
+[meta]
+id = "brigham1983_lung_urea_ps"
+data_type = "experimental"
+validates = "Closest human analogue for small-hydrophilic-solute exchange across pulmonary capillaries: lung vascular [14C]urea permeability-surface area (PSu, Crone extraction formula) and EVLW, normalized to predicted TLC. No human PS or first-pass extraction for iodinated contrast in the lung was found."
+species = "human"
+preparation = "14 ICU patients with acute respiratory failure and pulmonary edema (PaO2 < 50 torr on room air, multilobar infiltrates, no clinical heart failure). Bolus of 51Cr-RBC, 125I-albumin, [3H]water, [14C]urea into the pulmonary artery; systemic arterial sampling every 1.5-2.0 s. PSu = -F ln(1 - E), F = intravascular water flow, E from the composite intravascular reference curve up to the reference peak."
+conditions = "Mechanically ventilated patients, varied PEEP and FiO2."
+verification = "FT"
+access = "Publisher PDF jci.org/articles/view/110974/files/pdf (JCI free archive), read 2026-10-15; PMC1129189 is a page-image scan."
+notes = """Full text: 'Normal values for 14C-PSu are from our previously reported studies in patients with varying degrees of chronic heart failure (12). No measurements of lung 14C-PSu have been made in normal humans, but we infer that values from patients with chronic heart failure are normal.' Ref 12 = Brigham et al. 1979 Circ Res 44:523 (doi 10.1161/01.RES.44.4.523; Crossref verified 2026-10-15; no abstract in Europe PMC, full text not accessible), which reports chronic-heart-failure PSu; the 'normal' bar appears only in Figs. 2 and 5 (n = 17), not digitized.
+Normal EVLW reference is Goresky et al. 1975 (goresky1975_extravascular_lung_water.toml).
+Model-based PSu is more consistent in normal patients and animals, but many extractions here were too low for model fitting, so all PSu used the Crone formula (text).
+PSu did not correlate with cardiac output (r = 0.48, NS) or hematocrit (r = -0.37, NS).
+Searches (Europe PMC, web) found no human or animal measurement of pulmonary first-pass extraction or PS for iodinated contrast (or 51Cr-EDTA/DTPA by intravascular indicator dilution); the existing myocardial iodine PS files (canty1991, daghini2007, ritman1994) are heart, not lung."""
+use_in_model = """Lung capillary exchange of small hydrophilic solutes is measurable (urea is extracted on first pass) and scales with perfused surface area. With no normal-human value stored, use these numbers only to bound order of magnitude: PSu 0.50 +/- 0.16 (survivors, reduced surface area) to 3.44 +/- 0.36 mL/s per liter TLC (non-survivors, leak). Urea is a much smaller molecule than iodinated contrast monomers, so iodinated-contrast PS in the lung is expected to be lower (an inference, not a measurement); treat lung iodine PS as an unmeasured model parameter."""
+
+[source]
+authors = ["Brigham KL", "Kariman K", "Harris TR", "Snapper JR", "Bernard GR", "Young SL"]
+year = 1983
+title = "Correlation of oxygenation with vascular permeability-surface area but not with lung water in humans with acute respiratory failure and pulmonary edema"
+journal = "J Clin Invest"
+volume = "72"
+issue = "1"
+pages = "339-349"
+doi = "10.1172/JCI110974"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 72, issue 1, 339-349; authors Brigham, Kariman, Harris, Snapper, Bernard, Young)"
+pmid = "6874950"
+pmcid = "PMC1129189"
+
+[data.psu_evlw_by_outcome]
+description = "Lung vascular [14C]urea PS and EVLW normalized to predicted TLC in acute respiratory failure"
+location = "Abstract and Results"
+provenance = "FT"
+statistic = "mean +/- SE; n = patients"
+group = ["survived", "died"]
+psu_ml_per_s_per_l_tlc = [0.50, 3.44]
+psu_se_ml_per_s_per_l_tlc = [0.16, 0.36]
+evlw_ml_per_ml_tlc = [0.26, 0.22]
+evlw_se_ml_per_ml_tlc = [0.06, 0.05]
+n = [10, 5]
+missing_note = "The abstract gives n = 10 survivors and 5 deaths although 14 patients were studied (Fig. 2 labels LIVED N = 9, DIED N = 5); kept as printed. Normal (chronic heart failure) PSu and literature EVLW are shown only as bars in Fig. 2 and are not stored. Per-patient values in Table II not stored."

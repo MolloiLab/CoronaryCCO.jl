@@ -1,0 +1,54 @@
+
+# Tune JD, Gorman MW, Feigl EO (2004). Matching coronary blood flow to myocardial oxygen consumption. Invited review.
+# Coronary venous PO2 as the error signal of local metabolic feedback control. Full text read from a Web Archive
+# copy of the publisher PDF.
+
+[meta]
+id = "tune2004_coronary_venous_po2_regulation"
+data_type = "experimental (review summary)"
+validates = "Model input: the regulated quantity for coronary metabolic control (coronary venous O2 tension), resting LV O2 extraction and venous PO2, and the venous PO2 at which strong vasodilation is recruited. Benchmark for an O2-driven regulation rule."
+species = "dog (Fig. 2 data); review statements generic"
+preparation = "Review of coronary flow control: local metabolic feedback (mediator unknown), beta-adrenergic feedforward, alpha-adrenergic constriction. Analysis by plots of coronary venous PO2 vs myocardial O2 consumption (Heyndrickx et al.)."
+conditions = "Rest and treadmill exercise (canine data, refs 84, 90, 198, 208)."
+verification = "FT"
+access = "Publisher PDF via Web Archive snapshot 2017-10-25 of jap.physiology.org/content/jap/97/1/404.full.pdf; read 2026-10-15. journals.physiology.org is behind a bot check."
+notes = """Text: 'Because resting left ventricular myocardial oxygen consumption is great (~60 ul/min/g) with a high oxygen extraction (~75%) and a low coronary venous oxygen tension (~18 Torr), the error signal is assumed to be related to the balance between oxygen supply and oxygen consumption. The balance between oxygen delivery via coronary flow and myocardial oxygen consumption is given by the coronary venous oxygen tension. Oxygen tension is preferable to oxygen content (or extraction) or hemoglobin saturation because the local metabolic chemical mediator will most likely be sensitive to the thermodynamic potential of oxygen (oxygen tension) ... Also, hemoglobin saturation changes as the hemoglobin dissociation curve shifts with carbon dioxide tension, pH, and temperature.'
+MVO2 may increase fivefold from rest to exercise (Introduction).
+RV: extraction rises with little change in flow while venous PO2 is above ~20 Torr. LV: rising MVO2 gives modest falls in venous PO2 and large flow increases. Fig. 2 legend: inflection between 15 and 20 Torr; 'a powerful vasodilator mechanism is recruited when coronary venous oxygen tension falls below 15-20 Torr'.
+Abstract: physiological local metabolic control is not due to adenosine, K_ATP channels, NO, prostaglandins or endothelin; beta-adrenergic feedforward contributes ~25% of the exercise flow increase.
+Endothelin blockade during exercise gave coronary venous PO2 below 7 Torr (text).
+Related: Feigl 1983 Physiol Rev 63:1-205 'Coronary physiology' (doi 10.1152/physrev.1983.63.1.1; Crossref verified 2026-10-15, title exact match; abstract read): 'the role of tissue oxygen tension in local metabolic control of coronary blood flow during normoxia is unknown'; sympathetic constriction 'is capable of competing with local metabolic control to lower coronary venous oxygen tension'. The 205-page full text was not read."""
+use_in_model = """Use coronary venous PO2 (not SO2 or extraction) as the controlled variable of an O2-feedback regulation rule; target resting LV venous PO2 ~18 Torr with extraction ~75%, and make vasodilator gain rise steeply as venous PO2 falls below 15-20 Torr. All values are approximate ('~') review statements, mostly from dogs."""
+
+[source]
+authors = ["Tune JD", "Gorman MW", "Feigl EO"]
+year = 2004
+title = "Matching coronary blood flow to myocardial oxygen consumption"
+journal = "J Appl Physiol"
+volume = "97"
+issue = "1"
+pages = "404-415"
+doi = "10.1152/japplphysiol.01345.2003"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 97, issue 1, 404-415; authors Tune, Gorman, Feigl)"
+pmid = "15220323"
+
+[data.resting_lv_o2]
+description = "Resting left ventricular O2 consumption, extraction and coronary venous PO2"
+location = "Introduction (text) and Fig. 2 legend"
+provenance = "FT"
+statistic = "approximate values as stated ('~'); no SD or n"
+mvo2_ul_per_min_per_g = 60.0
+o2_extraction_percent = 75.0
+venous_po2_mmHg = 18.0
+missing_note = "Stated in Torr (1 Torr = 1 mmHg). Species not tied to these approximate numbers in the text; the supporting Fig. 2 data are canine."
+
+[data.vasodilator_recruitment]
+description = "Coronary venous PO2 range where flow begins to rise sharply"
+location = "Text and Fig. 2 legend"
+provenance = "FT"
+statistic = "range as stated"
+inflection_venous_po2_min_mmHg = 15.0
+inflection_venous_po2_max_mmHg = 20.0
+rv_flow_flat_above_venous_po2_mmHg = 20.0
+beta_feedforward_share_of_exercise_flow_increase_percent = 25.0
+missing_note = "Fig. 2 (canine RV and LV MVO2, flow, venous PO2 during exercise) not digitized."

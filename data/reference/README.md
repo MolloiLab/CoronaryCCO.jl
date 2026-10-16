@@ -199,6 +199,9 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `kanatsuka1989_adenosine_microvessels.toml` | Size range of arterial microvessel dilation: pacing 40–380 µm (inverse to size) vs adenosine/dipyridamole < 150 µm only | Dog, beating heart, matched perfusion | FT |
 | `mccommis2010_myocardial_oxygenation.toml` | Global OEF, MBF, MBV and MVO2 at rest and adenosine hyperemia | Human, healthy, CMR | FT |
 | `bassingthwaighte2001_metabolic_heterogeneity.toml` | Flow heterogeneity summary, temporal stability of regional flow, regional O2 use rising with regional flow | Review of baboon, sheep, dog, rabbit and human data | FT (review summary) |
+| `tune2004_coronary_venous_po2_regulation.toml` | Coronary venous PO₂ is the regulated quantity (not SO₂ or extraction); resting LV MVO₂ ~60 µL/min/g, extraction ~75%, venous PO₂ ~18 Torr; strong dilation recruited below 15–20 Torr; β-feedforward ~25% of exercise flow rise | Review; canine exercise data | FT (Web Archive) |
+| `crapo1999_arterial_blood_gas_reference.toml` | Inlet O₂: sea-level SaO₂ 96.9 ± 0.4% (18–24 y) to 95.5 ± 1.4% (> 64 y), PaO₂ by age; arterial Hb men 14.0 ± 1.0, women 12.3 ± 0.9 g/dL; 1,400 m values | Human, 339 healthy nonsmokers, CO-oximetry | FT (Web Archive) |
+| `beutler2006_hemoglobin_reference.toml` | Hb by sex, age decade and race (white men 20–29 y 15.43 ± 0.77 / 15.51 ± 0.96 g/dL); lower limit of normal 13.7 g/dL for white men 20–59 y | Human, Scripps-Kaiser and NHANES-III, iron deficiency and inflammation excluded | FT |
 
 ### Coronary flow capacity (PET stress perfusion and CFR categories)
 
@@ -219,6 +222,9 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `fry2013_vessel_wall_parameters.toml` | Passive, active, myogenic, shear and conducted-metabolic parameters as functions of passive diameter D0; reference-state boundary conditions | Hamster cremaster network model | FT (Table 1) |
 | `carlson2008_autoregulation_model.toml` | Large- and small-arteriole wall and tone parameters; control state (activation 0.5, M0 8.28); predicted flow-increase factors | Generic arteriole model | FT |
 | `zhao2021_regulation_parameters.toml` | Collateral and arteriole wall parameters; ATP release and conducted-response constants; O2 transport and remodeling constants; autoregulation ratios | Rat hindlimb model (author manuscript) | FT |
+| `arciero2008_atp_conducted_response.toml` | RBC ATP release R(S) = R0(1 − R1·S): R0 1.4 × 10⁻⁹ mol/s/cm³, R1 0.891; kd 2 × 10⁻⁴ cm/s; conducted length constant L0 = 1 cm; C_meta 30 µM⁻¹cm⁻¹; S(0) 0.97, P50 26 mmHg, nH 2.7 | Generic seven-segment pathway model | FT (Table 1) |
+| `vinnakota2004_myocardial_density.toml` | Myocardial tissue density 1.053 g/mL (rat synthesis), ~1.055 g/mL stated for human; dog 1.063 ± 0.002; plasma 1.023, RBC 1.097 g/mL | Rat-based composition model | FT |
+| `kesmarky2008_plasma_viscosity.toml` | Normal plasma viscosity 1.10–1.30 mPa·s at 37 °C, independent of age and sex | Human, review | abs |
 
 ### Flow heterogeneity
 
@@ -275,6 +281,8 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `clark2011_capillary_compliance_lung_volume.toml` | Sheet compliance vs transpulmonary pressure (dog 0.122 → 0.079 µm/cmH₂O, Glazier 1969; human scaled fit); vessel α 1.49 × 10⁻⁴ /Pa (Krenz & Dawson); sheet area 73 m² at TLC | Dog data, human model | FT (Glazier secondary) |
 | `reeves2005_human_pulmonary_distensibility.toml` | Pulmonary vascular distensibility α 0.02 ± 0.002 /mmHg (n = 59 normal), ≈ 2 %/mmHg in isolated arteries; changes with hypoxia | Human, review of RHC data | abs |
 | `yen1988_human_arteriole_venule_elasticity.toml` | Compliance of human arterioles and venules orders 1–3 (0.13–0.25 µm/cmH₂O) | Human, postmortem lungs | abs |
+| `goresky1975_extravascular_lung_water.toml` | Accessible extravascular lung water 2.16 g/kg at rest, 2.55 g/kg at low exercise; central blood volume +50% at 3× cardiac output | Human, 11 normal adults, triple indicator dilution | abs |
+| `brigham1983_lung_urea_ps.toml` | Closest analogue for lung contrast exchange: [¹⁴C]urea PS 0.50 ± 0.16 (survivors) and 3.44 ± 0.36 mL/s per L TLC (deaths); states no normal-human lung PSu exists. No lung PS for iodinated contrast found | Human, 14 with acute respiratory failure, multiple-indicator dilution | FT |
 
 ## Caveats that matter for comparisons
 

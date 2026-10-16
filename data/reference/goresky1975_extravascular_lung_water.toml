@@ -1,0 +1,42 @@
+
+# Goresky CA, Warnica JW, Burgess JH, Nadeau BE (1975). Effect of exercise on dilution estimates of extravascular
+# lung water and on the carbon monoxide diffusing capacity in normal adults. Triple indicator dilution in 11 healthy
+# subjects. Abstract only (Europe PMC record, PMID 1157224).
+
+[meta]
+id = "goresky1975_extravascular_lung_water"
+data_type = "experimental"
+validates = "Lung extravascular (interstitial + cellular) water accessible to a diffusible indicator in normal humans at rest and exercise: the extravascular distribution volume available to small hydrophilic tracers in a lung compartment model."
+species = "human"
+preparation = "11 normal adults seated on an exercise bicycle; triple indicator dilution (labeled RBC, albumin, water) for accessible extravascular lung water and central blood volume; single-breath and steady-state DLCO."
+conditions = "Rest and usually two exercise levels."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 1157224). Circ Res full text not accessed."
+notes = """Abstract: central blood volume increased by 50% with a tripling of cardiac output; accessible lung water rose from 2.16 g/kg (rest) to 2.55 g/kg at low-level exercise and did not increase further at higher exercise. DLCO kept rising over the whole cardiac-output range.
+Authors infer that perfused parenchyma increases slightly from rest to low exercise and not further.
+Indicator dilution measures only the water accessible to the tracer in perfused regions; it is lower than gravimetric lung water.
+Related (not separate files): Tagami et al. 2010 Crit Care 14:R162 (doi 10.1186/cc9250; Crossref verified 2026-10-15, title exact match; abstract read) estimated normal EVLW by single-indicator transpulmonary thermodilution of about 7.4 +/- 3.3 mL/kg predicted body weight (7.5 men, 7.3 women), derived from a thermodilution-lung-weight regression and literature normal lung weights. Brigham et al. 1983 used Goresky 1975 as the normal EVLW reference (brigham1983_lung_urea_ps.toml)."""
+use_in_model = """Lung extravascular distribution volume for a small hydrophilic tracer: 2.16 g/kg body weight at rest (about 2.2 mL/kg taking 1 g water = 1 mL); multiply by body weight for an absolute volume (not printed in the source). Iodinated contrast is extracellular, not total-water, so its accessible lung volume is smaller than this water space; no human value for iodinated contrast was found."""
+
+[source]
+authors = ["Goresky CA", "Warnica JW", "Burgess JH", "Nadeau BE"]
+year = 1975
+title = "Effect of exercise on dilution estimates of extravascular lung water and on the carbon monoxide diffusing capacity in normal adults"
+journal = "Circ Res"
+volume = "37"
+issue = "3"
+pages = "379-389"
+doi = "10.1161/01.RES.37.3.379"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 37, issue 3, 379-389; authors Goresky, Warnica, Burgess, Nadeau)"
+pmid = "1157224"
+
+[data.accessible_lung_water]
+description = "Accessible extravascular lung water by triple indicator dilution"
+location = "Abstract"
+provenance = "abs"
+statistic = "group average (SD not in the abstract); n = 11 subjects"
+state = ["rest", "low-level exercise"]
+evlw_g_per_kg = [2.16, 2.55]
+n = [11, 11]
+central_blood_volume_change_percent_at_3x_cardiac_output = 50.0
+missing_note = "SD, cardiac output values and the high-exercise lung water value (stated as not different from low exercise) are not in the abstract; not all subjects did two exercise levels ('usually')."

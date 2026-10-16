@@ -269,7 +269,7 @@ function organ_parameters(organ::AbstractString)
         isfile(joinpath(REFERENCE_DIR, id * ".toml")) || throw(ArgumentError("$path: $k cites missing reference $id"))
     end
     # values the model uses that cite no reference file in the repo: say so, once per file
-    loose = sort([k for (k, v) in d if isempty(get(v, "sources", String[])) && !startswith(get(v, "note", ""), "Not used")])
+    loose = sort([k for (k, v) in d if isempty(get(v, "sources", String[])) && !any(startswith(get(v, "note", ""), w) for w in ("Not used", "Definition"))])
     isempty(loose) || path in _WARNED || (push!(_WARNED, path); @warn "$(basename(path)): no reference file in data/reference for $(join(loose, ", "))")
     return Dict(Symbol(k) => v["value"] for (k, v) in d)
 end

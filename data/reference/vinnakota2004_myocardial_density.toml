@@ -1,0 +1,55 @@
+
+# Vinnakota KC, Bassingthwaighte JB (2004). Myocardial density and composition: a basis for calculating
+# intracellular metabolite concentrations. Constrained least-squares synthesis of literature data (mostly rat).
+# Full text read from a 2008 publisher PDF hosted on the NIBIB IMAG wiki (Physiome JSim model page).
+
+[meta]
+id = "vinnakota2004_myocardial_density"
+data_type = "model"
+validates = "Model input, not data: myocardial tissue density (g/mL) for converting tissue volume to mass (per-gram flow, blood volume, mass-indexed resistance). Also regional densities and volume fractions of plasma, RBC, ISF and cells."
+species = "rat (synthesis); text gives the cross-species density for sedentary mammals including human"
+preparation = "Mass, volume and density conservation equations for whole tissue, plasma, RBC, ISF, cytoplasm, mitochondria and SR, four constituents (water, protein, fat, solute). Inputs from literature (Table 2, mostly rat); solved with constrained nonlinear least squares plus Monte Carlo for coefficients of variation."
+conditions = "Left ventricular myocardium; constituent densities at 37 C (water 0.994 g/mL)."
+verification = "FT"
+access = "Publisher PDF (downloaded from ajpheart.physiology.org 2008-12-12) hosted at imagwiki.nibib.nih.gov/sites/default/files/572Vinnakota2003_0.pdf; read 2026-10-15. journals.physiology.org is behind a bot check."
+notes = """Table 3 tissue density 1.053 g/mL (CV 0.05%). Including arteries and veins in a 'total organ' gives 1.0527 g/mL (0.06% CV), 'negligibly different from the tissue density of 1.0526 g/mL' (text).
+Discussion: 1.053 g/mL 'corresponds to that of a sedentary mammal such as the rat, cattle, or human, all of which have heart weight-to-body weight ratios of ~3-5 g/kg. The density of myocardium in these mammals is around 1.055 g/ml (35).' Ref 35 = Webb AI, Weaver BMQ, 'The density of equine tissue at 37 C'.
+Dog and horse (heart weight ~8 g/kg body weight) are ~1.06 g/mL; Yipintsoi et al. (ref 39) measured dog LV 1.063 +/- 0.002 g/mL (water 0.771 g/g) and dog RV 1.062 g/mL.
+'A 0.005 difference in density is a 5% difference in buoyancy' (text).
+Human postmortem contrast: Gheorghe et al. 2019 BMC Med Imaging 19:29 (doi 10.1186/s12880-019-0326-4; Crossref verified 2026-10-15, title exact match; abstract and PMC6461811 read) regressed autopsy LV mass on postmortem-CT LV shell volume in 109 decedents and got 1.265 g/mL; using the 'hitherto used' 1.055 g/mL underestimated anatomic LVM by 18.1%. That value is a CT-volume calibration factor (postmortem changes, segmentation), not a physical tissue density; it is noted here only as a caveat."""
+use_in_model = """Use rho_myo = 1.053 g/mL (Table 3) or 1.055 g/mL (stated human/sedentary-mammal value) to convert voxelized myocardial volume to mass. Plasma (1.023) and RBC (1.097 g/mL) densities are available if blood mass is needed."""
+
+[source]
+authors = ["Vinnakota KC", "Bassingthwaighte JB"]
+year = 2004
+title = "Myocardial density and composition: a basis for calculating intracellular metabolite concentrations"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "286"
+issue = "5"
+pages = "H1742-H1749"
+doi = "10.1152/ajpheart.00478.2003"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 286, issue 5, H1742-H1749; authors Vinnakota, Bassingthwaighte)"
+pmid = "14693681"
+
+[data.regional_density]
+description = "Rat myocardial tissue regional densities, volumes and water fraction from the conservation optimization"
+location = "Table 3"
+provenance = "FT"
+statistic = "optimized estimate; coefficient of variation (%) from Monte Carlo in parentheses in the source"
+region = ["tissue", "plasma", "RBC", "ISF", "cell (total)", "cytoplasm", "mitochondria", "SR"]
+density_g_per_ml = [1.053, 1.023, 1.097, 1.022, 1.06, 1.044, 1.09, 1.137]
+density_cv_percent = [0.05, 0.2, 0.2, 0.85, 0.17, 0.31, 0.81, 0.18]
+volume_ml_per_g_tissue = [0.95, 0.056, 0.033, 0.167, 0.694, 0.472, 0.2, 0.024]
+volume_cv_percent = [0.06, 12.8, 36.4, 8.3, 2.5, 3.9, 7.6, 2.6]
+water_fraction_g_per_g_region = [0.79, 0.924, 0.67, 0.924, 0.755, 0.807, 0.664, 0.518]
+missing_note = "Rat-based synthesis. Protein, fat and solute fractions are in Table 3 but not stored here."
+
+[data.stated_mammal_density]
+description = "Myocardial density values stated in the Discussion"
+location = "Discussion, 'Densities and Composition'"
+provenance = "FT"
+statistic = "as stated (dog LV mean +/- SD from ref 39; others single values)"
+group = ["sedentary mammals (rat, cattle, human), ref 35", "dog and horse, refs 35 and 39", "dog LV (Yipintsoi, ref 39)", "dog RV (Yipintsoi, ref 39)", "total organ including large vessels (this model)"]
+density_g_per_ml = [1.055, 1.06, 1.063, 1.062, 1.0527]
+density_sd_g_per_ml = [nan, nan, 0.002, nan, nan]
+missing_note = "The human value is given as 'around 1.055 g/ml' with no SD or n; it is cited, not measured in this paper. The dog-and-horse value is printed as '~1.06'."

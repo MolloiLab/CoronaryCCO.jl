@@ -1,0 +1,39 @@
+
+# Kesmarky G, Kenyeres P, Rabai M, Toth K (2008). Plasma viscosity: a forgotten variable. Review.
+# Abstract only (Europe PMC record, PMID 18503132).
+
+[meta]
+id = "kesmarky2008_plasma_viscosity"
+data_type = "experimental (review summary)"
+validates = "Model input: normal human plasma viscosity at 37 C, the reference fluid viscosity for the Pries in-vivo viscosity law (relative viscosity x plasma viscosity)."
+species = "human"
+preparation = "Narrative review of clinical plasma viscosity measurement (capillary viscometry)."
+conditions = "37 C; plasma is Newtonian (viscosity independent of shear rate)."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 18503132). Full text (IOS Press) not accessed."
+notes = """Abstract: 'Its normal value is 1.10-1.30 mPa s at 37 degrees C and independent of age and gender.'
+Plasma is a Newtonian fluid; viscosity is set by water content and macromolecules (fibrinogen, globulins); it is not influenced by hematocrit.
+Raised in inflammation, unstable angina and stroke; elevation correlates with progression of coronary and peripheral artery disease."""
+use_in_model = """Set plasma viscosity mu_p in [1.10, 1.30] mPa*s (= cP) at 37 C (no central value is printed in the abstract). Whole-blood apparent viscosity in each segment = mu_p x Pries relative viscosity(D, Hd)."""
+
+[source]
+authors = ["Kesmarky G", "Kenyeres P", "Rabai M", "Toth K"]
+year = 2008
+title = "Plasma viscosity: a forgotten variable"
+journal = "Clin Hemorheol Microcirc"
+volume = "39"
+issue = "1-4"
+pages = "243-246"
+doi = "10.3233/CH-2008-1088"
+crossref_verified = "2026-10-15; Crossref title match ('Plasma viscosity: A forgotten variable'; vol 39, issue 1-4, 243-246; authors Kesmarky, Kenyeres, Rabai, Toth)"
+pmid = "18503132"
+
+[data.normal_range]
+description = "Normal plasma viscosity range at 37 C"
+location = "Abstract"
+provenance = "abs"
+statistic = "normal range (how it was derived, and n, not given in the abstract)"
+temperature_C = 37.0
+viscosity_min_mPa_s = 1.10
+viscosity_max_mPa_s = 1.30
+missing_note = "No mean, SD or n in the abstract. The range is stated to be independent of age and sex."

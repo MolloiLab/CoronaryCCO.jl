@@ -1,0 +1,58 @@
+
+# Arciero JC, Carlson BE, Secomb TW (2008). Theoretical model of metabolic blood flow regulation: roles of ATP
+# release by red blood cells and conducted responses. Seven-segment representative pathway; RBC ATP release falls
+# linearly with saturation, plasma ATP integrated upstream with exponential decay as the conducted signal.
+# Open access in PMC (PMC2593502); full text read.
+
+[meta]
+id = "arciero2008_atp_conducted_response"
+data_type = "model"
+validates = "Model input, not data: saturation-dependent RBC ATP release (R0, R1), ATP degradation, conducted-response length constant L0, O2 transport constants and the control state for an ATP-based metabolic flow-regulation signal."
+species = "generic (skeletal-muscle-like pathway; human RBC ATP data; canine perfusion data for comparison)"
+preparation = "Theoretical model: artery, large arteriole (LA), small arteriole (SA), capillary, small venule, large venule, vein in series; LA and SA vasoactive (myogenic, shear, metabolic). Krogh-type O2 consumption M0; Hill saturation curve; ATP release R[S(x)] linear in saturation; first-order ATP degradation at the wall; conducted signal S_CR = integral of ATP along the path with exponential upstream decay (Eq. 8)."
+conditions = "Control state = moderate exercise, M0 = 8.28 cm3 O2/100 cm3/min; inlet pressure 100 mmHg; LA and SA activation 0.5; wall shear 55 dyn/cm2 in A, LA, SA, C and 10 dyn/cm2 in venous segments."
+verification = "FT"
+access = "PMC2593502 HTML full text (pmc.ncbi.nlm.nih.gov), read 2026-10-15. Europe PMC fullTextXML endpoint returned an error. Displayed equations are images; only text and Table 1 were read."
+notes = """Abstract: conducted signal 'assuming exponential decay of the signal in the upstream direction with a length constant of approximately 1 cm'.
+Text: R[S] is 'a decreasing linear function of oxyhemoglobin saturation' fitted to Bergfeld & Forrester 1992 (Cardiovasc Res 26:40, human erythrocytes, 50 s hypoxia): 0.985 nmol/s/cm3 at S = 0.33 and 0.166 nmol/s/cm3 at S = 0.97. Eq. 4 is an image; its form R(S) = R0*(1 - R1*S) is taken from Zhao et al. 2021 Eq. 11 (zhao2021_regulation_parameters.toml), which reuses this model.
+Zhao et al. 2021 Table 2 lists R0 = 1.234 nmol/cm3/s and R1 = 1.026, different from this paper's R0 = 1.4e-9 mol/s/cm3 and R1 = 0.891. Both kept as printed in their own files.
+kd range from endothelial cell area 400-900 um2: 1.63e-4 to 3.68e-4 cm/s; 2e-4 chosen to match venous ATP. Endothelial ecto-ATPase Vmax 22 nmol/min/1e6 cells, Km 249 uM (porcine aortic EC).
+'The available data do not uniquely determine the values of C_meta and L0'; chosen L0 = 1 cm and C_meta = 30 uM^-1 cm^-1 (Fig. 5 explores other L0 values; not digitized).
+Other stimulus constants: C_myo 0.0101 cm/dyn (LA), 0.0359 cm/dyn (SA); C_shear 0.0258 cm2/dyn (LA, SA); C''_tone 10.11 (LA), 10.66 (SA). See also carlson2008_autoregulation_model.toml.
+S(0) = 0.97 corresponds to an initial blood PO2 of 100 mmHg (text)."""
+use_in_model = """For an ATP/conducted-response metabolic signal in the CCO tree: release R(S) = R0*(1 - R1*S) with R0 = 1.4e-9 mol/s/cm3 (= 1.4 nmol/s/cm3 RBC) and R1 = 0.891; wall degradation kd = 2e-4 cm/s; conducted length constant L0 = 1 cm (about 1 cm, set not measured); C_meta = 30 uM^-1 cm^-1. Inlet S = 0.97, P50 26 mmHg, nH 2.7."""
+
+[source]
+authors = ["Arciero JC", "Carlson BE", "Secomb TW"]
+year = 2008
+title = "Theoretical model of metabolic blood flow regulation: roles of ATP release by red blood cells and conducted responses"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "295"
+issue = "4"
+pages = "H1562-H1571"
+doi = "10.1152/ajpheart.00261.2008"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 295, issue 4, H1562-H1571; authors Arciero, Carlson, Secomb)"
+pmid = "18689501"
+pmcid = "PMC2593502"
+
+[data.transport_atp_parameters]
+description = "Parameter values for oxygen transport and saturation-dependent ATP release by red blood cells"
+location = "Table 1"
+provenance = "FT"
+statistic = "model parameter (M0 is a simulated range)"
+parameter = ["M0", "c0", "HT", "HD", "R0", "R1", "nH", "P50", "S0", "C0_ATP", "kd", "tau_d", "tau_a", "L0", "x_mp_LA", "x_mp_SA", "x_end"]
+description_printed = ["Oxygen demand", "Oxygen capacity of RBCs", "Tube hematocrit", "Discharge hematocrit", "Maximal rate of ATP release", "Effect of S(x) on ATP release", "Hill equation exponent", "Half-maximal Hb saturation", "Initial saturation", "Initial ATP concentration", "Rate of ATP degradation", "Time constant for diameter", "Time constant for activation", "Length constant for S_CR", "Upstream LA position for S_CR", "Upstream SA position for S_CR", "Downstream position for S_CR"]
+value_min = [1.0, 0.5, 0.3, 0.4, 1.4e-9, 0.891, 2.7, 26.0, 0.97, 0.5, 2.0e-4, 1.0, 60.0, 1.0, 0.90, 1.38, 2.57]
+value_max = [25.0, 0.5, 0.3, 0.4, 1.4e-9, 0.891, 2.7, 26.0, 0.97, 0.5, 2.0e-4, 1.0, 60.0, 1.0, 0.90, 1.38, 2.57]
+unit_as_printed = ["cm3 O2/100 cm3/min", "cm3 O2/cm3", "dimensionless", "dimensionless", "mol/s/cm3", "dimensionless", "dimensionless", "mmHg", "dimensionless", "uM", "cm/s", "s", "s", "cm", "cm", "cm", "cm"]
+cited_ref_number = ["", "37", "45", "46", "5", "5", "37", "37", "", "25", "14", "31", "20", "", "", "", ""]
+missing_note = "M0 printed as range 1-25; control 8.28 and the three Fig. 2 levels (1, 8.28, 20) are in the text. Ref 5 = Bergfeld & Forrester 1992."
+
+[data.atp_release_data_points]
+description = "Measured RBC ATP release used to fit the linear R(S)"
+location = "Methods, 'ATP concentration' (text)"
+provenance = "FT"
+statistic = "single values as quoted from Bergfeld & Forrester 1992 (human erythrocyte suspensions)"
+saturation = [0.33, 0.97]
+atp_release_nmol_per_s_per_cm3 = [0.985, 0.166]
+missing_note = "No SD or n quoted in this paper."

@@ -19,8 +19,8 @@ sources = ["kanatsuka1990_microvessel_velocity", "nanto2001_human_zero_flow_pres
 
 [parameters.regulation]
 value = "o2"
-note = "Coronary flow is matched to O2 demand; the regulated quantity is coronary venous O2."
-cite = ["Feigl 1983 Physiol Rev 63:1", "Tune et al. 2004 J Appl Physiol 97:404"]
+note = "Coronary flow is matched to O2 demand; coronary venous O2 tension is the regulated quantity (Tune, Gorman & Feigl 2004)."
+sources = ["tune2004_coronary_venous_po2_regulation"]
 
 [parameters.hd]
 value = 0.45
@@ -55,7 +55,8 @@ sources = ["kassab1994_venous_morphometry"]
 
 [parameters.capillary]
 value = "tube"
-note = "Capillary bed resistance from parallel functional capillary tubes."
+note = "Capillary bed resistance from parallel functional capillary tubes (Kassab & Fung 1994 dimensions)."
+sources = ["kassab1994_capillary_network"]
 
 [parameters.cap_length_mm]
 value = 0.5
@@ -88,14 +89,16 @@ note = "Capillary permeability-surface product for iodinated contrast: Patlak in
 sources = ["daghini2007_ct64_myocardial_permeability"]
 
 [parameters.rho]
-value = 1.05
+value = 1.053
 unit = "g/mL"
-note = "Myocardial density."
+note = "Myocardial tissue density (Vinnakota & Bassingthwaighte 2004, Table 3: 1.053; text: about 1.055 for mammals including human)."
+sources = ["vinnakota2004_myocardial_density"]
 
 [parameters.plasma_viscosity_mPas]
 value = 1.2
 unit = "mPa s"
-note = "Plasma viscosity."
+note = "Derived: midpoint of the normal human plasma viscosity range at 37 C, 1.10-1.30 mPa s (Kesmarky 2008)."
+sources = ["kesmarky2008_plasma_viscosity"]
 
 [parameters.radius_cv]
 value = 0.12
@@ -147,28 +150,29 @@ note = "Derived: myocardial O2 use 5.2 umol/g/min in healthy volunteers (McCommi
 sources = ["mccommis2010_myocardial_oxygenation"]
 
 [parameters.sao2]
-value = 0.97
+value = 0.967
 unit = "1"
-note = "Inflow (systemic arterial) O2 saturation."
+note = "Arterial O2 saturation by CO-oximetry at sea level, adults 25-44 y: 96.7 % (Crapo 1999 Table 4)."
+sources = ["crapo1999_arterial_blood_gas_reference"]
 
 [parameters.hb]
-value = 14.5
+value = 14.0
 unit = "g/dL"
-note = "Hemoglobin."
+note = "Arterial hemoglobin, healthy men at sea level: 14.0 +/- 1.0 g/dL (Crapo 1999, the same arterial samples as sao2). Beutler 2006 venous reference: 15.4 (white men 20-29 y)."
+sources = ["crapo1999_arterial_blood_gas_reference", "beutler2006_hemoglobin_reference"]
 
 [parameters.atp_r1]
 value = 1.026
 unit = "1"
-note = "ATP release slope with desaturation."
-cite = ["Arciero, Carlson & Secomb 2008 Am J Physiol 295:H1562"]
+note = "Slope of red-cell ATP release with saturation, R = R0(1 - R1 S), as used by Zhao 2021. Arciero 2008 printed R1 = 0.891 (fitted to two release rates); the two papers disagree and the regulation is anchored by oef either way."
+sources = ["zhao2021_regulation_parameters", "arciero2008_atp_conducted_response"]
 
 [parameters.atp_l0]
 value = 1.0
 unit = "cm"
-note = "Length constant of the conducted metabolic signal."
-cite = ["Arciero, Carlson & Secomb 2008", "Namani et al. 2018"]
+note = "Length constant of the conducted metabolic signal, about 1 cm (Arciero 2008; Zhao 2021)."
+sources = ["arciero2008_atp_conducted_response", "zhao2021_regulation_parameters"]
 
-# Sheet-flow capillary constants: not used by the heart (capillary = "tube").
 [parameters.p_ext]
 value = 0.0
 unit = "mmHg"

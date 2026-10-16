@@ -1,0 +1,72 @@
+
+# Crapo RO, Jensen RL, Hegewald M, Tashkin DP (1999). Arterial blood gas reference values for sea level and an
+# altitude of 1,400 meters. Healthy lifetime nonsmokers, arterial samples analyzed in duplicate on two blood-gas
+# analyzers and two CO-oximeters. Full text read from a Web Archive copy of the publisher PDF.
+
+[meta]
+id = "crapo1999_arterial_blood_gas_reference"
+data_type = "experimental"
+validates = "Model input: normal arterial O2 saturation (SaO2, CO-oximetry) and PaO2 by age at sea level, and arterial hemoglobin concentration by sex, in healthy adults. Sets the inlet saturation and Hb for O2 transport."
+species = "human"
+preparation = "339 healthy lifetime nonsmokers aged 18-81 y (166 men, 173 women): 96 at sea level (Los Angeles, Hartford) and 243 at 1,400 m (Salt Lake City). Arterial puncture; each sample run on two blood-gas analyzers and two CO-oximeters; outliers excluded (1.8% of SaO2 values)."
+conditions = "Resting, breathing room air. Sea level and 1,400 m altitude."
+verification = "FT"
+access = "Publisher PDF via Web Archive snapshot 2022-03-14 of atsjournals.org/doi/pdf/10.1164/ajrccm.160.5.9806006; read 2026-10-15. Tables 4 and 5 checked against 200 dpi page renders."
+notes = """SaO2 correlated with age (r2 0.270) and barometric pressure (r2 0.312) but not with sex (r2 0.002, p = 0.45) (Table 3), so Table 4 pools men and women. Hb correlated with sex (r2 0.467), height and weight.
+Sea-level men (n = 44) mean age 40.6 y (18-79), height 176.8 cm, weight 76.0 kg (Table 2).
+SaO2 is CO-oximeter (fractional) saturation; mean sea-level COHb was 1.63 +/- 0.54% (Los Angeles 1.87, Hartford higher than Salt Lake City), which lowers fractional SaO2 slightly.
+Reference equations (Tables 7, 8) not stored."""
+use_in_model = """Inlet arterial saturation for a healthy young-to-middle-aged adult at sea level: SaO2 = 0.967-0.969 (Table 4, 18-44 y). This matches the S(0) = 0.97 assumed by Arciero et al. 2008. Hb for men at sea level 14.0 +/- 1.0 g/dL (n = 44); see beutler2006_hemoglobin_reference.toml for a much larger Hb sample."""
+
+[source]
+authors = ["Crapo RO", "Jensen RL", "Hegewald M", "Tashkin DP"]
+year = 1999
+title = "Arterial blood gas reference values for sea level and an altitude of 1,400 meters"
+journal = "Am J Respir Crit Care Med"
+volume = "160"
+issue = "5 Pt 1"
+pages = "1525-1531"
+doi = "10.1164/ajrccm.160.5.9806006"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 160, issue 5, 1525-1531; authors Crapo, Jensen, Hegewald, Tashkin)"
+pmid = "10556115"
+
+[data.sao2_pao2_by_age]
+description = "PaO2, SaO2 and alveolar-arterial PO2 difference by altitude and age group, men and women pooled"
+location = "Table 4"
+provenance = "FT"
+statistic = "mean (SD); n = subjects"
+age_group = ["18-24", "25-34", "35-44", "45-54", "55-64", ">64"]
+n_sea_level = [17, 19, 22, 8, 8, 22]
+pao2_sea_level_mmHg = [99.9, 99.8, 98.3, 97.0, 90.2, 88.7]
+pao2_sd_sea_level_mmHg = [5.3, 4.9, 7.6, 8.0, 4.5, 10.7]
+sao2_sea_level_percent = [96.9, 96.7, 96.7, 96.5, 95.9, 95.5]
+sao2_sd_sea_level_percent = [0.4, 0.7, 0.6, 1.0, 0.7, 1.4]
+aapo2_sea_level_mmHg = [2.0, 3.3, 4.7, 6.5, 12.1, 14.8]
+aapo2_sd_sea_level_mmHg = [5.7, 4.3, 7.5, 6.4, 3.7, 8.8]
+n_1400m = [0, 57, 48, 48, 42, 48]
+pao2_1400m_mmHg = [nan, 79.2, 77.5, 75.0, 71.0, 70.8]
+pao2_sd_1400m_mmHg = [nan, 4.1, 4.4, 5.1, 5.7, 4.9]
+sao2_1400m_percent = [nan, 95.4, 95.3, 94.8, 94.0, 94.0]
+sao2_sd_1400m_percent = [nan, 0.6, 0.7, 0.8, 1.2, 1.0]
+aapo2_1400m_mmHg = [nan, 6.1, 7.9, 10.5, 13.4, 14.1]
+aapo2_sd_1400m_mmHg = [nan, 4.2, 5.1, 5.0, 5.7, 4.9]
+missing_note = "No 18-24 y group at 1,400 m (blank in Table 4; n stored as 0). Not split by sex."
+
+[data.hb_by_sex]
+description = "Arterial hemoglobin (CO-oximeter), PaCO2, pH, metHb and COHb by altitude and sex"
+location = "Table 5"
+provenance = "FT"
+statistic = "mean (SD); n = subjects"
+group = ["male sea level", "female sea level", "male 1400 m", "female 1400 m"]
+n = [44, 52, 122, 121]
+hb_g_per_dl = [14.0, 12.3, 14.7, 12.7]
+hb_sd_g_per_dl = [1.0, 0.9, 1.0, 1.0]
+paco2_mmHg = [38.1, 36.8, 33.9, 32.8]
+paco2_sd_mmHg = [3.3, 2.9, 2.2, 3.0]
+ph = [7.42, 7.43, 7.43, 7.44]
+ph_sd = [0.023, 0.019, 0.020, 0.020]
+methb_percent = [0.50, 0.60, 0.34, 0.43]
+methb_sd_percent = [0.18, 0.24, 0.13, 0.12]
+cohb_percent = [1.69, 1.58, 0.95, 0.86]
+cohb_sd_percent = [0.46, 0.60, 0.43, 0.36]
+missing_note = "Ages pooled (18-81 y)."

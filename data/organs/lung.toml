@@ -30,7 +30,7 @@ sources = ["huang2011_human_sheet_flow_parameters", "clark2010_acinar_sheet_flow
 [parameters.p_ext]
 value = 0.0
 unit = "mmHg"
-note = "Alveolar pressure at end-expiration (atmospheric; all pressures are gauge)."
+note = "Definition: alveolar pressure at end-expiration is atmospheric, and all pressures are gauge."
 
 [parameters.sheet_h0_um]
 value = 3.5
@@ -83,7 +83,8 @@ sources = ["clark2010_acinar_sheet_flow_parameters"]
 [parameters.hd]
 value = 0.45
 unit = "1"
-note = "Discharge hematocrit (same blood as the heart)."
+note = "Same blood as the heart (Bindschadler 2014 bulk hematocrit)."
+sources = ["bindschadler2014_iodine_exchange_model_ps"]
 
 [parameters.fb]
 value = 0.201
@@ -126,14 +127,16 @@ note = "Tube/discharge hematocrit in unresolved microvessels (Fahraeus effect; c
 sources = ["bindschadler2014_iodine_exchange_model_ps"]
 
 [parameters.ve]
-value = 0.0
+value = 0.054
 unit = "mL/mL"
-note = "OPEN: lung interstitial volume for contrast exchange has no source in the repo yet; 0 = intravascular."
+note = "Derived: accessible extravascular lung water 2.16 g/kg in normal humans at rest (Goresky 1975) x 70 kg = 151 mL over XCAT's 2810 mL lung. Enters only with ps > 0."
+sources = ["goresky1975_extravascular_lung_water"]
 
 [parameters.ps]
 value = 0.0
 unit = "mL/min/g"
-note = "OPEN: iodinated-contrast PS of the lung has no source in the repo yet; 0 = intravascular tracer."
+note = "OPEN: no measurement of iodinated-contrast (or EDTA/DTPA) extraction across human pulmonary capillaries exists; 0 = intravascular. Closest analogue: [14C]urea PS in acute respiratory failure (Brigham 1983), not normal lung."
+sources = ["brigham1983_lung_urea_ps"]
 
 [parameters.rho]
 value = 0.299
@@ -144,7 +147,8 @@ sources = ["molina2012_lung_weight"]
 [parameters.plasma_viscosity_mPas]
 value = 1.2
 unit = "mPa s"
-note = "Plasma viscosity (same blood as the heart)."
+note = "Same blood as the heart: midpoint of 1.10-1.30 mPa s (Kesmarky 2008)."
+sources = ["kesmarky2008_plasma_viscosity"]
 
 [parameters.radius_cv]
 value = 0.15
@@ -193,9 +197,10 @@ unit = "1"
 note = "Not used (regulation = passive)."
 
 [parameters.hb]
-value = 14.5
+value = 14.0
 unit = "g/dL"
-note = "Hemoglobin (same blood as the heart)."
+note = "Same blood as the heart (Crapo 1999)."
+sources = ["crapo1999_arterial_blood_gas_reference"]
 
 [parameters.atp_r1]
 value = 0.0
