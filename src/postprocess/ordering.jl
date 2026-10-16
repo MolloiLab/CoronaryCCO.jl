@@ -6,15 +6,17 @@
 
 # Boundaries between consecutive literature orders: midpoint of the lower order's mean + SD
 # and the upper order's mean - SD, evaluated left to right as numpy does.
-const _LITERATURE_DB = [
-    (((LITERATURE_MU[k + 1] + LITERATURE_SD[k + 1]) + LITERATURE_MU[k]) - LITERATURE_SD[k]) / 2.0
-        for k in 1:(length(LITERATURE_MU) - 1)
-]
+# Any organ's reference morphometry (per-order mean and SD diameter, same units as the tree's
+# diameters) gives its own boundaries; Kassab's coronary arrays are upstream's.
+_literature_boundaries(mu, sd) = [(((mu[k + 1] + sd[k + 1]) + mu[k]) - sd[k]) / 2.0 for k in 1:(length(mu) - 1)]
+const _LITERATURE_DB = _literature_boundaries(LITERATURE_MU, LITERATURE_SD)
 
-# Ports literature_order_of: 11 minus the number of boundaries above d, clipped to 1..11.
-function literature_order_of(d::Real)
-    o = length(LITERATURE_MU) - count(b -> d < b, _LITERATURE_DB)
-    return clamp(o, 1, length(LITERATURE_MU))
+# Ports literature_order_of: 11 minus the number of boundaries above d, clipped to 1..11
+# (K orders for K - 1 boundaries `db`).
+function literature_order_of(d::Real, db = _LITERATURE_DB)
+    K = length(db) + 1
+    o = K - count(b -> d < b, db)
+    return clamp(o, 1, K)
 end
 
 # Shared by the stack-based walks below: upstream's iterative post-order with a `seen` set.
@@ -87,13 +89,13 @@ end
 
 # Ports refine_root_element: if the root's element spans more than one literature order, split
 # it into maximal connected runs of equal literature order (the first run keeps the element id).
-function refine_root_element(seg2elem, elem_segs, elem_order, diameters, conn)
+function refine_root_element(seg2elem, elem_segs, elem_order, diameters, conn, db = _LITERATURE_DB)
     n = length(seg2elem)
     root = findfirst(s -> isempty(conn.parent[s]), 1:n)
     root === nothing && return seg2elem, elem_segs, elem_order
     e0 = seg2elem[root]
     segs0 = elem_segs[e0]
-    lit = Dict(s => literature_order_of(diameters[s]) for s in segs0)
+    lit = Dict(s => literature_order_of(diameters[s], db) for s in segs0)
     length(unique(values(lit))) <= 1 && return seg2elem, elem_segs, elem_order
     seg2elem = copy(seg2elem)
     elem_segs = copy(elem_segs)
@@ -151,7 +153,7 @@ function element_connectivity_counts(seg2elem, elem_order, conn)
 end
 
 """
-    diameter_defined_orders(t::PPTree, diameters = 2 .* t.radius; elements = :series) -> NamedTuple
+    diameter_defined_orders(t::PPTree, diameters = 2 .* t.radius; elements = :series, reference) -> NamedTuple
 
 The ordering of coronary_postprocess.run(): topological Strahler order per segment, grouping
 into maximal same-order elements, relabelling each element by its mean diameter against the
@@ -160,17 +162,23 @@ literature thresholds, and the root-element guard. `orders[s]` is the final orde
 Elements are runs of same-order segments joined end to end (`elements = :series`).
 `elements = :upstream` reproduces upstream, whose neighbour lists also join sibling segments
 (two daughters of one bifurcation with equal Strahler order become a single element).
+
+`reference = (mu, sd)` is the per-order mean and SD diameter of the morphometry the orders are
+labelled against (same units as `diameters`; default Kassab 1993's coronary arrays, as upstream).
+Another organ passes its own, e.g. Huang et al. 1996's pulmonary arteries.
 """
 function diameter_defined_orders(
-        t::PPTree, diameters::Vector{Float64} = 2 .* t.radius; elements::Symbol = :series
+        t::PPTree, diameters::Vector{Float64} = 2 .* t.radius; elements::Symbol = :series,
+        reference = (LITERATURE_MU, LITERATURE_SD)
     )
     elements in (:series, :upstream) || throw(ArgumentError("elements must be :series or :upstream, got :$elements"))
     n = nsegments(t)
     conn = segment_connections(t; siblings = elements === :upstream)
     strahler = strahler_orders_per_segment(conn, n)
     seg2elem, elem_segs = group_strahler_elements(strahler, conn, n)
-    elem_order = [literature_order_of(_np_mean(diameters[c])) for c in elem_segs]
-    seg2elem, elem_segs, elem_order = refine_root_element(seg2elem, elem_segs, elem_order, diameters, conn)
+    db = _literature_boundaries(reference...)
+    elem_order = [literature_order_of(_np_mean(diameters[c]), db) for c in elem_segs]
+    seg2elem, elem_segs, elem_order = refine_root_element(seg2elem, elem_segs, elem_order, diameters, conn, db)
     orders = [elem_order[seg2elem[s]] for s in 1:n]
     return (; orders, strahler, seg2elem, elem_segs, elem_order, conn)
 end
