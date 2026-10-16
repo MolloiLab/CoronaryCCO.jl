@@ -99,7 +99,6 @@ struct TreeView{T, M, F, G, D, VI8, VB, VU8, VR, VT}
     rcaps::VT             # root radius cap of each tree
     rest::VT              # per tree: unscaled volume of the other trees
     rmin::VT              # per tree: tightest cap ratio of the other trees
-    rootfix::Bool         # caps are the imaged root radii (see fast.jl _scaled_root)
 end
 Adapt.@adapt_structure TreeView
 
@@ -182,6 +181,6 @@ function tree_view(E::Engine{T}, vc::ViewCache; to = identity) where {T}
         M, F, G, D, P, up(:tcount, E.tcount), up(:middle, E.middle), up(:isbase, E.isbase), up(:treeid, E.treeid), E.cscale,
         E.lscale, E.max_angle_cos, E.rmax,
         E.fix_base, E.volume === :full, T(_level(E)), up(:roots, E.roots), up(:rcaps, E.rcaps),
-        up(:rest, E.rest), up(:rmin, E.rmin), E.rootfix
+        up(:rest, E.rest), up(:rmin, E.rmin)
     )
 end
