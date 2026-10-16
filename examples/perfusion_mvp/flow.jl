@@ -1304,7 +1304,10 @@ function _autoregulate!(
         terr_g, mu0, sten, lim::_Limits, verbose, sheet = nothing, dist = nothing
     )
     nw = length(W.seg); hd = phys.hd; stress = state === :stress
-    sref = phys.sao2 * (1 - phys.oef); gain = 2.0f0; lasterr = 0.0f0
+    # C_tone update gain: the sinus saturation moves by dSO₂/dC_tone ≈ −1/21 per unit tone (XCAT heart),
+    # so a Newton step would use ≈ 21; 12 (≈ 0.6 of it) converges in 46 instead of 107 iterations to the
+    # same state (MBF within 0.06 %). The step still shrinks ×0.7 whenever the error changes sign.
+    sref = phys.sao2 * (1 - phys.oef); gain = 12.0f0; lasterr = 0.0f0
     # Activation relaxes toward its stimulus with a step per vessel: the loop through a terminal
     # arteriole's own bed has a gain of ~20, so a fixed explicit step either crawls or makes some
     # vessels flip back and forth. A vessel's step halves whenever its activation reverses
