@@ -539,6 +539,11 @@ HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared bas
                 c2 = T(2) * E.cscale; cl = E.lscale
                 onbase = E.fix_base && E.isbase[s]
                 if (onbase || ((c2 * r0 <= cl * l0) && (c2 * r1 <= cl * l1))) && (c2 * r2 <= cl * l2)
+                    # fine forbidden mask (off unless set): the new branch, and the two moved
+                    # pieces unless they lie on an imaged centreline
+                    segment_clear(dom, pOpt, p) || return (false, zero(T), p, zero(T), i + 1)
+                    onbase || (segment_clear(dom, pParent, pOpt) && segment_clear(dom, pOpt, ps)) ||
+                        return (false, zero(T), p, zero(T), i + 1)
                     # symmetry floor (off unless knots are given): the daughters' ratio at the
                     # mother's final-scale diameter, in µm (radii are in mm)
                     smin = symmetry_min(prm, T(2000) * E.cscale * r_s)

@@ -78,6 +78,9 @@ mutable struct MaskDomain{T}
     cache::Vector{NTuple{3, Int32}}
     cache_dist::T
     allow::Array{UInt16, 3}    # optional per-voxel territory (see `set_territories!`); empty: unused
+    fine::Array{UInt8, 3}      # optional fine forbidden mask (see `set_forbidden!`); 1×1×1 zero: unused
+    fine_origin::NTuple{3, T}  # mm position of fine cell (1,1,1)'s centre
+    fine_h::T                  # fine cell size, mm (0: unused)
 end
 
 const NOTERM = 0x8000          # territory bit: traversable by vessels, but no terminal here
@@ -95,6 +98,37 @@ function set_territories!(d::MaskDomain, allow::Array{UInt16, 3})
     d.allow = allow; empty!(d.cache)
     return d
 end
+"""
+    set_forbidden!(dom, mask::Array{UInt8,3}, origin, h)
+
+A fine forbidden mask (nonzero = forbidden, e.g. blood in a chamber), cell (1,1,1) centred at
+`origin` (mm), cell size `h` (mm). Every new centreline piece of an accepted bifurcation is then
+sampled at `h/8` and the candidate is rejected if any sample lies in a forbidden cell. It is
+finer than the domain grid, so thin walls keep their terminals while no vessel crosses into
+what the mask forbids.
+"""
+function set_forbidden!(d::MaskDomain{T}, mask::Array{UInt8, 3}, origin, h::Real) where {T}
+    d.fine = mask; d.fine_origin = T.(Tuple(origin)); d.fine_h = T(h)
+    return d
+end
+
+# True when the straight piece a→b crosses no forbidden fine cell (always true without a mask).
+@inline function segment_clear(d, a::P3{T}, b::P3{T}) where {T}
+    h = d.fine_h
+    h > zero(T) || return true
+    L = norm3(sub3(b, a)); n = max(1, ceil(Int, 8 * L / h))     # samples every h/8
+    F = d.fine; o = d.fine_origin
+    @inbounds for s in 0:n
+        w = T(s) / T(n)
+        i = round(Int, (a[1] + w * (b[1] - a[1]) - o[1]) / h) + 1
+        j = round(Int, (a[2] + w * (b[2] - a[2]) - o[2]) / h) + 1
+        k = round(Int, (a[3] + w * (b[3] - a[3]) - o[3]) / h) + 1
+        (1 <= i <= size(F, 1) && 1 <= j <= size(F, 2) && 1 <= k <= size(F, 3)) || continue
+        F[i, j, k] != 0x00 && return false
+    end
+    return true
+end
+
 @inline _noterm(d, p) = !isempty(d.allow) && (@inbounds(d.allow[_ix(d, p)...]) & NOTERM) != 0
 
 """
@@ -129,7 +163,8 @@ function MaskDomain{T}(
     dist = distance_map(T, img; p = metric === :euclidean ? 2 : 3)
     d = MaskDomain{T}(
         img, dist, lower, upper, (Int32(0), Int32(0), Int32(0)), T(min_dist),
-        nbtry, NTuple{3, Int32}[], T(-1), Array{UInt16, 3}(undef, 0, 0, 0)
+        nbtry, NTuple{3, Int32}[], T(-1), Array{UInt16, 3}(undef, 0, 0, 0),
+        zeros(UInt8, 1, 1, 1), (zero(T), zero(T), zero(T)), zero(T)
     )
     if root !== nothing && is_inside(d, Int32.(root))
         d.center = Int32.(root)

@@ -196,6 +196,7 @@ inside it:
 - `lvmyo` / `rvmyo`: at least half of them are LV / RV myocardium (the larger count wins);
 - `lvcav` / `rvcav`: at least half are LV / RV blood pool;
 - `pool`: any of them is blood (the four chamber pools, great arteries and veins by default);
+- `blood`: the fraction of them that is blood;
 - `domain`: myocardium with no blood at all, so a vessel grown inside it cannot enter a chamber.
 XCAT reuses some label values for distant organs (e.g. 16 for the kidneys), so `roi` limits the
 muscle and cavity masks to the heart region; `pool` covers the whole grid. The default label values are those of the XCAT heart phantom.
@@ -205,6 +206,7 @@ function label_masks(
         lv = 15, rv = 16, lvpool = 19, rvpool = 20, pools = (19, 20, 21, 22, 24, 25)
     )
     lvmyo = falses(g.dims); rvmyo = falses(g.dims); lvcav = falses(g.dims); rvcav = falses(g.dims); pool = falses(g.dims)
+    blood = zeros(Float32, g.dims)
     isp = falses(256); for p in pools
         isp[p + 1] = true
     end
@@ -212,14 +214,15 @@ function label_masks(
         for j in 1:g.dims[2], i in 1:g.dims[1]
             c = center(g, i, j, k)
             r = ntuple(d -> (ceil(Int, (c[d] - g.h / 2 - origin[d]) / h - 1.0e-9) + 1):(ceil(Int, (c[d] + g.h / 2 - origin[d]) / h - 1.0e-9)), 3)
-            n = 0; nl = 0; nr = 0; npl = 0; npr = 0; anyp = false
+            n = 0; nl = 0; nr = 0; npl = 0; npr = 0; nb = 0
             for kk in r[3], jj in r[2], ii in r[1]
                 checkbounds(Bool, L, ii, jj, kk) || continue
                 l = L[ii, jj, kk]; n += 1
-                nl += l == lv; nr += l == rv; npl += l == lvpool; npr += l == rvpool; anyp |= isp[l + 1]
+                nl += l == lv; nr += l == rv; npl += l == lvpool; npr += l == rvpool; nb += isp[l + 1]
             end
             n == 0 && continue
-            pool[i, j, k] = anyp            # blood anywhere on the grid (the aorta leaves the pericardium)
+            pool[i, j, k] = nb > 0          # blood anywhere on the grid (the aorta leaves the pericardium)
+            blood[i, j, k] = nb / n
             roi[i, j, k] || continue
             if 2(nl + nr) >= n
                 nl >= nr ? (lvmyo[i, j, k] = true) : (rvmyo[i, j, k] = true)
@@ -228,7 +231,7 @@ function label_masks(
             2npr >= n && (rvcav[i, j, k] = true)
         end
     end
-    return (; lvmyo, rvmyo, lvcav, rvcav, pool, domain = (lvmyo .| rvmyo) .& .!pool)
+    return (; lvmyo, rvmyo, lvcav, rvcav, pool, blood, domain = (lvmyo .| rvmyo) .& .!pool)
 end
 
 """

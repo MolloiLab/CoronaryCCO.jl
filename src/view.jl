@@ -51,13 +51,16 @@ struct GridView{T, VI, VT, VB}
 end
 Adapt.@adapt_structure GridView
 
-struct DomainView{T, A8, AT, A16}
+struct DomainView{T, A8, AT, A16, AF}
     img::A8
     dist::AT
     allow::A16
     lower::NTuple{3, Int32}
     upper::NTuple{3, Int32}
     min_dist::T
+    fine::AF
+    fine_origin::NTuple{3, T}
+    fine_h::T
 end
 Adapt.@adapt_structure DomainView
 
@@ -167,9 +170,9 @@ function tree_view(E::Engine{T}, vc::ViewCache; to = identity) where {T}
         up(:items, vc.items), up(:box, g.box)
     )
     if vc.dom === nothing || vc.to !== to
-        vc.dom = (to(E.dom.img), to(E.dom.dist), to(E.dom.allow)); vc.to = to
+        vc.dom = (to(E.dom.img), to(E.dom.dist), to(E.dom.allow), to(E.dom.fine)); vc.to = to
     end
-    D = DomainView(vc.dom[1], vc.dom[2], vc.dom[3], E.dom.lower, E.dom.upper, E.dom.min_dist)
+    D = DomainView(vc.dom[1], vc.dom[2], vc.dom[3], E.dom.lower, E.dom.upper, E.dom.min_dist, vc.dom[4], E.dom.fine_origin, E.dom.fine_h)
     P = ParamView{T}(
         p.num_neighbors, p.anywhere_mode, p.kamiya_iters, T(p.kamiya_tol), T(p.side_branch_bias),
         T(p.term_flow_cv), _symmetry_knots(T, p.symmetry_floor)...

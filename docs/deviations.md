@@ -324,6 +324,20 @@ outliers in real hearts are excluded. Order-1 twigs per order-6 element fall fro
 junction exponent of 1.4–1.9 in orders 3–7, below every direct junction measurement (2.25–3.2),
 so no flow-conserving tree with measured junction laws reproduces his orders 4–7.
 
+## 14. Fine forbidden mask (`forbidden`, off by default)
+
+**What upstream does.** Segments are tested against the domain image at its own voxel size
+(1 mm here). A straight segment between two allowed voxels can cut through a thin structure the
+domain grid cannot resolve, such as the endocardial edge of a chamber.
+
+**What the option does.** `generate(...; forbidden = (mask, origin, h))` (or `set_forbidden!`)
+adds a finer mask, nonzero where vessels may not go. When a candidate bifurcation is accepted,
+its new branch and the two moved pieces (unless they lie on an imaged centreline) are sampled
+every `h/8`; the candidate is rejected if any sample lies in a forbidden cell. Applied to XCAT
+with a 0.4 mm blood mask (chamber pools, great arteries and veins, from the 0.2 mm labels),
+one growth gives no grown artery or vein touching blood while the 1 mm domain keeps the whole
+myocardium, including the thin right-ventricular wall.
+
 ## References
 
 - Cury LFM, Maso Talou GD, Younes-Ibrahim M, Blanco PJ. Parallel generation of extensive vascular networks with application to an archetypal human kidney model. *R. Soc. Open Sci.* 8:210973, 2021. doi:10.1098/rsos.210973

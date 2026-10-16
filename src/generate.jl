@@ -64,7 +64,7 @@ function generate(
         mode::Symbol = :fast, sampling::Symbol = :voxel, fix_base::Bool = false,
         collision::Symbol = :current, max_branch_angle = nothing,
         growth::Symbol = mode === :exact ? :sequential : :batched, n_seq::Integer = 2_000, batch_frac::Real = 0.01, batch_max::Integer = 16_384, device = identity,
-        territories = nothing, base_groups = nothing, kwargs...
+        territories = nothing, base_groups = nothing, forbidden = nothing, kwargs...
     )
     p = CCOParams(;
         nterm = Int(nterm), aperf = Float64(aperf), gamma = Float64(gamma),
@@ -76,6 +76,7 @@ function generate(
         min_dist = min_dist, metric = metric
     )
     territories === nothing || set_territories!(dom, territories)
+    forbidden === nothing || set_forbidden!(dom, forbidden...)       # (mask, origin mm, cell mm)
     m = import_gxl(T, base_xml, p)
     E = Engine(
         m, dom; seed = seed, mode = mode, volume = volume, sampling = sampling, fix_base = fix_base,
