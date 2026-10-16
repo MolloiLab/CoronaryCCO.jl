@@ -359,7 +359,9 @@ mean |log10 diameter ratio| 0.054 and 0.075 (0.049, 0.070).
 
 **Connection length.** Upstream refuses any new vessel longer than 25 units
 (`getMaxBranchLength`, "same units as post-processing filter"), a coronary value in mm. It is
-now `max_connection` (default 25 mm), so another organ can set its own.
+now `max_connection` (default 25 mm). It is a numerical guard, not physiology, and no organ sets
+its own value; on XCAT's lung 60 mm gave the same result as 25 mm (the long left-lung trunk was
+unchanged), so the lung keeps the default.
 
 ## References
 

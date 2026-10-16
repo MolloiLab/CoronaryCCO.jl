@@ -1,0 +1,12 @@
+id = "talou2021_adaptive_cco"
+title = "Adaptive constrained constructive optimisation for complex vascularisation processes"
+authors = "Talou GDM, Safaei S, Hunter PJ, Blanco PJ"
+journal = "Scientific Reports"
+year = 2021
+doi = "10.1038/s41598-021-85434-9"
+crossref_verified = "2026-10-16; Crossref title exact match (Adaptive constrained constructive optimisation for complex vascularisation processes; 11:6180)"
+
+[data.staged_growth]
+description = "A sequence of static stages, each a CCO problem on its own subdomain grown from the previous stage's tree. A terminal site is rejected if its distance to the tree is below l_lim = l_c (nu / (N_T + 1))^(1/D), l_c the equivalent-sphere radius of the domain; after f_n failures l_lim *= f_r."
+provenance = "fulltext"
+note = "Applied from atlas (ADAN) base trees. Typical f_r = 0.9, f_n = 8, nu = 1-1.5, gamma = 3. Domains are partitioned, not scaled. Short first stages (20-50 terminals) seed every inlet before the volumetric fill. No tortuosity reported."

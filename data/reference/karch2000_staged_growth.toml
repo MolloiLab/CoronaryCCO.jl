@@ -1,0 +1,12 @@
+id = "karch2000_staged_growth"
+title = "Staged Growth of Optimized Arterial Model Trees"
+authors = "Karch R, Neumann F, Neumann M, Schreiner W"
+journal = "Annals of Biomedical Engineering"
+year = 2000
+doi = "10.1114/1.290"
+crossref_verified = "2026-10-16; Crossref title exact match (Staged Growth of Optimized Arterial Model Trees; 28:495-511)"
+
+[data.staged_growth]
+description = "Adds a time-dependent boundary condition on where new terminal sites may be drawn, inducing a sequence of growth domains within the fixed perfusion volume; pseudo-time advances with terminal count. Reproduces subepicardial/subendocardial branching and volume ratios that minimum volume alone cannot."
+provenance = "abs"
+note = "Full text not read (paywalled); schedule equation and parameters not verified. Mechanism detail from the abstract plus the descriptions in Talou 2021 and Jaquet 2019. Grown from a root, no imaged base tree."

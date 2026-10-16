@@ -405,3 +405,5 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `cousins2002_bromide_dtpa_exchange.toml` | DTPA distribution spaces (12.3 + 5.8 L), forearm extraction about 0.5, exchange asymptote 20–25 min | Human | abs |
 | `meurer2015_iosimenol_pharmacokinetics.toml` | Iodinated dimer kinetics from 1 min: initial half-life 10.2 ± 4.8 min, terminal 2.01 h, Vz 0.27 L/kg, 39.6% of the dose in plasma at 2 min | Human, healthy men | FT |
 | `dong2025_iohexol_three_compartment.toml` | Three-compartment iohexol PK (clearance, V1–V3, inter-compartment flows) from 10 min | Human, 12 healthy adults | FT |
+| `karch2000_staged_growth.toml` | Staged growth: a time-dependent boundary on where terminals are drawn gives a sequence of growth domains | Model (CCO), from a root | Abs |
+| `talou2021_adaptive_cco.toml` | Stage-wise CCO on subdomains from an atlas base tree; terminal exclusion distance l_lim and its relaxation | Model (CCO), atlas base trees | FT |

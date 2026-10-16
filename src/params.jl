@@ -41,6 +41,11 @@ upstream's `getN_NearestSegments` does. Upstream's `isAddable` additionally reje
 non-terminal host at all stages, which empties the first two stages and stalls growth from an
 imaged tree with few listed terminals (docs/deviations.md §15). `upstream_attach = true`
 restores that check; it exists only for the bitwise parity test.
+
+`max_connection` (mm) is the longest new vessel a candidate may create, upstream's fixed
+`getMaxBranchLength` of 25 ("same units as post-processing filter"). It is a numerical guard
+against implausibly long connections, not a measured quantity, and no organ sets its own value
+yet; on XCAT's lung, 60 mm gave the same trees as 25 mm (deviations §15).
 """
 Base.@kwdef struct CCOParams
     nterm::Int = 500
@@ -52,7 +57,7 @@ Base.@kwdef struct CCOParams
     min_distance_to_border::Float64 = 5.0
     extension_mode::Bool = false
     upstream_attach::Bool = false
-    max_connection::Float32 = 25.0f0     # mm; upstream getMaxBranchLength (a coronary value; set per organ)
+    max_connection::Float32 = 25.0f0     # mm; see below
     num_neighbors::Int = 20
     nb_max_search::Int = 100
     nb_try_candidate::Int = 100
