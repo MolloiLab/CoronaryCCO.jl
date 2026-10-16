@@ -33,7 +33,7 @@ terr .= max.(terr, 1.0f-7)
 veins = length(ARGS) >= 4 ? load_vtree(ARGS[4]) : nothing
 vleaf = veins === nothing ? nothing : haskey(ENV, "CIRC") ? deserialize(ENV["CIRC"]).Cr.vleaf : (
         vn = zeros(Int, length(veins.r)); foreach(p -> p > 0 && (vn[p] += 1), veins.parent);
-        couple_veins(tree, terr, veins, terms, findall(==(0), vn))[1]
+        couple_veins(tree, terr, veins, terms, findall(==(0), vn); phys = Physiology(organ = "heart"))[1]
     )
 # coverage: distance from every myocardial voxel to its nearest terminal, and terminal density
 own1 = nearest_terminal(tree.b[:, terms], q)
@@ -55,7 +55,7 @@ coverage = Dict(
     coverage["gap_p99_mm"], coverage["gap_max_mm"], 100coverage["frac_voxels_gt_1p5mm"], coverage["density_cv_4mm"]
 )
 
-const P_AO = Physiology().p_in     # mean aortic pressure, mmHg (pressures are reported relative to it)
+const P_AO = Physiology(organ = "heart").p_in     # mean aortic pressure, mmHg (pressures are reported relative to it)
 
 js(x) = x isa AbstractString ? "\"" * x * "\"" : x isa AbstractDict ? "{" * join(["\"$k\":" * js(v) for (k, v) in x], ",") * "}" :
     x isa Union{AbstractVector, Tuple} ? "[" * join(js.(collect(x)), ",") * "]" : x isa AbstractFloat ? (isfinite(x) ? @sprintf("%.5g", x) : "null") : string(x)
@@ -79,13 +79,13 @@ end
 
 res = Dict{String, Any}("n" => n, "segments" => ns, "terminals" => length(terms), "coverage" => coverage)
 # maximal dilation first: its microvascular scale κ is shared by the rest state
-Cstress = haskey(ENV, "CIRC") ? nothing : circuit(tree, terr; state = :stress, veins, vleaf, phys = Physiology(radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))))
+Cstress = haskey(ENV, "CIRC") ? nothing : circuit(tree, terr; state = :stress, veins, vleaf, phys = Physiology(organ = "heart", radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))))
 for (st, state) in (("rest", :rest), ("stress", :stress))
     rcv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))
     C = if haskey(ENV, "CIRC")                 # solved circuits (; Cs, Cr) from an earlier run on the same inputs
         (cc = deserialize(ENV["CIRC"]); state === :rest ? cc.Cr : cc.Cs)
     else
-        state === :rest ? circuit(tree, terr; state, veins, vleaf, phys = Physiology(radius_cv = rcv), kappa = Cstress.resist.kappa) : Cstress
+        state === :rest ? circuit(tree, terr; state, veins, vleaf, phys = Physiology(organ = "heart", radius_cv = rcv), kappa = Cstress.resist.kappa) : Cstress
     end
     hd = C.phys.hd
     d_um = 2000 .* tree.r

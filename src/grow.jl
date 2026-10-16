@@ -68,6 +68,7 @@ mutable struct Engine{T}
     rcaps::Vector{T}          # root radius cap of each tree (0: none)
     rest::Vector{T}           # per tree: unscaled volume of the other trees (update_forest!)
     rmin::Vector{T}           # per tree: tightest cap ratio cap/r of the other trees (update_forest!)
+    rootfix::Bool             # caps are the imaged root radii: the shared scale may exceed 1 (fast.jl)
     nd::Matrix{T}             # nearest_k! buffers of the sequential step
     nj::Matrix{Int32}
     F::FastState{T}
@@ -109,7 +110,7 @@ function Engine(
         m::CCOModel{T}, dom::MaskDomain{T}; seed::Integer = 0, cell::Real = 2.0,
         mode::Symbol = :fast, volume::Symbol = :upstream, sampling::Symbol = :voxel,
         fix_base::Bool = false, collision::Symbol = :current,
-        max_branch_angle::Union{Nothing, Real} = nothing, root_caps = nothing
+        max_branch_angle::Union{Nothing, Real} = nothing, root_caps = nothing, root_fixed::Bool = false
     ) where {T}
     collision in (:current, :final) || throw(ArgumentError("collision must be :current or :final"))
     sampling in (:voxel, :continuous) || throw(ArgumentError("sampling must be :voxel or :continuous"))
@@ -120,6 +121,7 @@ function Engine(
     roots = tree_roots(m)
     (mode === :exact && length(roots) > 1) &&
         throw(ArgumentError("a forest of $(length(roots)) trees needs mode = :fast"))
+    (mode === :exact && root_fixed) && throw(ArgumentError("root_fixed needs mode = :fast"))
     caps = root_caps === nothing ? fill(T(m.root_radius_max), length(roots)) :
         T.(root_caps isa Real ? fill(root_caps, length(roots)) : collect(root_caps))
     length(caps) == length(roots) ||
@@ -138,7 +140,7 @@ function Engine(
         mode, volume, sampling, fix_base, collision, one(T), one(T),
         max_branch_angle === nothing ? -one(T) : T(cosd(max_branch_angle)),
         trues(nsegments(m)) |> Vector{Bool}, _tree_ids(m, roots), roots, caps, zeros(T, length(roots)),
-        fill(T(Inf), length(roots)),
+        fill(T(Inf), length(roots)), root_fixed,
         zeros(T, m.params.num_neighbors, 1), zeros(Int32, m.params.num_neighbors, 1),
         FastState{T}(), GrowStats()
     )

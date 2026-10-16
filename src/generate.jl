@@ -35,6 +35,10 @@ every terminal: a candidate may join any tree, and the one that adds the least t
 wins, so the territories emerge from the optimization. All trees share the perfusion pressure
 drop and the terminal flow, so each root radius follows from the same law; `root_radius_max`
 may be a vector, one cap per tree (in file order). Forests need `mode = :fast`.
+With `root_fixed = true` the caps are the imaged root radii rather than upper bounds: the shared
+scale may also grow, so the binding tree's root sits exactly at its imaged radius and the
+absolute radii follow from anatomy instead of the growth hydraulics (upstream's perfusion flow
+and pressure drop, which are coronary values). Needs `mode = :fast`.
 Unconstrained competition lets the volume objective starve a tree with a long imaged trunk (an
 XCAT RCA won 165 of 2,000 terminals). To keep anatomical territories without a hard seam, a
 domain voxel value ≥ `0xC0` lists in its low six bits which trees may claim a terminal there
@@ -64,7 +68,7 @@ function generate(
         mode::Symbol = :fast, sampling::Symbol = :voxel, fix_base::Bool = false,
         collision::Symbol = :current, max_branch_angle = nothing,
         growth::Symbol = mode === :exact ? :sequential : :batched, n_seq::Integer = 2_000, batch_frac::Real = 0.01, batch_max::Integer = 16_384, device = identity,
-        territories = nothing, base_groups = nothing, forbidden = nothing, kwargs...
+        territories = nothing, base_groups = nothing, forbidden = nothing, root_fixed::Bool = false, kwargs...
     )
     p = CCOParams(;
         nterm = Int(nterm), aperf = Float64(aperf), gamma = Float64(gamma),
@@ -80,7 +84,7 @@ function generate(
     m = import_gxl(T, base_xml, p)
     E = Engine(
         m, dom; seed = seed, mode = mode, volume = volume, sampling = sampling, fix_base = fix_base,
-        collision = collision, max_branch_angle = max_branch_angle, root_caps = root_radius_max
+        collision = collision, max_branch_angle = max_branch_angle, root_caps = root_radius_max, root_fixed = root_fixed
     )  # mode = :exact is test-only
     if base_groups !== nothing
         # territory group of each imaged segment, from its midpoint; grown segments inherit it

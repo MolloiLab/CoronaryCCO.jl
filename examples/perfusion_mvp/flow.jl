@@ -118,7 +118,7 @@ end
 # ---------------------------------------------------------------------------------------------
 
 """
-    Physiology(; organ = "heart", kwargs...)
+    Physiology(; organ, kwargs...)
 
 Boundary conditions, tissue constants and vessel-wall mechanics of one organ's vascular bed.
 Flow is not prescribed: it follows from the geometry, the two pressures and the arteriolar
@@ -127,8 +127,9 @@ diameters (see [`circuit`](@ref)). Values are data, not code: they are read from
 `data/reference/`; keyword arguments override single values. The values below are the heart's.
 
 Boundary conditions and blood
-- `p_in`: mean inflow pressure. Heart: aortic pressure at the ostia, 93 mmHg (Chilian et al.
-  1986, cat; normal human mean arterial pressure is similar).
+- `p_in`: mean inflow pressure. Heart: aortic pressure at the ostia, 90 mmHg (Chilian et al.
+  1989, cat, the preparation of the resistance anchor below; normal human mean arterial pressure
+  is similar).
 - `p_out`: effective outflow pressure. Heart: 13.6 mmHg, the zero-flow pressure of the maximally
   dilated beating heart (Kanatsuka et al. 1990). It lumps coronary-sinus pressure and the
   waterfall effect of intramyocardial pressure into one steady back pressure.
@@ -140,17 +141,19 @@ Boundary conditions and blood
   h(P) = max(h₀ + α·(P − `p_ext`), 0) (`p_ext`: alveolar pressure). `sheet_h0_um`, `sheet_alpha_um_cmH2O`,
   `sheet_s` (vascular-space-tissue ratio), `sheet_area_m2_per_ml` (sheet area per mL of tissue
   domain), `sheet_mu_cP` (apparent viscosity), `sheet_kf` (k·f) and `sheet_path_um` (mean path
-  length L̄) set it. Each bed's resistance is then (P_a − P_v)/Q, updated with the pressures.
+  length L̄) set it; the sheet stops thickening above a transmural pressure of `sheet_pmax_cmH2O`.
+  Each bed's resistance is then (P_a − P_v)/Q, updated with the pressures.
 - `hd`: discharge hematocrit 0.45. Tube hematocrit from the Fåhræus law (Pries et al. 1992).
 
 Volumes and exchange
-- `fb`: intramyocardial blood volume fraction, mL/mL. Default 0.10 (human rest 0.09, Larsson
-  et al. 1996; pig 0.078–0.10, Jerosch-Herold 1999; Kassab's dilated cast 0.122).
-- `share_art`, `share_cap`, `share_ven`: 0.29 / 0.31 / 0.40 of that volume (Kassab et al. 1994).
+- `fb`: intramyocardial blood volume fraction, mL/mL. Heart 0.09 (healthy human at rest by CMR,
+  Nickander et al. 2019).
+- `share_art`, `share_cap`, `share_ven`: 0.288 / 0.317 / 0.395 of that volume (Kassab et al.
+  1994 cast volumes).
 - `cap_ht_ratio`: tube/discharge hematocrit 0.85 in unresolved microvessels (Bindschadler 2014).
 - `cap_length_mm`, `cap_diameter_um`: functional capillary 0.5 mm × 6 µm (Kassab & Fung 1994),
   used for the capillary-bed resistance.
-- `ve`: interstitial volume fraction 0.18 (ECV ≈ 0.25 minus plasma).
+- `ve`: interstitial volume fraction. Heart 0.224 (ECV 0.273 minus plasma, Nickander et al. 2019).
 - `ps`: capillary permeability–surface product for iodinated contrast, 0.37 mL/min per g: the
   Patlak influx constant of iopamidol in normal pig myocardium, the same by 64-slice CT and by
   electron-beam CT, and "similar" during adenosine (Daghini et al. 2007). Each bed's first-pass
@@ -248,11 +251,13 @@ struct Physiology
     sheet_mu_cP::F32
     sheet_kf::F32
     sheet_path_um::F32
+    sheet_pmax_cmH2O::F32
 end
 
 const ORGAN_DIR = normpath(joinpath(@__DIR__, "..", "..", "data", "organs"))
 const REFERENCE_DIR = normpath(joinpath(@__DIR__, "..", "..", "data", "reference"))
 const _REGULATION = (:o2, :passive)
+const _WARNED = Set{String}()
 const _CAPILLARY = (:tube, :sheet)
 
 # One organ's parameter set: name → value, every cited reference file checked to exist.
@@ -263,10 +268,13 @@ function organ_parameters(organ::AbstractString)
     for (k, v) in d, id in get(v, "sources", String[])
         isfile(joinpath(REFERENCE_DIR, id * ".toml")) || throw(ArgumentError("$path: $k cites missing reference $id"))
     end
+    # values the model uses that cite no reference file in the repo: say so, once per file
+    loose = sort([k for (k, v) in d if isempty(get(v, "sources", String[])) && !startswith(get(v, "note", ""), "Not used")])
+    isempty(loose) || path in _WARNED || (push!(_WARNED, path); @warn "$(basename(path)): no reference file in data/reference for $(join(loose, ", "))")
     return Dict(Symbol(k) => v["value"] for (k, v) in d)
 end
 
-function Physiology(; organ::AbstractString = "heart", kwargs...)
+function Physiology(; organ::AbstractString, kwargs...)
     d = organ_parameters(organ)
     bad = setdiff(keys(kwargs), fieldnames(Physiology))
     isempty(bad) || throw(ArgumentError("unknown Physiology fields $(collect(bad))"))
@@ -346,7 +354,7 @@ struct Circuit
 end
 
 """
-    circuit(tree, territory_ml; phys = Physiology(), state = :rest, veins = nothing, vleaf = nothing,
+    circuit(tree, territory_ml; phys, state = :rest, veins = nothing, vleaf = nothing,
             reference = nothing, kappa = nothing, kappa_init = 1, stenosis = nothing, demand = nothing, to = identity) -> Circuit
 
 Steady coronary circuit driven by pressures: inflow pressure `phys.p_in` at every ostium,
@@ -386,7 +394,7 @@ whatever the pressures and the distal arterioles make it.
 whole iteration then runs; the returned `Circuit` holds host arrays either way.
 """
 function circuit(
-        t::VTree, territory_ml::AbstractVector; phys::Physiology = Physiology(), state::Symbol = :rest,
+        t::VTree, territory_ml::AbstractVector; phys::Physiology, state::Symbol = :rest,
         veins::Union{Nothing, VTree} = nothing, vleaf = nothing, reference::Union{Nothing, Circuit} = nothing,
         kappa = nothing, kappa_init = 1, stenosis = nothing, demand = nothing, verbose::Bool = false, to = identity
     )
@@ -1228,14 +1236,14 @@ end
 # Sheet-flow capillary beds (Fung & Sobin): K per bed in mL/s per µm⁴, h₀ in µm, α in µm/mmHg,
 # p_ext in mmHg. `_sheet!` sets each bed's resistance from its current end pressures.
 struct _Sheet{VF <: AbstractVector{F32}}
-    K::VF; h0::F32; al::F32; pe::F32
+    K::VF; h0::F32; al::F32; pe::F32; hmax::F32
 end
 function _sheet!(S::_Solver, sh::_Sheet, kappa::F32)
-    ni = S.ni; pa = S.pa; pv = S.pv; vd = S.vdrain; rcap = S.rcap; K = sh.K; h0 = sh.h0; al = sh.al; pe = sh.pe
+    ni = S.ni; pa = S.pa; pv = S.pv; vd = S.vdrain; rcap = S.rcap; K = sh.K; h0 = sh.h0; al = sh.al; pe = sh.pe; hm = sh.hmax
     AK.foreachindex(rcap) do i
         @inbounds begin
             Pa = pa[ni + i]; Pv = pv[vd[i]]
-            ha = max(h0 + al * (Pa - pe), 0.0f0); hv = max(h0 + al * (Pv - pe), 0.0f0)
+            ha = clamp(h0 + al * (Pa - pe), 0.0f0, hm); hv = clamp(h0 + al * (Pv - pe), 0.0f0, hm)
             q = K[i] * (ha^4 - hv^4)
             r = Pa - Pv > 1.0f-3 && q > 0 ? (Pa - Pv) / q : 1.0f0 / (4.0f0 * K[i] * al * max(ha, 1.0f-3)^3)
             rcap[i] = sqrt(rcap[i] * r / kappa)          # geometric relaxation toward the new resistance
@@ -1414,9 +1422,9 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
         alsi = phys.sheet_alpha_um_cmH2O * 1.0f-6 / 98.0665f0          # m per Pa
         k1 = phys.sheet_s / (4.0f0 * phys.sheet_mu_cP * 1.0f-3 * phys.sheet_kf * (phys.sheet_path_um * 1.0f-6)^2 * alsi)
         Kt = F32[k1 * phys.sheet_area_m2_per_ml * F32(territory_ml[i]) * 1.0f-18 for i in 1:nt]   # mL/s per µm⁴
-        h = max(phys.sheet_h0_um + al * ((phys.p_in + phys.p_out) / 2 - phys.p_ext), 0.1f0)
+        h = clamp(phys.sheet_h0_um + al * ((phys.p_in + phys.p_out) / 2 - phys.p_ext), 0.1f0, phys.sheet_h0_um + al * phys.sheet_pmax_cmH2O / 1.35951f0)
         copyto!(S.rcap, to(F32[1.0f0 / (4.0f0 * Kt[i] * al * h^3) for i in tperm]))
-        sheet = _Sheet(to(Kt[tperm]), phys.sheet_h0_um, al, phys.p_ext)
+        sheet = _Sheet(to(Kt[tperm]), phys.sheet_h0_um, al, phys.p_ext, phys.sheet_h0_um + al * phys.sheet_pmax_cmH2O / 1.35951f0)
     end
     seg = Int32[k for k in 1:n if 2000.0f0 * t.r[perm[k]] < phys.d_active]   # solver numbering
     act = perm[seg]                                                          # caller numbering

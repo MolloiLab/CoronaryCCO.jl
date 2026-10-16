@@ -69,15 +69,19 @@ end
 # at equal pressure, and the tree structure (volume ∝ r²) does not depend on the scale. `mk`
 # is min over the other trees of cap_j / r_j (Inf for a single tree, which reduces this to
 # min(r, cap)). Returns (root radius, s).
-@inline function _scaled_root(cap::T, r::T, mk::T) where {T}
+# With `fixed` (root_fixed = true), the caps are the imaged root radii themselves: the shared scale
+# may also exceed 1, so the tree whose cap binds sits exactly at its imaged radius and the absolute
+# radius scale comes from anatomy, not from the growth hydraulics (perfusion flow and pressure drop).
+@inline function _scaled_root(cap::T, r::T, mk::T, fixed::Bool = false) where {T}
     own = cap > 0 ? cap / r : T(Inf)
-    sc = min(one(T), own, mk)
+    sc = fixed ? min(own, mk) : min(one(T), own, mk)
+    isfinite(sc) || (sc = one(T))
     return (sc == own ? cap : r * sc), sc
 end
 
 @inline function fast_root_radius(E, c = E.roots[1])
     k = _rootidx(E, c)
-    return _scaled_root(E.rcaps[k], _root_unc(E, c), E.rmin[k])[1]
+    return _scaled_root(E.rcaps[k], _root_unc(E, c), E.rmin[k], E.rootfix)[1]
 end
 
 # Refresh, for every tree k, the others' tightest cap ratio (rmin) and the others' unscaled
@@ -236,7 +240,7 @@ new left, radius of new terminal).
     end
     lf = m.lf
     k = _rootidx(E, c)                    # c is now the root segment of s's tree
-    rroot, sc = _scaled_root(E.rcaps[k], upow((lf * R_c * f_c) / m.pdrop, T(0.25)), E.rmin[k])
+    rroot, sc = _scaled_root(E.rcaps[k], upow((lf * R_c * f_c) / m.pdrop, T(0.25)), E.rmin[k], E.rootfix)
     r_s = rroot * B
     # total volume: this tree's tentative volume plus the other trees' at the forest's common
     # scale (zero for a single tree)

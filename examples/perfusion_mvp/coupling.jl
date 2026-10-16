@@ -7,13 +7,13 @@ import AcceleratedKernels as AK
 # 6 mm: a capillary network spans millimetres, not centimetres). Solved at
 # maximal vasodilation, where the beds' own pressure drop is smallest. Stops when the reversed
 # beds are at most `tol` of all beds, or when a pass no longer removes at least 10% of them.
-function couple_veins(F, terr, VT, terms, vterms; reach = 3.0f0, passes = 24, tol = 5.0f-4, to = identity)
+function couple_veins(F, terr, VT, terms, vterms; phys, reach = 3.0f0, passes = 24, tol = 5.0f-4, to = identity)
     vleaf = Int32.(vterms[nearest_terminal(VT.b[:, vterms], F.b[:, terms])])
     VB = VT.b[:, vterms]; last = typemax(Int); k0 = 1.0f0
     B = Territory.Buckets(VB, 2.0f0)
     for pass in 1:passes
         t0 = time()
-        C = circuit(F, terr; state = :stress, veins = VT, vleaf, kappa_init = k0, to); k0 = C.resist.kappa
+        C = circuit(F, terr; state = :stress, veins = VT, vleaf, phys, kappa_init = k0, to); k0 = C.resist.kappa
         bad = [i for i in eachindex(terms) if C.pa[C.terminals[i]] <= C.pv[vleaf[i]]]
         @printf("coupling pass %d: %d beds with reversed flow (%.1f s)\n", pass, length(bad), time() - t0); flush(stdout)
         (length(bad) <= tol * length(terms) || length(bad) > 0.9 * last) && return vleaf, C
@@ -36,5 +36,5 @@ function couple_veins(F, terr, VT, terms, vterms; reach = 3.0f0, passes = 24, to
             bk == typemax(Int32) || (vleaf[i] = Int32(vterms[bk]))
         end
     end
-    return vleaf, circuit(F, terr; state = :stress, veins = VT, vleaf, kappa_init = k0, to)
+    return vleaf, circuit(F, terr; state = :stress, veins = VT, vleaf, phys, kappa_init = k0, to)
 end

@@ -6,10 +6,10 @@ organ = "heart"
 description = "Human (and dog/cat where human data are missing) coronary circulation and myocardium."
 
 [parameters.p_in]
-value = 93.0
+value = 90.0
 unit = "mmHg"
-note = "Mean aortic pressure at the ostia (cat; normal human mean arterial pressure is similar)."
-sources = ["chilian1986_microvascular_pressure"]
+note = "Mean aortic pressure, control state of the same cat preparation that gives the microvascular resistance anchor (Chilian 1989 Table 2: 90 mmHg; dipyridamole ~91). Normal human mean arterial pressure is similar."
+sources = ["chilian1989_dipyridamole_resistance"]
 
 [parameters.p_out]
 value = 13.6
@@ -25,33 +25,33 @@ cite = ["Feigl 1983 Physiol Rev 63:1", "Tune et al. 2004 J Appl Physiol 97:404"]
 [parameters.hd]
 value = 0.45
 unit = "1"
-note = "Discharge hematocrit. Tube hematocrit from the Fahraeus law."
+note = "Discharge (bulk) hematocrit, as used by the iodine-exchange model of Bindschadler 2014 (Alessio 2019: 0.45). Tube hematocrit from the Fahraeus law (Pries 1992)."
+sources = ["bindschadler2014_iodine_exchange_model_ps"]
 cite = ["Pries, Neuhaus & Gaehtgens 1992 Am J Physiol 263:H1770"]
 
 [parameters.fb]
-value = 0.10
+value = 0.09
 unit = "mL/mL"
-note = "Intramyocardial blood volume fraction (human rest 0.09; pig 0.078-0.10; Kassab's dilated cast 0.122)."
-sources = ["mccommis2007_myocardial_blood_volume", "crystal1981_myocardial_blood_volume"]
-cite = ["Larsson et al. 1996", "Jerosch-Herold 1999"]
+note = "Intramyocardial blood volume fraction, healthy human at rest by CMR: 9.0 +/- 0.7 % (Nickander 2019). McCommis 2007 (CMR, 6.2 mL/100 g) and Kassab's dilated cast (12.2 mL/100 g LV) bracket it."
+sources = ["nickander2019_cmr_myocardial_blood_volume", "mccommis2007_myocardial_blood_volume", "kassab1994_venous_morphometry"]
 
 [parameters.share_art]
-value = 0.29
+value = 0.288
 unit = "1"
-note = "Arterial share of intramyocardial blood volume."
-sources = ["kassab1994_capillary_network"]
+note = "Derived: arterial 3.0 of 10.4 mL coronary cast volume (Kassab 1994, Discussion)."
+sources = ["kassab1994_venous_morphometry"]
 
 [parameters.share_cap]
-value = 0.31
+value = 0.317
 unit = "1"
-note = "Capillary share of intramyocardial blood volume."
-sources = ["kassab1994_capillary_network"]
+note = "Derived: capillary 3.3 of 10.4 mL (Kassab 1994)."
+sources = ["kassab1994_venous_morphometry"]
 
 [parameters.share_ven]
-value = 0.40
+value = 0.395
 unit = "1"
-note = "Venous share of intramyocardial blood volume."
-sources = ["kassab1994_capillary_network"]
+note = "Derived: venous 4.1 of 10.4 mL (Kassab 1994); 0.394 rounded so the three shares sum to 1."
+sources = ["kassab1994_venous_morphometry"]
 
 [parameters.capillary]
 value = "tube"
@@ -72,13 +72,14 @@ sources = ["kassab1994_capillary_network"]
 [parameters.cap_ht_ratio]
 value = 0.85
 unit = "1"
-note = "Tube/discharge hematocrit in unresolved microvessels."
+note = "Derived: tissue tube / discharge hematocrit 0.3825 / 0.45 (Bindschadler 2014)."
 sources = ["bindschadler2014_iodine_exchange_model_ps"]
 
 [parameters.ve]
-value = 0.18
+value = 0.224
 unit = "mL/mL"
-note = "Interstitial volume fraction (ECV about 0.25 minus plasma)."
+note = "Derived: interstitial fraction = ECV - plasma volume = 0.273 - 0.09 x (1 - 0.45) (Nickander 2019 ECV 27.3 % and MBV 9.0 %, same healthy cohort)."
+sources = ["nickander2019_cmr_myocardial_blood_volume"]
 
 [parameters.ps]
 value = 0.37
@@ -99,7 +100,7 @@ note = "Plasma viscosity."
 [parameters.radius_cv]
 value = 0.12
 unit = "1"
-note = "Biological diameter variability of one order (10-25%)."
+note = "Derived: median SD/mean of element diameter over the 29 RCA, LAD and LCx orders with an SD (Kassab 1993 Tables): 0.124 (IQR 0.11-0.19)."
 sources = ["kassab1993_arterial_morphometry"]
 
 [parameters.d_art_micro]
@@ -135,13 +136,14 @@ sources = ["mccommis2010_myocardial_oxygenation"]
 [parameters.g_meta]
 value = 15.0
 unit = "1"
-note = "Metabolic sensitivity C_meta * S_CR of the control state."
+note = "Metabolic sensitivity of the control state: C_meta 30 /uM/cm (Carlson 2008 Table) x S_CR about 0.5 uM cm (Carlson 2008 text; not in the TOML)."
 sources = ["carlson2008_autoregulation_model"]
+cite = ["Carlson, Arciero & Secomb 2008 Am J Physiol 295:H1572 (S_CR)"]
 
 [parameters.mvo2]
 value = 0.116
 unit = "mL O2/min/g"
-note = "Myocardial O2 use (5.2 umol/g/min, healthy volunteers)."
+note = "Derived: myocardial O2 use 5.2 umol/g/min in healthy volunteers (McCommis 2010) x 22.4 uL/umol."
 sources = ["mccommis2010_myocardial_oxygenation"]
 
 [parameters.sao2]
@@ -170,7 +172,7 @@ cite = ["Arciero, Carlson & Secomb 2008", "Namani et al. 2018"]
 [parameters.p_ext]
 value = 0.0
 unit = "mmHg"
-note = "Pressure outside the capillary sheet. Not used (capillary = tube)."
+note = "Not used (capillary = tube): pressure outside the capillary sheet."
 
 [parameters.sheet_h0_um]
 value = 0.0
@@ -205,4 +207,9 @@ note = "Not used (capillary = tube)."
 [parameters.sheet_path_um]
 value = 0.0
 unit = "um"
+note = "Not used (capillary = tube)."
+
+[parameters.sheet_pmax_cmH2O]
+value = 0.0
+unit = "cmH2O"
 note = "Not used (capillary = tube)."

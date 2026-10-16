@@ -19,7 +19,7 @@ sources = ["bentley2020_healthy_exercise_pulmonary_hemodynamics"]
 
 [parameters.regulation]
 value = "passive"
-note = "Normoxic pulmonary vessels carry little tone; the pressure-flow relation follows distension and recruitment (alpha ~2 %/mmHg). Hypoxic vasoconstriction is not modelled."
+note = "Normoxic pulmonary vessels carry little tone (Naeije 2012; distensibility ~2 %/mmHg, Reeves 2005). In the model only the capillary sheet distends; arteries and veins are rigid tubes (OPEN). Hypoxic vasoconstriction is not modelled."
 sources = ["naeije2012_pulmonary_circulation_exercise", "reeves2005_human_pulmonary_distensibility"]
 
 [parameters.capillary]
@@ -73,6 +73,12 @@ value = 1188.0
 unit = "um"
 note = "Mean arteriole-to-venule path length in the sheet: cat 556 um scaled by the human/cat alveolar diameter ratio (Huang 2011; Clark 2010 uses 1186)."
 sources = ["huang2011_human_sheet_flow_parameters", "clark2010_acinar_sheet_flow_parameters"]
+
+[parameters.sheet_pmax_cmH2O]
+value = 15.0
+unit = "cmH2O"
+note = "Transmural pressure above which the sheet no longer thickens (Clark 2010 P_CU; cat 25, an earlier human estimate up to 32)."
+sources = ["clark2010_acinar_sheet_flow_parameters"]
 
 [parameters.hd]
 value = 0.45
@@ -149,22 +155,22 @@ sources = ["huang1996_human_pulmonary_morphometry"]
 [parameters.d_art_micro]
 value = 0.0
 unit = "um"
-note = "No microvascular resistance anchor (r_micro_dilated = 0): pure Poiseuille plus sheet flow."
+note = "Not used: no microvascular resistance anchor (r_micro_dilated = 0), so pure Poiseuille plus sheet flow."
 
 [parameters.d_ven_micro]
 value = 0.0
 unit = "um"
-note = "See d_art_micro."
+note = "Not used (see d_art_micro)."
 
 [parameters.r_micro_dilated]
 value = 0.0
 unit = "mmHg min g/mL"
-note = "0 = no kappa anchor: the lung's resistance is a prediction, not a fit."
+note = "Not used: 0 = no kappa anchor, so the lung's resistance is a prediction, not a fit."
 
 [parameters.d_active]
 value = 0.0
 unit = "um"
-note = "No vessels carry active tone (regulation = passive)."
+note = "Not used: no vessel carries active tone (regulation = passive)."
 
 [parameters.oef]
 value = 0.0
