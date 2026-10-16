@@ -1276,7 +1276,8 @@ function _sheet!(S::_Solver, sh::_Sheet, kappa::F32)
             Pa = pa[ni + i]; Pv = pv[vd[i]]
             ha = clamp(h0 + al * (Pa - pe), 0.0f0, hm); hv = clamp(h0 + al * (Pv - pe), 0.0f0, hm)
             q = K[i] * (ha^4 - hv^4)
-            r = Pa - Pv > 1.0f-3 && q > 0 ? (Pa - Pv) / q : 1.0f0 / (4.0f0 * K[i] * al * max(ha, 1.0f-3)^3)
+            # secant (the bed's actual resistance at this state) for either flow direction; derivative only near zero gradient
+            r = abs(Pa - Pv) > 1.0f-3 && q * (Pa - Pv) > 0 ? (Pa - Pv) / q : 1.0f0 / (4.0f0 * K[i] * al * max(max(ha, hv), 1.0f-3)^3)
             rcap[i] = sqrt(rcap[i] * r / kappa)          # geometric relaxation toward the new resistance
         end
     end
