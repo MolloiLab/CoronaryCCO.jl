@@ -36,13 +36,13 @@ You give four things; everything else is the same for every organ:
 ```julia
 using Vasculature
 
-domain = mesh_domain("heart.vol", vertices, triangles)   # organ surface → 1 mm growth domain
+domain = mesh_domain("heart.vol", vertices, triangles) # organ surface → 1 mm domain
 spec = GrowthSpec(
-    nterm = 1_000_000,          # terminals
-    tissue_ml = 148.1,          # tissue volume (mL)
-    root_caps = [2.54, 1.59],   # imaged inlet radii (mm): LCA, RCA
+    nterm = 1_000_000, # terminals
+    tissue_ml = 148.1, # tissue volume (mL)
+    root_caps = [2.54, 1.59], # imaged inlet radii (mm): LCA, RCA
 )
-avoid = (chambers, origin_mm, 0.4)   # Bool mask of chambers + great vessels, its corner (mm), cell size (mm)
+avoid = (chambers, origin_mm, 0.4) # forbidden mask, its corner (mm), cell size (mm)
 tree = grow(spec, domain, ["lca.xml", "rca.xml"]; blockers = avoid)
 ```
 
@@ -62,8 +62,8 @@ Veins grow the same way from their imaged outlet trees (`grow(spec, domain, ["le
 ![flow from pressure](docs/assets/step2_flow.png)
 
 ```julia
-F = flow(FlowSpec(organ = "heart"), arteries, veins, tissue)   # tissue: 3 × n voxel centres (mm)
-F.rest.resist.mbf, F.stress.resist.mbf                         # mL/min/g at rest and at maximal dilation
+F = flow(FlowSpec(organ = "heart"), arteries, veins, tissue) # tissue: 3 × n voxel centres (mm)
+F.rest.resist.mbf, F.stress.resist.mbf # mL/min/g at rest and at maximal dilation
 ```
 
 No flow is prescribed: each vessel's flow follows from the inlet and outlet pressures, the vessel sizes and the
