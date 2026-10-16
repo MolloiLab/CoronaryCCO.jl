@@ -1,0 +1,52 @@
+[meta]
+id = "scherer2019_porcine_iodine_myocardial_tac"
+data_type = "experimental"
+validates = "First-pass iodine time-concentration curves (dual-layer spectral CT iodine density, mg/mL) in normal resting myocardium vs LV and RV cavity, aorta, pulmonary artery and ventral lung: peak enhancement, maximal upslope, time to peak and area under the curve."
+species = "pig"
+preparation = "One healthy pig (78 kg in Results, 76 kg in Methods; 31.75 cm mean diameter), at rest. 64-slice dual-layer spectral CT (Philips IQon), 4-cm coverage, 120 kVp, mean 100 mAs, 0.27 s rotation, stationary ECG-triggered axial mode. 40 mL iopromide 300 mgI/mL (Ultravist 300) at 4 mL/s into an ear vein, 18-gauge catheter (154 mg I/kg as printed)."
+conditions = "36 scans recorded; 15 motion-free time points kept (non-equidistant). Pixel-wise gamma-variate fit in two steps: points more than 12 s after the preliminary peak were dropped to exclude recirculation. Peak enhancement = Imax - Imin, time to peak = t(Imax) - t(Imin), perfusion = maximal slope, iodine volume = integral of the fitted curve over 0-50 s. No arterial-input normalization or hematocrit scaling."
+verification = "FT"
+access = "Europe PMC open-access full-text XML (PMC6831609, Sci Rep, CC BY), retrieved 2026-10-16. Table 1 read from the XML."
+notes = """Single animal, so there is no SD between subjects. Values are ROI or map values from fitted curves, not raw data.
+The fitted curves exclude recirculation by design, so they do NOT describe washout. The paper states that myocardial enrichment 'remains high for late scan times' and that flush-out from muscle is slow compared with vascular and cavity structures, but gives no late values.
+Acquisition length is printed as 'Within 26 seconds 36 scans'. Elsewhere the temporal resolution is 1.08 scans per second (one scan every 0.92 s), which would give about 33 s for 36 scans. Both kept as printed.
+Myocardial peak 0.92 mg/mL is printed as 11.86% of the descending-aorta peak; myocardial maximal slope 0.085 mg/mL/s as 6.7% of the aortic value. Myocardial time to peak is described as about 4-5 s after the bolus passes the descending aorta.
+Time zero for time to peak is t(Imin) of each pixel's fit, not the injection time.
+The myocardial curve changes little between 16 and 24 s (text)."""
+use_in_model = """First-pass shape check in normal resting myocardium (pig): myocardial iodine peaks about 5 s after the LV and aorta (17.1 vs 12.4 and 12.3 s from each curve's foot) at about 12% of the arterial peak (0.92 vs 7.5-7.8 mg/mL), and then stays near its plateau for at least 8 s. Use the ratios (peak ratio, delay to peak) rather than the absolute values, which depend on dose and on this one animal. For human washout beyond 30 s this file gives no data."""
+
+[source]
+authors = ["Scherer K", "Hammel J", "Sellerer T", "Mechlem K", "Renger B", "Bähr A", "Kupatt C", "Hinkel R", "Herzen J", "Pfeiffer F", "Rummeny E", "Pfeiffer D"]
+year = 2019
+title = "Dynamic Quantitative Iodine Myocardial Perfusion Imaging with Dual-Layer CT using a Porcine Model"
+journal = "Sci Rep"
+volume = "9"
+issue = "1"
+pages = "16046"
+doi = "10.1038/s41598-019-52458-1"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 9, issue 1, article 16046; first author Scherer)"
+pmid = "31690759"
+pmcid = "PMC6831609"
+
+[data.first_pass_iodine_parameters]
+description = "Gamma-variate-derived first-pass parameters by region (iodine density channel)"
+location = "Table 1"
+provenance = "FT"
+statistic = "single animal; ROI values of fitted parameter maps; no SD"
+region = ["myocardium", "left ventricle", "right ventricle", "descending aorta", "ventral lung", "pulmonary artery"]
+peak_enhancement_mg_per_mL = [0.92, 7.52, 3.77, 7.76, 1.01, 6.92]
+max_slope_mg_per_mL_per_s = [0.085, 1.269, 1.561, 1.232, 0.19, 1.25]
+time_to_peak_s = [17.12, 12.39, 6.72, 12.26, 8.66, 9.83]
+iodine_auc_0_50s_mg_s_per_mL = [29.89, 96.77, 62.73, 98.19, 17.26, 95.93]
+missing_note = "No late (> 26-33 s) values; recirculation excluded from fits."
+
+[data.myocardial_hu_and_iodine]
+description = "Myocardial enhancement used for CNR: early (0 s, before contrast) vs 23.3 s after injection (maximal enrichment)"
+location = "Results text and Fig 1a"
+provenance = "FT"
+statistic = "single animal"
+time_after_injection_s = [0.0, 23.3]
+values_note = "Conventional HU, mono-energetic HU and iodine density at these two times are shown only graphically in Fig 1a."
+hu_conventional = [nan, nan]
+iodine_density_mg_per_mL = [nan, nan]
+missing_note = "Fig 1a values not digitized."

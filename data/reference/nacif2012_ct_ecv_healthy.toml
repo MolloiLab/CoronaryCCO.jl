@@ -1,0 +1,81 @@
+[meta]
+id = "nacif2012_ct_ecv_healthy"
+data_type = "experimental"
+validates = "Myocardial extracellular volume fraction (ECV) by equilibrium-phase cardiac CT in healthy adults vs heart failure, with same-day 3-T MRI T1-mapping ECV as reference. ECV = (dHU_myo / dHU_blood) x (1 - Hct), with dHU = HU 10 min after the CTA bolus minus HU before contrast. Gives the late (10-min) myocardium-to-blood iodine partition in normal human myocardium."
+species = "human"
+preparation = "NIH Clinical Center, Aug 2010 - Oct 2011. 28 enrolled, 24 analyzed: 11 healthy (no history of clinical cardiovascular disease; normal LV and RV volumes and function on MRI) and 13 with heart failure (NYHA >= II). 320-row CT (Toshiba Aquilion One). Same-day MRI (3 T Siemens Verio, MOLLI T1 maps 12 min after 0.15 mmol/kg gadopentetate)."
+conditions = "Pre-contrast scan: prospective ECG gating, single 400-ms rotation, 120 kV, 300 mA, 3-mm sections. Coronary CTA bolus: 125 +/- 24 mL iopamidol 370 mgI/mL at 4-5 mL/s (mean +/- SD over all 24 subjects). 'After a 10-minute delay', the post-contrast scan repeated the pre-contrast parameters. Myocardial and LV blood-pool ROIs in anterior and anterolateral segments at base, mid and apex. Hematocrit from a blood test done no more than 7 days before CT."
+verification = "FT"
+access = "PMC author manuscript PMC3426854 (pmc.ncbi.nlm.nih.gov HTML), read 2026-10-16. Table 1 read from the PMC table image (112458t01.jpg, 800 x 497 px)."
+notes = """ECV values are percent, mean +/- SD. The text does not say whether n counts subjects or slice-level ECV values (68 of 72 CT ECV values were measurable).
+The 10-min delay is counted from the CTA; the paper does not say from the start or the end of the injection.
+Hematocrit was not measured on the day of the scan. It came from laboratory tests done no more than 7 days before CT.
+Absolute myocardial and blood HU are not reported, only the derived ECV.
+'Healthy' here allows risk factors: in the healthy group 7 of 11 smoked, 4 of 11 had hypertension and 5 of 11 hyperlipidemia (Table 1). Mean age 58.8 y.
+CT gave higher ECV than MRI (all subjects 31.6 +/- 5.1 vs 28.6 +/- 4.4%, P = .03); Bland-Altman bias 3.01%, 95% limits -2.82% to 8.85%."""
+use_in_model = """Late-phase target for normal human myocardium: about 10 min after a CTA-size iopamidol bolus, tissue ECV is 29.3 +/- 2.7% by CT (26.6 +/- 2.9% by MRI). In the model, compute (C_myo(t) - C_myo(0)) / (C_blood(t) - C_blood(0)) x (1 - Hct) at t = 10 min and compare. A ratio that is still rising at 10 min means the interstitial wash-in is too slow; a ratio above ECV means intravascular iodine is cleared too fast relative to tissue."""
+
+[source]
+authors = ["Nacif MS", "Kawel N", "Lee JJ", "Chen X", "Yao J", "Zavodni A", "Sibley CT", "Lima JA", "Liu S", "Bluemke DA"]
+year = 2012
+title = "Interstitial myocardial fibrosis assessed as extracellular volume fraction with low-radiation-dose cardiac CT"
+journal = "Radiology"
+volume = "264"
+issue = "3"
+pages = "876-883"
+doi = "10.1148/radiol.12112458"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 264, issue 3, 876-883; first author Nacif)"
+pmid = "22771879"
+pmcid = "PMC3426854"
+
+[data.ecv_by_group]
+description = "Myocardial ECV by CT and by MRI in healthy subjects and in heart failure"
+location = "Results (text) and Fig 4"
+provenance = "FT"
+statistic = "mean +/- SD; n = 11 healthy, 13 heart failure (subjects); unclear whether the SD is across subjects or slice values"
+group = ["healthy", "heart failure", "all subjects"]
+n_subjects = [11.0, 13.0, 24.0]
+ecv_ct_percent = [29.3, 33.5, 31.6]
+ecv_ct_sd_percent = [2.7, 5.9, 5.1]
+ecv_mri_percent = [26.6, 30.3, 28.6]
+ecv_mri_sd_percent = [2.9, 4.9, 4.4]
+p_healthy_vs_hf = "P = .03 for both CT and MRI"
+missing_note = "Absolute pre- and post-contrast HU of myocardium and blood are not reported."
+
+[data.protocol]
+description = "Contrast dose, delay and hematocrit handling for the CT ECV measurement"
+location = "Materials and Methods, Cardiac CT Protocol; Study Population; Table 1"
+provenance = "FT"
+statistic = "mean +/- SD where given"
+contrast_agent = "iopamidol 370 mgI/mL (Isovue 370)"
+contrast_volume_mL = 125.0
+contrast_volume_sd_mL = 24.0
+injection_rate_mL_per_s = [4.0, 5.0]
+delay_after_cta_min = 10.0
+tube_voltage_kV = 120.0
+hematocrit_source = "laboratory test no more than 7 days before CT"
+hematocrit_healthy_percent = 41.9
+hematocrit_healthy_sd_percent = 1.7
+hematocrit_hf_percent = 41.4
+hematocrit_hf_sd_percent = 2.3
+effective_dose_ecv_scans_mSv = 1.98
+effective_dose_ecv_scans_sd_mSv = 0.16
+missing_note = "Contrast volume is given for all 24 subjects, not per group. The delay reference point (injection start or end) is not stated."
+
+[data.healthy_cohort]
+description = "Characteristics of the healthy group"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD; n = 11"
+age_y = 58.8
+age_sd_y = 5.3
+male_n = 7.0
+heart_rate_bpm = 58.6
+heart_rate_sd_bpm = 6.3
+serum_creatinine_mg_per_dL = 0.8
+serum_creatinine_sd_mg_per_dL = 0.1
+lv_ejection_fraction_percent = 62.9
+lv_ejection_fraction_sd_percent = 7.3
+lv_mass_g = 146.7
+lv_mass_sd_g = 43.9
+missing_note = ""

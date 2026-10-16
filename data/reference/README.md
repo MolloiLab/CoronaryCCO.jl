@@ -361,3 +361,14 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `kalsho2004_bifurcation_asymmetry.toml` | Diameter asymmetry D_large/D_small and length asymmetry per Strahler order, RCA / LAD / LCx | Pig casts | FT |
 | `kaimovitz2008_diameter_asymmetry.toml` | Smaller daughter ÷ mother diameter per (daughter order, mother order), LAD / LCx / RCA | Pig | FT (one table missing) |
 | `schwarz2020_human_coronary_symmetry.toml` | Bifurcation symmetry d_S/d_L per mother-diameter class (whiskers, quartiles, median), histograms at 75–90 µm and ≥ 400 µm. Lower whisker per class is the growth symmetry floor | Human left coronary cast, ≈ 88,000 bifurcations | fig |
+| `nacif2012_ct_ecv_healthy.toml` | Myocardial ECV by CT 10 min after the CTA bolus: healthy 29.3 ± 2.7% (MRI 26.6 ± 2.9%), heart failure 33.5 ± 5.9%; protocol and hematocrit handling | Human, 11 healthy + 13 heart failure; 120 kV | FT (Table 1) |
+| `kurita2016_ct_ecv_no_cad.toml` | Myocardial ECV by CT without coronary disease: 26.1 ± 2.0% (by sex) | Human, 38 adults | abs |
+| `muthalaly2024_ct_ecv_meta_analysis.toml` | Pooled normal CT-ECV 27.6% (95% CI 25.7–29.4) and disease pools; protocol effects | Human, 13 studies, 248 healthy | abs |
+| `hamdy2019_delayed_ct_ecv_timing.toml` | CT-ECV at 3, 5 and 7 min: healthy 27.1 ± 2.1% at 5 min, constant over 3–7 min | Human, 17 controls + 35 MI | abs |
+| `olsson1983_iohexol_pharmacokinetics.toml` | Iohexol plasma kinetics: Vd 0.27 L/kg, half-life 121 min, full urinary recovery | Human, 20 healthy volunteers | abs |
+| `svaland1992_iodixanol_pharmacokinetics.toml` | Iodixanol plasma kinetics: distribution half-life 26 min, elimination 131 min, Vd 0.28 L/kg | Human, 40 healthy men | abs |
+| `edelson1984_iohexol_pharmacokinetics.toml` | Iohexol clearance (renal 120 ± 18.6, total 131 ± 18.6 mL/min), Vd 165 ± 31 mL/kg, urinary recovery | Human, 16 healthy men | abs |
+| `hooper2025_iohexol_iopamidol_poppk.toml` | Two-compartment population PK of iohexol and iopamidol (CL, V1, Q, V2, covariates) | Human, 24 adults (8 with normal renal function) | FT (Tables 1–3) |
+| `scherer2019_porcine_iodine_myocardial_tac.toml` | First-pass iodine density curves, myocardium vs LV: peaks, times to peak, upslopes, AUC | Pig, 1 healthy animal, spectral CT | FT |
+| `cheriyan2022_lung_dce_mri_ve_ktrans.toml` | Lung DCE-MRI (extended Tofts): Ktrans ≈ 0.21–0.26 /min, ve ≈ 0.32–0.33, vp ≈ 0.42–0.47 of non-air tissue | Human, 17 healthy volunteers, gadobutrol | FT |
+| `seemann2025_porcine_lung_extravascular_ecv.toml` | Lung gadolinium ECV 64 ± 1.5%, plasma fraction 42 ± 4.7%, extravascular ECV 21 ± 4.6% of non-air tissue; fluid loading | Pig | FT |

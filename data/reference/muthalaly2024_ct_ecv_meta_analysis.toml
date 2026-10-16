@@ -1,0 +1,41 @@
+[meta]
+id = "muthalaly2024_ct_ecv_meta_analysis"
+data_type = "meta-analysis"
+validates = "Pooled myocardial extracellular volume fraction (ECV) by cardiac CT in healthy participants, compared with amyloidosis, severe aortic stenosis and non-ischaemic dilated cardiomyopathy; share of between-study heterogeneity explained by CT protocol parameters."
+species = "human"
+preparation = "Systematic review and meta-analysis. Thirteen studies with a total of 248 healthy participants who underwent CT-ECV; disease groups pooled from other studies."
+conditions = "Random-effects pooling of study means; meta-regression on CT-ECV protocol parameters. Individual protocols (delay, contrast dose, hematocrit handling) vary between studies and are not listed in the abstract."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 38879421). Full text (J Cardiovasc Comput Tomogr, Elsevier) was blocked (HTTP 403 from ScienceDirect and the journal site)."
+notes = """The pooled healthy value has very high heterogeneity (I^2 = 93%). The authors say healthy CT-ECV estimates overlap with disease estimates.
+CT protocol parameters explain about 25% of the heterogeneity. Which parameters (delay time, kV, dose, single vs dual energy) matter most is not in the abstract.
+A related letter by the same authors (Muthalaly, Lin, Nerlekar, JACC Cardiovasc Imaging 2024;17:463, doi 10.1016/j.jcmg.2023.12.014) has no abstract and was not read.
+A second meta-analysis (Kato et al., JACC Cardiovasc Imaging 2024;17:516-528, doi 10.1016/j.jcmg.2023.10.008) pools 'control' CT-ECV at 28.5% (95% CI 27.3-29.7%) in its abstract; its controls are not necessarily healthy volunteers."""
+use_in_model = """Population band for late-phase normal myocardial ECV by CT: pooled 27.6% (95% CI 25.7-29.4%). Because the 95% CI is of the pooled mean, use the single-study SDs (about 2-3 percentage points; see nacif2012_ct_ecv_healthy and kurita2016_ct_ecv_no_cad) for the spread between people."""
+
+[source]
+authors = ["Muthalaly RG", "Tan S", "Nelson AJ", "Abrahams T", "Han D", "Tamarappoo BK", "Dey D", "Nicholls SJ", "Lin A", "Nerlekar N"]
+year = 2024
+title = "Variation of computed tomography-derived extracellular volume fraction and the impact of protocol parameters: A systematic review and meta-analysis"
+journal = "J Cardiovasc Comput Tomogr"
+volume = "18"
+issue = "5"
+pages = "457-464"
+doi = "10.1016/j.jcct.2024.06.002"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 18, issue 5, 457-464; first author Muthalaly)"
+pmid = "38879421"
+
+[data.pooled_ecv]
+description = "Pooled CT-ECV by population"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "pooled mean with 95% CI (random effects)"
+population = ["healthy", "amyloidosis", "severe aortic stenosis", "non-ischaemic dilated cardiomyopathy"]
+pooled_ecv_percent = [27.6, 50.2, 31.2, 36.9]
+ci95_low_percent = [25.7, 46.2, 28.5, 31.6]
+ci95_high_percent = [29.4, 54.2, 33.8, 42.3]
+n_studies = [13.0, nan, nan, nan]
+n_participants = [248.0, nan, nan, nan]
+i2_healthy_percent = 93.0
+heterogeneity_explained_by_protocol_percent = 25.0
+missing_note = "Study and participant counts for the disease groups, per-study values and protocol details are not in the abstract. The 25% figure is printed as 'approximately 25%'."

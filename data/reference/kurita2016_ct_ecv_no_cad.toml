@@ -1,0 +1,44 @@
+[meta]
+id = "kurita2016_ct_ecv_no_cad"
+data_type = "experimental"
+validates = "Normal-range myocardial extracellular volume fraction (ECV) by pre-contrast and delayed-phase cardiac CT in adults without coronary stenosis, stress perfusion deficit or delayed enhancement; dependence on age, sex and LV segment."
+species = "human"
+preparation = "38 subjects (ages 45-78, mean 65 y, 14 female) referred for comprehensive cardiac CT (Mie University) with no coronary artery stenosis, no stress perfusion deficit and no myocardial delayed enhancement. Delayed-phase CT reconstructed with a hybrid half- and full-scan algorithm."
+conditions = "ECV = (dHU_myocardium / dHU_LV blood) x (1 - hematocrit), from pre-contrast and delayed-phase CT. Contrast agent, dose and delay time are not given in the abstract."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 26968674). Full text (J Cardiovasc Comput Tomogr, Elsevier) not accessible. The companion open Data in Brief (doi 10.1016/j.dib.2016.03.073, PMC5063794) was read; it adds a CT vs MRI comparison in 8 other patients but no protocol timing."
+notes = """Subjects were patients referred for CT, not volunteers. They had no CAD on CT, but risk factors are not described in the abstract.
+The delayed-phase delay, contrast agent and dose are not in the abstract, so the time point of this ECV is unknown here. Do not assume the protocol of later papers from the same group.
+Companion Data in Brief: CT vs MRI ECV in 24 segments of 8 patients (2 old MI, 2 HCM, 2 without LGE, 1 DCM, 1 primary aldosteronism), R^2 = 0.84, mean difference -3.3% (figure caption)."""
+use_in_model = """Second human normal value for late-phase myocardial ECV by CT: 26.1 +/- 2.0% (range 22.6-30.0%) in 38 adults without CAD. Use together with nacif2012_ct_ecv_healthy (29.3 +/- 2.7%) and muthalaly2024_ct_ecv_meta_analysis (pooled 27.6%) as the target band for the model's late myocardium-to-blood partition times (1 - Hct)."""
+
+[source]
+authors = ["Kurita Y", "Kitagawa K", "Kurobe Y", "Nakamori S", "Nakajima H", "Dohi K", "Ito M", "Sakuma H"]
+year = 2016
+title = "Estimation of myocardial extracellular volume fraction with cardiac CT in subjects without clinical coronary artery disease: A feasibility study"
+journal = "J Cardiovasc Comput Tomogr"
+volume = "10"
+issue = "3"
+pages = "237-241"
+doi = "10.1016/j.jcct.2016.02.001"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 10, issue 3, 237-241; first author Kurita)"
+pmid = "26968674"
+
+[data.ecv]
+description = "Myocardial ECV by CT, overall and by sex"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD; n = 38 subjects (24 male, 14 female)"
+group = ["all", "male", "female"]
+n_subjects = [38.0, 24.0, 14.0]
+ecv_percent = [26.1, 25.5, 27.1]
+ecv_sd_percent = [2.0, 2.0, 1.8]
+ecv_range_all_percent = [22.6, 30.0]
+p_male_vs_female = 0.02
+age_correlation_r = 0.46
+age_correlation_p = 0.003
+segment_difference = "no significant difference between anterior, septal, inferior and lateral segments"
+icc_interobserver = 0.968
+icc_intraobserver = 0.971
+delay_after_contrast_min = nan
+missing_note = "Delay time, contrast agent, dose and hematocrit source are not in the abstract. Male n = 24 is 38 minus the 14 females stated."

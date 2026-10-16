@@ -1,0 +1,80 @@
+[meta]
+id = "cheriyan2022_lung_dce_mri_ve_ktrans"
+data_type = "experimental"
+validates = "Lung parenchyma extravascular exchange of a small hydrophilic tracer (gadobutrol, extracellular gadolinium chelate) in healthy humans: interstitial (extravascular extracellular) volume fraction ve, transfer constant Ktrans and plasma fraction vp by extended-Tofts DCE-MRI; repeatability and response to exercise; comparison with heart failure."
+species = "human"
+preparation = "Cambridge, UK, 2014-2017, GSK-funded method-validation study. Evaluable: 17 healthy volunteers (age 61.2 +/- 11.4 y, 15 male, weight 83.8 +/- 13.0 kg; current smokers excluded), 12 chronic heart failure (NYHA II-III), 3 acute decompensated HF. Supine for up to 30 min before Sessions 1 and 2."
+conditions = "1.5 T GE MR450, 8-channel cardiac coil, no respiratory gating (nonlinear registration). Variable-flip-angle T1 map, then a 7-min dynamic coronal 3D spoiled GRE series (170 volumes, 2.5 s per volume, 10 mm slices). Gadobutrol (Gadovist) 0.05 mL/kg (half dose) at 1.5 mL/s by power injector at the start of dynamic 15, then 25 mL saline. AIF in the pulmonary artery; concentrations corrected for each subject's hematocrit. Extended Tofts model voxel-wise (Madym); per-subject median over the whole-lung volume. Session 2 about 1 week after Session 1; Session 3 just after two bicycle exercise tests."
+verification = "FT"
+access = "Europe PMC open-access full-text XML (PMC9544235, Wiley open access), retrieved 2026-10-16. Supplementary methods and Table S1 not read."
+notes = """ve and vp are fractions of the MRI-visible (non-air) lung tissue, not of total lung volume. MRI is blind to air. The paper's qS0*ve index scales ve by lung water relative to muscle.
+Values in the abstract are group means of per-subject whole-lung medians. Table 2 gives least-squares means (SE) from the repeated-measures ANOVA, so the two differ slightly.
+Ktrans in lung is not a clean permeability-surface product. The authors state that Ktrans measures gadolinium permeability and may not reflect fluid permeability. With high lung flow the extended Tofts Ktrans approaches PS-limited exchange, but the paper does not separate flow and PS.
+vp for HV was printed as a median (95% CI) after the HF value: Session 1 0.42 (0.36-0.53), Session 2 0.47 (0.36-0.55), Session 3 0.47 (0.40-0.61).
+ve in HV rose with age (r = 0.55, P = 0.01, Session 2).
+Repeatability, HV, Session 2 minus Session 1: Ktrans +0.19 min^-1 (95% CI -0.10 to 0.48), CV 41.3%; ve -0.05 (-0.19 to 0.09). The Ktrans CV is large.
+HF raised ve (Session 1: 0.4946 vs 0.3346) but not Ktrans."""
+use_in_model = """Human lung exchange target for a small extracellular tracer: whole-lung Ktrans about 0.21-0.26 min^-1 (per mL tissue) and ve about 0.32-0.33 of non-air tissue, with vp about 0.42-0.47. For the lung compartment of the whole-body iodine model, ve sets the extravascular distribution volume and Ktrans the wash-in rate constant. Gadobutrol (about 605 Da) and iodinated monomers (iohexol about 821 Da; molecular weights not from this paper) are both small hydrophilic extracellular agents, so this is the closest human lung analogue found. Pair with brigham1983_lung_urea_ps (urea PS) and goresky1975_extravascular_lung_water."""
+
+[source]
+authors = ["Cheriyan J", "Roberts A", "Roberts C", "Graves MJ", "Patterson I", "Slough RA", "Schroyer R", "Fernando D", "Kumar S", "Lee S", "Parker GJM", "Sarov-Blat L", "McEniery C", "Middlemiss J", "Sprecher D", "Janiczek RL"]
+year = 2022
+title = "Evaluation of Dynamic Contrast-Enhanced MRI Measures of Lung Congestion and Endothelial Permeability in Heart Failure: A Prospective Method Validation Study"
+journal = "J Magn Reson Imaging"
+volume = "56"
+issue = "2"
+pages = "450-461"
+doi = "10.1002/jmri.28174"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 56, issue 2, 450-461; first author Cheriyan)"
+pmid = "35343008"
+pmcid = "PMC9544235"
+
+[data.whole_lung_by_session]
+description = "Whole-lung Ktrans and ve, group means of per-subject medians, healthy volunteers vs chronic HF"
+location = "Abstract (Results); same values in Results text"
+provenance = "FT"
+statistic = "group mean of per-subject whole-lung medians; SD not printed; n = 17 HV, 12 HF"
+session = ["1 (baseline)", "2 (about 1 week later)", "3 (after exercise)"]
+ktrans_hv_per_min = [0.2353, 0.2567, 0.2108]
+ktrans_hf_per_min = [0.2216, 0.2044, 0.1841]
+ve_hv = [0.3346, 0.3205, nan]
+ve_hf = [0.4946, 0.4353, nan]
+missing_note = "Session-3 ve is not printed in the abstract; Table 2 gives LS means for Session 3 (see exercise table)."
+
+[data.exercise_ls_means]
+description = "Least-squares mean (SE) of whole-lung Ktrans and ve at Session 2 (rest) and Session 3 (after exercise)"
+location = "Table 2"
+provenance = "FT"
+statistic = "LS mean (SE) from repeated-measures ANOVA; n = 17 HV, 12 HF"
+group = ["HV", "HF"]
+ktrans_session2_per_min = [0.26, 0.20]
+ktrans_session2_se_per_min = [0.02, 0.03]
+ktrans_session3_per_min = [0.21, 0.18]
+ktrans_session3_se_per_min = [0.02, 0.02]
+ktrans_change_per_min = [-0.05, -0.02]
+ktrans_change_ci95_low = [-0.09, -0.07]
+ktrans_change_ci95_high = [0.00, 0.03]
+ve_session2 = [0.32, 0.44]
+ve_session2_se = [0.03, 0.03]
+ve_session3 = [0.31, 0.46]
+ve_session3_se = [0.03, 0.03]
+ve_change = [-0.01, 0.02]
+ve_change_ci95_low = [-0.06, -0.03]
+ve_change_ci95_high = [0.04, 0.08]
+p_ktrans_change = [0.06, 0.43]
+p_ve_change = [0.79, 0.42]
+missing_note = ""
+
+[data.plasma_fraction_and_t1]
+description = "Whole-lung plasma fraction vp and native T1 in healthy volunteers"
+location = "Results text (Comparison of Imaging Parameters)"
+provenance = "FT"
+statistic = "median (95% CI) across subjects; n = 17"
+session = ["1", "2", "3"]
+vp_hv_median = [0.42, 0.47, 0.47]
+vp_hv_ci95_low = [0.36, 0.36, 0.40]
+vp_hv_ci95_high = [0.53, 0.55, 0.61]
+t1_hv_median_ms = [789.0, 792.0, 724.0]
+t1_hv_ci95_low_ms = [756.0, 739.0, 688.0]
+t1_hv_ci95_high_ms = [858.0, 840.0, 786.0]
+missing_note = "vp is the mean over lung subregions per subject, then summarized as a group median (as printed)."

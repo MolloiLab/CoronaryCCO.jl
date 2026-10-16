@@ -1,0 +1,44 @@
+[meta]
+id = "olsson1983_iohexol_pharmacokinetics"
+data_type = "experimental"
+validates = "Whole-body plasma pharmacokinetics of IV iohexol in healthy adults: apparent volume of distribution, biologic (elimination) half-life, urinary recovery at 24 h, excretion by glomerular filtration, dose independence."
+species = "human"
+preparation = "20 healthy volunteers. IV iohexol at four dose levels, 125-500 mg I/kg. Comparison with chromium-51 EDTA clearance, given separately and together with iohexol."
+conditions = "Single IV injection. Normal renal function implied by 'healthy volunteers'; GFR values not in the abstract."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 6408018). Full text (Invest Radiol, Lippincott) not accessible."
+notes = """The abstract names the parameters t1/2 alpha, t1/2 beta, Vd, ClT and ClR (no dose dependence found) but prints only Vd (0.27 L/kg) and the 'biologic half-life' (121 min). The distribution half-life and the clearances are not in the abstract.
+The 121-min half-life is taken to be the elimination (beta) phase, since the abstract calls it the biologic half-life. Check against the full text.
+Vd 0.27 L/kg is described as distribution in the extracellular water.
+Recovery in urine was 100% at 24 h, unmetabolized. Iohexol and Cr-51 EDTA clearances compared: iohexol is mainly cleared by glomerular filtration, and iohexol does not change GFR."""
+use_in_model = """Whole-body washout target for a healthy adult: plasma iohexol falls with an elimination half-life of about 2 h (121 min) and distributes into about 0.27 L/kg (roughly the extracellular water). Over a 5-15 min CT protocol, renal loss is small (exp(-ln2 x 15/121) ~ 0.92 of the beta-phase level remains), so most of the early fall in blood iodine must come from distribution into the extravascular extracellular space, not from excretion."""
+
+[source]
+authors = ["Olsson B", "Aulie A", "Sveen K", "Andrew E"]
+year = 1983
+title = "Human pharmacokinetics of iohexol. A new nonionic contrast medium"
+journal = "Invest Radiol"
+volume = "18"
+issue = "2"
+pages = "177-182"
+doi = "10.1097/00004424-198303000-00015"
+crossref_verified = "2026-10-16; Crossref main-title match ('Human Pharmacokinetics of Iohexol'; vol 18, issue 2, 177-182; first author Olsson). The subtitle is not in the Crossref title field."
+pmid = "6408018"
+
+[data.pharmacokinetics]
+description = "Iohexol plasma pharmacokinetic parameters and urinary recovery"
+location = "Abstract"
+provenance = "abs"
+statistic = "group values as printed (mean, n = 20); SD not given in the abstract"
+n_subjects = 20.0
+dose_range_mgI_per_kg = [125.0, 500.0]
+n_dose_levels = 4.0
+volume_of_distribution_L_per_kg = 0.27
+elimination_half_life_min = 121.0
+distribution_half_life_min = nan
+total_clearance_mL_per_min = nan
+renal_clearance_mL_per_min = nan
+urinary_recovery_24h_percent = 100.0
+metabolism = "excreted completely unmetabolized"
+dose_dependence = "none observed for t1/2 alpha, t1/2 beta, Vd, ClT or ClR"
+missing_note = "Distribution half-life and clearances are named but their values are not in the abstract. The 121-min value is the 'biologic half-life' (see notes)."

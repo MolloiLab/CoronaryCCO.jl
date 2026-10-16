@@ -48,6 +48,15 @@ between_subject_cv_percent = [27.0, 24.0, 29.0]
 n = [169, 169, 160]
 missing_note = ""
 
+[data.vasodilator_reserve]
+description = "Coronary vasodilator reserve, hyperemic / baseline global MBF (moved here from the notes text, audit A15)"
+location = "Results (coronary vasodilator reserve); the same values are in the notes"
+provenance = "FT"
+statistic = "mean +/- SD"
+basis = ["uncorrected", "baseline RPP-corrected"]
+cfr = [3.753, 2.794]
+cfr_sd = [1.240, 0.947]
+
 [data.within_subject_regional_cv]
 description = "Spatial heterogeneity within each individual among the 4 LV regions, summarized as the average coefficient of variation"
 location = "Results 3.1.2 (baseline) and 3.2.3 (hyperemia)"

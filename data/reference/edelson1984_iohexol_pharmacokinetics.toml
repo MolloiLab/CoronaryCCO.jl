@@ -1,0 +1,47 @@
+[meta]
+id = "edelson1984_iohexol_pharmacokinetics"
+data_type = "experimental"
+validates = "Plasma pharmacokinetics of IV iohexol in healthy men at high (urography-range) doses: renal and total body clearance, apparent volume of distribution, urinary recovery and its time course, three-compartment structure with a slow terminal phase."
+species = "human"
+preparation = "16 healthy men. Iohexol 346 mg I/mL IV at 500, 750, 1000 and 1500 mg I/kg (four volunteers per dose)."
+conditions = "Single IV dose. Normal renal function implied by 'healthy'; GFR not in the abstract."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 6470969). Full text (J Pharm Sci, Wiley) not accessible."
+notes = """Clearances are given in mL/min (not per kg or per 1.73 m^2). Vd is in mL/kg.
+An open three-compartment model fit best. The 12.6-h value is the gamma (terminal) phase half-life. The alpha- and beta-phase half-lives are not in the abstract.
+The Vd of 165 mL/kg is lower than the 0.27 L/kg of olsson1983_iohexol_pharmacokinetics; the abstract does not say which Vd definition (steady-state, area or central) was used.
+Neither clearance nor percent excreted correlated with dose."""
+use_in_model = """Renal clearance of iohexol in healthy men is about 120 mL/min (total 131 mL/min), close to GFR. Use as the renal sink in the whole-body model. Only 92.3% of the dose was recovered in urine, 89.9% within 12 h, and a 12.6-h terminal phase exists, so a small slowly exchanging pool is present. That pool matters for scans repeated hours later, not for a 5-15 min CT protocol."""
+
+[source]
+authors = ["Edelson J", "Shaw D", "Palace G"]
+year = 1984
+title = "Pharmacokinetics of iohexol, a new nonionic radiocontrast agent, in humans"
+journal = "J Pharm Sci"
+volume = "73"
+issue = "7"
+pages = "993-995"
+doi = "10.1002/jps.2600730735"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 73, issue 7, 993-995; first author Edelson)"
+pmid = "6470969"
+
+[data.pharmacokinetics]
+description = "Iohexol clearance, volume of distribution, urinary recovery and terminal half-life"
+location = "Abstract"
+provenance = "abs"
+statistic = "overall mean +/- SD across all 16 subjects where an SD is printed"
+n_subjects = 16.0
+dose_levels_mgI_per_kg = [500.0, 750.0, 1000.0, 1500.0]
+concentration_mgI_per_mL = 346.0
+renal_clearance_mL_per_min = 120.0
+renal_clearance_sd_mL_per_min = 18.6
+total_clearance_mL_per_min = 131.0
+total_clearance_sd_mL_per_min = 18.6
+volume_of_distribution_mL_per_kg = 165.0
+volume_of_distribution_sd_mL_per_kg = 30.7
+urinary_recovery_percent = 92.3
+urinary_recovery_sd_percent = 4.4
+urinary_recovery_first_12h_percent = 89.9
+terminal_gamma_half_life_h = 12.6
+compartment_model = "open three-compartment"
+missing_note = "Alpha and beta half-lives, the urine collection period behind 92.3%, and the reference for 89.9% (percent of dose or of recovered drug) are not in the abstract."

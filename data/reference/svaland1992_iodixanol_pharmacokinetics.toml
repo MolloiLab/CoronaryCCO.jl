@@ -1,0 +1,41 @@
+[meta]
+id = "svaland1992_iodixanol_pharmacokinetics"
+data_type = "experimental"
+validates = "Whole-body plasma pharmacokinetics of IV iodixanol (non-ionic dimer) in healthy men: distribution and elimination half-lives, apparent volume of distribution, 24-h urinary and fecal recovery, dose independence."
+species = "human"
+preparation = "Phase I study, 40 healthy male volunteers. Iodixanol 300 mg I/mL IV at 0.3, 0.6, 0.9 and 1.2 g I/kg body weight; saline control. Chromium-51 EDTA given with iodixanol at all dose levels to study renal excretion."
+conditions = "Single IV dose. Normal renal function implied by 'healthy'; GFR values not in the abstract."
+verification = "abs"
+access = "Abstract only, via PubMed E-utilities (PMID 1601604). Full text (Invest Radiol, Lippincott) not accessible."
+notes = """Half-lives are 'mean half-lives' of a two-phase (distribution, elimination) decline. SDs, clearances and the number per dose group are not in the abstract.
+Vd 0.28 L/kg is described as distribution to extracellular fluid only.
+Within 24 h, 97% of the dose was excreted unmetabolized in urine by glomerular filtration; 1.2% was found in feces. Parameters did not depend on dose."""
+use_in_model = """Two-phase whole-body plasma curve for a healthy adult: distribution half-life about 26 min and elimination half-life about 131 min, Vd about 0.28 L/kg. The 26-min distribution phase is the slow tail of blood-to-interstitium equilibration that a whole-body model must reproduce between about 2 and 60 min after injection. Compare with olsson1983_iohexol_pharmacokinetics (iohexol, 121 min) and hooper2025_iohexol_iopamidol_poppk (two-compartment fit)."""
+
+[source]
+authors = ["Svaland MG", "Haider T", "Langseth-Manrique K", "Andrew E", "Hals PA"]
+year = 1992
+title = "Human pharmacokinetics of iodixanol"
+journal = "Invest Radiol"
+volume = "27"
+issue = "2"
+pages = "130-133"
+doi = "10.1097/00004424-199202000-00007"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 27, issue 2, 130-133; first author Svaland)"
+pmid = "1601604"
+
+[data.pharmacokinetics]
+description = "Iodixanol plasma pharmacokinetic parameters and excretion"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean values as printed; n = 40 men across four dose levels plus saline control; SD not given in the abstract"
+n_subjects = 40.0
+dose_levels_gI_per_kg = [0.3, 0.6, 0.9, 1.2]
+concentration_mgI_per_mL = 300.0
+distribution_half_life_min = 26.0
+elimination_half_life_min = 131.0
+volume_of_distribution_L_per_kg = 0.28
+urinary_recovery_24h_percent = 97.0
+fecal_recovery_percent = 1.2
+total_clearance_mL_per_min = nan
+missing_note = "Clearance values and SDs are not in the abstract. The fecal-recovery collection period is not stated in the abstract."

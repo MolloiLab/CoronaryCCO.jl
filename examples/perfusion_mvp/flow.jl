@@ -181,7 +181,9 @@ Microvascular scale κ (resistance at maximal dilation)
   Poiseuille resistance is far too high. Vessels above the cut-offs are pure Poiseuille.
 - `r_total_dilated` (heart: 24 mmHg·min·g/mL): κ is set so that the whole bed's resistance at maximal dilation, inlet
   pressure ÷ flow per gram (as PET reports MAP ÷ MBF), equals that of healthy men (Kaufmann et al. 1999). Maximal flow is
-  therefore calibrated; flow reserve, stenosis thresholds and every other state stay predictions.
+  therefore calibrated. Resting flow is fixed by the O₂ balance (Fick: demand ÷ arterial O₂ content ÷ the calibrated
+  extraction), so flow reserve, their ratio, follows from the two calibrations and is calibrated too. Stenosis
+  thresholds, pressure–flow curves, transit times and the distributions of flow stay predictions.
 - `r_micro_dilated` (0 = off): the earlier anchor, Chilian's microvascular resistance at maximal dilation in the cat
   (4 mmHg·min·g/mL); used only when `r_total_dilated` is 0. With neither, κ = 1 (the lung: its resistance is a prediction).
 

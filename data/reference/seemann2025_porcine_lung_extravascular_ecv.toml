@@ -1,0 +1,108 @@
+[meta]
+id = "seemann2025_porcine_lung_extravascular_ecv"
+data_type = "experimental"
+validates = "Lung extracellular volume fraction (gadobutrol ECV), plasma volume fraction (ferumoxytol) and their difference, the extravascular ECV, in normal pig lungs and after induced extravascular (mitral regurgitation) or intravascular (colloid) fluid loading; anterior-to-posterior gradients; lung T1 before and after each agent; pulmonary blood volume."
+species = "pig"
+preparation = "NIH (NHLBI), 18 experiments in female juvenile pigs under general anesthesia, mechanical ventilation and isoflurane. Naive controls (8 animals in the abstract; 5 in Tables 2-3), reversible catheter-induced severe mitral regurgitation (n = 5), and colloid volume loading with 15 mL/kg 6% hetastarch (n = 5). 0.55 T CMR (modified Siemens system), SASHA T1 maps in three axial slices, proton-density lung water maps."
+conditions = "Gadobutrol 0.1 mmol/kg bolus at 4 mL/s via ear vein with 20 mL saline (first-pass imaging of a 2 mL part, then the rest). Ferumoxytol 0.7 mg/kg in 50 mL saline at about 0.4 mL/s, about 30 min after gadobutrol; post-ferumoxytol T1 maps at least 1 h after gadobutrol. ECV = (1 - Hct) x dR1_lung / dR1_blood, using femoral arterial hematocrit. Extravascular ECV = gadolinium ECV - ferumoxytol plasma volume fraction. ROI means over both lungs."
+verification = "FT"
+access = "Europe PMC open-access full-text XML (PMC12182819, J Cardiovasc Magn Reson), retrieved 2026-10-16. Tables 2-4 read from the XML."
+notes = """All fractions are of the MRI-visible (non-air) lung tissue. The authors stress that a lung ECV of 70% means 70% of the non-air volume is extracellular, not that the lung is 70% fluid.
+'Plasma volume fraction' is the ferumoxytol-based ECV (intravascular agent); the gadolinium ECV includes both plasma and interstitium.
+The abstract says normal controls n = 8; Tables 2 and 3 use naive n = 5. Three naive pigs received ferumoxytol first and gadolinium second; the dual-contrast naive values are from the 5 with gadolinium first.
+Hematocrit in these anesthetized pigs is low (naive 23 +/- 8.8%), which matters when converting partition coefficients to ECV.
+The exact minutes between gadobutrol injection and its T1 map are not stated in the text read; ferumoxytol was given about 30 min after gadobutrol.
+Lung water volume (312 +/- 32 mL) was lower than first-pass pulmonary blood volume (439 +/- 67 mL) in naive animals; the authors discuss this discrepancy.
+Regional analysis groups naive and MR-baseline animals (n = 10)."""
+use_in_model = """Pig lung compartment sizes for a small extracellular tracer: of the non-air lung tissue, about 64% is extracellular (gadolinium ECV), 42% is plasma and 21% is extravascular extracellular (naive). Extravascular ECV is higher anteriorly (non-dependent) and plasma fraction higher posteriorly. Use as the large-animal counterpart of cheriyan2022_lung_dce_mri_ve_ktrans (human ve about 0.32, vp about 0.45, from a different model and method). Gives no exchange rate (PS or Ktrans)."""
+
+[source]
+authors = ["Seemann F", "Halaby RN", "Jaimes A", "O'Brien K", "Kellman P", "Herzka DA", "Lederman RJ", "Campbell-Washburn AE"]
+year = 2025
+title = "Characterizing extravascular lung water - A dual-contrast agent extracellular volume approach by cardiovascular magnetic resonance"
+journal = "J Cardiovasc Magn Reson"
+volume = "27"
+issue = "1"
+pages = "101883"
+doi = "10.1016/j.jocmr.2025.101883"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 27, issue 1, article 101883; first author Seemann)"
+pmid = "40120856"
+pmcid = "PMC12182819"
+
+[data.lung_ecv_global]
+description = "Global lung gadolinium ECV, plasma volume fraction and extravascular ECV by model, and extravascular lung water volume"
+location = "Table 3; Results text"
+provenance = "FT"
+statistic = "mean +/- SD; n = 5 per group"
+group = ["naive", "MR model baseline", "MR model during regurgitation", "volume-loaded"]
+ecv_percent = [64.0, 70.0, 78.0, 73.0]
+ecv_sd_percent = [1.5, 6.7, 6.9, 3.1]
+plasma_volume_fraction_percent = [42.0, 43.0, 46.0, 51.0]
+plasma_volume_fraction_sd_percent = [4.7, 4.2, 5.4, 2.7]
+ecv_extravascular_percent = [21.0, 27.0, 32.0, 21.0]
+ecv_extravascular_sd_percent = [4.6, 4.1, 1.9, 3.6]
+extravascular_lung_water_mL = [67.0, 105.0, 143.0, 89.0]
+extravascular_lung_water_sd_mL = [13.0, 19.0, 15.0, 24.0]
+missing_note = ""
+
+[data.lung_ecv_regional]
+description = "Regional ECV, plasma volume fraction and extravascular ECV in anterior, mid and posterior thirds"
+location = "Table 4"
+provenance = "FT"
+statistic = "mean +/- SD; n = 10 (naive + MR baseline), 5 (MR), 5 (volume-loaded)"
+group = ["naive + MR baseline", "MR during regurgitation", "volume-loaded"]
+ecv_anterior_percent = [68.0, 86.0, 67.0]
+ecv_anterior_sd_percent = [6.8, 3.8, 9.4]
+ecv_mid_percent = [67.0, 77.0, 71.0]
+ecv_mid_sd_percent = [5.4, 6.5, 2.6]
+ecv_posterior_percent = [66.0, 77.0, 75.0]
+ecv_posterior_sd_percent = [6.4, 8.6, 2.5]
+plasma_anterior_percent = [38.0, 41.0, 44.0]
+plasma_anterior_sd_percent = [5.3, 6.7, 4.8]
+plasma_mid_percent = [43.0, 46.0, 50.0]
+plasma_mid_sd_percent = [4.7, 5.7, 3.7]
+plasma_posterior_percent = [44.0, 48.0, 54.0]
+plasma_posterior_sd_percent = [4.3, 7.1, 2.5]
+ecv_extravascular_anterior_percent = [30.0, 45.0, 23.0]
+ecv_extravascular_anterior_sd_percent = [8.4, 8.3, 5.5]
+ecv_extravascular_mid_percent = [24.0, 31.0, 21.0]
+ecv_extravascular_mid_sd_percent = [4.9, 4.2, 3.2]
+ecv_extravascular_posterior_percent = [22.0, 29.0, 21.0]
+ecv_extravascular_posterior_sd_percent = [5.0, 3.2, 4.0]
+missing_note = "Column-to-region mapping (anterior, mid, posterior) follows the Table 4 layout and the text, which quotes the anterior and posterior values."
+
+[data.naive_t1_and_volumes]
+description = "Naive pigs: lung and blood T1 and lung volumes by contrast phase"
+location = "Table 2 (naive model)"
+provenance = "FT"
+statistic = "mean +/- SD; n = 5"
+phase = ["native", "gadolinium chelate", "ferumoxytol"]
+lung_t1_ms = [931.0, 559.0, 287.0]
+lung_t1_sd_ms = [55.0, 83.0, 31.0]
+blood_t1_ms = [1199.0, 609.0, 199.0]
+blood_t1_sd_ms = [85.0, 105.0, 21.0]
+lung_water_density_percent = [33.0, 34.0, 32.0]
+lung_water_density_sd_percent = [3.0, 3.0, 8.0]
+lung_water_volume_mL = [310.0, 312.0, 295.0]
+lung_water_volume_sd_mL = [32.0, 32.0, 30.0]
+lung_volume_L = [0.93, 0.93, 0.95]
+lung_volume_sd_L = [0.14, 0.15, 0.20]
+pulmonary_blood_volume_mL = [nan, 439.0, nan]
+pulmonary_blood_volume_sd_mL = [nan, 67.0, nan]
+cardiac_output_L_per_min = [3.5, 3.5, 3.7]
+cardiac_output_sd_L_per_min = [0.5, 0.5, 0.5]
+heart_rate_bpm = [83.0, 84.0, 87.0]
+heart_rate_sd_bpm = [11.0, 10.0, 11.0]
+missing_note = "Pulmonary blood volume was measured by first-pass perfusion with the gadolinium bolus only."
+
+[data.cohort]
+description = "Body weight and hematocrit by model"
+location = "Results (first paragraph)"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["naive", "mitral regurgitation model", "volume-loaded"]
+weight_kg = [46.0, 49.0, 44.0]
+weight_sd_kg = [7.3, 3.6, 2.6]
+hematocrit_percent = [23.0, 26.0, 18.0]
+hematocrit_sd_percent = [8.8, 3.2, 1.9]
+missing_note = ""

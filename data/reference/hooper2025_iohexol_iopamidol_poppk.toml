@@ -1,0 +1,111 @@
+[meta]
+id = "hooper2025_iohexol_iopamidol_poppk"
+data_type = "experimental"
+validates = "Two-compartment population pharmacokinetics (CL, V1, Q, V2) of IV iohexol and iopamidol in adult volunteers without and with mild-to-moderate kidney impairment, measured in the same people over 6 h by LC-MS."
+species = "human"
+preparation = "University of Michigan, open-label parallel-group single-dose study. 24 adults (18 female), stratified 8 per group by 2021 CKD-EPI eGFRcr: normal (>= 90 mL/min), mild (60-89) and moderate (30-59) impairment. Overnight fast >= 10 h. Two separate IV boluses in random order: 2.5 mL Omnipaque-300 (1618 mg iohexol, 647 mg/mL) and 2.5 mL Isovue-300 (1530 mg iopamidol, 612 mg/mL). Serum samples at 0, 10 min, 30 min, 1, 2, 5 and 6 h."
+conditions = "Low (GFR-test) dose, not a CT dose; the authors assume linear PK and did not test higher doses. Nonlinear mixed-effects model in MonolixSuite 2024R1. Base model has no covariates. Pragmatic model uses eGFRcr; final model uses eGFRcr-cys. Covariates are scaled as (eGFR/80)^beta, (Weight/72)^beta, (BSA/2)^beta; sex coded 0 = female, 1 = male."
+verification = "FT"
+access = "Europe PMC open-access full-text XML (PMC12353758, Wiley open access), retrieved 2026-10-16. Tables 1-3 parsed from the XML. Supplemental tables not read."
+notes = """Population values are typical-subject estimates at the covariate reference (eGFR 80 mL/min, weight 72 kg, BSA 2 m^2, female where sex is a covariate), with RSE% in the source.
+The cohort is not all healthy-kidney: only 8 of 24 have eGFR >= 90 (mean 109 mL/min, age 28 +/- 5 y). The base-model CL (73.9 mL/min iohexol) therefore reflects the whole mixed cohort (overall eGFRcr 83 +/- 29 mL/min).
+Table 3 (iopamidol) prints a covariate row labelled 'CL_beta_BSA' (1.99 pragmatic, 1.86 final) directly under V1_pop. Its position suggests a V1 covariate (text: 'iopamidol V1_pop was better estimated with BSA'). Stored as printed under the V1 position with this caveat.
+Half-lives and urinary excretion are not reported. Do not back-compute half-lives here; the model user can simulate them from CL, V1, Q and V2.
+Iopamidol CL was about 15 mL/min lower than iohexol CL (Bland-Altman bias 15.69, LoA -3.76 to 35.15 mL/min, final model)."""
+use_in_model = """Ready-made two-compartment plasma model for iohexol and iopamidol: V1 ~6 L (central, plasma-like), V2 ~6 L (iohexol) or ~4 L (iopamidol) peripheral, Q ~120-170 mL/min, CL ~60-75 mL/min at eGFR 80. V1 + V2 ~ 12 L is the extracellular-fluid scale. For a healthy young adult the CL should be scaled up with eGFR (CL x (eGFR/80)^0.7). Q/V1 sets the distribution time constant (blood-to-interstitium equilibration) that the whole-body model must match over the first hour."""
+
+[source]
+authors = ["Hooper L", "Heung M", "Wang L", "Matvekas A", "Alikhani R", "Kenes MT", "Stringer KA", "Mueller BA", "Pai MP"]
+year = 2025
+title = "Pharmacokinetic Characterization of Iopamidol and Iohexol for Optimizing Measured Glomerular Filtration Rate Assessment in Clinical Practice and Drug Development"
+journal = "J Clin Pharmacol"
+volume = "65"
+issue = "11"
+pages = "1350-1361"
+doi = "10.1002/jcph.70046"
+crossref_verified = "2026-10-16; Crossref title exact match (vol 65, issue 11, 1350-1361; first author Hooper)"
+pmid = "40395105"
+pmcid = "PMC12353758"
+
+[data.iohexol_poppk]
+description = "Iohexol two-compartment population PK estimates (base, pragmatic, final models)"
+location = "Table 2"
+provenance = "FT"
+statistic = "population estimate (RSE %); interindividual variability as CV %"
+model = ["base", "pragmatic", "final"]
+cl_pop_mL_per_min = [73.89, 75.06, 69.69]
+cl_pop_rse_percent = [6.23, 4.07, 3.44]
+v1_pop_mL = [6600.55, 6083.55, 5920.61]
+v1_pop_rse_percent = [7.47, 7.13, 7.73]
+q_pop_mL_per_min = [164.17, 158.8, 167.91]
+q_pop_rse_percent = [15.1, 15.3, 16.9]
+v2_pop_mL = [5923.11, 5937.72, 6021.42]
+v2_pop_rse_percent = [6.85, 5.89, 5.82]
+cl_beta_eGFRcr = [nan, 0.7, nan]
+cl_beta_eGFRcr_cys = [nan, nan, 0.69]
+cl_beta_sex = [nan, nan, 0.15]
+v1_beta_sex = [nan, 0.39, 0.43]
+v2_beta_weight = [nan, 0.87, 0.88]
+iiv_cl_cv_percent = [30.83, 19.711, 14.58]
+iiv_v1_cv_percent = [32.89, 25.709, 24.86]
+iiv_q_cv_percent = [50.36, 53.341, 56.35]
+iiv_v2_cv_percent = [27.88, 23.569, 21.45]
+corr_cl_v2 = [0.22, 0.22, 0.2]
+missing_note = "nan = covariate not in that model. Covariate RSEs are in the source table and not stored."
+
+[data.iopamidol_poppk]
+description = "Iopamidol two-compartment population PK estimates (base, pragmatic, final models)"
+location = "Table 3"
+provenance = "FT"
+statistic = "population estimate (RSE %); interindividual variability as CV %"
+model = ["base", "pragmatic", "final"]
+cl_pop_mL_per_min = [58.65, 59.76, 61.73]
+cl_pop_rse_percent = [5.9, 3.01, 2.7]
+v1_pop_mL = [5004.76, 5928.74, 6034.13]
+v1_pop_rse_percent = [7.66, 6.42, 6.61]
+q_pop_mL_per_min = [123.7, 125.5, 118.57]
+q_pop_rse_percent = [14.59, 12.5, 12.9]
+v2_pop_mL = [4543.01, 4274.2, 4154.60]
+v2_pop_rse_percent = [6.78, 6.56, 6.9]
+cl_beta_eGFRcr = [nan, 0.73, nan]
+cl_beta_eGFRcr_cys = [nan, nan, 0.73]
+cl_beta_bsa = [nan, nan, 0.59]
+row_printed_cl_beta_bsa_under_v1 = [nan, 1.99, 1.86]
+v2_beta_sex = [nan, 0.313, 0.325]
+iiv_cl_cv_percent = [29.58, 14.191, 8.1]
+iiv_v1_cv_percent = [25.82, 15.833, 16.9]
+iiv_q_cv_percent = [30.33, 33.13, 25.1]
+iiv_v2_cv_percent = [25.24, 20.159, 20.4]
+missing_note = "The row 'row_printed_cl_beta_bsa_under_v1' is printed as 'CL_beta_BSA' but sits under V1_pop; probably the V1 BSA exponent (see notes)."
+
+[data.cohort]
+description = "Cohort characteristics by kidney-function group"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean (SD); n = 8 per group"
+group = ["overall", "normal (eGFR >= 90)", "mild (60-89)", "moderate (30-59)"]
+n_subjects = [24.0, 8.0, 8.0, 8.0]
+age_y = [50.0, 28.0, 61.0, 61.0]
+age_sd_y = [18.0, 5.0, 8.0, 10.0]
+female_n = [18.0, 6.0, 6.0, 6.0]
+bmi_kg_per_m2 = [26.7, 23.3, 27.4, 29.4]
+bmi_sd_kg_per_m2 = [4.4, 3.3, 2.8, 4.7]
+serum_creatinine_mg_per_dL = [1.03, 0.86, 0.94, 1.29]
+serum_creatinine_sd_mg_per_dL = [0.30, 0.14, 0.22, 0.33]
+cystatin_c_mg_per_L = [1.03, 0.81, 0.99, 1.30]
+cystatin_c_sd_mg_per_L = [0.31, 0.12, 0.18, 0.37]
+egfr_cr_mL_per_min = [83.0, 109.0, 81.0, 58.0]
+egfr_cr_sd_mL_per_min = [29.0, 26.0, 18.0, 12.0]
+missing_note = ""
+
+[data.dosing_and_sampling]
+description = "Doses and serum sampling times"
+location = "Methods"
+provenance = "FT"
+statistic = "protocol values"
+iohexol_dose_mg = 1618.0
+iohexol_volume_mL = 2.5
+iopamidol_dose_mg = 1530.0
+iopamidol_volume_mL = 2.5
+sampling_times_h = [0.0, 0.1667, 0.5, 1.0, 2.0, 5.0, 6.0]
+missing_note = "Doses are mg of compound (647 and 612 mg/mL solutions, both 300 mgI/mL products). Sampling time 10 min stored as 0.1667 h."
