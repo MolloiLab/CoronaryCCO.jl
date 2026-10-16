@@ -134,14 +134,14 @@ sources = ["bindschadler2014_iodine_exchange_model_ps"]
 [parameters.ve]
 value = 0.054
 unit = "mL/mL"
-note = "Derived: accessible extravascular lung water 2.16 g/kg in normal humans at rest (Goresky 1975) x 70 kg = 151 mL over XCAT's 2810 mL lung. Enters only with ps > 0."
-sources = ["goresky1975_extravascular_lung_water"]
+note = "Derived: accessible extravascular lung water 2.16 g/kg in normal humans at rest (Goresky 1975) x 70 kg = 151 mL over XCAT's 2810 mL lung. An extracellular solute reaches at most this water, so it is an upper bound (Levitt 2003: 86 mL; pig extravascular ECV 21% of non-air tissue ~240 mL, Seemann 2025). The body model (body.jl e_lung) uses the same 151 mL."
+sources = ["goresky1975_extravascular_lung_water", "levitt2003_interstitial_pharmacokinetics", "seemann2025_porcine_lung_extravascular_ecv"]
 
 [parameters.ps]
-value = 0.0
+value = 0.274
 unit = "mL/min/g"
-note = "OPEN: no measurement of iodinated-contrast (or EDTA/DTPA) extraction across human pulmonary capillaries exists; 0 = intravascular. Closest analogue: [14C]urea PS in acute respiratory failure (Brigham 1983), not normal lung."
-sources = ["brigham1983_lung_urea_ps"]
+note = "Derived (2026-10-16): human lung DCE-MRI with gadobutrol (17 healthy volunteers, extended Tofts) Ktrans 0.234 /min per mL of non-air tissue (Cheriyan 2022); about 1146 mL of non-air tissue around 510 mL of lung blood (vp 0.445), and Ktrans ~ PS at the lung's high flow, gives 4.47 mL/s for gadobutrol (MW 605); scaled to iohexol (MW 821) by PS ~ MW^-0.51 (human forearm EDTA vs inulin, Keiding 1988): 3.83 mL/s = 230 mL/min over the 840 g lung. No direct measurement for iodinated contrast exists (Brigham 1983 urea PS is in acute respiratory failure). The body model (body.jl ps_lung) uses the same value."
+sources = ["cheriyan2022_lung_dce_mri_ve_ktrans", "keiding1988_human_forearm_inulin_edta_ps", "brigham1983_lung_urea_ps"]
 
 [parameters.rho]
 value = 0.299
