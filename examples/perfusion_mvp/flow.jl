@@ -1284,6 +1284,23 @@ function _sheet!(S::_Solver, sh::_Sheet, kappa::F32)
     return nothing
 end
 
+# 99th percentile and maximum over the sheet beds of |R(state) / κ − R_current| / R_current: how far each bed's resistance still is from
+# the one its own end pressures give (the relaxation above converges bed by bed, the loop stops on total flow)
+function _sheet_residual(S::_Solver, sh::_Sheet, kappa::F32)
+    ni = S.ni; pa = S.pa; pv = S.pv; vd = S.vdrain; rcap = S.rcap; K = sh.K; h0 = sh.h0; al = sh.al; pe = sh.pe; hm = sh.hmax
+    res = similar(rcap)
+    AK.foreachindex(rcap) do i
+        @inbounds begin
+            Pa = pa[ni + i]; Pv = pv[vd[i]]
+            ha = clamp(h0 + al * (Pa - pe), 0.0f0, hm); hv = clamp(h0 + al * (Pv - pe), 0.0f0, hm)
+            q = K[i] * (ha^4 - hv^4)
+            r = abs(Pa - Pv) > 1.0f-3 && q * (Pa - Pv) > 0 ? (Pa - Pv) / q : 1.0f0 / (4.0f0 * K[i] * al * max(max(ha, hv), 1.0f-3)^3)
+            res[i] = abs(r / kappa - rcap[i]) / rcap[i]
+        end
+    end
+    h = sort!(Array(res)); return isempty(h) ? (0.0f0, 0.0f0) : (h[clamp(ceil(Int, 0.99 * length(h)), 1, length(h))], h[end])
+end
+
 # Distensible vessels: per arterial and venous segment, a size class (small: below the alveolar
 # diameter) sets β and the outside pressure; `_distend!` sets each vessel's resistance factor from
 # its current mean pressure (geometric relaxation, like the sheet beds).
@@ -1422,6 +1439,11 @@ function _autoregulate!(
         end
     end
     iters == maxit && @warn "$(state) state stopped at its iteration limit ($maxit) without meeting the convergence test"
+    if sheet !== nothing
+        sr, smax = _sheet_residual(S, sheet, kappa)
+        sr > 1.0f-3 && @warn "sheet beds not converged: 99th percentile resistance mismatch $(round(sr, sigdigits = 2))"
+        verbose && println("  sheet beds: resistance mismatch 99th percentile $(round(sr, sigdigits = 2)), max $(round(smax, sigdigits = 2))")
+    end
     _solve!(S, kappa; warm = true)
     stress || _metabolic!(S, phys, terr_g)
     return iters, p99()
