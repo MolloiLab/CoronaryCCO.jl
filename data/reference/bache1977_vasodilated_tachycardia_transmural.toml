@@ -1,0 +1,74 @@
+[meta]
+id = "bache1977_vasodilated_tachycardia_transmural"
+data_type = "experimental"
+validates = "Four-layer transmural LV flow at maximal adenosine vasodilation vs paced heart rate (100-250/min) and diastolic time fraction (65% -> 52%) in awake beating hearts, with tone-intact controls. Isolates the mechanical (systolic compression) effect on hyperemic flow."
+species = "dog"
+preparation = "13 mongrel dogs 20-38 kg, chronically instrumented (aortic and LA catheters, RV outflow pacing electrode), studied awake 39-84 days after surgery. 7-10 um microspheres into the LA, 90 s reference withdrawal at 15 ml/min. Central two LV rings (62 +/- 4% of LV mass), six regions, each cut into four equal layers (layer 1 epicardial ... layer 4 endocardial); regions and rings pooled."
+conditions = "Ventricular pacing 100, 150, 200, 250/min in random order, 4 min at each rate before injection. Control group (6 dogs) with tone intact; adenosine group (7 dogs) 4 umol/kg/min i.v. (dose giving no further flow with higher dose and abolishing reactive hyperemia), started 10 min before pacing. At 100/min only 5 of 7 adenosine dogs (sinus rate > 100 in 2)."
+verification = "FT"
+access = "Publisher PDF (Circ Res open archive) retrieved from an Internet Archive snapshot of the ahajournals.org PDF; read with pdftotext; Tables 1-2 read from the text layer."
+notes = """All values mean +/- SE. During adenosine in sinus rhythm: MAP 88 +/- 3 mmHg, HR 97 +/- 4/min. Endo/epi = layer 4 / layer 1. Mean flow fell 18% from 100 to
+250/min (P < 0.05); layers 1-2 did not change with rate; layer 4 at 250/min was 47 +/- 9% of its 100/min value. Fig. 1: endo/epi vs duration of diastole (sec/min)
+in adenosine dogs, y = 0.0752x - 1.87, r = 0.81; text: endo/epi = 0.000392 DPTI - 0.354 (r = 0.71). Comparison cited by the authors: Domenech & Goich 1976
+(Cardiovasc Res 10:224), intracoronary dipyridamole, 15 um spheres: endo/epi 1.20 at 100/min -> 0.70 at 180/min, subepicardial flow unchanged."""
+use_in_model = """Best beating-heart test of the compression penalty at full dilation. At 100/min (diastole 65% of the cycle) hyperemic flow is transmurally uniform
+(endo/epi 1.00) and the outer half is insensitive to rate up to 250/min, so systolic compression acts on the inner half. Mean hyperemic flow changes only from
+5.49 to 4.94 ml/min/g between diastolic fractions 65% and 53% (-10%), and to 4.52 (-18%) at 52%/250 per min. A model compression term should reproduce
+this weak whole-wall sensitivity together with the strong layer-4 loss."""
+
+[source]
+authors = ["Bache RJ", "Cobb FR"]
+year = 1977
+title = "Effect of maximal coronary vasodilation on transmural myocardial perfusion during tachycardia in the awake dog"
+journal = "Circ Res"
+volume = "41"
+issue = "5"
+pages = "648-653"
+doi = "10.1161/01.res.41.5.648"
+crossref_verified = "2026-10-15; Crossref title exact match ('Effect of maximal coronary vasodilation on transmural myocardial perfusion during tachycardia in the awake dog.'; Circ Res 41(5):648-653; Bache, Cobb)"
+pmid = "332406"
+
+[data.hemodynamics]
+description = "Hemodynamics at each paced rate, control (CON) and adenosine (ADEN) groups"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SE; n = 6 (CON), 7 (ADEN; 5 at 100/min)"
+heart_rate_bpm = [100.0, 150.0, 200.0, 250.0]
+con_mean_aortic_mmHg = [94.0, 99.0, 96.0, 96.0]
+con_mean_aortic_se_mmHg = [5.0, 5.0, 6.0, 4.0]
+aden_mean_aortic_mmHg = [92.0, 93.0, 91.0, 89.0]
+aden_mean_aortic_se_mmHg = [5.0, 4.0, 5.0, 5.0]
+con_mean_la_mmHg = [6.0, 5.0, 6.0, 11.0]
+aden_mean_la_mmHg = [4.0, 4.0, 6.0, 9.0]
+con_lv_ejection_time_s = [0.189, 0.152, 0.131, 0.107]
+aden_lv_ejection_time_s = [0.211, 0.169, 0.141, 0.116]
+con_diastole_s_per_min = [41.1, 37.2, 33.8, 33.2]
+aden_diastole_s_per_min = [38.9, 35.1, 31.8, 31.1]
+con_diastolic_time_fraction_pct = [69.0, 62.0, 56.0, 55.0]
+aden_diastolic_time_fraction_pct = [65.0, 59.0, 53.0, 52.0]
+aden_diastolic_time_fraction_se_pct = [1.1, 1.3, 2.0, 1.0]
+missing_note = "SEs for LA pressure, ejection time and diastole duration are in Table 1 but not stored; DPTI columns are cut off in the text layer (CON 3640, 3280, 2890, 2580 mmHg*s/min; ADEN values truncated) and are not stored."
+
+[data.transmural_flow]
+description = "Layer blood flow (ml/min/g), layer 1 = epicardial quarter, layer 4 = endocardial quarter"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SE"
+heart_rate_bpm = [100.0, 150.0, 200.0, 250.0]
+aden_layer1 = [5.27, 5.09, 6.08, 6.19]
+aden_layer1_se = [0.59, 0.54, 0.57, 0.63]
+aden_layer2 = [5.59, 5.74, 5.77, 5.55]
+aden_layer2_se = [0.45, 0.29, 0.43, 0.67]
+aden_layer3 = [5.84, 5.14, 4.54, 3.86]
+aden_layer3_se = [0.59, 0.26, 0.24, 0.41]
+aden_layer4 = [5.27, 4.11, 3.38, 2.47]
+aden_layer4_se = [0.42, 0.24, 0.22, 0.28]
+aden_mean = [5.49, 5.02, 4.94, 4.52]
+aden_mean_se = [0.39, 0.24, 0.22, 0.28]
+aden_endo_epi = [1.00, 0.81, 0.56, 0.40]
+con_layer1 = [1.21, 1.55, 1.69, 1.85]
+con_layer4 = [1.31, 1.80, 1.86, 1.89]
+con_mean = [1.27, 1.70, 1.82, 1.95]
+con_mean_se = [0.12, 0.16, 0.20, 0.13]
+con_endo_epi = [1.10, 1.18, 1.13, 1.04]
+missing_note = "Control layers 2-3 and control layer SEs are in Table 2 but not stored. Endo/epi has no SE in the table."

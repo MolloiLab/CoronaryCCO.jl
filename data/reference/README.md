@@ -83,6 +83,28 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `mahendiran2025_mass_indexed_microvascular_resistance.toml` | LAD Qhyper 4.56 ± 2.20 mL/min/g and Rμ,hyper × mass 20.7 ± 8.0 mmHg·min·g/mL (controls); resting and CMD values | Human ANOCA, continuous thermodilution + CT mass | FT |
 | `melikian2010_imr_normal_controls.toml` | IMR 19 ± 5 U in patients without atherosclerosis | Human, bolus thermodilution | abs |
 
+### Clinical hyperemic stimuli: does adenosine reach full dilation?
+
+| File | What it validates | Species / conditions | Status |
+|---|---|---|---|
+| `wilson1990_adenosine_vs_papaverine.toml` | CBFV ratio: IC papaverine 4.5, IC adenosine 16 µg 4.6 ± 0.7, IV adenosine 140 µg/kg/min 4.4 ± 0.9 (papaverine level in 84% of patients) | Human, normal arteries, Doppler catheter, same patients | abs |
+| `rossen1991_dipyridamole_adenosine_papaverine.toml` | Velocity ratio papaverine 3.9 ± 1.1, IV adenosine 3.4 ± 1.2, IV dipyridamole 3.1 ± 1.2; resistance index 0.25 / 0.26 / 0.31 | Human, n = 13–15, non-stenotic artery, same patients | abs |
+| `nitenberg2007_postocclusion_vs_adenosine.toml` | After PTCA, CFR 2.53 ± 0.58 (IC adenosine 60 µg) vs 3.31 ± 0.67 (30-s occlusion); CRR 2.58 vs 3.46 | Human, n = 10, Doppler wire, low IC dose | abs |
+| `debruyne2017_saline_induced_hyperemia.toml` | IC saline 15–20 mL/min gives 111–112% of IC adenosine hyperemia; saline on top of IV adenosine adds nothing. Notes: pig mechanism (Adjedj 2020) and haemolysis/ATP (Gallinoro 2022) | Human, n = 24, Doppler wire, side-hole infusion catheter | abs |
+| `everaars2019_thermodilution_vs_o15_pet.toml` | Invasive vs PET absolute flow in the same territories: 179 vs 185 and 167 vs 166 mL/min (bias −0.9 ± 35); saline-only 184 ± 75 vs adenosine 174 ± 72 mL/min | Human, n = 25, CCTA Voronoi mass, IV adenosine | FT |
+| `jones1995_adenosine_arteriole_vs_small_artery.toml` | IC adenosine dilates arterioles < 100 µm (+25 ± 3%) far more than small arteries > 100 µm (+7 ± 3%); NO dependence | Dog, beating heart, intravital microscopy, submaximal doses | abs |
+
+### Systolic compression of the dilated bed (beating vs arrested, heart rate, transmural)
+
+| File | What it validates | Species / conditions | Status |
+|---|---|---|---|
+| `downey1975_arrested_vasodilated_transmural.toml` | Normalized flow by wall quarter: arrested and dilated, inner/outer ~1.07/0.91 (endo ~20% above epi); paced 200/min, 0.81/1.09 (endo ~20% below). Notes: Downey & Kirk 1975 beating vs arrested lines parallel above peak LVP (abs); Spaan 1981 intramyocardial pump p_im 53 ± 7 mmHg | Dog, vagal arrest or RV pacing, reactive hyperemia or IC adenosine, 42K/86Rb | fig |
+| `cobb1974_awake_adenosine_transmural.toml` | Epi/endo flow at rest (0.75/0.83) and IV adenosine (4.98/4.49 mL/min/g); endo/epi 1.06–1.16 rest, 0.81–0.99 adenosine (HR 111), 0.63–0.78 after thoracotomy (HR 176) | Dog, awake then anesthetized, 7–10 µm microspheres | FT |
+| `bache1977_vasodilated_tachycardia_transmural.toml` | Four-layer flow at maximal dilation vs pacing 100–250/min: mean 5.49 → 4.52 mL/min/g (−18%), endo/epi 1.00 → 0.40, outer half unchanged; diastolic time fraction 65 → 52% | Dog, awake, IV adenosine, microspheres | FT |
+| `fokkema2005_diastolic_time_fraction_conductance.toml` | Layer conductance vs diastolic time fraction at full dilation: C_endo = −0.103 + 0.197·DTF + 0.00074·Pc; C_mid = −0.048 + 0.126·DTF + 0.00049·Pc; C_epi DTF-independent. Notes: Duncker 1994 beating-heart Pzf 12.6–23 mmHg | Goat, perfused left main, adenosine, microspheres | abs |
+| `mcginn1990_cfr_heart_rate_human.toml` | CFR 4.5 → 3.8 → 3.2 with pacing 76 → 100 → 120/min, with hyperemic velocity unchanged; handgrip and volume effects | Human (mostly transplant), IC papaverine, Doppler catheter | abs |
+| `park2000_lad_dsvr_hyperemia.toml` | LAD diastolic/systolic peak-velocity ratio 2.1 at rest → 1.7–1.8 at hyperemia (n = 9). Notes: resting DSVR 1.8 ± 0.5 (Segal 1992), 2.08 ± 0.47 (de Waard 2019) | Human, normal LAD, IC adenosine, Doppler wire | abs |
+
 ### Human PET myocardial blood flow (healthy volunteers)
 
 | File | What it validates | Species / conditions | Status |

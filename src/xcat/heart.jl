@@ -205,12 +205,12 @@ function label_masks(
         L::AbstractArray{UInt8, 3}, origin, h::Real, g::VoxelGrid; roi::AbstractArray{Bool, 3} = trues(g.dims),
         lv = 15, rv = 16, lvpool = 19, rvpool = 20, pools = (19, 20, 21, 22, 24, 25)
     )
-    lvmyo = falses(g.dims); rvmyo = falses(g.dims); lvcav = falses(g.dims); rvcav = falses(g.dims); pool = falses(g.dims)
+    lvmyo = zeros(Bool, g.dims); rvmyo = zeros(Bool, g.dims); lvcav = zeros(Bool, g.dims); rvcav = zeros(Bool, g.dims); pool = zeros(Bool, g.dims)
     blood = zeros(Float32, g.dims)
-    isp = falses(256); for p in pools
+    isp = zeros(Bool, 256); for p in pools
         isp[p + 1] = true
     end
-    Threads.@threads for k in 1:g.dims[3]
+    AK.foreachindex(1:g.dims[3]; min_elems = 1) do k
         for j in 1:g.dims[2], i in 1:g.dims[1]
             c = center(g, i, j, k)
             r = ntuple(d -> (ceil(Int, (c[d] - g.h / 2 - origin[d]) / h - 1.0e-9) + 1):(ceil(Int, (c[d] + g.h / 2 - origin[d]) / h - 1.0e-9)), 3)
@@ -231,7 +231,46 @@ function label_masks(
             2npr >= n && (rvcav[i, j, k] = true)
         end
     end
+    # myocardium is one connected tissue: drop label fragments not 6-connected to the largest piece
+    keep = _largest_component(lvmyo .| rvmyo); lvmyo .&= keep; rvmyo .&= keep
     return (; lvmyo, rvmyo, lvcav, rvcav, pool, blood, domain = (lvmyo .| rvmyo) .& .!pool)
+end
+
+function _largest_component(m::AbstractArray{Bool, 3})
+    # 6-connected components by minimum-label propagation with pointer jumping: each pass is one
+    # AK kernel over the grid, so it runs on CPU threads or a GPU through the same code
+    dims = size(m); n = length(m); CI = CartesianIndices(m); LI = LinearIndices(m)
+    lab = zeros(Int32, dims); nxt = similar(lab); chg = zeros(Bool, dims)
+    AK.foreachindex(lab) do i
+        lab[i] = m[i] ? Int32(i) : Int32(0)
+    end
+    while true
+        AK.foreachindex(lab) do i
+            l = lab[i]
+            if l == 0
+                nxt[i] = 0
+            else
+                I = CI[i]; best = lab[l]                       # pointer jump
+                for o in ((1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1))
+                    J = (I[1] + o[1], I[2] + o[2], I[3] + o[3])
+                    (1 <= J[1] <= dims[1] && 1 <= J[2] <= dims[2] && 1 <= J[3] <= dims[3]) || continue
+                    lj = lab[LI[J...]]; lj != 0 && lj < best && (best = lj)
+                end
+                nxt[i] = best
+            end
+        end
+        AK.foreachindex(chg) do i
+            chg[i] = nxt[i] != lab[i]
+        end
+        AK.reduce((a, b) -> a | b, chg; init = false) || break
+        lab, nxt = nxt, lab
+    end
+    roots = filter(!=(0), vec(lab)); isempty(roots) && return zeros(Bool, dims)
+    cnt = Dict{Int32, Int}(); for r in roots
+        cnt[r] = get(cnt, r, 0) + 1
+    end
+    big = argmax(cnt)
+    return Array{Bool}(lab .== big)
 end
 
 """

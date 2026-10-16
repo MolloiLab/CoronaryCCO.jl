@@ -1,0 +1,40 @@
+[meta]
+id = "jones1995_adenosine_arteriole_vs_small_artery"
+data_type = "experimental"
+validates = "Size dependence of the coronary microvascular response to adenosine in the beating heart: arterioles < 100 um vs small arteries > 100 um, and its dependence on nitric oxide. Mechanism for residual tone in larger resistance vessels during adenosine."
+species = "dog"
+preparation = "Open-chest dogs (n = 20). Subepicardial microvessel diameters by stroboscopic epi-illumination intravital microscopy; epicardial coronary blood velocity (CBV) by Doppler. Isolated canine arterioles (81 +/- 4 um, n = 8) for the in-vitro arm."
+conditions = "IC adenosine 1 and 10 ug/kg/min; left atrial pacing 180/min; repeated after L-NAME 30 ug/kg/min IC (NO synthase inhibition)."
+verification = "abs"
+access = "PubMed abstract (PMID 7882491). Full text on ahajournals.org returned HTTP 403."
+notes = """Values mean +/- SE or SD as printed (label not given in the abstract).
+These IC adenosine doses were not maximal (CBV +118%, a reserve well below the 4-5x of full dilation), so the data show the size order of the response, not the residual tone at full adenosine dilation.
+After L-NAME, small arteries constricted (-8 +/- 2%), arterioles dilated (+10 +/- 4%) and adenosine no longer dilated arterioles further. Isolated arterioles dilated to their maximal diameter with adenosine, unaffected by L-NAME.
+The authors conclude that NO-mediated (flow-dependent) dilation of small arteries is needed for a full metabolic/adenosine response; adenosine itself acts mainly on arterioles < 100 um."""
+use_in_model = """Mechanism for a submaximal adenosine state: adenosine dilates arterioles < 100 um directly (+25 +/- 3% diameter at 10 ug/kg/min) but small arteries > 100 um much less (+7 +/- 3%); their dilation depends on flow-mediated NO. If clinical adenosine falls short of full conductance, the residual tone should sit in the > 100-150 um small arteries, not the terminal arterioles. In the model this means a 'clinical adenosine' state = arterioles fully dilated, larger pre-arterioles/small arteries with partial tone (a size-dependent dilation fraction), rather than a uniform scaling of all resistances."""
+
+[source]
+authors = ["Jones CJ", "Kuo L", "Davis MJ", "DeFily DV", "Chilian WM"]
+year = 1995
+title = "Role of nitric oxide in the coronary microvascular responses to adenosine and increased metabolic demand"
+journal = "Circulation"
+volume = "91"
+issue = "6"
+pages = "1807-1813"
+doi = "10.1161/01.cir.91.6.1807"
+crossref_verified = "2026-10-15; Crossref title exact match (Circulation vol 91, issue 6, 1807-1813; authors Jones, Kuo, Davis)"
+pmid = "7882491"
+
+[data.diameter_response_by_size]
+description = "Percent diameter change of arterioles (< 100 um) and small arteries (> 100 um) and change in coronary blood velocity, with IC adenosine and pacing, before and after L-NAME"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- (SE or SD, unlabelled); n = 20 dogs"
+stimulus = ["adenosine 1 ug/kg/min", "adenosine 10 ug/kg/min", "LA pacing 180/min", "adenosine 1 ug/kg/min after L-NAME", "adenosine 10 ug/kg/min after L-NAME", "LA pacing after L-NAME"]
+arteriole_lt100um_diameter_change_pct = [11.0, 25.0, 12.0, 3.0, 2.0, -4.0]
+arteriole_lt100um_diameter_change_sd_pct = [4.0, 3.0, 2.0, 3.0, 2.0, 2.0]
+small_artery_gt100um_diameter_change_pct = [-4.0, 7.0, 8.0, nan, nan, nan]
+small_artery_gt100um_diameter_change_sd_pct = [6.0, 3.0, 3.0, nan, nan, nan]
+cbv_change_pct = [43.0, 118.0, 68.0, 14.0, 8.0, 34.0]
+cbv_change_sd_pct = [31.0, 25.0, 9.0, 16.0, 13.0, 13.0]
+missing_note = "Small-artery responses after L-NAME are not in the abstract. Absolute diameters per class are in the full text."

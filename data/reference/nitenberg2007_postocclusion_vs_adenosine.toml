@@ -1,0 +1,44 @@
+[meta]
+id = "nitenberg2007_postocclusion_vs_adenosine"
+data_type = "experimental"
+validates = "Same-patient comparison of reactive (post-occlusion) hyperemia after a 30-s balloon occlusion vs an IC adenosine bolus (60 ug): coronary flow reserve and coronary resistance reserve, before and after angioplasty of a severe stenosis."
+species = "human"
+preparation = "10 male patients with stable CAD and stenosis >= 80% scheduled for PTCA. Intracoronary Doppler wire for velocity; aortic pressure from the guide."
+conditions = "IC adenosine 60 ug bolus; 30-s balloon occlusion (~3 atm). Both stimuli before and after PTCA. CFR = peak/resting velocity; CRR = (resting Pa / resting velocity) / (Pa at peak / peak velocity)."
+verification = "abs"
+access = "PubMed abstract (PMID 17827509) plus the journal's HTML article page (hmpgloballearningnetwork.com) read through a summarizing fetch; Table 2 (absolute velocities and resistances) was not captured."
+notes = """Values mean +/- SD.
+The article text reports that after PTCA adenosine underestimated CFR by 23 +/- 10% and CRR by 24 +/- 10% relative to post-occlusion hyperemia, and that the gap grew with reserve.
+60 ug IC is below the dose at which Adjedj 2015 (JACC Cardiovasc Interv 8:1422, doi 10.1016/j.jcin.2015.04.028) found the left-coronary plateau (160 ug; 100 ug RCA). So part of the shortfall may be dose, not a ceiling of adenosine itself.
+Post-occlusion hyperemia also includes ischaemic metabolites and possibly a myogenic response to the low distal pressure during occlusion. No journal DOI is registered (Crossref bibliographic search returned no match)."""
+use_in_model = """After PTCA (open artery), ratio of published means adenosine/occlusion = 2.53/3.31 = 0.76 for CFR and 2.58/3.46 = 0.75 for CRR. This is the largest human shortfall of an adenosine stimulus vs another stimulus in this set, but it uses a low IC dose. Treat ~0.75 as a lower bound for clinical adenosine conductance relative to a stronger stimulus, not as the IV 140 ug/kg/min value."""
+
+[source]
+authors = ["Nitenberg A", "Durand E", "Delatour B", "Sdiri W", "Raha S", "Lafont A"]
+year = 2007
+title = "Postocclusion hyperemia provides a better estimate of coronary reserve than intracoronary adenosine in patients with coronary artery stenosis"
+journal = "J Invasive Cardiol"
+volume = "19"
+issue = ""
+pages = "390-394"
+doi = ""
+crossref_verified = "2026-10-15; no Crossref DOI registered (bibliographic search returned no match); identity confirmed by PubMed record PMID 17827509 (exact title, vol 19, 390-4)"
+pmid = "17827509"
+
+[data.reserve_by_stimulus]
+description = "Coronary flow reserve and coronary resistance reserve with IC adenosine (ADE) and post-occlusion hyperemia (PH)"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SD; n = 10 patients"
+state = ["before PTCA", "after PTCA"]
+cfr_adenosine = [1.79, 2.53]
+cfr_adenosine_sd = [0.65, 0.58]
+cfr_postocclusion = [1.95, 3.31]
+cfr_postocclusion_sd = [0.52, 0.67]
+crr_adenosine = [1.75, 2.58]
+crr_adenosine_sd = [0.52, 0.49]
+crr_postocclusion = [2.14, 3.46]
+crr_postocclusion_sd = [0.81, 0.79]
+p_cfr = ["0.0846", "0.0001"]
+p_crr = ["0.0125", "0.0004"]
+missing_note = "Issue number not given in the PubMed record (published September 2007). Absolute velocities and resistances are in Table 2, not read."

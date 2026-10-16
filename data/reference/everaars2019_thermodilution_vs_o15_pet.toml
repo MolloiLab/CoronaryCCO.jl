@@ -1,0 +1,59 @@
+[meta]
+id = "everaars2019_thermodilution_vs_o15_pet"
+data_type = "experimental"
+validates = "Same-patient comparison of invasive continuous-thermodilution hyperemic absolute flow (mL/min) and minimal microvascular resistance with [15O]H2O PET flow (MBF x CCTA Voronoi territory mass), with IV adenosine; and invasive flow with vs without IV adenosine (saline-only hyperemia)."
+species = "human"
+preparation = "25 patients (61 +/- 8 y, 68% male) with single-vessel focal LAD or LCx stenosis on CCTA; no prior MI or revascularization, LV dysfunction, valve disease or CTO. FFR in stenotic vessels 0.81 [0.76-0.91]; FFR <= 0.80 in 11 vessels. LAD and LCx studied (RCA not). Median 1 [0-6] day between PET and invasive study."
+conditions = "PET: IV adenosine 140 ug/kg/min started 2.5 min before scanning. Invasive: same IV adenosine protocol, RayFlow infusion catheter with saline 20 mL/min (LAD or dominant LCx) or 15 mL/min (non-dominant LCx). Adenosine measurement first; then adenosine and saline stopped, wire repositioned, and measurement repeated with saline only. PET absolute flow = MBF x CCTA Voronoi mass. Pd during PET estimated as cuff MAP x FFR."
+verification = "FT"
+access = "Full text HTML at academic.oup.com (Eur Heart J 40:2350) read through a summarizing fetch (first 100k of 128k characters); Tables 2-3 and the Bland-Altman statements extracted. Figure 4 (saline-only vs PET) not read."
+notes = """All values mean +/- SD.
+Invasive with adenosine (IV adenosine plus saline infusion) vs PET: r = 0.91, ICC = 0.90 for flow; r = 0.85, ICC = 0.79 for MVR. Bland-Altman bias flow -0.9 +/- 35 mL/min; MVR -47 +/- 216 WU.
+Saline-only vs adenosine invasive: r = 0.97, ICC = 0.96 (flow); r = 0.98, ICC = 0.98 (MVR); bias +10.6 +/- 18 mL/min (flow), +15 +/- 60 WU (MVR). The authors state hyperemic flow was 'significantly lower during infusion of adenosine' while FFR and minimal MVR did not differ.
+Saline-only measurement was always second and with the wire repositioned, so order and position are confounded with stimulus.
+The paper does not discuss why other thermodilution series (fournier2021) give higher flow per gram than PET."""
+use_in_model = """Method-to-method ratio invasive/PET absolute flow = 179/185 = 0.97 (stenotic territory) and 167/166 = 1.01 (reference territory) (ratios of published means), when both use the same CCTA mass. So continuous thermodilution and [15O]H2O PET agree in the same patients; the ~1.5x gap between fournier2021 (5.9 mL/min/g LAD) and kaufmann1999 PET (3.5) is not a method or stimulus offset. It reflects cohort (age, risk factors), mass definition, and selection. Saline-only/adenosine flow 184/174 = 1.06. Reference-territory PET MBF 3.22 +/- 0.90 mL/min/g in these older CAD patients."""
+
+[source]
+authors = ["Everaars H", "de Waard GA", "Schumacher SP", "Zimmermann FM", "Bom MJ", "van de Ven PM", "Raijmakers PG", "Lammertsma AA", "Gotte MJ", "van Rossum AC", "Kurata A", "Marques KMJ", "Pijls NHJ", "van Royen N", "Knaapen P"]
+year = 2019
+title = "Continuous thermodilution to assess absolute flow and microvascular resistance: validation in humans using [15O]H2O positron emission tomography"
+journal = "Eur Heart J"
+volume = "40"
+issue = "28"
+pages = "2350-2359"
+doi = "10.1093/eurheartj/ehz245"
+crossref_verified = "2026-10-15; Crossref title exact match (European Heart Journal vol 40, issue 28, 2350-2359; authors Everaars, de Waard, Schumacher)"
+pmid = "31327012"
+
+[data.invasive_vs_pet_by_vessel]
+description = "CCTA territory mass, PET and invasive (IV adenosine) hyperemic flow and minimal MVR by vessel type"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD; stenotic n = 24 vessels, reference n = 22 vessels"
+vessel = ["stenotic", "reference"]
+territory_mass_g = [72.0, 55.0]
+territory_mass_sd_g = [29.0, 26.0]
+pet_mbf_ml_min_g = [2.64, 3.22]
+pet_mbf_sd_ml_min_g = [0.78, 0.90]
+pet_flow_ml_min = [185.0, 166.0]
+pet_flow_sd_ml_min = [82.0, 83.0]
+pet_mvr_WU = [474.0, 651.0]
+pet_mvr_sd_WU = [262.0, 262.0]
+invasive_flow_adenosine_ml_min = [179.0, 167.0]
+invasive_flow_adenosine_sd_ml_min = [71.0, 74.0]
+invasive_mvr_adenosine_WU = [459.0, 608.0]
+invasive_mvr_adenosine_sd_WU = [225.0, 345.0]
+missing_note = "Invasive flow per gram is not printed in the extracted text; it is not back-computed here."
+
+[data.with_vs_without_adenosine]
+description = "Invasive continuous-thermodilution hyperemic flow and minimal MVR with IV adenosine vs saline only"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SD; n = 44 vessels (with adenosine), 46 vessels (without)"
+condition = ["IV adenosine + saline", "saline only"]
+flow_ml_min = [174.0, 184.0]
+flow_sd_ml_min = [72.0, 75.0]
+mvr_WU = [521.0, 531.0]
+mvr_sd_WU = [271.0, 286.0]
+missing_note = "Paired p-values are in the full text; the authors call the flow difference significant."

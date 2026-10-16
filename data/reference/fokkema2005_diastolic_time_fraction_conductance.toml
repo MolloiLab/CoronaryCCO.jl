@@ -1,0 +1,56 @@
+[meta]
+id = "fokkema2005_diastolic_time_fraction_conductance"
+data_type = "experimental"
+validates = "Layer conductance (flow / perfusion pressure) of the fully adenosine-dilated LV as a linear function of diastolic time fraction (DTF) and perfusion pressure; subendocardial, midmyocardial and subepicardial layers"
+species = "goat"
+preparation = "21 anesthetized goats; left main coronary artery artificially perfused at controlled pressure; regional flow by fluorescent microspheres."
+conditions = "Full adenosine dilation. DTF varied by pacing, vagal stimulation or dobutamine. Perfusion pressure P_c = mean coronary arterial pressure minus minimal LV pressure. Dobutamine sub-study (5 goats) at constant heart rate and P_c."
+verification = "abs"
+access = "Abstract only (PubMed 15615846); full text (Am J Physiol) not accessible."
+notes = """Regression units are not stated in the abstract; conductance = flow/P_c, presumably ml/min/g/mmHg (with P_c in mmHg). C_epi showed no significant DTF
+dependence and its value is not in the abstract. DTF at which C_endo = C_epi: DTF1 = 0.78 - 0.003 P_c (P < 0.01). Dobutamine doubled contractility, DTF rose 39% and
+C_endo rose 40%. Authors' conclusions: DTF determines subendocardial perfusion; systolic compression limits flow into diastole (C_endo extrapolates to zero at a
+finite DTF); under hyperemia C_endo < C_epi if P_c < ~75% of normal aortic pressure and HR > 80/min.
+Related (abstract only, stored as notes): Duncker DJ, Van Zon NS, Crampton M, Herrlinger S, Homans DC, Bache RJ. Am J Physiol 1994;266:H795-H810
+(doi 10.1152/ajpheart.1994.266.2.H795, PMID 8141381), awake dogs, adenosine, mean-flow vs mean-pressure lines in the beating heart: exercise (HR 118 +/- 6 -> 213 +/- 8)
+lowered the slope for P >= 30 mmHg from 12.3 +/- 0.9 to 10.9 +/- 0.9 (units printed 'ml.min-1 x g-1 x mmHg-1'; magnitude implies a per-100 g scale) and raised measured
+zero-flow pressure from 12.6 +/- 1.2 to 23.3 +/- 2.0 mmHg; atrial pacing to 200/min raised Pzf from 15.0 +/- 1.6 to 18.3 +/- 2.1 mmHg with no slope change; the slope
+fall was abolished by alpha1 blockade; residual Pzf rise tracked LV filling pressure."""
+use_in_model = """Gives the DTF sensitivity of hyperemic conductance. Within the measured range the whole-wall (equal-thirds) sensitivity is
+dC/dDTF ~ (0.197 + 0.126 + 0)/3 ~ 0.11 per unit DTF, i.e. ~15% of a typical hyperemic conductance per 0.1 DTF. Linear extrapolation to DTF = 1 (no systole) is outside
+the data and gives an implausibly steep endocardial gradient (inner/outer ~2.4 vs ~1.2 measured in arrested hearts by Downey 1975), so it should not be used to set an
+arrested-heart conductance. Duncker 1994 shows that in the beating, dilated heart the cycle-averaged pressure-flow line keeps a back pressure of only 12.6-18 mmHg at
+118-200/min, close to the model's 13.6 mmHg."""
+
+[source]
+authors = ["Fokkema DS", "VanTeeffelen JW", "Dekker S", "Vergroesen I", "Reitsma JB", "Spaan JA"]
+year = 2005
+title = "Diastolic time fraction as a determinant of subendocardial perfusion"
+journal = "Am J Physiol Heart Circ Physiol"
+volume = "288"
+issue = "5"
+pages = "H2450-H2456"
+doi = "10.1152/ajpheart.00790.2004"
+crossref_verified = "2026-10-15; Crossref title exact match ('Diastolic time fraction as a determinant of subendocardial perfusion'; AJP Heart 288(5):H2450-H2456; Fokkema ... Spaan)"
+pmid = "15615846"
+
+[data.layer_conductance_regression]
+description = "Regional conductance C = a + b*DTF + c*P_c under full adenosine dilation"
+location = "Abstract"
+provenance = "abs"
+statistic = "multiple linear regression over 21 goats (P < 0.001 for endo and mid)"
+layer = ["subendocardium", "midmyocardium", "subepicardium"]
+intercept = [-0.103, -0.048, nan]
+dtf_coefficient = [0.197, 0.126, nan]
+pc_coefficient_per_mmHg = [0.00074, 0.00049, nan]
+n_goats = 21
+missing_note = "Subepicardial regression 'not significant' (no DTF dependence); its coefficients, the mean C_epi, the DTF range studied and the units are only in the full text."
+
+[data.equal_conductance_dtf]
+description = "DTF at which C_endo = C_epi, as a function of P_c"
+location = "Abstract"
+provenance = "abs"
+statistic = "regression"
+intercept = 0.78
+pc_coefficient_per_mmHg = -0.003
+missing_note = ""

@@ -1,0 +1,38 @@
+[meta]
+id = "wilson1990_adenosine_vs_papaverine"
+data_type = "experimental"
+validates = "Human coronary flow-velocity response to intracoronary (IC) bolus, IC infusion and intravenous (IV) adenosine, each compared in the same patients with a maximally dilating IC papaverine dose. Tests whether clinical adenosine reaches the papaverine (maximal) hyperemia."
+species = "human"
+preparation = "Patients at cardiac catheterization with normal left (n = 20) or right (n = 5) coronary arteries, plus 8 patients with microvascular vasodilator dysfunction (papaverine CBFV ratio < 3.5). 3F coronary Doppler catheter; coronary blood flow velocity (CBFV) as a ratio to resting CBFV."
+conditions = "Reference maximal hyperemia: IC papaverine. Adenosine: IC bolus 2-16 ug, IC infusion 10-240 ug/min, IV infusion 35-140 ug/kg/min."
+verification = "abs"
+access = "PubMed abstract (PMID 2225364; truncated at 400 words). Full text on ahajournals.org returned HTTP 403 (bot challenge); no open copy found."
+notes = """The papaverine value is printed as 4.5 +/- 0.2 x resting CBFV; the abstract does not say whether +/- is SD or SEM (0.2 is small for an SD of a velocity ratio, so it may be SEM). Other +/- values are not labelled either.
+'Similar to papaverine' is the authors' wording; the criterion used per patient is in the full text.
+IV adenosine 140 ug/kg/min matched papaverine in 84% of normal patients (so ~16% had a submaximal response). At submaximal IV rates CBFV fluctuated widely.
+During IV 140 ug/kg/min: MAP fell 6 +/- 7 mmHg and heart rate rose 24 +/- 14 beats/min."""
+use_in_model = """Group-mean IV adenosine hyperemia is 4.4/4.5 = 0.98 of the papaverine velocity ratio (ratio of published means; Doppler velocity, so it equals a flow ratio only if epicardial area is unchanged). So in normal arteries IV adenosine at 140 ug/kg/min reaches papaverine-level conductance on average, with ~1 patient in 6 falling short. This supports modelling clinical adenosine stress as the same full-dilation state as papaverine, with a minority submaximal tail, not as a uniformly submaximal state."""
+
+[source]
+authors = ["Wilson RF", "Wyche K", "Christensen BV", "Zimmer S", "Laxson DD"]
+year = 1990
+title = "Effects of adenosine on human coronary arterial circulation"
+journal = "Circulation"
+volume = "82"
+issue = "5"
+pages = "1595-1606"
+doi = "10.1161/01.cir.82.5.1595"
+crossref_verified = "2026-10-15; Crossref title exact match (Circulation vol 82, issue 5, 1595-1606; authors Wilson, Wyche, Christensen)"
+pmid = "2225364"
+
+[data.hyperemic_velocity_ratio]
+description = "Peak / resting coronary blood flow velocity for each stimulus"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- (SD or SEM, unlabelled); n = patients"
+stimulus = ["IC papaverine (reference maximum)", "IC adenosine bolus 16 ug, left coronary", "IC adenosine bolus 12 ug, right coronary", "IC adenosine infusion >= 80 ug/min, left coronary", "IV adenosine 140 ug/kg/min"]
+n_patients = [nan, 20.0, 5.0, 6.0, 25.0]
+cbfv_ratio = [4.5, 4.6, 4.4, 4.4, 4.4]
+cbfv_ratio_sd = [0.2, 0.7, 1.0, 0.1, 0.9]
+fraction_reaching_papaverine_level = [nan, nan, nan, nan, 0.84]
+missing_note = "n for the papaverine reference is not stated separately in the abstract (it was measured in the same patients). Per-dose dose-response curves and the definition of 'similar' are in the full text."

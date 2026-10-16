@@ -1,0 +1,56 @@
+[meta]
+id = "downey1975_arrested_vasodilated_transmural"
+data_type = "experimental"
+validates = "Transmural (outer to inner quarter) distribution of flow in the maximally dilated LV when systolic compression is removed (vagal arrest) vs maximized (pacing at 200 beats/min). Gives the subendocardial/subepicardial flow ratio of a non-beating, fully dilated bed (~1.2) and of a fast-beating one (~0.75)."
+species = "dog"
+preparation = "Mongrel dogs 10-20 kg, pentobarbital 30 mg/kg, left thoracotomy, 100% O2, bilateral cervical vagotomy, heparin 500 U/kg. Main left coronary artery cannulated and perfused from the carotid artery, from a 100 mmHg pressurized blood reservoir, or from a peristaltic pump. Flow indicator 42K or 86Rb injected into the perfusion line; hearts removed after 30 s of perfusion; four full-thickness LV pieces (anterior/posterior, apex/base) each cut into four layers epicardium to endocardium; activity per g normalized to the whole transmural section. Regions pooled (no consistent regional differences)."
+conditions = "Group I (5 dogs): 10-15 s coronary occlusion (reactive hyperemia) then perfusion at 100 mmHg constant pressure while the heart was arrested by vagal stimulation (50 V, 30 cps) with a pulmonary-artery snare; 7-10 s of arrest before escape beats; tracer 42K. Group II (2 dogs): arrested, pump perfusion at the control (autoperfused) flow rate, maximal dilation with 60 ug intracoronary adenosine; tracer 86Rb. Group III (5 dogs): beating, paced at 200 beats/min from the RV free wall, 10 s occlusion then 100 mmHg reservoir perfusion; tracer 42K."
+verification = "mixed"
+access = "Publisher PDF (Exp Biol Med / PSEBM open archive, 5 pages, scanned), read with pdftotext; Figs. 2-4 digitized from 150 dpi page renders."
+notes = """Values are tracer activity per g in each layer divided by the activity of the whole transmural section (so the four values average ~1). Uptake of 42K/86Rb is
+flow-limited, so the profile is read as relative flow; the authors note extraction falls at high flow, which understates differences (reason for Group II at control flow).
+Statistics: mean +/- SE across hearts (Groups I, III); Group II SE uses N = 8 samples per depth (2 dogs). Text: arrested 'subendocardium received about 20% more flow than
+the subepicardium'; paced at 200/min 'about 20% less'. Only relative (normalized) flows are reported: absolute flow in the arrested vs beating state is NOT given here.
+Related (stored only as notes): Downey JM, Kirk ES. Inhibition of coronary blood flow by a vascular waterfall mechanism. Circ Res 1975;36:753-760
+(doi 10.1161/01.res.36.6.753, PMID 1132069; abstract only, full text not accessible): in an adenosine-dilated left coronary branch the arrested-heart pressure-flow
+curve and the beating-heart curve were linear and parallel above peak LV pressure (beating curve shifted toward higher pressures, i.e. same slope, larger intercept);
+below peak LV pressure the beating curve converged toward the arrested curve and was convex to the pressure axis. No numeric shift is given in the abstract.
+Spaan JAE, Breuls NPW, Laird JD. Circ Res 1981;49:584-593 (doi 10.1161/01.res.49.3.584; FT read from an archived publisher PDF): 6 open-chest dogs, left main
+perfused at constant pressure with a variable series stenosis, tone intact (not vasodilated). Mean flow was independent of stenosis grade at fixed distal pressure while the
+diastolic-systolic flow swing changed; intramyocardial pump pressure amplitude p_im = 53.1 +/- 7.02 (SD) mmHg; R_s = 0.63 R_c - 12.9 mmHg*s/ml (r = 0.939, n = 25),
+R_c = (P_lc - 14 mmHg)/mean flow; intramyocardial capacitance ~0.07 ml/mmHg/100 g LV. Authors' conclusion: systolic-diastolic flow differences are caused by an
+intramyocardial pump, not by a time-varying resistance. In a linear pump model the a.c. pressure source does not change time-averaged conductance; a mean-flow
+penalty needs a nonlinearity (waterfall / vessel collapse)."""
+use_in_model = """Bounds the transmural shape of a fully dilated, non-beating bed: a steady model with no systole should give subendocardial/subepicardial flow ~1.2
+(inner/outer quarter 1.07/0.90). Compare with Bache 1977 (beating, adenosine, 100/min: endo/epi 1.00). If the subepicardial layer is unaffected by systole
+(Bache 1977 layers 1-2; Fokkema 2005 C_epi independent of diastolic time fraction), the beating-heart whole-wall flow at ~100/min is only ~8-10% below the arrested
+profile (derived estimate, see report), rising to ~25-30% at 200-250/min."""
+
+[source]
+authors = ["Downey JM", "Kirk ES"]
+year = 1975
+title = "The transmural distribution of coronary blood flow during maximal vasodilation"
+journal = "Proc Soc Exp Biol Med"
+volume = "150"
+issue = "1"
+pages = "189-193"
+doi = "10.3181/00379727-150-39000"
+crossref_verified = "2026-10-15; Crossref title exact match ('The Transmural Distribution of Coronary Blood Flow During Maximal Vasodilation'; Experimental Biology and Medicine 150(1):189-193; Downey, Kirk)"
+pmid = "1187692"
+
+[data.transmural_profile]
+description = "Normalized tracer uptake (relative flow) by quarter of the LV wall, outer (epicardial) to inner (endocardial)"
+location = "Figs. 2, 3 and 4; Results text ('about 20%')"
+provenance = "fig"
+figure = "Fig. 2 (arrested, reactive hyperemia, 100 mmHg constant pressure, 42K); Fig. 3 (arrested, adenosine, constant flow, 86Rb); Fig. 4 (paced 200/min, reactive hyperemia, 100 mmHg, 42K)"
+digitization_error = "about +/-0.02 normalized units (1 px = 0.0044 units at 150 dpi; axis 0-1.6 calibrated on labelled ticks)"
+statistic = "mean +/- SE (SE bars ~0.02-0.03, not digitized individually); n = hearts (Group II: n = 8 samples)"
+layer = ["outer 1/4", "2nd 1/4", "3rd 1/4", "inner 1/4"]
+arrested_constant_pressure = [0.91, 1.04, 1.10, 1.07]
+arrested_adenosine_constant_flow = [0.88, 0.96, 1.02, 1.02]
+paced_200_constant_pressure = [1.09, 0.99, 0.93, 0.81]
+n_dogs = [5, 2, 5]
+n_dogs_note = "order: arrested constant pressure, arrested adenosine constant flow, paced 200/min"
+text_inner_vs_outer_pct = [20.0, -20.0]
+text_inner_vs_outer_note = "[arrested, paced 200/min]: subendocardium about 20% more / 20% less flow than subepicardium (Results)"
+missing_note = "No absolute flows, no numerical SE per point, and no beating-heart normal-rate comparison in this paper. Inner/outer ratios implied by the digitized points (~1.18, ~1.16, ~0.74) are not stated by the authors."

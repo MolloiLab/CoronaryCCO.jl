@@ -1,0 +1,44 @@
+[meta]
+id = "park2000_lad_dsvr_hyperemia"
+data_type = "experimental"
+validates = "Diastolic/systolic peak flow-velocity ratio (DSVR) in angiographically normal human LAD at rest and during intracoronary adenosine hyperemia, proximal and distal"
+species = "human"
+preparation = "9 patients (1 M, 8 F; 52.8 +/- 11.1 y) with angiographically normal LAD; Doppler guidewire in proximal, mid and distal LAD."
+conditions = "Rest and intracoronary adenosine 18 ug bolus."
+verification = "abs"
+access = "Abstract on KoreaMed Synapse (J Korean Soc Echocardiogr); full text not read. Values below as given in the abstract."
+notes = """Mean +/- SD. DSVR fell with hyperemia (P < 0.05, proximal and distal) because systolic peak velocity rose more than diastolic. APV rest: proximal 24.6 +/- 3.5,
+distal 21.7 +/- 6.9 cm/s; hyperemia 55.8 +/- 10.7 and 49.7 +/- 17.2 cm/s; CFR 2.3 at all sites (low for normals; small, mostly female cohort).
+Related resting human DSVR (stored as notes): Segal J et al. JACC 1992;20:276-286 (doi 10.1016/0735-1097(92)90091-z, PMID 1386088; abstract): DSVR in normal vessels
+1.8 +/- 0.5 (12 patients without significant CAD). de Waard GA et al. Open Heart 2019;6:e000968 (doi 10.1136/openhrt-2018-000968, PMC6443135; FT): unobstructed LAD
+(n = 75, FFR 0.94) resting DSVR 2.08 +/- 0.47, diastolic APV 21.1 (IQR 16.3-29.5) vs systolic APV 10.7 (7.8-15.6) cm/s; DSVR here uses mid-to-late diastolic
+(wave-free) vs systolic velocity; microvascular resistance was consistently higher in systole than diastole. Kim SM et al. J Korean Med Sci 2000;15:139-145
+(PMID 10803688; abstract): DSVR decreased after hyperemia by both intracoronary wire and transthoracic Doppler (no numbers in abstract)."""
+use_in_model = """Phasic split of hyperemic inflow. With hyperemic DSVR ~1.7-1.8 and a diastolic time fraction ~0.6, cycle-mean velocity is ~0.6 + 0.4/1.75 ~ 0.83 of
+diastolic velocity (derived, assuming DSVR ~ ratio of phase-mean velocities): roughly 72% of inflow enters in diastole and the cycle-averaged conductance is ~15-20%
+below a diastole-only conductance. Peak-velocity ratios also contain capacitive (pump) flow, so this is an approximate bound, not a resistance ratio."""
+
+[source]
+authors = ["Park SM", "Shim WJ", "Shin JH", "Won JS", "Kim JS", "Kim KJ", "Lee SC", "Park HN", "Kim YH", "Ro YM"]
+year = 2000
+title = "Coronary blood flow velocity and coronary flow reserve in normal left anterior descending coronary arteries"
+journal = "J Korean Soc Echocardiogr"
+volume = "8"
+issue = "2"
+pages = "146-151"
+doi = "10.4250/jkse.2000.8.2.146"
+crossref_verified = "2026-10-15; Crossref title match ('Coronary Blood Flow Velocity and Coronary Flow Reserve in Normal Left anterior Descending Coronary Arteries'; J Korean Soc Echocardiogr 8(2):146; Park, Shim, ... Ro)"
+pmid = ""
+
+[data.dsvr]
+description = "Diastolic/systolic peak velocity ratio, rest vs intracoronary adenosine"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD; n = 9"
+segment = ["proximal LAD", "distal LAD"]
+rest = [2.1, 2.1]
+rest_sd = [0.8, 0.5]
+hyperemia = [1.8, 1.7]
+hyperemia_sd = [0.6, 0.3]
+n = 9
+missing_note = "Mid-LAD DSVR and the separate peak diastolic and systolic velocities are not in the abstract. Not indexed in PubMed (no PMID)."

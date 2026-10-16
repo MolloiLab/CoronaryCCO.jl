@@ -1,0 +1,37 @@
+[meta]
+id = "debruyne2017_saline_induced_hyperemia"
+data_type = "experimental"
+validates = "Hyperemia caused by intracoronary room-temperature saline infusion through a side-hole infusion catheter (the continuous-thermodilution stimulus), as a percentage of IC adenosine maximal hyperemia; saline on top of IV adenosine."
+species = "human"
+preparation = "33 patients. 24 with intracoronary Doppler velocity at rest, after IC adenosine, and during graded saline infusion through a dedicated catheter with 4 lateral side holes; 9 with transthoracic echo (strain, flow propagation) during prolonged saline infusion. Controls: same rates through 1 end hole (n = 6) or into the contralateral artery (n = 6)."
+conditions = "Saline at room temperature, 5, 10, 15 and 20 mL/min. Reference: IC adenosine maximal hyperemia. Separate test: IC saline added during IV adenosine infusion."
+verification = "abs"
+access = "PubMed abstract (PMID 28400462). Full text on ahajournals.org returned HTTP 403; the TU/e repository record has no file."
+notes = """The abstract gives percentages without SD.
+'Intracoronary saline given on top of an intravenous infusion of adenosine did not further increase flow' (no numbers in the abstract).
+Heart rate fell 15% during saline infusion (p = 0.021); blood pressure and LV function unchanged.
+Mechanism (later work): the porcine study by Adjedj 2020 (J Am Heart Assoc 9:e015793, doi 10.1161/JAHA.120.015793) found saline 20 mL/min gave 107 +/- 18% of adenosine flow, independent of temperature, composition, endothelium or NO, but only via side holes, and suggested wall vibration. Gallinoro 2022 (Atherosclerosis 352:46-52, doi 10.1016/j.atherosclerosis.2022.05.011; n = 12 humans) found coronary-sinus haemolysis during 20 mL/min infusion (plasma free Hb 4.9 -> 108 mg/dL) and proposed local ATP release as the dilator."""
+use_in_model = """Saline-induced hyperemia (the stimulus behind fournier2021 and mahendiran2025) equals IC adenosine hyperemia (111-112% at >= 15 mL/min, ICC 0.92 for CFR), and adding saline to IV adenosine adds nothing. So the thermodilution 4.6-5.9 mL/min/g and adenosine PET 3.0-3.8 mL/min/g do NOT differ because of the stimulus. If the mechanism is local ATP release from haemolysis, the stimulus is itself purinergic, which is consistent with both acting on the same (adenosine/ATP-sensitive) resistance vessels."""
+
+[source]
+authors = ["De Bruyne B", "Adjedj J", "Xaplanteris P", "Ferrara A", "Mo Y", "Penicka M", "Flore V", "Pellicano M", "Toth G", "Barbato E", "Duncker DJ", "Pijls NH"]
+year = 2017
+title = "Saline-induced coronary hyperemia: mechanisms and effects on left ventricular function"
+journal = "Circ Cardiovasc Interv"
+volume = "10"
+issue = "4"
+pages = "e004719"
+doi = "10.1161/CIRCINTERVENTIONS.116.004719"
+crossref_verified = "2026-10-15; Crossref title match 'Saline-Induced Coronary Hyperemia' (Circ Cardiovasc Interv vol 10, issue 4; authors De Bruyne, Adjedj, Xaplanteris)"
+pmid = "28400462"
+
+[data.saline_dose_response]
+description = "Flow velocity during IC saline infusion as % of IC adenosine maximal hyperemia (side-hole catheter)"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean; n = 24 patients"
+saline_rate_mL_per_min = [5.0, 10.0, 15.0, 20.0]
+percent_of_adenosine_hyperemia = [6.0, 46.0, 111.0, 112.0]
+percent_of_adenosine_hyperemia_sd = [nan, nan, nan, nan]
+icc_cfr_saline_vs_adenosine = 0.922
+missing_note = "SDs, absolute velocities, and the numbers for saline on top of IV adenosine are in the full text, not read. The percentage is presumably (Vsaline - Vrest)/(Vadenosine - Vrest), i.e. of the hyperemic increment; the definition is not stated in the abstract."

@@ -1,0 +1,53 @@
+[meta]
+id = "mcginn1990_cfr_heart_rate_human"
+data_type = "experimental"
+validates = "Effect of heart rate (atrial pacing), arterial pressure (handgrip) and LV preload (volume) on resting and papaverine-hyperemic coronary flow velocity and CFR in humans with normal LV function"
+species = "human"
+preparation = "45 patients with normal LV function (38 cardiac allograft recipients, 5 with normal coronary arteries, 2 with minimal disease < 50% diameter stenosis). 3F intracoronary Doppler catheter; CFR = hyperemic / resting coronary blood flow velocity."
+conditions = "Intracoronary papaverine hyperemia. Serial repeat study at 11 +/- 0.6 months (n = 17). Acute: atrial pacing 100 (n = 32) and 120/min (n = 7) from sinus 76 +/- 2/min; handgrip (n = 7); volume expansion raising PCWP 9 +/- 1 to 16 +/- 1 mmHg (n = 9)."
+verification = "abs"
+access = "Abstract only (PubMed 2317912); full text (Circulation) not accessible from this environment."
+notes = """Mean +/- SE (presumed; abstract uses '+/-'). Key qualitative results: pacing raised resting velocity but did NOT change hyperemic velocity; handgrip
+(+19 +/- 2 mmHg MAP) raised resting and hyperemic velocity proportionally (CFR 3.7 +/- 0.3 vs 3.7 +/- 0.4); volume loading raised resting velocity with hyperemic
+velocity unchanged. Repeat CFR r = 0.95, mean absolute difference 0.3 +/- 0.1; CFR changes between studies correlated with HR changes (r = 0.61). Population is
+mostly transplant recipients."""
+use_in_model = """Human check on how strongly systolic compression sets hyperemic flow. Pacing from 76 to 120/min shortens the diastolic fraction, yet hyperemic
+velocity did not change measurably; a compression term large enough to cut hyperemic conductance by ~40% (needed to bring CFR 6.1 to ~3.5-4) would predict a
+visible hyperemic fall over this range (Fokkema 2005 sensitivity ~15% per 0.1 DTF). CFR falls with pacing here because resting flow rises (metabolic demand),
+consistent with a model whose rest flow is set by O2 use."""
+
+[source]
+authors = ["McGinn AL", "White CW", "Wilson RF"]
+year = 1990
+title = "Interstudy variability of coronary flow reserve. Influence of heart rate, arterial pressure, and ventricular preload"
+journal = "Circulation"
+volume = "81"
+issue = "4"
+pages = "1319-1330"
+doi = "10.1161/01.cir.81.4.1319"
+crossref_verified = "2026-10-15; Crossref title exact match ('Interstudy variability of coronary flow reserve. Influence of heart rate, arterial pressure, and ventricular preload.'; Circulation 81(4):1319-1330; McGinn, White, Wilson)"
+pmid = "2317912"
+
+[data.cfr_vs_heart_rate]
+description = "CFR (papaverine hyperemic / resting velocity) during atrial pacing"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SE (presumed)"
+heart_rate_bpm = [76.0, 100.0, 120.0]
+heart_rate_note = "76 +/- 2 is sinus rhythm; 100 and 120 are paced"
+cfr = [4.5, 3.8, 3.2]
+cfr_se = [0.2, 0.2, 0.1]
+n = [32, 32, 7]
+hyperemic_velocity_change = "unchanged by pacing (no numbers in abstract)"
+missing_note = "Absolute resting/hyperemic velocities and diastolic time fractions are not in the abstract. n = 32 applies to the 100/min step; the sinus-rhythm baseline n is presumably the same patients."
+
+[data.cfr_other_interventions]
+description = "CFR with handgrip and volume loading"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SE (presumed)"
+intervention = ["handgrip (baseline)", "handgrip", "volume expansion (baseline)", "volume expansion"]
+cfr = [3.7, 3.7, 3.8, 2.9]
+cfr_se = [0.3, 0.4, 0.2, 0.2]
+n = [7, 7, 9, 9]
+missing_note = ""

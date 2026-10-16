@@ -1,0 +1,61 @@
+[meta]
+id = "cobb1974_awake_adenosine_transmural"
+data_type = "experimental"
+validates = "Epicardial and endocardial LV blood flow and endo/epi ratio at rest and at maximal adenosine vasodilation in the beating heart, awake vs after anesthesia and thoracotomy (heart rate 71 -> 176/min)"
+species = "dog"
+preparation = "13 mongrel dogs 25-33 kg, chronically instrumented (aortic and left atrial catheters), studied awake, lying quietly; then repeated after pentobarbital 30 mg/kg, thoracotomy and pericardiotomy. 7-10 um radioactive microspheres into the left atrium; reference arterial withdrawal. LV rings 2 and 3 cut into six circumferential regions, each split into epicardial and endocardial halves (2-3 g samples)."
+conditions = "Control and adenosine 4.0 umol/kg/min i.v. (dose shown previously to abolish reactive hyperemia and give no further flow increase at higher dose); awake (control n = 13, adenosine n = 11) and after anesthesia/thoracotomy (control n = 13, adenosine n = 9)."
+verification = "FT"
+access = "JCI open-access PDF read with pdftotext; Tables I-II read from the text layer (OCR errors such as '40.32' for '+/-0.32' corrected by context)."
+notes = """All values mean +/- SEM. Hemodynamics: awake control HR 71 +/- 3/min, BP 100 +/- 3 mmHg; awake adenosine HR 111 +/- 5, mean arterial 86 +/- 3 mmHg;
+anesthetized control HR 156 +/- 10, BP 117 +/- 4; anesthetized adenosine HR 176 +/- 10, BP 96 +/- 3. Awake adenosine: coronary resistance fell to 13% (epi) and
+16% (endo) of control. Adenosine increase in endocardial flow was 22-37% smaller than in the epicardium (Discussion). Ratio of layer flows is a two-layer
+(halves) ratio, not quarters."""
+use_in_model = """Beating-heart hyperemic transmural target: at moderate heart rate (~110/min) the endo/epi ratio is ~0.8-1.0 (rest 1.06-1.16), dropping to 0.63-0.78
+at ~176/min. A steady (no-systole) model that reproduces the arrested endo/epi of ~1.2 (Downey 1975) will overpredict hyperemic endocardial flow; the endocardial
+deficit (~10-20% of endocardial flow at 110/min) is the size of the compression penalty on the inner half of the wall."""
+
+[source]
+authors = ["Cobb FR", "Bache RJ", "Greenfield JC Jr"]
+year = 1974
+title = "Regional myocardial blood flow in awake dogs"
+journal = "J Clin Invest"
+volume = "53"
+issue = "6"
+pages = "1618-1625"
+doi = "10.1172/JCI107712"
+crossref_verified = "2026-10-15; Crossref title exact match ('Regional Myocardial Blood Flow in Awake Dogs'; J Clin Invest 53(6):1618-1625; Cobb, Bache, Greenfield)"
+pmid = "4830226"
+
+[data.mean_layer_flow]
+description = "LV epicardial and endocardial flow (all regions), ml/min/g"
+location = "Abstract and Results"
+provenance = "FT"
+statistic = "mean +/- SEM; n = dogs"
+condition = ["awake control", "awake adenosine", "anesthetized control", "anesthetized adenosine"]
+epi_ml_min_g = [0.75, 4.98, 1.08, 5.19]
+epi_se_ml_min_g = [0.06, 0.28, 0.10, 0.57]
+endo_ml_min_g = [0.83, 4.49, 1.11, 3.52]
+endo_se_ml_min_g = [0.06, 0.27, 0.08, 0.30]
+heart_rate_bpm = [71.0, 111.0, 156.0, 176.0]
+heart_rate_se_bpm = [3.0, 5.0, 10.0, 10.0]
+arterial_pressure_mmHg = [100.0, 86.0, 117.0, 96.0]
+arterial_pressure_se_mmHg = [3.0, 3.0, 4.0, 3.0]
+n = [13, 11, 13, 9]
+missing_note = "Arterial pressure for control conditions is 'blood pressure' (mean presumed); adenosine values are 'arterial pressure' / 'mean'."
+
+[data.endo_epi_ratio]
+description = "Endocardium/epicardium flow ratio by region"
+location = "Table II"
+provenance = "FT"
+statistic = "mean +/- SEM"
+region = ["anterior", "septum", "posterior", "posterior papillary", "lateral", "anterior papillary"]
+awake_control = [1.06, 1.06, 1.12, 1.11, 1.16, 1.16]
+awake_control_se = [0.03, 0.03, 0.04, 0.03, 0.03, 0.03]
+awake_adenosine = [0.99, 0.91, 0.83, 0.81, 0.99, 0.95]
+awake_adenosine_se = [0.08, 0.04, 0.05, 0.05, 0.09, 0.08]
+anesthetized_control = [0.95, 0.99, 1.06, 1.12, 1.07, 1.13]
+anesthetized_control_se = [0.03, 0.03, 0.04, 0.02, 0.04, 0.04]
+anesthetized_adenosine = [0.75, 0.78, 0.63, 0.65, 0.73, 0.68]
+anesthetized_adenosine_se = [0.04, 0.03, 0.04, 0.06, 0.05, 0.05]
+missing_note = "Anterior papillary awake-adenosine value printed '0.954' (OCR); read as 0.95. Per-region flows (Table I) not stored."

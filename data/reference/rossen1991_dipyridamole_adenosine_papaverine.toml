@@ -1,0 +1,43 @@
+[meta]
+id = "rossen1991_dipyridamole_adenosine_papaverine"
+data_type = "experimental"
+validates = "Same-patient comparison of IV adenosine 140 ug/kg/min, IV dipyridamole 0.56 mg/kg and a maximally dilating IC papaverine dose: peak/rest flow velocity and coronary vascular resistance index in a non-stenotic artery."
+species = "human"
+preparation = "15 patients at catheterization (13 completed; protocol stopped in 2 for transient AV block during adenosine). Doppler catheter in a non-stenotic coronary artery."
+conditions = "IV adenosine 140 ug/kg/min; IV dipyridamole 0.56 mg/kg over 4 min; IC papaverine at a maximally dilating dose."
+verification = "abs"
+access = "PubMed abstract (PMID 1856416; truncated at 250 words). Full text (JACC, Elsevier) not accessible."
+notes = """Values mean +/- SD as printed (label assumed from the abstract style; not stated explicitly).
+CVRI is the coronary vascular resistance index (as a fraction of baseline); its exact definition is in the full text.
+MAP fell more with adenosine (-16 +/- 5 mmHg) than dipyridamole (-10 +/- 3) or papaverine (-9 +/- 4). Heart rate rose 11 +/- 9 (adenosine), 11 +/- 7 (dipyridamole), 4 +/- 3 (papaverine) beats/min.
+Adenosine gave a lower velocity ratio than papaverine but the same resistance index, because arterial pressure fell more with adenosine. Conductance, not velocity, is the relevant comparison for a model."""
+use_in_model = """Ratios of published means: velocity ratio adenosine/papaverine 3.4/3.9 = 0.87, dipyridamole/papaverine 3.1/3.9 = 0.79. Resistance index papaverine/adenosine 0.25/0.26 = 0.96 (adenosine reaches ~96% of papaverine conductance gain), papaverine/dipyridamole 0.25/0.31 = 0.81. So IV adenosine is near-maximal in conductance; standard dipyridamole is ~20% short. A flow shortfall with adenosine is partly a perfusion-pressure effect (lower MAP), which the model reproduces only if inlet pressure is lowered accordingly."""
+
+[source]
+authors = ["Rossen JD", "Quillen JE", "Lopez AG", "Stenberg RG", "Talman CL", "Winniford MD"]
+year = 1991
+title = "Comparison of coronary vasodilation with intravenous dipyridamole and adenosine"
+journal = "J Am Coll Cardiol"
+volume = "18"
+issue = "2"
+pages = "485-491"
+doi = "10.1016/0735-1097(91)90604-8"
+crossref_verified = "2026-10-15; Crossref title exact match (J Am Coll Cardiol vol 18, issue 2, 485-491; authors Rossen, Quillen, Lopez)"
+pmid = "1856416"
+
+[data.stimulus_comparison]
+description = "Peak/rest velocity ratio, coronary vascular resistance index and systemic changes per stimulus"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD; n = 13-15 patients"
+stimulus = ["IC papaverine", "IV adenosine 140 ug/kg/min", "IV dipyridamole 0.56 mg/kg"]
+peak_rest_velocity_ratio = [3.9, 3.4, 3.1]
+peak_rest_velocity_ratio_sd = [1.1, 1.2, 1.2]
+cvri = [0.25, 0.26, 0.31]
+cvri_sd = [0.06, 0.09, 0.10]
+delta_map_mmHg = [-9.0, -16.0, -10.0]
+delta_map_sd_mmHg = [4.0, 5.0, 3.0]
+delta_hr_bpm = [4.0, 11.0, 11.0]
+delta_hr_sd_bpm = [3.0, 9.0, 7.0]
+p_values = "velocity ratio: adenosine vs papaverine p <= 0.05, dipyridamole vs papaverine p < 0.01; CVRI: dipyridamole vs papaverine p < 0.01, vs adenosine p < 0.05; adenosine vs papaverine CVRI not different"
+missing_note = "Absolute velocities and pressures are in the full text."
