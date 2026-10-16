@@ -203,9 +203,9 @@ segment, for checking a circulation against measured transit times.
 function transit_table(C::Circulation)
     return [
         (;
-            name = s.name, flow = C.q[i] * C.co, mtt = s.v / (C.q[i] * C.co), n = _stages(s, C.q[i], C.co),
-            rd = (n = _stages(s, C.q[i], C.co); n == 0 ? 0.0f0 : _vmix(s, C.q[i], C.co) / sqrt(F32(n)) / s.v),
-        )
+                name = s.name, flow = C.q[i] * C.co, mtt = s.v / (C.q[i] * C.co), n = _stages(s, C.q[i], C.co),
+                rd = (n = _stages(s, C.q[i], C.co); n == 0 ? 0.0f0 : _vmix(s, C.q[i], C.co) / sqrt(F32(n)) / s.v),
+            )
             for (i, s) in enumerate(C.segs)
     ]
 end

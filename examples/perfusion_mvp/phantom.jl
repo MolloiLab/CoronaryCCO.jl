@@ -356,9 +356,9 @@ TOML table of materials that rebuild exactly with
 function write_materials(path, materials)
     tab = [
         Dict(
-            "name" => m.name, "density_g_cm3" => ustrip(u"g/cm^3", m.density), "ZA_ratio" => m.ZA_ratio,
-            "I_eV" => ustrip(u"eV", m.I), "composition" => Dict(string(Z) => w for (Z, w) in m.composition),
-        ) for m in materials
+                "name" => m.name, "density_g_cm3" => ustrip(u"g/cm^3", m.density), "ZA_ratio" => m.ZA_ratio,
+                "I_eV" => ustrip(u"eV", m.I), "composition" => Dict(string(Z) => w for (Z, w) in m.composition),
+            ) for m in materials
     ]
     open(io -> TOML.print(io, Dict("materials" => tab)), path, "w")
     return path

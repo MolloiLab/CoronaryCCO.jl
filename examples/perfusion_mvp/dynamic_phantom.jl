@@ -314,6 +314,7 @@ function materials_at(ph::Dyn, state, t; max_materials = 64, tol0 = 1.0e-4)
     while true
         lut, mats, err = _assign(ph, conc, tol); length(mats) <= max_materials && return (; lut, materials = mats, tol, err); tol *= 1.25
     end
+    return
 end
 
 """

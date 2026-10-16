@@ -61,7 +61,9 @@ function fill_supply_gaps(
     added = NamedTuple[]; gaps = Vector{Float64}[]; unfilled = Float64[]
     for _ in 1:max_iter
         d = _distance_to_tree(par, P, vox, lo, h)
-        far = falses(dims); for (i, I) in enumerate(vox); d[i] > max_gap_mm && (far[I] = true); end
+        far = falses(dims); for (i, I) in enumerate(vox)
+            d[i] > max_gap_mm && (far[I] = true)
+        end
         # gaps per region: a gap is filled from its own side (left / right lung, lobe, ...)
         comps = region === nothing ? _components(far) : reduce(vcat, [_components(far .& (region .== v)) for v in unique(region[vox])])
         sizes = [length(c) * vml for c in comps]; push!(gaps, sort(sizes; rev = true))
@@ -104,17 +106,23 @@ function _distance_to_tree(par, P, vox, lo, h)
     for k in eachindex(par)
         p = par[k]; p == 0 && (push!(pts, P[k]); continue)
         L = sqrt(sum(abs2, P[k] .- P[p])); ns = max(1, ceil(Int, 2L / h))
-        for s in 0:ns; push!(pts, P[p] .+ (s / ns) .* (P[k] .- P[p])); end
+        for s in 0:ns
+            push!(pts, P[p] .+ (s / ns) .* (P[k] .- P[p]))
+        end
     end
     cell = 8.0; key(p) = (floor(Int, p[1] / cell), floor(Int, p[2] / cell), floor(Int, p[3] / cell))
-    grid = Dict{NTuple{3, Int}, Vector{Int}}(); for (i, p) in enumerate(pts); push!(get!(grid, key(p), Int[]), i); end
+    grid = Dict{NTuple{3, Int}, Vector{Int}}(); for (i, p) in enumerate(pts)
+        push!(get!(grid, key(p), Int[]), i)
+    end
     d = fill(Inf, length(vox))
     AK.foreachindex(d; min_elems = 1024) do i
         q = lo .+ (Tuple(vox[i]) .- 1) .* h; c = key(q); best = Inf; ring = 0
         while true
             for a in -ring:ring, b in -ring:ring, e in -ring:ring
                 max(abs(a), abs(b), abs(e)) == ring || continue
-                for j in get(grid, (c[1] + a, c[2] + b, c[3] + e), Int[]); best = min(best, sum(abs2, pts[j] .- q)); end
+                for j in get(grid, (c[1] + a, c[2] + b, c[3] + e), Int[])
+                    best = min(best, sum(abs2, pts[j] .- q))
+                end
             end
             sqrt(best) <= ring * cell && break      # every unvisited point is at least ring·cell away
             ring += 1; ring > 64 && break

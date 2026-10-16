@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
   pull_request:
+permissions:
+  contents: write
 jobs:
   format:
     runs-on: ubuntu-latest
@@ -12,6 +14,20 @@ jobs:
         with:
           version: "1"
       - uses: julia-actions/cache@v2
-      - uses: fredrikekre/runic-action@v1
-        with:
-          version: "1"
+      - name: Install Runic
+        run: julia --project=@runic -e 'using Pkg; Pkg.add("Runic")'
+      # On main: format and commit the result, so formatting never fails the build.
+      - name: Format and commit (main)
+        if: github.event_name == 'push'
+        run: |
+          julia --project=@runic -m Runic --inplace .
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -am "Format with Runic"
+            git push
+          fi
+      # On pull requests: check only (a bot cannot push to forks).
+      - name: Check (pull requests)
+        if: github.event_name == 'pull_request'
+        run: julia --project=@runic -m Runic --check --diff .
