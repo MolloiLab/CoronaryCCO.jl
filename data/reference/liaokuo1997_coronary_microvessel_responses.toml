@@ -1,0 +1,33 @@
+[meta]
+id = "liaokuo1997_coronary_microvessel_responses"
+data_type = "experimental"
+validates = "Primary source of isolated swine coronary vessel passive and myogenic pressure-diameter curves in four size groups (passive ~254, 164, 99, 64 um at ~80 mmHg) plus shear and adenosine responses, embedded in a network model"
+species = "pig"
+preparation = "Isolated cannulated swine coronary microvessels (subepicardial LAD/LCx); empirical single-vessel models of pressure (myogenic), shear and adenosine responses; symmetric network model."
+conditions = "Pressure steps 20-140 cmH2O (14.7-102.9 mmHg) without flow; passive with nitroprusside (per secondary sources)."
+verification = "abs"
+access = "PubMed abstract (PMID 9139938) via E-utilities, 2026-10-16. AJP full text not accessed. Quantitative curves are available second-hand: digitized D/D100 in eden2026_coronary_cmm_autoregulation, fitted parameters in namani2018_coronary_wall_parameters, composite in dick2018_swine_coronary_myogenic_composite."
+notes = """Abstract: adenosine preferentially dilates downstream (small) coronary microvessels, shear-induced dilation predominates in upstream larger microvessels; myogenic response contributes little to the adenosine response in the network; flow-induced dilation of large arterioles contributes ~20% of the adenosine flow increase.
+Dick 2018 Table 1 gives the four passive diameters (254, 164, 99 and 64 um, average of 73.5 and 88.2 mmHg values). Eden 2026 assigns homeostatic diameters 180, 95, 62 and 37 um."""
+use_in_model = """Cite as the primary data behind the coronary passive/myogenic targets; take numbers from the secondary TOMLs listed in access."""
+
+[source]
+authors = ["Liao JC", "Kuo L"]
+year = 1997
+title = "Interaction between adenosine and flow-induced dilation in coronary microvascular network"
+journal = "Am J Physiol"
+volume = "272"
+issue = "4 Pt 2"
+pages = "H1571-H1581"
+doi = "10.1152/ajpheart.1997.272.4.H1571"
+crossref_verified = "2026-10-16; Crossref title exact match (Am J Physiol Heart Circ Physiol 272(4):H1571-H1581; authors Liao, Kuo)"
+pmid = "9139938"
+
+[data.summary]
+description = "Quantitative statement in abstract"
+location = "Abstract"
+provenance = "FT"
+statistic = "model result"
+quantity = ["shear_contribution_to_adenosine_flow_increase"]
+value = ["up to ~20%"]
+missing_note = "Abstract only; pressure-diameter values not in abstract."

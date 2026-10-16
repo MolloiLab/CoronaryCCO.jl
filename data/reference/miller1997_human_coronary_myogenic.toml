@@ -1,0 +1,36 @@
+[meta]
+id = "miller1997_human_coronary_myogenic"
+data_type = "experimental"
+validates = "Myogenic constriction of isolated human coronary resistance vessels (passive diameter 44-227 um): diameter at 100 mmHg as fraction of passive diameter; inverse size dependence; effect of hypertension"
+species = "human"
+preparation = "Microvessels dissected from right atrial appendages obtained at cardiac surgery; cannulated, zero flow, stepwise pressure increases; passive diameter by Ca-free/dilator conditions (detail not in abstract)."
+conditions = "Stepped intraluminal pressure; diltiazem, calphostin C (PKC inhibition), PMA (PKC activation); normotensive vs hypertensive patients."
+verification = "abs"
+access = "PubMed abstract (PMID 9249498) via E-utilities, 2026-10-16. AJP full text not accessed (journals.physiology.org blocked; no Wayback capture tried successfully)."
+notes = """At 100 mmHg vessels constricted to 55 +/- 4% of passive diameter. Inverse relation between vessel diameter and myogenic responsiveness (smaller vessels constrict more).
+Hypertensive vs normotensive patients: 0.55 +/- 0.04 vs 0.74 +/- 0.03 (P < 0.01) (abstract prints these as the myogenic constriction index; group-label direction as printed: 'enhanced myogenic constriction' in hypertension).
+Atrial, not ventricular, vessels."""
+use_in_model = """Human check that spontaneous myogenic tone at 100 mmHg holds coronary resistance vessels up to ~227 um at roughly 0.55-0.75 of passive diameter; size-resolved values need the full text."""
+
+[source]
+authors = ["Miller FJ Jr", "Dellsperger KC", "Gutterman DD"]
+year = 1997
+title = "Myogenic constriction of human coronary arterioles"
+journal = "Am J Physiol"
+volume = "273"
+issue = "1 Pt 2"
+pages = "H257-H264"
+doi = "10.1152/ajpheart.1997.273.1.H257"
+crossref_verified = "2026-10-16; Crossref title exact match (Am J Physiol Heart Circ Physiol 273(1):H257-H264; authors Miller, Dellsperger, Gutterman)"
+pmid = "9249498"
+
+[data.myogenic_summary]
+description = "Diameter at 100 mmHg as fraction of passive diameter"
+location = "Abstract"
+provenance = "FT"
+statistic = "mean +/- SEM (label not stated in abstract)"
+group = ["all vessels", "normotensive", "hypertensive"]
+fraction_of_passive_at_100mmHg = [0.55, 0.74, 0.55]
+fraction_se = [0.04, 0.03, 0.04]
+vessel_passive_diameter_range_um = "44-227"
+missing_note = "Abstract only. Group assignment of 0.55 vs 0.74 inferred from 'hypertension ... enhanced myogenic constriction' (0.55 = hypertensive). Per-size data and passive P-D curve not available."

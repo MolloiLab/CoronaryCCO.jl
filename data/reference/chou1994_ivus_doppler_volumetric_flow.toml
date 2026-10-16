@@ -1,0 +1,43 @@
+[meta]
+id = "chou1994_ivus_doppler_volumetric_flow"
+data_type = "experimental"
+validates = "Coronary volumetric flow from IVUS lumen cross-sectional area x k x Doppler guide-wire APV vs transit-time flow probe; best-fit mean/APV constant k"
+species = "dog"
+preparation = "4 dogs; femoral artery -> circumflex coronary shunt with in-line transit-time ultrasound (TTU) flow probe. 2D IVUS imaging catheter over a 0.014-in. Doppler guide wire in the LCx, wire tip 2 cm beyond the imaging catheter tip. CSA from IVUS, APV from Doppler wire."
+conditions = "TTU flow 31-385 mL/min across 119 measurements (interventions not stated in abstract)."
+verification = "abs"
+access = "Abstract only (PubMed / Europe PMC). Elsevier full text not accessed."
+notes = """Direct in vivo measurement of the mean/APV ratio in a coronary artery against an independent flow reference.
+CBF = CSA x 0.5 APV correlated well; the adjusted constant 0.47 gave slope 0.9997, r = 0.99, bias minimal (SEE -6.7 +/- 8.6 as printed).
+So measured mean/APV ~= 0.47 in canine LCx (with IVUS catheter in the vessel, which may perturb the profile).
+How 0.47 was derived (regression on the same data vs separate fit) is not stated in the abstract."""
+use_in_model = """Second in vivo estimate of mean/APV: 0.47 (vs 0.5 assumed, 0.425 implied by Doucette proximal LCx).
+Contrast-front/mean = 0.63/0.47 = 1.34 using Stoel 2003."""
+
+[source]
+authors = ["Chou TM", "Sudhir K", "Iwanaga S", "Chatterjee K", "Yock PG"]
+year = 1994
+title = "Measurement of volumetric coronary blood flow by simultaneous intravascular two-dimensional and Doppler ultrasound: validation in an animal model"
+journal = "American Heart Journal"
+volume = "128"
+issue = "2"
+pages = "237-243"
+doi = "10.1016/0002-8703(94)90474-X"
+crossref_verified = "2026-10-16; Crossref title match, Am Heart J 128(2):237-243, Aug 1994, first authors Chou, Sudhir, Iwanaga"
+pmid = "8037088"
+
+[data.ivus_doppler_vs_ttu]
+description = "IVUS CSA x k x APV vs transit-time flow, canine LCx"
+location = "Abstract"
+provenance = "abs"
+statistic = "linear regression (slope, r); SEE as printed"
+n_dogs = 4
+n_measurements = 119
+ttu_flow_min_ml_per_min = 31
+ttu_flow_max_ml_per_min = 385
+k_previously_validated = 0.5
+k_adjusted_best = 0.47
+slope_with_k047 = 0.9997
+r_with_k047 = 0.99
+see_with_k047_as_printed = "-6.7 +/- 8.6"
+missing_note = "Slope/r for k = 0.5 not given in abstract (described only as 'excellent correlation'). Vessel diameters, HR, and per-dog results not available."

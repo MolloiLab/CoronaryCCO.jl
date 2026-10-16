@@ -1,0 +1,55 @@
+[meta]
+id = "kanatsuka1989_size_class_dilation_digitized"
+data_type = "experimental"
+validates = "Supplement to kanatsuka1989_adenosine_microvessels: digitized class-mean in vivo % diameter change of arterial microvessels <= 150 um vs > 150 um (up to 380 um) with rapid pacing, adenosine and dipyridamole at matched perfusion, and with large doses (5-7-fold perfusion)"
+species = "dog"
+preparation = "As in kanatsuka1989_adenosine_microvessels: open-chest dogs, subepicardial arterial microvessels by stroboscopic epi-illumination intravital microscopy at end diastole; mean aortic pressure held within 10 mmHg of control."
+conditions = "Fig. 5: rapid pacing 300 bpm (group 1), adenosine IV ~0.21 mg/kg/min (group 2), dipyridamole IV ~0.23 mg/kg (group 3), doses matched to the pacing flow increase. Fig. 9: adenosine 1.1 mg/kg/min IV and dipyridamole 1.0 mg/kg IV."
+verification = "fig"
+access = "Publisher PDF (Circ Res 65:1296-1305) from Wayback Machine capture 20220710031222 of https://www.ahajournals.org/doi/pdf/10.1161/01.RES.65.5.1296?download=true; Figs. 5 and 9 rendered at 400 dpi and bar tops/SEM caps read against the printed y ticks (Fig. 5: ~31 px per 1%; Fig. 9: ~12.8 px per 1%)."
+notes = """Bar heights are means, caps are +SEM; n are vessels.
+Fig. 5 small (<= 150 um) vs large (> 150 um): pacing dilated both classes significantly; adenosine and dipyridamole dilated only small vessels.
+Fig. 9 large doses: small vessels dilated significantly; large vessels did not dilate.
+The authors caution that distending pressure in > 150 um vessels probably fell at high flow, so absence of dilation does not prove tone did not fall.
+Per-vessel scatter (Figs. 4, 6, 7, 8; 40-380 um) not digitized."""
+use_in_model = """In vivo rest-vs-dilated diameter ratio for > 150 um coronary arteries in the dog: ~1.05 with a metabolic stimulus (pacing, MVO2 x2) and ~1.00 with adenosine or dipyridamole even at 5-7-fold perfusion; for <= 150 um ~1.11-1.12 at matched flow and ~1.16-1.23 at large doses."""
+
+[source]
+authors = ["Kanatsuka H", "Lamping KG", "Eastham CL", "Dellsperger KC", "Marcus ML"]
+year = 1989
+title = "Comparison of the effects of increased myocardial oxygen consumption and adenosine on the coronary microvascular resistance"
+journal = "Circ Res"
+volume = "65"
+issue = "5"
+pages = "1296-1305"
+doi = "10.1161/01.RES.65.5.1296"
+crossref_verified = "2026-10-15; Crossref title exact match (see kanatsuka1989_adenosine_microvessels)"
+pmid = "2805245"
+
+[data.class_mean_dilation_matched_flow]
+description = "% change in diameter by size class at matched perfusion increase"
+location = "Figure 5"
+provenance = "fig"
+digitization_error = "+/- 0.2% for bar tops, +/- 0.3% for SEM caps"
+statistic = "mean + SEM; n = vessels"
+size_class = ["<=150 um", "<=150 um", "<=150 um", ">150 um", ">150 um", ">150 um"]
+stimulus = ["rapid pacing", "adenosine", "dipyridamole", "rapid pacing", "adenosine", "dipyridamole"]
+diameter_change_pct = [11.1, 10.9, 12.0, 5.3, 1.3, -0.3]
+diameter_change_se_pct = [1.2, 1.8, 1.9, 0.8, 0.9, 0.7]
+n_vessels = [19, 15, 16, 18, 15, 15]
+significant_vs_control = [true, true, true, true, false, false]
+missing_note = "n for the large-vessel dipyridamole bar is printed 'n=16' or 'n=15' (scan unclear; read as 15). Dipyridamole large-vessel bar lies just below zero."
+
+[data.class_mean_dilation_large_dose]
+description = "% change in diameter by size class with large doses"
+location = "Figure 9"
+provenance = "fig"
+digitization_error = "+/- 0.4% for bar tops, +/- 0.5% for SEM caps"
+statistic = "mean + SEM; n = vessels"
+size_class = ["<=150 um", "<=150 um", ">150 um", ">150 um"]
+stimulus = ["adenosine 1.1 mg/kg/min", "dipyridamole 1.0 mg/kg", "adenosine 1.1 mg/kg/min", "dipyridamole 1.0 mg/kg"]
+diameter_change_pct = [22.8, 16.0, 0.3, -0.9]
+diameter_change_se_pct = [5.2, 4.7, 1.2, 1.5]
+n_vessels = [8, 7, 7, 10]
+significant_vs_control = [true, true, false, false]
+missing_note = ""

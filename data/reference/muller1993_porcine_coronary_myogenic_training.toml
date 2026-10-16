@@ -1,0 +1,32 @@
+[meta]
+id = "muller1993_porcine_coronary_myogenic_training"
+data_type = "experimental"
+validates = "Myogenic and nitroprusside-passive pressure-diameter responses of isolated Yucatan swine coronary resistance arteries 75-150 um (124-129 um passive at 80 mmHg per Dick 2018), sedentary vs exercise-trained"
+species = "pig (Yucatan miniature swine, female)"
+preparation = "Coronary resistance arteries 75-150 um isolated and cannulated, no intraluminal flow; spontaneous tone at 40 mmHg; passive after sodium nitroprusside 100 uM, 10-80 mmHg."
+conditions = "Sedentary (n = 12 pigs) vs treadmill-trained 16-22 wk (n = 12)."
+verification = "abs"
+access = "PubMed abstract (PMID 8125889) via E-utilities, 2026-10-16. Full text not accessed; its curves are in the Dick 2018 composite (Fig. 6 of Dick 2018 shows the fit to these data)."
+notes = """Spontaneous tone at 40 mmHg in both groups. Above 40 mmHg, myogenic constriction greater in trained pigs: 8% and 16% greater at 60 and 70 mmHg. Passive curves 10-80 mmHg not different between groups."""
+use_in_model = """Qualitative support for substantial myogenic tone at ~125 um; numbers via dick2018_swine_coronary_myogenic_composite."""
+
+[source]
+authors = ["Muller JM", "Myers PR", "Laughlin MH"]
+year = 1993
+title = "Exercise training alters myogenic responses in porcine coronary resistance arteries"
+journal = "J Appl Physiol"
+volume = "75"
+issue = "6"
+pages = "2677-2682"
+doi = "10.1152/jappl.1993.75.6.2677"
+crossref_verified = "2026-10-16; Crossref title exact match (Journal of Applied Physiology 75(6):2677-2682; authors Muller, Myers, Laughlin)"
+pmid = "8125889"
+
+[data.summary]
+description = "Group differences printed in abstract"
+location = "Abstract"
+provenance = "FT"
+statistic = "as printed"
+pressure_mmHg = [60.0, 70.0]
+extra_constriction_trained_vs_sedentary_pct = [8.0, 16.0]
+missing_note = "Abstract only (truncated at 250 words); absolute diameters not given."

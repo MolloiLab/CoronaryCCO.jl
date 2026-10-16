@@ -1,0 +1,33 @@
+[meta]
+id = "kuo1988_porcine_coronary_myogenic"
+data_type = "experimental"
+validates = "First isolated coronary arteriole myogenic study: subepicardial vs subendocardial porcine arterioles (80-100 um; 134-136 um passive at ~80 mmHg per Dick 2018), active vs nitroprusside-passive pressure-diameter 20-140 cmH2O"
+species = "pig"
+preparation = "Arterioles located by India ink-gelatin perfusion, dissected and cannulated with glass micropipettes, PSS 36-37 C, no flow; pressure in 20-cmH2O steps 20-140 cmH2O (14.7-103 mmHg); passive with nitroprusside 1e-4 M."
+conditions = "Spontaneous tone; nitroprusside for passive curve."
+verification = "abs"
+access = "PubMed abstract (PMID 2462367) via E-utilities, 2026-10-16. AJP full text not accessed. Its curves are included (digitized and refit) in dick2018_swine_coronary_myogenic_composite (endo order 6 / epi order 6)."
+notes = """Spontaneous tone and myogenic responses in both layers. At 20-60 cmH2O subendocardial arterioles responded passively while subepicardial ones maintained diameter; at 100-140 cmH2O both constricted, subepicardial more. With nitroprusside all responded passively with no transmural difference.
+Dick et al. 2018 Table 1 lists passive diameters 134 and 136 um at ~80 mmHg for this study (abstract says 80-100 um)."""
+use_in_model = """Qualitative: myogenic tone present at ~100-140 um; transmural difference small in passive state. Quantitative curves via the Dick 2018 composite."""
+
+[source]
+authors = ["Kuo L", "Davis MJ", "Chilian WM"]
+year = 1988
+title = "Myogenic activity in isolated subepicardial and subendocardial coronary arterioles"
+journal = "Am J Physiol"
+volume = "255"
+issue = "6 Pt 2"
+pages = "H1558-H1562"
+doi = "10.1152/ajpheart.1988.255.6.H1558"
+crossref_verified = "2026-10-16; Crossref title exact match (Am J Physiol Heart Circ Physiol 255(6):H1558-H1562; authors Kuo, Davis, Chilian)"
+pmid = "2462367"
+
+[data.summary]
+description = "Size and protocol facts from the abstract"
+location = "Abstract"
+provenance = "FT"
+statistic = "as printed"
+quantity = ["arteriole_diameter_range_um", "pressure_range_cmH2O", "pressure_step_cmH2O", "nitroprusside_M"]
+value = ["80-100", "20-140", "20", "1e-4"]
+missing_note = "Abstract only; no numeric diameters."

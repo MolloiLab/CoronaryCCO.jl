@@ -1,0 +1,39 @@
+[meta]
+id = "kanatsuka1990_stenosis_size_classes"
+data_type = "experimental"
+validates = "In vivo autoregulatory diameter change of subepicardial coronary arterial microvessels by size class (< 100, 100-200, > 200 um) when LAD distal pressure is lowered to 59 (mild) and 38 mmHg (severe stenosis)"
+species = "dog"
+preparation = "20 anesthetized open-chest dogs; aortic pressure (snare) and heart rate (atrial pacing) held constant; LAD distal pressure set by a screw occluder and measured via a 24-gauge cannula; epimyocardial microvessels by stroboscopic epi-illumination intravital microscopy; microsphere flow."
+conditions = "Control LAD distal pressure 89 +/- 2 mmHg; mild stenosis 59 +/- 1 mmHg (n = 20); severe 38 +/- 1 mmHg (n = 16)."
+verification = "mixed"
+access = "Publisher PDF (Circ Res 66:389-396) from Wayback Machine capture 20220710032808 of https://www.ahajournals.org/doi/pdf/10.1161/01.RES.66.2.389; text by pdftotext; Fig. 6 bars read at 400 dpi against printed y ticks (~18 px per 1%)."
+notes = """Mild stenosis: vessels < 100 um dilated; vessels > 100 um did not change. Severe stenosis: small vessels dilated while large vessels constricted; vessels > 200 um constricted more than 100-200 um vessels (Results).
+Flow in LAD region maintained at mild stenosis, reduced in mid/subendocardium at severe stenosis.
+Per-vessel scatter (Figs. 1-4) not digitized. Eden et al. 2026 used these data for model validation (constriction above ~160 um)."""
+use_in_model = """Arteries > 100-200 um do not take part in autoregulatory dilation in vivo and constrict (passively or actively) at low pressure: at 38 mmHg distal pressure, D falls ~5% (100-200 um) and ~10% (> 200 um). A model with strong metabolic/myogenic dilation in 150-400 um vessels would contradict this."""
+
+[source]
+authors = ["Kanatsuka H", "Lamping KG", "Eastham CL", "Marcus ML"]
+year = 1990
+title = "Heterogeneous changes in epimyocardial microvascular size during graded coronary stenosis. Evidence of the microvascular site for autoregulation"
+journal = "Circ Res"
+volume = "66"
+issue = "2"
+pages = "389-396"
+doi = "10.1161/01.RES.66.2.389"
+crossref_verified = "2026-10-16; Crossref title exact match (Circulation Research 66(2):389-396; authors Kanatsuka, Lamping, Eastham, Marcus)"
+pmid = "2297810"
+
+[data.diameter_change_by_class]
+description = "% change in diameter from control by control-diameter class"
+location = "Figure 6"
+provenance = "fig"
+digitization_error = "+/- 0.2% for bar ends, +/- 0.3% for SEM caps"
+statistic = "mean +/- SEM; n = vessels"
+size_class = ["D<=100", "D<=100", "100<D<=200", "100<D<=200", "D>200", "D>200"]
+stenosis = ["mild 59 mmHg", "severe 38 mmHg", "mild 59 mmHg", "severe 38 mmHg", "mild 59 mmHg", "severe 38 mmHg"]
+diameter_change_pct = [15.3, 17.4, 0.1, -5.4, -3.1, -9.8]
+diameter_change_se_pct = [3.1, 5.1, 1.8, 2.2, 1.8, 2.3]
+n_vessels = [12, 8, 15, 12, 10, 9]
+significant_vs_control = [true, true, false, true, false, true]
+missing_note = "Upper bound of the > 200 um class not stated in the legend (scatter plots extend to ~300-400 um)."

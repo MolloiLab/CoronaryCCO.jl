@@ -1,0 +1,73 @@
+[meta]
+id = "namani2018_coronary_wall_parameters"
+data_type = "model"
+validates = "Model input, not data: passive (arctan sigmoid) and myogenic pressure-radius parameters for swine coronary vessels by Kassab order, fitted to Liao & Kuo 1997 isolated-vessel data (orders 5-7, D80 ~66-252 um), Kassab 1999 in situ data (orders 0-1) and Hamza 2003 (order 10, ~1.6 mm)"
+species = "pig (parameters fitted to swine isolated coronary vessels; network from Kassab 1993 swine morphometry)"
+preparation = "Theoretical 400-vessel subendocardial and subepicardial subtrees (Kaimovitz 2005 reconstruction) with myogenic, shear (Liao & Kuo 1997 forms) and conducted metabolic regulation plus myocardium-vessel interaction (tethering, intramyocardial pressure)."
+conditions = "Reference inlet pressure 100 mmHg; quasi-static regulation at fixed heart rate."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC5749109 (CC BY-NC-SA 4.0) read 2026-10-16; Tables A2 and A3 read from XML table markup. Displayed equations read from MathML text in the XML."
+notes = """Passive radius (Eq. 1): Rp(dP) = Bp + (Ap - Bp)/pi * [pi/2 + arctan((dP - phi_p)/C_p)]; dP in mmHg, radii in um.
+Myogenic radius reduction (Eq. 2): dRm = rho_m/pi * {pi/2 - arctan[((dP - phi_m)/C_m)^(2m)]}, m = 2; regulated radius Rreg = Rp - A*dRm.
+Appendix F says Bp was set to zero for the network and isolated-vessel parameters re-estimated with Bp = 0, yet Table A2 prints nonzero Bp; the printed (Ap, Bp, phi_p, C_p) reproduce the printed R0 and R80 exactly (checked here), so the table values are the Bp != 0 fits.
+Derived here from Table A2 (Eq. 1, printed Bp): D50/D100 = 0.957 (o5, D100 67 um), 0.968 (o6a, 100 um), 0.958 (o6b, 164 um), 0.956 (o7, 255 um), 0.980 (o10, 1646 um); D20/D100 = 0.86-0.88 for orders 5-7.
+Implied Carlson-Secomb C'pass from D50/D100 (x/2 = exp(C'(x-1))) is ~17 for orders 6b-7, versus 12.52 - 0.027*D0 = 5.6 at 255 um.
+Two order-6 rows: Liao & Kuo 99 um and 164 um vessels both fall in Kassab order 6. Table A3 values in parentheses are the authors' adjusted phi_m/C_m (see Appendix F)."""
+use_in_model = """Direct parameter source for coronary passive P-D in 60-260 um and ~1.6 mm vessels. Interpolating Ap, phi_p, C_p over R80 (the paper used quadratic/linear fits, Fig. A2) gives a passive law that stays stiff (D50/D100 ~0.96) through the 150-400 um gap, unlike the Fry 2013 linear C'pass. Myogenic amplitude rho_m ~ 0.6 x R80 for orders 5-7, set to 0 at order 10."""
+
+[source]
+authors = ["Namani R", "Kassab GS", "Lanir Y"]
+year = 2018
+title = "Integrative model of coronary flow in anatomically based vasculature under myogenic, shear, and metabolic regulation"
+journal = "J Gen Physiol"
+volume = "150"
+issue = "1"
+pages = "145-168"
+doi = "10.1085/jgp.201711795"
+crossref_verified = "2026-10-16; Crossref title exact match (Journal of General Physiology 150(1):145-168; authors Namani, Kassab, Lanir)"
+pmid = "29196421"
+pmcid = "PMC5749109"
+
+[data.passive_parameters]
+description = "Passive vessel parameters of Eq. 1 by order (R0 = radius at 0 mmHg, R80 = cast radius at 80 mmHg)"
+location = "Table A2"
+provenance = "FT"
+statistic = "model parameter (no uncertainty)"
+order = [0, 1, 5, 6, 6, 7, 10]
+R0_um = [2.65, 3.89, 22.73, 32.43, 57.54, 91.50, 416.48]
+R80_um = [3.13, 4.44, 33.12, 49.37, 81.03, 125.97, 820.41]
+Ap_um = [3.20, 4.51, 35.02, 51.38, 85.53, 133.52, 829.6]
+Bp_um = [2.43, 3.59, 10.9, 16.41, 32.17, 51.6, 401.52]
+phi_p_mmHg = [0.0, 0.0, 0.61, 1.88, 1.64, 0.96, 30.39]
+C_p_mmHg = [19.28, 17.24, 20.11, 14.23, 21.24, 23.54, 3.35]
+data_source = ["in situ (Kassab 1999)", "in situ (Kassab 1999)", "in vitro (Liao & Kuo 1997)", "in vitro (Liao & Kuo 1997)", "in vitro (Liao & Kuo 1997)", "in vitro (Liao & Kuo 1997)", "in vitro (Hamza 2003)"]
+missing_note = "No passive data for orders 2-4 and 8-9 (interpolated in the paper via Fig. A2 fits, whose coefficients are not printed)."
+
+[data.passive_derived_ratios]
+description = "Diameter ratios computed here from Table A2 with Eq. 1 (not printed in the paper)"
+location = "derived from Table A2"
+provenance = "FT"
+statistic = "computed"
+order = [5, 6, 6, 7, 10]
+D100_um = [67.0, 99.6, 163.8, 254.9, 1646.1]
+D50_over_D100 = [0.957, 0.968, 0.958, 0.956, 0.980]
+D80_over_D100 = [0.989, 0.992, 0.989, 0.989, 0.997]
+D20_over_D100 = [0.862, 0.883, 0.866, 0.865, 0.539]
+D0_over_D100 = [0.679, 0.652, 0.702, 0.718, 0.506]
+missing_note = "Fit-based, so shape between data pressures inherits arctan form."
+
+[data.myogenic_parameters]
+description = "Myogenic parameters of Eq. 2 by order (orders 5-7 fitted to Liao & Kuo 1997; others extrapolated)"
+location = "Table A3"
+provenance = "FT"
+statistic = "model parameter; values in parentheses in the table (adjusted) stored separately"
+order = [1, 1, 5, 6, 6, 7, 10]
+R80_um = [3.20, 4.44, 33.12, 49.37, 81.04, 125.97, 730.50]
+rho_m_um = [2.24, 3.29, 26.47, 50.96, 77.86, 74.14, 0.0]
+phi_m_mmHg = [30.0, 40.0, 69.40, 125.4, 148.9, 77.3, 0.0]
+C_m_mmHg = [33.0, 35.0, 57.20, 87.3, 135.4, 51.31, 20.0]
+rho_m_adjusted_um = [nan, nan, nan, 48.74, 74.54, nan, nan]
+phi_m_adjusted_mmHg = [nan, nan, nan, 102.98, 102.98, nan, nan]
+C_m_adjusted_mmHg = [nan, nan, nan, 66.89, 87.78, nan, nan]
+data_source = ["extrapolated", "extrapolated", "in vitro (Liao & Kuo 1997)", "in vitro (Liao & Kuo 1997)", "in vitro (Liao & Kuo 1997)", "in vitro (Liao & Kuo 1997)", "extrapolated (assumed no myogenic response)"]
+missing_note = "Order-10 R80 is printed as 730.50 um in Table A3 but 820.41 um in Table A2 (kept as printed). Shear parameters (Table A4) not transcribed."

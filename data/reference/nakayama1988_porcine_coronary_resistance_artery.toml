@@ -1,0 +1,66 @@
+[meta]
+id = "nakayama1988_porcine_coronary_resistance_artery"
+data_type = "experimental"
+validates = "Passive (papaverine) and resting pressure-diameter curve, 10-90 mmHg, of isolated pressurized porcine intramyocardial coronary resistance arteries (~223 um, 150-285 um); absence of myogenic tone at this size; maximal agonist (acetylcholine) constriction at 40 mmHg"
+species = "pig"
+preparation = "Isolated cylindrical segments of porcine intramyocardial coronary resistance arteries cannulated in a pressurized arteriograph (no flow), PSS 36-37 C bubbled with 95% O2/5% CO2; lumen diameter and wall thickness by video dimension analyzer. Equilibrated 1-2 h at 20 mmHg. Endothelium verified by substance P/bradykinin relaxation."
+conditions = "Group D (n = 7 vessels): pressure cycled twice 10-90 mmHg, then 10-mmHg steps 10->90 mmHg, then 40-mmHg sudden steps; repeated with papaverine 1e-4 M for passive curve. Drug studies at constant 40 mmHg."
+verification = "mixed"
+access = "Publisher PDF (Circ Res 62:741-748) from Wayback Machine capture 20220710090633 of https://www.ahajournals.org/doi/pdf/10.1161/01.RES.62.4.741?download=true; text by pdftotext; Fig. 5 digitized from the embedded 300 dpi page scan by automatic marker detection against detected axis ticks (10-mmHg x ticks, 80/90/100% y ticks)."
+notes = """All values mean +/- SEM (n = vessels).
+Mean lumen diameter 223 +/- 7 um (range 150-285, n = 30) and wall thickness 37 +/- 3 um at 40 mmHg; 3-5 smooth muscle layers.
+Group D (FT): 10 -> 90 mmHg, lumen diameter 209 +/- 14 -> 257 +/- 19 um and wall 41 +/- 4 -> 36 +/- 3 um in PSS; with papaverine 215 +/- 16 -> 260 +/- 19 um. 'Diameter at 10 mm Hg was approximately 80% of that at 90 mm Hg.'
+PSS and papaverine curves were not significantly different at any pressure: these ~220-260 um arteries had no intrinsic myogenic tone and responded only passively to 40-mmHg pressure steps.
+Acetylcholine (3e-8 to 6e-6 M) caused maximal lumen-diameter reductions of 71 +/- 3% (EC50 1.9e-7 M, n = 7) at 40 mmHg; 4e-7 M ACh caused ~55% reduction. Norepinephrine and epinephrine did not constrict.
+Derived here: passive D50/D90 = 0.971 and D10/D90 = 0.827 (Fig. 5); maximal ACh constriction gives D/D_rest ~0.29 at 40 mmHg, where D_rest ~ passive (no tone)."""
+use_in_model = """Size anchor at ~220-260 um: passive curve is stiff above 40 mmHg (D50/D90 ~0.97), and in vitro these arteries carry no spontaneous myogenic tone, although their smooth muscle can still constrict ~70% with an agonist. Supports keeping maximal active tension large at 150-300 um while setting basal (myogenic) activation low there."""
+
+[source]
+authors = ["Nakayama K", "Osol G", "Halpern W"]
+year = 1988
+title = "Reactivity of isolated porcine coronary resistance arteries to cholinergic and adrenergic drugs and transmural pressure changes"
+journal = "Circ Res"
+volume = "62"
+issue = "4"
+pages = "741-748"
+doi = "10.1161/01.RES.62.4.741"
+crossref_verified = "2026-10-16; Crossref title exact match (Circulation Research 62(4):741-748; authors Nakayama, Osol, Halpern)"
+pmid = "3349575"
+
+[data.pressure_diameter_normalized]
+description = "Lumen diameter (% of papaverine diameter at 90 mmHg = 260 +/- 19 um) vs transmural pressure, control PSS and papaverine"
+location = "Figure 5 (n = 7)"
+provenance = "fig"
+digitization_error = "+/- 0.3% (marker centers); papaverine points at 20 and 60 mmHg read visually (+/- 0.5%) because the marker merged with error bars"
+statistic = "mean (SEM bars not digitized)"
+pressure_mmHg = [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0]
+papaverine_pct_of_D90 = [82.97, 88.6, 92.54, 95.42, 97.07, 98.6, 99.23, 99.68, 100.11]
+control_pct_of_D90 = [80.82, 86.33, 90.39, 93.74, 95.40, 96.80, 98.00, 98.37, 99.02]
+missing_note = "10-mmHg papaverine marker merges with its error-bar cap (+/- 0.5%). Absolute D90 = 260 um (papaverine)."
+
+[data.endpoints]
+description = "Printed endpoint diameters and wall thickness"
+location = "Results: Reactivity to Transmural Pressure Changes"
+provenance = "FT"
+statistic = "mean +/- SEM, n = 7"
+condition = ["PSS", "papaverine 1e-4 M"]
+diameter_10mmHg_um = [209.0, 215.0]
+diameter_10mmHg_se_um = [14.0, 16.0]
+diameter_90mmHg_um = [257.0, 260.0]
+diameter_90mmHg_se_um = [19.0, 19.0]
+wall_10mmHg_um = [41.0, nan]
+wall_90mmHg_um = [36.0, nan]
+missing_note = "Wall thickness with papaverine not printed."
+
+[data.agonist_constriction]
+description = "Maximal acetylcholine constriction at 40 mmHg"
+location = "Results: Responses to Acetylcholine; Methods"
+provenance = "FT"
+statistic = "mean +/- SEM"
+agonist = ["acetylcholine"]
+max_lumen_diameter_reduction_pct = [71.0]
+max_lumen_diameter_reduction_se_pct = [3.0]
+EC50_M = [1.9e-7]
+n_vessels = [7]
+test_pressure_mmHg = [40.0]
+missing_note = "Absolute constricted diameters per vessel not printed."

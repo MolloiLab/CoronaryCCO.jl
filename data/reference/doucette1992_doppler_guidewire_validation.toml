@@ -1,0 +1,81 @@
+[meta]
+id = "doucette1992_doppler_guidewire_validation"
+data_type = "experimental"
+validates = "Doppler guide wire time-averaged spectral peak velocity (APV) vs electromagnetic-flowmeter flow, and the mean velocity = 0.5 x APV rule for volumetric flow (Q_D = pi D^2/4 x 0.5 APV) in model tubes and canine LCx"
+species = "dog (in vivo); bovine blood in plastic tubes (in vitro)"
+preparation = "In vitro: heparinized bovine blood, pulsatile roller pump, straight tubes i.d. 0.79, 1.59, 3.17, 4.76, 7.94 mm; wire advanced 20-60 cm (>20 diameters) for fully developed flow; in-line EMF calibrated by timed collection; 8-14 paired points per tube. Tortuous 3.17-mm model with 1, 1/2, 1/4 in. bend radii. In vivo: 4 mongrel dogs (20-36 kg), pentobarbital, open chest; femoral artery -> LCx shunt with in-line EMF and steel cannula (i.d. 2.9 mm) tied into proximal LCx; proximal-LCx branches ligated so EMF flow = LCx flow. 12-MHz 0.018-in. Doppler guide wire (Cardiometrics prototype), sample volume 5 mm beyond tip. Diameter at sample volume by single-plane QCA (Brown method, circular lumen assumed)."
+conditions = "LCx flow 0-180 mL/min varied by graded clamping, reactive hyperemia and IC papaverine 8 mg. Spontaneous HR 68-130 bpm; atrial pacing 150 bpm in 3 dogs. APV = manual trace of 2-s spectral envelope, forward and reverse traced separately."
+verification = "FT"
+access = "Scanned full-text PDF (14 pp) from Wayback capture 20170903235728 of http://circ.ahajournals.org/content/circulationaha/85/5/1899.full.pdf; text layer read with pdftotext. Figures not digitized. Local copy only in scratchpad/pdfs_doppler/."
+notes = """This is the primary source cited for 'mean velocity = 0.5 x APV'. The 0.5 factor is an ASSUMPTION (time-average parabolic profile,
+Methods 'Quantitative Flow Calculations'), tested by the slope of Q_D vs Q_EMF. Slope 1.0 means mean/APV = 0.5 exactly.
+In straight small tubes slope 1.00 +/- 0.04, so APV 'almost exactly twice the true mean velocity'.
+In vivo the slope was below 1: 0.95 in the rigid cannula and 0.85 in the native proximal LCx (9 placements, 4 dogs), range 0.78-1.15.
+Implied in vivo mean/APV = 0.5 x slope = 0.475 (cannula) and 0.425 (proximal LCx); this is my inference ignoring intercepts, not stated by the paper.
+Authors warn the long unbranched cannula may have made the LCx profile MORE parabolic than native vessels, and that in irregular, branched
+or ectatic vessels the peak/mean relation is 'even more inconsistent'. Tortuous segments: APV underestimated expected by 3-24%; slope 0.82 in tightest bend.
+Pulsatility (in vitro, 3.17 mm tube) changed APV by <= 10.4% from expected."""
+use_in_model = """Convert Doppler APV to cross-sectional mean velocity with factor 0.5 nominal, plausible in vivo range ~0.43-0.5 (proximal canine LCx).
+Combined with Stoel 2003 (FCV = 0.63 APV): contrast-front/mean = 0.63/0.5 = 1.26, or 0.63/0.425 = 1.48 if the in vivo LCx slope applies.
+Q_D underestimates true flow by ~15% in native artery, so APV-based flows in other references may be low by that amount."""
+
+[source]
+authors = ["Doucette JW", "Corl PD", "Payne HM", "Flynn AE", "Goto M", "Nassi M", "Segal J"]
+year = 1992
+title = "Validation of a Doppler guide wire for intravascular measurement of coronary artery flow velocity"
+journal = "Circulation"
+volume = "85"
+issue = "5"
+pages = "1899-1911"
+doi = "10.1161/01.CIR.85.5.1899"
+crossref_verified = "2026-10-16; Crossref title match, Circulation 85(5):1899-1911, May 1992, authors Doucette, Corl, Payne, Flynn, Goto, Nassi, Segal"
+pmid = "1572046"
+
+[data.in_vitro_straight_tubes]
+description = "Doppler-derived flow Q_D = (pi D^2/4)(0.5 APV) vs EMF flow, straight tubes, pulsatile flow"
+location = "Results 'In Vitro Experiments'; Figure 4 legend"
+provenance = "FT"
+statistic = "linear regression per tube (slope, intercept mL/min, r2, SEE)"
+tube_id_mm = [0.79, 1.59, 3.17, 4.76, 7.94]
+slope_qd_vs_qemf = [1.02, 0.99, 1.04, 1.02, 0.80]
+intercept_ml_per_min = [-0.43, 2.65, -5.07, -5.58, 7.10]
+r2 = [0.99, 0.98, 0.99, 0.99, 0.99]
+see = [0.65, 2.43, 1.10, 2.73, 3.17]
+max_flow_ml_per_min_largest_tube = 1501
+missing_note = "7.94-mm regression uses only 9 points with Q_EMF 0-922 mL/min; above that Q_D underestimated by >20%. Max Re 1321; entrance length needed 32 cm vs 60 cm provided. APV-vs-Q_EMF r2 0.99/0.98/0.99/0.99 for the four small tubes. Points per tube 8-14 (exact n per tube not given)."
+
+[data.in_vitro_pulsatility_tortuosity]
+description = "Effect of pulsatility (3.17-mm straight tube, constant mean flow) and tortuosity on APV relative to the parabolic expectation APV = 2 x mean"
+location = "Results; Figures 5-6 legends"
+provenance = "FT"
+statistic = "max deviation; range"
+pulsatility_qemf_ml_per_min = [56, 88, 120]
+pulsatility_expected_apv_cm_per_s = [23.6, 37.0, 50.5]
+pulsatility_max_deviation_pct = 10.4
+tortuous_underestimation_pct_min = 3
+tortuous_underestimation_pct_max = 24
+tightest_bend_slope_qd_vs_qemf = 0.82
+tightest_bend_n = 9
+missing_note = "Pulsatility index = (max - min spectral peak)/APV; individual values only in Figure 5 (not digitized)."
+
+[data.in_vivo_canine_lcx]
+description = "Q_D (QCA diameter x 0.5 APV) vs EMF flow in 4 dogs, wire tip in rigid cannula and in native proximal LCx"
+location = "Results 'In Vivo Experiments'; Figure 9"
+provenance = "FT"
+statistic = "pooled linear regression (slope, intercept mL/min, r2, SEE); range of per-placement slopes"
+site = ["cannula", "proximal_LCx"]
+n_dogs = [4, 4]
+n_placements = [4, 9]
+slope_qd_vs_qemf = [0.95, 0.85]
+intercept_ml_per_min = [-4.37, 1.70]
+r2 = [0.99, 0.94]
+see = [2.02, 2.98]
+slope_min = [0.86, 0.78]
+slope_max = [0.99, 1.15]
+implied_mean_to_apv = [0.475, 0.425]
+implied_note = "implied_mean_to_apv = 0.5 x pooled slope; my inference, not printed in the paper."
+cannula_id_mm = 2.9
+lcx_diameter_range_mm = [1.2, 3.3]
+flow_range_ml_per_min = [0, 180]
+measurements_per_placement = [11, 21]
+missing_note = "Proximal LCx diameters per dog not tabulated. Distal branches (1.2-1.9 mm, 7 sites) only APV vs total LCx flow (r2 0.86-0.99), no Q_D. Pacing at 150 bpm did not change APV-Q_EMF slopes (ANCOVA, 3 dogs)."

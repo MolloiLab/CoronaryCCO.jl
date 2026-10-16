@@ -130,6 +130,9 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `ofili1993_ajc_proximal_distal.toml` | Proximal/distal velocity ratio in normal arteries | Human | abs |
 | `ofili1995_doppler_apv.toml` | Proximal vs distal APV, flow and resistance per artery | Human | missing (the abstract has no numbers; the arrays are placeholders) |
 | `corban2021_lad_flow.toml` | Resting and hyperemic mid-LAD flow (ml/min), CFVR, by sex | Human | abs |
+| `doucette1992_doppler_guidewire_validation.toml` | Doppler guide wire: mean velocity = 0.5 × APV tested against an electromagnetic flowmeter (slope 1.00 in straight tubes; 0.95 cannula, 0.85 native LCx, so mean ≈ 0.43–0.48 × APV in vivo) | Bovine blood in tubes; dog LCx, n = 4 | FT |
+| `chou1994_ivus_doppler_volumetric_flow.toml` | IVUS area × k × APV vs transit-time flow probe: best k = 0.47 | Dog LCx, n = 4, 119 measurements | abs |
+| `sudhir1992_doppler_catheter_volumetric_flow.toml` | Doppler catheter flow vs electromagnetic flowmeter by velocity estimator (peak, mean, zero-crossing) | Dog, n = 6, rigid stent | abs |
 
 ### Contrast transit (angiographic)
 
@@ -226,6 +229,18 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `arciero2008_atp_conducted_response.toml` | RBC ATP release R(S) = R0(1 − R1·S): R0 1.4 × 10⁻⁹ mol/s/cm³, R1 0.891; kd 2 × 10⁻⁴ cm/s; conducted length constant L0 = 1 cm; C_meta 30 µM⁻¹cm⁻¹; S(0) 0.97, P50 26 mmHg, nH 2.7 | Generic seven-segment pathway model | FT (Table 1) |
 | `vinnakota2004_myocardial_density.toml` | Myocardial tissue density 1.053 g/mL (rat synthesis), ~1.055 g/mL stated for human; dog 1.063 ± 0.002; plasma 1.023, RBC 1.097 g/mL | Rat-based composition model | FT |
 | `kesmarky2008_plasma_viscosity.toml` | Normal plasma viscosity 1.10–1.30 mPa·s at 37 °C, independent of age and sex | Human, review | abs |
+| `namani2018_coronary_wall_parameters.toml` | Coronary refit of passive (arctan) and myogenic parameters to Liao & Kuo 1997, per passive size 66–252 µm and ~1.6 mm | Pig (model fit) | FT |
+| `eden2026_coronary_cmm_autoregulation.toml` | Constrained-mixture coronary autoregulation model; Liao & Kuo passive and active D/D100 vs pressure (digitized) | Pig (model and data) | mixed |
+| `dick2018_swine_coronary_myogenic_composite.toml` | Composite passive and myogenic pressure–diameter curves of 11 studies by Kassab order 5–7, epi and endo | Pig, isolated vessels | mixed |
+| `liaokuo1997_coronary_microvessel_responses.toml` | Size-dependent myogenic, flow and metabolic responses of isolated coronary microvessels | Pig | abs |
+| `kuo1988_porcine_coronary_myogenic.toml` | Myogenic response of isolated coronary arterioles | Pig | abs |
+| `miller1997_human_coronary_myogenic.toml` | Myogenic tone of human coronary arterioles 44–227 µm (0.55 of passive at 100 mmHg) | Human, isolated | abs |
+| `muller1993_porcine_coronary_myogenic_training.toml` | Myogenic tone of coronary arterioles, sedentary vs trained | Pig, isolated | abs |
+| `nakayama1988_porcine_coronary_resistance_artery.toml` | Passive (papaverine) pressure–diameter curve of a 223 µm coronary resistance artery; maximal constriction | Pig, isolated | mixed |
+| `sorop2008_porcine_coronary_arteriole_passive.toml` | Passive pressure–diameter curves of ~200 µm endo and epi arterioles | Pig, isolated | mixed |
+| `chilian_layne1990_hypoperfusion_adenosine_by_size.toml` | Per-vessel adenosine dilation vs control diameter, 44–293 µm | Dog, beating heart | mixed |
+| `kanatsuka1989_size_class_dilation_digitized.toml` | Class-mean diameter ratios (≤ 150 vs > 150 µm) with pacing, adenosine and dipyridamole, matched and large doses | Dog, beating heart | fig |
+| `kanatsuka1990_stenosis_size_classes.toml` | Diameter change by size class at reduced distal pressure (stenosis) | Dog, beating heart | mixed |
 
 ### Flow heterogeneity
 

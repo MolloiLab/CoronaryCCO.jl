@@ -1,0 +1,37 @@
+[meta]
+id = "sudhir1992_doppler_catheter_volumetric_flow"
+data_type = "experimental"
+validates = "Volumetric coronary flow from a 3F Doppler catheter (FFT peak, FFT mean, zero-crossing velocity) x known stent lumen area vs electromagnetic flowmeter"
+species = "dog"
+preparation = "6 dogs; carotid artery -> circumflex coronary shunt with in-line electromagnetic flowmeter. LCx occlusively cannulated by a rigid metal stent of known internal diameter placed 2 cm into the vessel; 3F Doppler catheter measured velocity in the stent region. Doppler shift analyzed by zero-crossing detector (ZCD) and off-line FFT."
+conditions = "Flow range and interventions not stated in abstract."
+verification = "abs"
+access = "Abstract only (PubMed / Europe PMC). Elsevier full text not accessed."
+notes = """Flow from FFT PEAK velocity matched EMF flow (slope 1.09, r = 0.93); flow from FFT MEAN velocity (slope 0.47) and ZCD velocity (slope 0.46) underestimated by ~2x.
+The abstract does NOT state the factor applied to peak velocity (likely 0.5 x peak, as in the same group's later Chou 1994, but unverified).
+If 0.5 x peak was used, implied mean/peak = 0.5 x 1.09 = 0.545 in a rigid stent segment (inference only).
+Measurement is inside a rigid stent, not a native artery, and uses a 3F catheter (larger flow disturbance than a guide wire)."""
+use_in_model = """Supports using peak (not spectral mean) Doppler velocity with a ~0.5 factor. Weak evidence on the exact factor until full text is read."""
+
+[source]
+authors = ["Sudhir K", "Hargrave VK", "Johnson EL", "Aldea G", "Mori H", "Ports TA", "Yock PG"]
+year = 1992
+title = "Measurement of volumetric coronary blood flow with a Doppler catheter: validation in an animal model"
+journal = "American Heart Journal"
+volume = "124"
+issue = "4"
+pages = "870-875"
+doi = "10.1016/0002-8703(92)90966-Y"
+crossref_verified = "2026-10-16; Crossref title match, Am Heart J 124(4):870-875, Oct 1992, first authors Sudhir, Hargrave, Johnson"
+pmid = "1388326"
+
+[data.doppler_catheter_vs_emf]
+description = "Doppler-derived flow vs EMF flow by velocity-estimation method"
+location = "Abstract"
+provenance = "abs"
+statistic = "linear regression slope and r"
+n_dogs = 6
+method = ["FFT_peak", "FFT_mean", "ZCD"]
+slope_vs_emf = [1.09, 0.47, 0.46]
+r = [0.93, 0.92, 0.94]
+missing_note = "Factor applied to peak velocity, number of measurements, flow range and stent diameter not given in abstract."

@@ -1,0 +1,82 @@
+[meta]
+id = "dick2018_swine_coronary_myogenic_composite"
+data_type = "meta-analysis"
+validates = "Composite passive (nitroprusside-dilated) and active (spontaneous myogenic tone) pressure-diameter curves of isolated swine coronary arterioles/small arteries by Kassab order (order 5 ~52-102 um, order 6 ~102-203 um, order 7 ~203-364 um passive diameter at 80 mmHg), subepicardial and subendocardial; fitted myogenic amplitude per order"
+species = "pig (domestic and Yucatan; 11 source studies)"
+preparation = "Meta-analysis of 11 ex vivo pressure-myography studies of cannulated swine coronary arterioles without flow (Kuo 1988, 1990a, 1991; Muller 1993; Rajagopalan 1995; Wang 1995, 1997; Tofukuji 1997a,b; Liao & Kuo 1997; Sorop 2008). Source figures digitized by the authors with WebPlotDigitizer, converted to um vs mmHg, assigned to Kassab 1993 orders by passive inner diameter at 80 mmHg, fitted with arctan sigmoids (Eq. 3 passive, Eq. 4 myogenic; Young et al. 2012), and fitted curves sampled every 20 mmHg (0-120 mmHg) to form order means."
+conditions = "Passive = 100 uM sodium nitroprusside (or equivalent full dilation in source studies); active = spontaneous myogenic tone in physiological salt solution, no flow. Data above 100 mmHg are extrapolated by the fits (no source data > 100 mmHg)."
+verification = "mixed"
+access = "Europe PMC fullTextXML of PMC5974144 (CC BY open access) read 2026-10-16 for text and Tables 1 and 3; Fig. 7 digitized from the 1423x846 px (300 ppi) image embedded in the Frontiers publisher PDF (frontiersin.org/articles/10.3389/fphys.2018.00580/pdf), by automatic marker detection against detected axis ticks."
+notes = """Fig. 7 values are the composite FITTED curves (sampled fits averaged across studies), not raw measurements.
+Order 7 subepi has 1 study (Liao & Kuo 1997, 254 um), order 6 subepi 9 studies, order 5 subepi 3 studies; subendo order 7 = Sorop et al. 2008 (229 um), subendo order 6 = Kuo et al. 1988.
+The authors state that orders >= 8 (> 384 um) were assumed passive in their model based on weak/absent myogenic responses (Nakayama 1988; Liao & Kuo 1997); no data for > 364 um.
+Derived (computed here, not printed): passive D50/D100 (linear interpolation 40-60 mmHg) = 0.952 (epi o7), 0.937 (epi o6), 0.952 (epi o5), 0.941 (endo o7), 0.932 (endo o6); active/passive at 100 mmHg = 0.72 (epi o7), 0.75 (epi o6), 0.58 (epi o5), 0.56 (endo o7), 0.72 (endo o6).
+For comparison, the Carlson-Secomb/Fry linear wall fits give passive D50/D0 = 0.85 at D0 = 256 um and 0.90 at 153 um."""
+use_in_model = """Target passive pressure-diameter shape for coronary small arteries 100-260 um: D/D100 should be ~0.93-0.95 at 50 mmHg and ~0.98-0.99 at 80 mmHg; the passive curve is nearly size-independent. Spontaneous myogenic tone at 60-100 mmHg holds diameter at ~0.56-0.75 of passive, i.e. tone is substantial up to ~260 um. Use as a fit target for C'pass(D0) and for the A-dependent active curve in 150-400 um vessels."""
+
+[source]
+authors = ["Dick GM", "Namani R", "Patel B", "Kassab GS"]
+year = 2018
+title = "Role of Coronary Myogenic Response in Pressure-Flow Autoregulation in Swine: A Meta-Analysis With Coronary Flow Modeling"
+journal = "Front Physiol"
+volume = "9"
+issue = ""
+pages = "580"
+doi = "10.3389/fphys.2018.00580"
+crossref_verified = "2026-10-16; Crossref title exact match (Frontiers in Physiology vol 9; authors Dick, Namani, Patel, Kassab)"
+pmid = "29875686"
+pmcid = "PMC5974144"
+
+[data.source_studies]
+description = "Swine coronary myogenic studies pooled, with passive inner diameter at 80 mmHg"
+location = "Table 1"
+provenance = "FT"
+statistic = "as printed (mean diameter of each study's vessels)"
+study = ["Kuo 1988", "Kuo 1990a", "Kuo 1991", "Muller 1993", "Rajagopalan 1995", "Wang 1995", "Wang 1997", "Tofukuji 1997a", "Tofukuji 1997b", "Liao & Kuo 1997", "Sorop 2008"]
+layer = ["epi and endo", "epi", "epi", "epi", "epi", "epi", "epi", "epi", "epi", "epi", "endo"]
+passive_diameter_80mmHg_um = ["134 and 136", "91", "85", "124-129", "188", "150", "168", "141", "138", "254, 164, 99 and 64", "229"]
+missing_note = "Kuo and Liao & Kuo diameters are averages of passive diameters at 73.5 and 88.2 mmHg (footnote f). Weights/ages partly estimated by the authors from growth charts."
+
+[data.order_diameter_ranges]
+description = "Kassab order diameter boundaries used for sorting (passive diameter at 80 mmHg)"
+location = "Figure 5 legend; Methods text"
+provenance = "FT"
+statistic = "category boundaries"
+order = [5, 6, 7]
+lcx_min_um = [52.1, 101.8, 202.7]
+lcx_max_um = [101.7, 202.6, 363.8]
+missing_note = "LAD-territory ranges shown only graphically in Fig. 5; order 4 is < 48.3 um and order 8 is > 384.2 um (text)."
+
+[data.composite_pressure_diameter]
+description = "Composite (mean of fitted) inner diameter vs intraluminal pressure; passive (filled) and active myogenic (open) curves by layer and order"
+location = "Figure 7A (subepicardial), 7B (subendocardial)"
+provenance = "fig"
+digitization_error = "+/- 1 um for isolated markers; +/- 2 um where markers merge with error bars or overlap (A 0 mmHg orders 5-6; B 60 mmHg, where endo order-6 passive and endo order-7 active coincide at ~131.6 um)"
+statistic = "mean of fitted curves across studies (SE bars in figure not digitized)"
+pressure_mmHg = [0.0, 20.0, 40.0, 60.0, 80.0, 100.0, 120.0]
+epi_o7_passive_um = [183.1, 220.8, 239.3, 248.4, 253.2, 256.1, 258.5]
+epi_o7_active_um = [173.8, 193.6, 178.2, 174.7, 178.9, 183.5, 203.1]
+epi_o6_passive_um = [111.0, 129.0, 140.2, 146.4, 150.4, 153.0, 154.8]
+epi_o6_active_um = [104.2, 113.1, 111.6, 110.0, 111.8, 114.2, 116.6]
+epi_o5_passive_um = [63.9, 76.0, 82.4, 85.5, 87.1, 88.2, 89.1]
+epi_o5_active_um = [58.2, 66.1, 60.6, 52.2, 50.4, 51.3, 52.0]
+endo_o7_passive_um = [181.3, 200.7, 214.4, 223.0, 228.7, 232.5, 235.1]
+endo_o7_active_um = [157.9, 158.8, 144.2, 131.6, 128.6, 130.3, 133.0]
+endo_o6_passive_um = [104.9, 117.1, 126.1, 131.6, 135.6, 138.3, 140.2]
+endo_o6_active_um = [90.8, 92.6, 92.4, 94.4, 97.0, 99.4, 101.6]
+missing_note = "120 mmHg points are extrapolated fits. Only one source study each for epi order 7, endo order 6 and endo order 7."
+
+[data.myogenic_parameters]
+description = "Fitted myogenic arctan-sigmoid parameters (Eq. 4: dRm = rho_m/pi*[pi/2 - arctan(((P - phi_m)/C_m)^(2m))], m = 2)"
+location = "Table 3"
+provenance = "FT"
+statistic = "mean +/- SD where >1 data set; single fits otherwise"
+layer = ["epi", "epi", "epi", "endo", "endo"]
+order = [5, 6, 7, 6, 7]
+rho_m_um = [33.6, 40.2, 74.1, 38.9, 102.3]
+rho_m_sd_um = [8.4, 18.7, nan, nan, nan]
+phi_m_mmHg = [91.8, 96.9, 77.3, 103.0, 120.0]
+phi_m_sd_mmHg = [19.4, 8.5, nan, nan, nan]
+C_m_mmHg = [63.0, 73.1, 51.3, 92.6, 93.7]
+C_m_sd_mmHg = [5.1, 26.7, nan, nan, nan]
+missing_note = "rho_m is the maximum myogenic decrease in RADIUS (um). Passive-curve parameters (Eq. 3) are not tabulated in this paper (see namani2018_coronary_wall_parameters)."

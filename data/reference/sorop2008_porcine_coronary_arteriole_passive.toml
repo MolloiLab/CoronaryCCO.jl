@@ -1,0 +1,39 @@
+[meta]
+id = "sorop2008_porcine_coronary_arteriole_passive"
+data_type = "experimental"
+validates = "Passive (papaverine) pressure-diameter curves, 10-120 mmHg, of isolated subendocardial and subepicardial swine coronary arterioles of ~200 um passive diameter at 60 mmHg, from healthy control swine and from swine with chronic LAD stenosis"
+species = "pig (domestic swine)"
+preparation = "Arterioles dissected from LAD and LCx regions, cannulated in a pressure myograph; passive pressure-diameter relations (10-120 mmHg) measured in the presence of papaverine 5e-5 M (passive inner diameter at 60 mmHg used as normalizer for drug responses). Active (myogenic) curves 20-120 mmHg in 20-mmHg steps after 30 min at 60 mmHg."
+conditions = "Control swine (CON, LAD and LCx pooled) vs swine 3-4 months after a progressive LAD occluder (LAD = distal to stenosis, LCx = remote)."
+verification = "mixed"
+access = "Publisher PDF (Circ Res 102:795-803) from Wayback Machine capture 20231118195652 of https://www.ahajournals.org/doi/pdf/10.1161/circresaha.108.172528; text by pdftotext; Fig. 6A-B digitized visually from a 600 dpi render against the printed axis ticks."
+notes = """Abstract: arterioles ~200 um passive inner diameter at 60 mmHg. Fig. 2 legend: stenosed-animal ENDO arterioles 192 +/- 15 um (LAD, N = 5) and 223 +/- 35 um (LCx, N = 4) passive inner diameter at 60 mmHg.
+Fig. 6 diameters are normalized to the passive inner diameter at 10 mmHg. LAD ENDO arterioles distal to stenosis were stiffer (P < 0.05 vs LCx and vs control).
+Derived here from the CON curves: D50/D100 = 1.207/1.277 = 0.945 (ENDO) and 1.229/1.279 = 0.961 (EPI); D10/D100 = 0.78.
+Myogenic tone (Fig. 2) is shown only for stenosis animals (LAD vs LCx ENDO, n = 4-5) and is not digitized here; Dick et al. 2018 include it as the subendocardial order-7 data set (229 um)."""
+use_in_model = """Second independent passive curve for ~200 um swine coronary arterioles: D/D100 ~0.95 at 50 mmHg, ~0.78 at 10 mmHg, matching Liao & Kuo/Dick composites and far stiffer than the Fry 2013 linear C'pass at D0 ~ 200-250 um."""
+
+[source]
+authors = ["Sorop O", "Merkus D", "de Beer VJ", "Houweling B", "Pistea A", "McFalls EO", "Boomsma F", "van Beusekom HM", "van der Giessen WJ", "VanBavel E", "Duncker DJ"]
+year = 2008
+title = "Functional and structural adaptations of coronary microvessels distal to a chronic coronary artery stenosis"
+journal = "Circ Res"
+volume = "102"
+issue = "7"
+pages = "795-803"
+doi = "10.1161/CIRCRESAHA.108.172528"
+crossref_verified = "2026-10-16; Crossref title exact match (Circulation Research 102(7):795-803; first author Sorop, last author Duncker, 11 authors)"
+pmid = "18292598"
+
+[data.passive_pressure_diameter_normalized]
+description = "Passive inner diameter normalized to passive diameter at 10 mmHg, control swine (CON) and stenosis swine (LAD distal, LCx remote)"
+location = "Figure 6A (ENDO: LAD 30a/12s, LCx 28a/12s, CON 24a/9s) and 6B (EPI: LAD 9a/6s, LCx 11a/5s, CON 9a/6s); a = arterioles, s = swine"
+provenance = "fig"
+digitization_error = "+/- 0.01 normalized diameter (visual reading at 600 dpi; ~14 px per 0.01); CON triangles partly hidden behind LCx squares at 30-50 mmHg in panel A (+/- 0.015 there)"
+statistic = "mean (SEM bars not digitized)"
+pressure_mmHg = [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0, 120.0]
+endo_CON = [1.000, 1.096, 1.164, 1.183, 1.207, 1.228, 1.264, 1.277, 1.296]
+endo_LCx_stenosis = [1.000, 1.122, 1.164, 1.198, 1.224, 1.240, 1.276, 1.294, 1.311]
+endo_LAD_stenosis = [1.000, 1.087, 1.136, 1.166, 1.185, 1.205, 1.231, 1.248, 1.264]
+epi_CON = [1.000, 1.123, 1.180, 1.209, 1.229, 1.249, 1.265, 1.279, 1.297]
+missing_note = "EPI LAD/LCx curves overlap CON within 0.01-0.02 and are not stored separately. Absolute control diameters are in supplemental Table I (not accessed). No myogenic data for control animals in the main text."

@@ -1,0 +1,84 @@
+[meta]
+id = "eden2026_coronary_cmm_autoregulation"
+data_type = "model"
+validates = "Model input plus replotted data: constrained-mixture (elastin/collagen/SMC) wall parameters for four swine coronary vessel classes (small artery Dh 180 um, large arteriole 95 um, intermediate arteriole 62 um, small arteriole 37 um) calibrated to Liao & Kuo 1997 passive and myogenic pressure-diameter data, which are replotted as D/D100 and digitized here"
+species = "pig (calibration data, Liao & Kuo 1997); dog data used for validation"
+preparation = "Theoretical 12-generation symmetric coronary subtrees at subepi, midwall, subendo depths (Gharahi 2023 homeostatic optimization); thin-wall constrained mixture model (neo-Hookean elastin, Holzapfel collagen and passive SMC, Rachev-Hayashi active SMC); myogenic, shear and conducted metabolic stimuli set SMC activation A."
+conditions = "Stage 1 calibration to ex vivo passive and myogenic curves with homeostatic activation 0.5; Stage 3 to swine pressure-flow autoregulation (Dick 2018)."
+verification = "mixed"
+access = "Europe PMC fullTextXML of PMC13370741 (CC BY 4.0) read 2026-10-16 for text and Tables 1-3. Fig. 5 (calibration vs Liao & Kuo data) digitized from the PMC CDN image, which is only 546x308 px (~91 px per unit D/D100, ~0.47 px/mmHg); publisher and bioRxiv PDFs were not reachable."
+notes = """Class assignment by homeostatic diameter Dh: small artery Dh > 140 um, large arteriole 80-140, intermediate arteriole 50-80, small arteriole <= 50 um. Dick et al. 2018 Table 1 gives the same four Liao & Kuo vessel groups as passive diameters 254, 164, 99 and 64 um at ~80 mmHg; the ratio Dh/D80passive (0.71, 0.58, 0.63, 0.58) matches the active/passive ratios read below.
+Data points sit at 14.7, 29.4, 44.1, 58.8, 73.5, 88.2 and 102.9 mmHg (20-140 cmH2O steps); the 102.9 mmHg passive point is ~1.0 (normalizer D100).
+Derived here: passive D50/D100 (interpolated) = 0.946 (SA), 0.937 (LA), 0.941 (IA), 0.941 (SAo). Active/passive at ~100 mmHg = 0.76 (SA), 0.61 (LA), 0.55 (IA), 0.69 (SAo).
+The paper also compares model diameter changes at pin 59 and 38 mmHg with Kanatsuka et al. 1990 (dog): vessels Dh > 160 um constricted and smaller ones dilated in the Low phi_myo case, as in the data (Fig. 10; not digitized).
+Limitations stated by the authors: pressure-diameter data for myocardial coronary vessels are scarce; all small arteries share the same material parameters; no myocardial tethering in the wall model."""
+use_in_model = """Best available normalized passive and spontaneous-tone curves for 64-254 um swine coronary vessels (Liao & Kuo 1997): passive D/D100 ~0.84 at 15 mmHg, ~0.94 at 50 mmHg, ~0.98 at 75 mmHg, essentially the same in all four sizes. Use as the fit target for passive wall stiffness across the 150-400 um gap."""
+
+[source]
+authors = ["Eden MJ", "Gharahi H", "Sturgess VE", "Uceda DE", "Dick GM", "Baek S", "Beard DA", "Tune JD", "Figueroa CA"]
+year = 2026
+title = "A microstructurally motivated framework to study autoregulation in the coronary circulation"
+journal = "J Physiol"
+volume = "604"
+issue = "14"
+pages = "5892-5925"
+doi = "10.1113/JP291222"
+crossref_verified = "2026-10-16; Crossref title exact match (The Journal of Physiology 604(14):5892-5925; authors Eden, Gharahi, Sturgess, Uceda, Dick, Baek, Beard, Tune, Figueroa)"
+pmid = "42303295"
+pmcid = "PMC13370741"
+
+[data.liao_kuo_normalized_pressure_diameter]
+description = "Liao & Kuo (1997) isolated swine coronary vessel diameters normalized to passive diameter at ~100 mmHg (D/D100), passive (open circles) and active myogenic (filled circles), as replotted in Eden et al. Fig. 5A-D"
+location = "Figure 5A-D (data markers only; model curves not digitized)"
+provenance = "fig"
+digitization_error = "+/- 0.015 D/D100 (low-resolution image, ~1.4 px per 0.015); pressure positions assumed at the 20-cmH2O steps. Five active points whose markers were clipped by the detector (SA 73.5 and 102.9, IA 88.2, SAo 58.8 mmHg) were read visually to +/- 0.02."
+statistic = "mean values of the source study as replotted (no error bars shown)"
+pressure_mmHg = [14.7, 29.4, 44.1, 58.8, 73.5, 88.2, 102.9]
+small_artery_Dh180_passive = [0.850, 0.910, 0.937, 0.959, 0.981, 0.992, 1.003]
+small_artery_Dh180_active = [0.762, 0.762, 0.713, 0.708, 0.71, 0.730, 0.755]
+large_arteriole_Dh95_passive = [0.839, 0.893, 0.926, 0.954, 0.970, 0.986, 1.003]
+large_arteriole_Dh95_active = [0.675, 0.680, 0.653, 0.626, 0.615, 0.609, 0.609]
+intermediate_arteriole_Dh62_passive = [0.839, 0.899, 0.932, 0.954, 0.975, 0.992, 1.008]
+intermediate_arteriole_Dh62_active = [0.746, 0.746, 0.658, 0.604, 0.571, 0.545, 0.549]
+small_arteriole_Dh37_passive = [0.839, 0.899, 0.932, 0.954, 0.975, 0.992, 1.008]
+small_arteriole_Dh37_active = [0.686, 0.658, 0.648, 0.63, 0.642, 0.669, 0.691]
+class_passive_diameter_80mmHg_from_dick2018 = "small artery 254 um, large arteriole 164 um, intermediate arteriole 99 um, small arteriole 64 um"
+missing_note = "Absolute diameters are not given in Eden et al.; class-to-size mapping relies on Dh (Eden) and on Dick 2018 Table 1. Original Liao & Kuo 1997 figures not seen (AJP full text not accessible)."
+
+[data.cmm_constant_parameters]
+description = "Constrained mixture material parameters constant across vessel sizes"
+location = "Table 1"
+provenance = "FT"
+statistic = "calibrated or literature value"
+parameter = ["c1_elastin", "c2_collagen", "c3_collagen", "c4_SMC_passive", "c5_SMC_passive", "Smax", "lambda0_zero_active_stretch", "lambdaM_max_active_stretch", "rho_wall", "L0_metabolic_decay_length"]
+value = [94.5, 308.6, 3.9, 57.2, 0.59, 250.0, 0.4, 1.1, 1060.0, 0.001]
+unit = ["Pa/kg (as printed)", "Pa/kg (as printed)", "dimensionless", "Pa/kg (as printed)", "dimensionless", "kPa", "dimensionless", "dimensionless", "kg/m3", "m"]
+source_printed = ["Calibrated (Stage 1)", "Calibrated (Stage 1)", "Calibrated (Stage 1)", "Calibrated (Stage 1)", "Calibrated (Stage 1)", "Rachev & Hayashi 1999; Baek 2007", "Rachev & Hayashi 1999; Baek 2007", "Rachev & Hayashi 1999; Baek 2007", "", "Namani 2018"]
+missing_note = "Sensitivity indices X1-X3 not transcribed. Unit 'Pa/kg' kept as printed (likely J/kg-type mass-specific constants)."
+
+[data.myogenic_scaling]
+description = "Myogenic scaling coefficient by layer; metabolic and shear coefficients common to all layers"
+location = "Table 2"
+provenance = "FT"
+statistic = "calibrated"
+layer = ["subepi", "midwall", "subendo"]
+a_myo = [6.32, 5.43, 4.37]
+a_meta = [2.82, 2.82, 2.82]
+a_tau = [1.58, 1.58, 1.58]
+missing_note = ""
+
+[data.size_dependent_parameters_subepi]
+description = "Subepicardial size-dependent CMM parameters (SA = small artery Dh 180, LAo = 95, IAo = 62, SAo = 37 um)"
+location = "Table 3 (subepi block)"
+provenance = "FT"
+statistic = "calibrated"
+vessel_class = ["SA", "LAo", "IAo", "SAo"]
+elastin_prestretch = [1.00, 1.29, 1.13, 1.16]
+collagen_prestretch = [1.10, 1.02, 1.00, 1.00]
+SMC_prestretch = [1.00, 1.00, 1.00, 1.00]
+elastin_mass_fraction = [0.07, 0.02, 0.02, 0.04]
+collagen_mass_fraction = [0.36, 0.32, 0.30, 0.59]
+SMC_mass_fraction = [0.57, 0.66, 0.68, 0.37]
+phi_myo_normalized_myogenic_strength = [0.70, 0.60, 1.00, 0.86]
+phi_tau_normalized_shear_strength = [0.62, 1.0, 0.83, 0.42]
+missing_note = "Midwall and subendo blocks of Table 3 not transcribed. phi_tau row is labelled 'Normalized myogenic strength' in the table (apparent typo); stored as shear strength by symbol."

@@ -1,0 +1,62 @@
+[meta]
+id = "chilian_layne1990_hypoperfusion_adenosine_by_size"
+data_type = "experimental"
+validates = "In vivo subepicardial coronary microvessel diameter changes by vessel size (~45-295 um) with adenosine at baseline pressure (~96 mmHg) and with autoregulatory reductions of coronary perfusion pressure to 80, 60, 40 and 30 mmHg; arterioles (< 150 um) vs small arteries (> 150 um)"
+species = "dog"
+preparation = "Anesthetized open-chest dogs; coronary perfusion pressure lowered with a micrometer and pneumatic occluder on the main coronary artery. Subepicardial LV microvessel diameters by stroboscopic epi-illumination fluorescence (FITC-dextran) intravital microscopy synchronized to the cardiac cycle; myocardial blood flow by radioactive microspheres."
+conditions = "Control group (n = 43 dogs at baseline) and adenosine group (n = 17), intracoronary adenosine 0.1-0.2 mg/kg/min with arterial pressure held at ~96 mmHg; perfusion pressures 95, 80, 58, 41 and 30 mmHg (Table 1)."
+verification = "mixed"
+access = "Publisher PDF (Circ Res 66:1227-1238) from Wayback Machine capture 20231031161535 of https://www.ahajournals.org/doi/pdf/10.1161/01.RES.66.5.1227; text by pdftotext; Fig. 7 digitized from a 300 dpi render by automatic blob detection with axis calibration from tick labels."
+notes = """Values mean +/- SEM.
+Abstract/Results (FT): at 80 mmHg only arterioles dilated (4.4 +/- 1.2%); at 60 mmHg small arteries (> 150 um) 4.9 +/- 2.2% and arterioles 6.9 +/- 1.2%; at 40 mmHg arterioles 8.1 +/- 1.6%, and adenosine produced a further increase (12.5 +/- 2.1%); at 30 mmHg arterioles -0.2 +/- 2.1%, reversed by adenosine (11.1 +/- 3.1%). Small arteries dilated with adenosine at 100 and 80 mmHg but not at <= 60 mmHg.
+Adenosine at baseline pressure (FT): 'small arteriolar vessels dilated as much as 30-40%, whereas larger vessels only dilated 5-10%'; Fig. 7 regression printed as y = -0.048x + 21.4 (% vs um), r = -0.37, 30 vessels from 17 dogs.
+Refitting the 30 digitized points gives y = -0.068x + 25.3, which matches the line drawn in the figure better than the printed equation; the printed equation is kept as the authors' value.
+Adenosine raised flow ~3-fold (subendocardial 0.89 -> 2.65 ml/min/g, Table 2), so it is near-maximal, but small arteries also see a lower distending pressure at high flow (not measured here).
+Derived from Fig. 7 (computed here): mean dilation 15.3% for 150-200 um (n = 6) and 5.1% for 220-295 um (n = 6); D_adenosine/D_control ~1.15 and ~1.05."""
+use_in_model = """In vivo rest-to-dilated diameter ratio for coronary small arteries: ~1.05-1.15 at 150-300 um with near-maximal adenosine (vs up to 1.3-1.4 in arterioles < 100 um), and ~1.05 with autoregulatory dilation at 60 mmHg. Use as the target for how much tone a 150-400 um segment should release between rest and maximal dilation."""
+
+[source]
+authors = ["Chilian WM", "Layne SM"]
+year = 1990
+title = "Coronary microvascular responses to reductions in perfusion pressure. Evidence for persistent arteriolar vasomotor tone during coronary hypoperfusion"
+journal = "Circ Res"
+volume = "66"
+issue = "5"
+pages = "1227-1238"
+doi = "10.1161/01.RES.66.5.1227"
+crossref_verified = "2026-10-16; Crossref title exact match (Circulation Research 66(5):1227-1238; authors Chilian, Layne)"
+pmid = "2335023"
+
+[data.adenosine_dilation_by_vessel]
+description = "Per-vessel percent change in diameter during adenosine infusion vs control diameter, arterial pressure ~96 mmHg"
+location = "Figure 7"
+provenance = "fig"
+digitization_error = "+/- 1 um in diameter and +/- 0.3% in % change (marker centroid; axis from tick labels). One merged marker at ~84 um / ~30% holds two vessels (the figure shows 30 vessels; 29 markers found), so the 84-um entry is listed twice."
+statistic = "individual vessels"
+control_diameter_um = [44.0, 50.0, 54.0, 84.0, 84.0, 85.0, 91.0, 104.0, 109.0, 110.0, 113.0, 119.0, 123.0, 127.0, 133.0, 141.0, 141.0, 153.0, 155.0, 184.0, 191.0, 195.0, 197.0, 201.0, 222.0, 235.0, 249.0, 250.0, 255.0, 293.0]
+diameter_change_pct = [13.6, 12.5, 37.8, 30.5, 30.5, 3.4, 23.6, 4.7, 8.1, 9.5, 6.1, 18.8, 37.4, 27.6, 25.3, 16.7, 10.1, 11.8, 6.0, 5.5, 23.8, 18.8, 26.1, 14.0, 4.9, 4.7, 2.4, 9.8, 6.2, 2.8]
+missing_note = "The two vessels in the merged marker may differ by a few um/%. Regression line printed y = -0.048x + 21.4 (r = -0.37)."
+
+[data.class_means_text]
+description = "Percent diameter change by class during perfusion-pressure reduction and with adenosine (values printed in text/abstract)"
+location = "Abstract; Results"
+provenance = "FT"
+statistic = "mean +/- SEM"
+condition = ["80 mmHg", "60 mmHg", "40 mmHg", "40 mmHg + adenosine", "30 mmHg", "30 mmHg + adenosine"]
+arteriole_lt150um_pct = [4.4, 6.9, 8.1, 12.5, -0.2, 11.1]
+arteriole_lt150um_se_pct = [1.2, 1.2, 1.6, 2.1, 2.1, 3.1]
+small_artery_gt150um_pct = [nan, 4.9, nan, nan, nan, nan]
+small_artery_gt150um_se_pct = [nan, 2.2, nan, nan, nan, nan]
+missing_note = "Small-artery values at 80 (no dilation), 40 and 30 mmHg and adenosine class means (Figs. 8, 9) are shown only as bar graphs and are not digitized. The 40/30 mmHg + adenosine values in the abstract are labelled 'microvessel diameter' (arterioles in Results)."
+
+[data.myocardial_blood_flow]
+description = "Regional myocardial blood flow, control and adenosine, at each perfusion pressure"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SEM; n = dogs"
+condition = ["baseline", "80 mmHg", "60 mmHg", "40 mmHg"]
+control_endo_ml_min_g = [0.89, 0.81, 0.79, 0.49]
+control_epi_ml_min_g = [0.77, 0.72, 0.65, 0.59]
+adenosine_endo_ml_min_g = [2.65, 2.13, 1.52, 0.78]
+adenosine_epi_ml_min_g = [2.10, 1.79, 1.62, 0.95]
+missing_note = "Midmyocardial rows and SEMs in Table 2 not transcribed. n = 12 (control) and 8 (adenosine) dogs."
