@@ -1,0 +1,62 @@
+[meta]
+id = "yen1990_human_pulmonary_vessel_elasticity"
+data_type = "experimental"
+validates = "Compliance coefficient (fractional diameter change per unit transmural pressure) of human pulmonary arteries and veins larger than the Yen & Sobin 1988 microvessels, as used per order in Huang et al. 2011."
+species = "human"
+preparation = "Book chapter on the elasticity of pulmonary blood vessels in postmortem human lungs (Respiratory Biomechanics, Springer 1990). Methods not read."
+conditions = "Postmortem, passive; exact lung-inflation and transmural pressures not read."
+verification = "secondary"
+access = "Original chapter not readable: link.springer.com returns a JavaScript client challenge and no abstract is registered in Crossref, PubMed or Europe PMC. The per-order values are those reproduced (marked with a dagger, 'data from Yen, Tai, Rong, and Zhang (1990)') in Huang, Zhou, Gao & Yen 2011, Tables 1-2, read from the open Tech Science Press full text."
+notes = """UNIT OF beta (finding for huang2011_human_sheet_flow_parameters.toml, which stores beta_as_printed without a unit):
+1. Huang 2011 Eq. 1 defines beta through D/D0 = 1 + beta dP, with D0 the diameter at zero transmural pressure and dP = P - Ppl for large vessels (Eq. 3) or P - PA for vessels smaller than an alveolus (Eq. 4). All pressures in the paper are in cmH2O. So beta has units of 1/cmH2O. Neither Huang 2011 nor Huang, Shi & Yen 2012 (MCB 9:269, same Eqs. 1-2, read) prints the unit.
+2. The printed magnitudes (0.36-1.80) cannot be 1/cmH2O, since beta = 1 /cmH2O would double the diameter per cmH2O. They are percent per cmH2O, i.e. beta_SI-like = value x 1e-2 per cmH2O.
+3. Supporting evidence: orders 1-3 are credited to Yen & Sobin 1988, whose abstract gives 0.682/0.472/0.354 %/cmH2O (arterioles) and 0.992/0.612/0.424 %/cmH2O (venules); Huang prints 0.698/0.482/0.361 and 1.010/0.625/0.433, about 2% higher but the same unit and magnitude (yen1988_human_arteriole_venule_elasticity.toml). The same lab reports cat vein compliance as 'percent per cm H2O' normalised to D10, the diameter at dP = 10 cmH2O (Yen & Foppiano 1981, J Biomech Eng 103:38, doi 10.1115/1.3138243, abstract read): 2.05, 1.44, 1.08, 0.71 %/cmH2O for 100-200, 200-400, 400-800, 800-1200 um veins at Ppl = -10 cmH2O.
+Conclusion: beta is in %/cmH2O (= 0.01 /cmH2O). It is normalised by D0 at zero transmural pressure per Huang Eq. 1; Yen's cat-vessel papers normalise by D10 instead, so the normalising diameter used in the 1990 chapter itself is unconfirmed.
+
+REFERENCE TRANSMURAL PRESSURE OF THE DIAMETERS: Huang 2011 table footnotes say the diameters are 'at PA - Ppl = 10 cmH2O'. That is the transpulmonary (airway minus pleural) pressure of the Huang 1996 casts, not a vascular transmural pressure. Huang 1996 (huang1996_human_pulmonary_morphometry.toml, FT) cast with airway pressure 10 cmH2O, pleural pressure atmospheric, silicone perfused 34 -> 0 cmH2O for 20 min and then held at 3 cmH2O; vascular minus pleural pressure while setting was therefore about 3 cmH2O (and vascular minus alveolar about -7 cmH2O). Yet Huang 2011 inserts these cast diameters as D0 (zero transmural pressure) in Eq. 1. This mismatch is the authors' and is noted, not corrected.
+Yen 1990 orders follow Huang's 1996 diameter-defined Strahler numbering only as mapped by Huang 2011; the chapter's own size classes, diameters, n and SD were not read."""
+use_in_model = """Per-order distensibility for human pulmonary arteries and veins: D = D0 (1 + beta dP) with beta in %/cmH2O, i.e. multiply the stored value by 0.01 to get 1/cmH2O; for 1/mmHg divide that by 0.7356 (1 cmH2O = 0.7356 mmHg). Arteries orders 6-10: 0.88-1.28 %/cmH2O; veins orders 4-8: 0.71-1.80 %/cmH2O. Compare with whole-circulation alpha ~ 2 %/mmHg (~1.5 %/cmH2O) from Reeves 2005."""
+
+[source]
+authors = ["Yen RT", "Tai D", "Rong Z", "Zhang B"]
+year = 1990
+title = "Elasticity of pulmonary blood vessels in human lungs"
+journal = "Respiratory Biomechanics: Engineering Analysis of Structure and Function (book chapter), Springer New York"
+volume = ""
+issue = ""
+pages = "109-116"
+doi = "10.1007/978-1-4612-3452-4_13"
+isbn = ["9781461280170", "9781461234524"]
+crossref_verified = "2026-10-15; Crossref title exact match (container 'Respiratory Biomechanics', pages 109-116, 1990; authors Yen, Tai, Rong, Zhang; publisher Springer New York)"
+
+[secondary_source]
+authors = ["Huang W", "Zhou Q", "Gao J", "Yen RT"]
+year = 2011
+title = "A continuum model for pressure-flow relationship in human pulmonary circulation"
+journal = "Mol Cell Biomech"
+volume = "8"
+issue = "2"
+pages = "105-122"
+doi = "10.3970/mcb.2011.008.105"
+crossref_verified = "2026-10-15; NOT in Crossref (404); DOI registered with ISTIC (doi.org/ra), resolves to techscience.com/mcb/v8n2/28516 with matching title, authors, volume and pages. PMID 21608412."
+location = "Tables 1 (veins) and 2 (arteries), dagger-marked entries; Eq. 1 for the definition"
+
+[data.artery_compliance_by_order]
+description = "Compliance coefficient beta of human pulmonary arteries attributed to Yen et al. 1990, by Huang 1996 diameter-defined Strahler order"
+location = "Huang 2011 Table 2 (dagger entries)"
+provenance = "secondary"
+statistic = "single value per order as printed; n and spread not given"
+order = [6, 7, 8, 9, 10]
+element_diameter_cm = [0.022, 0.034, 0.051, 0.077, 0.116]
+beta_percent_per_cmH2O = [1.135, 0.932, 0.877, 1.238, 1.281]
+missing_note = "Unit inferred (see meta.notes): printed without unit. Diameters are Huang 1996 cast element diameters as tabulated by Huang 2011, not Yen 1990 measurements. Orders 4-5 and 11-16 in Huang 2011 are extrapolated, not from Yen 1990."
+
+[data.vein_compliance_by_order]
+description = "Compliance coefficient beta of human pulmonary veins attributed to Yen et al. 1990, by Huang 1996 diameter-defined Strahler order"
+location = "Huang 2011 Table 1 (dagger entries)"
+provenance = "secondary"
+statistic = "single value per order as printed; n and spread not given"
+order = [4, 5, 6, 7, 8]
+element_diameter_cm = [0.0130, 0.0230, 0.0380, 0.0620, 0.0900]
+beta_percent_per_cmH2O = [1.798, 1.260, 1.260, 0.887, 0.708]
+missing_note = "Unit inferred (see meta.notes): printed without unit. Orders 9-15 in Huang 2011 are extrapolated (0.708). Reference (zero) transmural pressure and normalising diameter used in the 1990 chapter not read."

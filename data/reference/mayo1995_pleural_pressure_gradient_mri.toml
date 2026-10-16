@@ -1,0 +1,47 @@
+[meta]
+id = "mayo1995_pleural_pressure_gradient_mri"
+data_type = "experimental"
+validates = "Vertical (gravity-dependent) pleural pressure gradient in normal humans at FRC, estimated from the MRI lung-density gradient, prone vs supine."
+species = "human"
+preparation = "Multiecho MR sequence at 0.15 T (validated against gravimetric lung water in excised pig lung, ratio 0.95 +/- 0.03); 5 normal volunteers scanned prone and supine during quiet breathing (FRC) and supine at TLC; pleural pressure gradient estimated from the vertical density gradient."
+conditions = "Quiet breathing at FRC, prone and supine; supine at TLC."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 7891399). Full text not accessed."
+notes = """The gradient is an estimate derived from lung density (via a lung pressure-volume relation), not a direct pressure measurement. The supine gradient 0.38 cmH2O per cm lung height is about 3x the prone value; this matches the general view that the gradient is smaller prone.
+No upright value is given. The classical upright figure of about 0.25 cmH2O/cm is widely attributed to Agostoni 1972 and appears in secondary text found by search, but neither Agostoni 1972 (no abstract; APS full text HTTP 403) nor a reliable reproduction with an explicit attribution was read, so it is NOT stored.
+Average lung density did not differ prone (0.21 +/- 0.03 g/ml) vs supine (0.20 +/- 0.03 g/ml); it fell to 0.12 +/- 0.01 g/ml at TLC, and the density gradients fell by 90% on average at TLC."""
+use_in_model = """Height-dependent pleural pressure: Ppl(z) = Ppl_mid + G (z - z_mid) with z measured downward (dependent) and G ~ 0.38 cmH2O/cm supine (0.13 cmH2O/cm prone). Ppl_mid from Washko 2006 / Owens 2012. Use the SD (0.23) as the plausible range."""
+
+[source]
+authors = ["Mayo JR", "MacKay AL", "Whittall KP", "Baile EM", "Pare PD"]
+year = 1995
+title = "Measurement of lung water content and pleural pressure gradient with magnetic resonance imaging"
+journal = "J Thorac Imaging"
+volume = "10"
+issue = "1"
+pages = "73-81"
+doi = "10.1097/00005382-199501010-00007"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 10, issue 1, 73-81; authors Mayo, MacKay, Whittall, Baile, Pare)"
+pmid = "7891399"
+
+[data.pleural_pressure_gradient]
+description = "Estimated vertical pleural pressure gradient at FRC (cmH2O per cm of lung height)"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD (SD assumed from '+/-'; not named in abstract); n = 5 normal volunteers"
+posture = ["prone", "supine"]
+gradient_mean_cmH2O_per_cm = [0.13, 0.38]
+gradient_spread_cmH2O_per_cm = [0.08, 0.23]
+n = [5, 5]
+missing_note = "Upright gradient not measured. Individual values, lung heights and the pressure-volume curve used for the conversion are in the full text, not read. The abstract does not name the '+/-' statistic."
+
+[data.lung_density]
+description = "Average lung density by MRI"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- spread as printed; n = 5"
+state = ["prone FRC", "supine FRC", "supine TLC"]
+density_mean_g_per_ml = [0.21, 0.20, 0.12]
+density_spread_g_per_ml = [0.03, 0.03, 0.01]
+gradient_reduction_at_TLC_fraction = 0.90
+missing_note = "Regional density values not in abstract."

@@ -1,0 +1,40 @@
+[meta]
+id = "washko2006_esophageal_pressure_posture"
+data_type = "experimental"
+validates = "Normal human pleural pressure (esophageal-balloon estimate) at the relaxation volume (FRC), upright vs supine, expressed as transpulmonary pressure at relaxation."
+species = "human"
+preparation = "10 healthy subjects; esophageal balloon catheter; relaxation volume and TLC measured in four postures (upright, supine, prone, left lateral decubitus); static lung pressure-volume curves over a wide range of volumes in each posture."
+conditions = "Relaxed end-expiration (relaxation volume ~ FRC), airway open, no flow; upright vs supine (prone and lateral intermediate)."
+verification = "abs"
+access = "Abstract only (Europe PMC record, PMID 16306256). APS full text is behind a bot check."
+notes = """PLrel = airway-opening pressure minus esophageal pressure at the relaxation volume. With the airway open and no flow, airway pressure is 0, so the implied esophageal (pleural-estimate) pressure is minus PLrel: about -3.7 cmH2O upright and about +3.3 cmH2O supine. This sign flip is stated here as algebra only and is not stored as a separate number.
+About 58% of the upright-to-supine fall in PLrel is due to the smaller relaxation volume supine; the remaining 2.9 cmH2O is attributed to a postural (mediastinal-weight) artifact of the esophageal balloon. The authors suggest adding 3 cmH2O (95% CI -1 to +7) to supine estimates of transpulmonary pressure.
+Esophageal pressure measures pleural pressure at roughly mid-lung height; it gives no vertical gradient. For the gradient see mayo1995_pleural_pressure_gradient_mri.toml. Agostoni 1972 (Physiol Rev 52:57-128, doi 10.1152/physrev.1972.52.1.57, Crossref-verified 2026-10-15) was requested but has no abstract in PubMed/Europe PMC and its APS full text returned HTTP 403; no number from it is recorded anywhere in this folder."""
+use_in_model = """Pleural pressure for the large-vessel transmural pressure P - Ppl (Huang 2011 Eq. 3). Upright normal at FRC: Ppl ~ -PLrel = about -3.7 cmH2O at mid-lung (esophageal level). Supine the esophageal value is about +3.3 cmH2O, but roughly 3 cmH2O of that is balloon artifact, so a supine pleural pressure near 0 cmH2O is the corrected estimate. Huang 2011 used Ppl = -5 cmH2O, which is within about 1-2 cmH2O of the upright value."""
+
+[source]
+authors = ["Washko GR", "O'Donnell CR", "Loring SH"]
+year = 2006
+title = "Volume-related and volume-independent effects of posture on esophageal and transpulmonary pressures in healthy subjects"
+journal = "J Appl Physiol"
+volume = "100"
+issue = "3"
+pages = "753-758"
+doi = "10.1152/japplphysiol.00697.2005"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 100, issue 3, 753-758; authors Washko, O'Donnell, Loring)"
+pmid = "16306256"
+
+[data.transpulmonary_pressure_at_relaxation]
+description = "Transpulmonary pressure at the relaxation volume (PLrel = Pao - Pes, Pao = 0) by posture"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean (SD); n = 10 subjects"
+posture = ["upright", "supine"]
+PLrel_mean_cmH2O = [3.7, -3.3]
+PLrel_sd_cmH2O = [2.0, 3.2]
+n = [10, 10]
+fraction_of_upright_supine_change_due_to_volume = 0.58
+volume_independent_postural_difference_cmH2O = 2.9
+suggested_supine_correction_cmH2O = 3.0
+suggested_supine_correction_ci95_cmH2O = [-1.0, 7.0]
+missing_note = "Prone and lateral PLrel values are said to be intermediate but are not given in the abstract. Relaxation volumes, TLC, subject ages and the pressure-volume curves are in the full text, which was not read. No vertical pleural-pressure gradient is measured."

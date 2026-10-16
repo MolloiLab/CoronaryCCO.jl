@@ -1,0 +1,64 @@
+[meta]
+id = "owens2012_esophageal_pressure_sitting_supine"
+data_type = "experimental"
+validates = "End-expiratory esophageal pressure (pleural-pressure estimate) in lean healthy adults, sitting vs supine; overweight/obese comparison group."
+species = "human"
+preparation = "Esophageal manometry (thin-walled 9.5 cm balloon, ~1.5 cm perimeter, 1 mL air, passed 40 cm via the nares; intrathoracic placement confirmed by cardiac oscillations). Quiet breathing ~3 min seated, then supine (bed flat, one pillow). 11 lean controls (BMI < 25) and 25 overweight/obese subjects (BMI > 25); 20 obese subjects repeated after ~1-2 weeks."
+conditions = "Quiet breathing, end-expiration; sitting and supine."
+verification = "mixed"
+access = "Abstract (Europe PMC, PMID 22695479) read directly. Open full text (PMC3443522) read through a web text-extraction fetch, not checked against page renders; the Europe PMC XML endpoint returned an error."
+notes = """Lean values are the normal-adult reference here. The lean supine value (+6.9 cmH2O) is much higher than the sitting value (-3.3 cmH2O); part of the supine rise is the mediastinal/postural balloon artifact discussed by Washko 2006 (washko2006_esophageal_pressure_posture.toml), so the supine Pes overstates true supine pleural pressure.
+The upright/sitting values from this paper (-3.3 cmH2O) and from Washko 2006 (implied about -3.7 cmH2O) agree.
+Table 2 also lists inspiratory swings (Delta PEs) for the lean group; these are not positional changes and are not stored."""
+use_in_model = """Sitting/upright mid-lung pleural pressure at end-expiration: about -3.3 cmH2O (lean adults). Do not take the supine +6.9 cmH2O as pleural pressure without the ~3 cmH2O artifact correction (Washko 2006)."""
+
+[source]
+authors = ["Owens RL", "Campana LM", "Hess L", "Eckert DJ", "Loring SH", "Malhotra A"]
+year = 2012
+title = "Sitting and supine esophageal pressures in overweight and obese subjects"
+journal = "Obesity (Silver Spring)"
+volume = "20"
+issue = "12"
+pages = "2354-2360"
+doi = "10.1038/oby.2012.120"
+crossref_verified = "2026-10-15; Crossref title exact match (vol 20, issue 12, 2354-2360; authors Owens, Campana, Hess, Eckert, Loring, Malhotra)"
+pmid = "22695479"
+pmcid = "PMC3443522"
+
+[data.end_expiratory_esophageal_pressure]
+description = "Average end-expiratory esophageal pressure by group and posture"
+location = "Abstract; Table 2 (lean values match the abstract)"
+provenance = "abs"
+statistic = "mean +/- SD; n = subjects"
+group = ["lean", "overweight/obese"]
+n = [11, 25]
+Pes_sitting_mean_cmH2O = [-3.3, -0.1]
+Pes_sitting_sd_cmH2O = [1.2, 2.1]
+Pes_supine_mean_cmH2O = [6.9, 9.3]
+Pes_supine_sd_cmH2O = [2.8, 3.3]
+missing_note = "No vertical gradient is measured. The abstract states the overweight/obese vs lean comparison as 'sitting -0.1 +/- 2.1 vs -3.3 +/- 1.2, supine 9.3 +/- 3.3 vs 6.9 +/- 2.8 cmH2O'."
+
+[data.repeatability_obese]
+description = "Mean difference between repeated measurements (~1-2 weeks apart) in 20 overweight/obese subjects"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean difference +/- SD; n = 20 subjects"
+posture = ["sitting", "supine"]
+mean_difference_cmH2O = [-0.3, -0.1]
+sd_cmH2O = [1.7, 1.5]
+n = [20, 20]
+missing_note = "Lean subjects were not repeated."
+
+[data.lean_group_demographics]
+description = "Lean control group characteristics"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD; n = 11 (7 M / 4 F)"
+n = 11
+n_male = 7
+n_female = 4
+age_mean_y = 32.5
+age_sd_y = 11.2
+bmi_mean_kg_per_m2 = 22.5
+bmi_sd_kg_per_m2 = 2.1
+missing_note = "Read through a text-extraction fetch of the PMC HTML, not checked against a page render."
