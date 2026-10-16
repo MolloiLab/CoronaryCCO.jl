@@ -338,6 +338,29 @@ with a 0.4 mm blood mask (chamber pools, great arteries and veins, from the 0.2 
 one growth gives no grown artery or vein touching blood while the 1 mm domain keeps the whole
 myocardium, including the thin right-ventricular wall.
 
+## 15. Staged growth only, with the stage schedule deciding where vessels attach
+
+**What upstream does.** HCT-CCO's hierarchy-aware schedule is documented as three stages
+(`getConnectionRestrictionLevel`): for the first 10% of terminals a new vessel may attach to any
+segment, up to 35% to a terminal or a few generations above it, then only to a terminal or a
+terminal's parent. `getN_NearestSegments` applies that schedule to the candidate list. But
+`isAddable` also rejects every host that is not a terminal or a terminal's parent, at every
+stage, so the first two stages only waste candidate slots: their nearest segments are mostly
+interior ones, which are then refused. With an imaged base tree that lists few terminal ends this
+stalls growth: XCAT's lung arteries list 333 ends on 3915 nodes, and staged growth accepted no
+terminal in 7000 consecutive batched rounds. `--anywhereModel` skips both rules.
+
+**What Vasculature.jl does.** Growth is always staged; there is no unrestricted mode (the
+`anywhere_mode` option was removed). The schedule is applied where candidates are chosen, and
+`isAddable`'s extra check is dropped (`upstream_attach = true` restores it, for the bitwise
+parity test only). XCAT lung, 200k terminals: 89 s (unrestricted: 87 s). XCAT heart, 957k
+terminals: 63 s (53 s); Kassab connectivity F1 LCA 0.882, RCA 0.876 (unrestricted 0.876, 0.868),
+mean |log10 diameter ratio| 0.054 and 0.075 (0.049, 0.070).
+
+**Connection length.** Upstream refuses any new vessel longer than 25 units
+(`getMaxBranchLength`, "same units as post-processing filter"), a coronary value in mm. It is
+now `max_connection` (default 25 mm), so another organ can set its own.
+
 ## References
 
 - Cury LFM, Maso Talou GD, Younes-Ibrahim M, Blanco PJ. Parallel generation of extensive vascular networks with application to an archetypal human kidney model. *R. Soc. Open Sci.* 8:210973, 2021. doi:10.1098/rsos.210973

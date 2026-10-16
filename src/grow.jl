@@ -255,7 +255,7 @@ end
 # Engine/TreeView accessors used by the shared candidate code.
 @inline _isfast(E::Engine) = E.mode === :fast
 @inline _fullvol(E::Engine) = E.volume === :full
-@inline _level(E::Engine) = E.p.anywhere_mode ? 0.0 : restriction_level(E)
+@inline _level(E::Engine) = restriction_level(E)
 
 # HctccoModel::isConnectable: listed as a terminal, or a parent of a listed terminal.
 @inline function is_connectable(E, j)
@@ -312,7 +312,7 @@ end
         # allowed segments within TERRITORY_REACH of the nearest allowed one, so connections stay
         # as local as in unrestricted growth while every location can always reach its own
         # territory's tree (otherwise regions where a neighbouring tree arrived first stay empty).
-        # No connection can exceed 25 mm (try_candidate!), so the search stops there.
+        # No connection can exceed max_connection (try_candidate!), so the search stops there.
         if bits != 0x7fff
             if k >= 1 && R - g.margin > bd[1, col] + T(TERRITORY_REACH)
                 lim = bd[1, col] + T(TERRITORY_REACH)
@@ -321,7 +321,7 @@ end
                 end
                 return k
             end
-            R - g.margin > T(25) && return k
+            R - g.margin > T(E.p.max_connection) && return k
             k >= n && bd[n, col] < R - g.margin && return k
         end
         R *= 2
@@ -456,10 +456,11 @@ HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared bas
 @inline function try_candidate!(ws, E, p::P3{T}, s::Int32) where {T}
     m = E.m; dom = E.dom; prm = E.p
     fail = (false, zero(T), p, zero(T), 0)
-    (prm.anywhere_mode || is_connectable(E, s)) || return fail
+    # the stage schedule already chose s (nearest_k!); upstream also requires a terminal or its parent at every stage
+    (!prm.upstream_attach || is_connectable(E, s)) || return fail
     distance_valid(E, p, T(0.05)) || return fail
     # isValidConnection
-    norm3(sub3(p, m.pos[s])) > T(25) && return fail
+    norm3(sub3(p, m.pos[s])) > T(prm.max_connection) && return fail
     rs = _isfast(E) ? fast_radius(E, s) : m.radius[s]
     rs * T(0.7) < T(0.005) && return fail
     ps = m.pos[s]

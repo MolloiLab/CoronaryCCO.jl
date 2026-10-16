@@ -17,7 +17,8 @@ Run parameters. Defaults match the upstream `HctCco` command line and `HctccoMod
 | `side_branch_bias` | `--sideBranchBias` | 0.0 |
 | `min_distance_to_border` | `-m, --minDistanceToBorder` | 5.0 |
 | `extension_mode` | `--extensionModel` | false |
-| `anywhere_mode` | `--anywhereModel` | false |
+| `upstream_attach` | (parity only; see below) | false |
+| `max_connection` | `getMaxBranchLength()` (fixed) | 25.0 |
 | `num_neighbors` | `myNumNeighbor` | 20 |
 | `nb_max_search` | `expandTree(nbMaxSearch)` | 100 |
 | `nb_try_candidate` | `expandTree(nbTryCandite)` | 100 |
@@ -31,6 +32,15 @@ are more asymmetric than the floor at the mother's final-scale diameter is rejec
 coronary junctions are more symmetric in small vessels than in large ones (VanBavel & Spaan
 1992; Kalsho & Kassab 2004; Schwarz et al. 2020), while minimum-volume growth attaches terminal
 twigs to vessels of any size. Empty (the default) is upstream behaviour.
+
+Growth is always staged (HCT-CCO's hierarchy-aware schedule; there is no unrestricted mode):
+for the first 10% of terminals a new vessel may attach to any segment, up to 35% to a terminal
+or one of its three nearest ancestors, then only to a terminal or a terminal's parent
+(`extension_mode`: 25% / 100%). The schedule is applied where candidates are chosen, as
+upstream's `getN_NearestSegments` does. Upstream's `isAddable` additionally rejects every
+non-terminal host at all stages, which empties the first two stages and stalls growth from an
+imaged tree with few listed terminals (docs/deviations.md §15). `upstream_attach = true`
+restores that check; it exists only for the bitwise parity test.
 """
 Base.@kwdef struct CCOParams
     nterm::Int = 500
@@ -41,7 +51,8 @@ Base.@kwdef struct CCOParams
     side_branch_bias::Float64 = 0.0
     min_distance_to_border::Float64 = 5.0
     extension_mode::Bool = false
-    anywhere_mode::Bool = false
+    upstream_attach::Bool = false
+    max_connection::Float32 = 25.0f0     # mm; upstream getMaxBranchLength (a coronary value; set per organ)
     num_neighbors::Int = 20
     nb_max_search::Int = 100
     nb_try_candidate::Int = 100

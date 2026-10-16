@@ -67,7 +67,8 @@ Adapt.@adapt_structure DomainView
 # Run parameters the candidate code reads, in T.
 struct ParamView{T}
     num_neighbors::Int
-    anywhere_mode::Bool
+    upstream_attach::Bool
+    max_connection::T
     kamiya_iters::Int
     kamiya_tol::T
     side_branch_bias::T
@@ -174,7 +175,7 @@ function tree_view(E::Engine{T}, vc::ViewCache; to = identity) where {T}
     end
     D = DomainView(vc.dom[1], vc.dom[2], vc.dom[3], E.dom.lower, E.dom.upper, E.dom.min_dist, vc.dom[4], E.dom.fine_origin, E.dom.fine_h)
     P = ParamView{T}(
-        p.num_neighbors, p.anywhere_mode, p.kamiya_iters, T(p.kamiya_tol), T(p.side_branch_bias),
+        p.num_neighbors, p.upstream_attach, T(p.max_connection), p.kamiya_iters, T(p.kamiya_tol), T(p.side_branch_bias),
         T(p.term_flow_cv), _symmetry_knots(T, p.symmetry_floor)...
     )
     return TreeView(

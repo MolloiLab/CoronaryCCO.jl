@@ -47,7 +47,7 @@ end
     end
     for f in dumps
         n = parse(Int, match(r"tree_n(\d+)", f).captures[1])
-        E = grow_case0(n; T = Float64, mode = :exact)
+        E = grow_case0(n; T = Float64, mode = :exact, upstream_attach = true)   # upstream's isAddable rule (deviations §15)
         bad, first = compare_dump(E.m, f)
         bad == 0 || @info "parity n=$n: $bad segments differ; first: $first"
         @test bad == 0
