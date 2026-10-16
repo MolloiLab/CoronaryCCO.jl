@@ -21,9 +21,9 @@ in Gould et al. 2019). CFR < 1 is steal; scar is rest flow ≤ `scar` (2012) or 
 both ≤ `scar` (2018 onward).
 """
 struct CFCThresholds
-    cfr::NTuple{4, Float64}
-    stress::NTuple{4, Float64}
-    scar::Float64
+    cfr::NTuple{4, Float32}
+    stress::NTuple{4, Float32}
+    scar::Float32
     scar_rest_only::Bool         # 2012: rest flow alone below the scar line; 2018+: rest and stress
     name::String
 end
@@ -38,12 +38,12 @@ function cfc_thresholds(set::Symbol = :current; refdir = joinpath(@__DIR__, ".."
     if set === :current
         d = TOML.parsefile(joinpath(refdir, "gould2018_cfc_revised_thresholds.toml"))["data"]["category_thresholds_revised"]
         c = d["cfr_upper_inclusive"]; s = d["stress_flow_upper_inclusive_mL_per_min_per_g"]
-        return CFCThresholds(Tuple(Float64.(c[2:5])), Tuple(Float64.(s[2:5])), 0.3, false, "Gould 2018")
+        return CFCThresholds(Tuple(Float32.(c[2:5])), Tuple(Float32.(s[2:5])), 0.3f0, false, "Gould 2018")
     elseif set === :original
         d = TOML.parsefile(joinpath(refdir, "johnson2012_coronary_flow_capacity.toml"))["data"]["category_thresholds_2012"]
         c = d["cfr_upper"]; s = d["stress_flow_upper_mL_per_min_per_g"]
         # scar: rest flow below the lowest iso-rest-flow line, 0.2 cc/min/g (2012 Fig. 1)
-        return CFCThresholds(Tuple(Float64.(c[2:5])), Tuple(Float64.(s[2:5])), 0.2, true, "Johnson & Gould 2012")
+        return CFCThresholds(Tuple(Float32.(c[2:5])), Tuple(Float32.(s[2:5])), 0.2f0, true, "Johnson & Gould 2012")
     end
     throw(ArgumentError("set must be :current or :original"))
 end

@@ -163,15 +163,15 @@ function demand_field(pos::AbstractMatrix, vol::AbstractVector; rd1g::Real = 0.1
     cube = [Tuple(floor.(Int, pos[:, k] ./ 10)) for k in 1:n]
     function rd(a)
         m = exp.(a .* zp); m ./= sum(m .* vol) / sum(vol)
-        acc = Dict{NTuple{3, Int}, Tuple{Float64, Float64}}()
+        acc = Dict{NTuple{3, Int}, Tuple{F32, F32}}()
         for k in 1:n
-            s, w = get(acc, cube[k], (0.0, 0.0)); acc[cube[k]] = (s + m[k] * vol[k], w + vol[k])
+            s, w = get(acc, cube[k], (0.0f0, 0.0f0)); acc[cube[k]] = (s + F32(m[k] * vol[k]), w + F32(vol[k]))
         end
         wt = [w for (s, w) in values(acc)]; mv = [s / w for (s, w) in values(acc)]
         μ = sum(mv .* wt) / sum(wt)
         return sqrt(sum(wt .* (mv .- μ) .^ 2) / sum(wt)) / μ, m
     end
-    a0, a1 = 0.0, 10.0
+    a0, a1 = 0.0f0, 10.0f0
     for _ in 1:40
         am = (a0 + a1) / 2
         rd(am)[1] < rd1g ? (a0 = am) : (a1 = am)

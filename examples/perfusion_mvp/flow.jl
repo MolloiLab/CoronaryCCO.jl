@@ -400,7 +400,7 @@ function circuit(
     )
     state in (:rest, :stress) || throw(ArgumentError("state must be :rest or :stress"))
     cv(t, salt) = phys.radius_cv <= 0 ? t : (
-            sig = sqrt(log(1 + Float64(phys.radius_cv)^2));
+            sig = sqrt(log(1.0f0 + phys.radius_cv^2));
             VTree(t.parent, t.a, t.b, [t.r[j] * F32(exp(sig * _hashnormal(j + salt) - sig^2 / 2)) for j in 1:nseg(t)], t.isbase)
         )
     t = cv(t, 0)
@@ -412,7 +412,7 @@ end
 function _hashnormal(j::Integer)
     sm(x) = (x += 0x9e3779b97f4a7c15; x = (x ⊻ (x >> 30)) * 0xbf58476d1ce4e5b9; x = (x ⊻ (x >> 27)) * 0x94d049bb133111eb; x ⊻ (x >> 31))
     a = sm(UInt64(j)); b = sm(a)
-    u1 = (Float64(a >> 11) + 0.5) / 2.0^53; u2 = Float64(b >> 11) / 2.0^53
+    u1 = (F32(a >> 40) + 0.5f0) / 2.0f0^24; u2 = F32(b >> 40) / 2.0f0^24            # 24-bit uniforms, Float32
     return sqrt(-2log(u1)) * cospi(2u2)
 end
 
