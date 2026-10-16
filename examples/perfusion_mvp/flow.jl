@@ -134,7 +134,13 @@ Boundary conditions and blood
   waterfall effect of intramyocardial pressure into one steady back pressure.
 - `regulation`: `:o2` (arteriolar tone follows the O₂ state of each bed, below) or `:passive`
   (no active tone: every state is the relaxed one).
-- `capillary`: `:tube` (parallel functional capillaries, below).
+- `capillary`: `:tube` (parallel functional capillaries, below) or `:sheet` (Fung & Sobin sheet
+  flow, for alveolar walls): a bed of sheet area A between arterial pressure P_a and venous
+  pressure P_v passes Q = S·A/(4µ·kf·L̄²·α)·[h(P_a)⁴ − h(P_v)⁴], with sheet thickness
+  h(P) = max(h₀ + α·(P − `p_ext`), 0) (`p_ext`: alveolar pressure). `sheet_h0_um`, `sheet_alpha_um_cmH2O`,
+  `sheet_s` (vascular-space-tissue ratio), `sheet_area_m2_per_ml` (sheet area per mL of tissue
+  domain), `sheet_mu_cP` (apparent viscosity), `sheet_kf` (k·f) and `sheet_path_um` (mean path
+  length L̄) set it. Each bed's resistance is then (P_a − P_v)/Q, updated with the pressures.
 - `hd`: discharge hematocrit 0.45. Tube hematocrit from the Fåhræus law (Pries et al. 1992).
 
 Volumes and exchange
@@ -233,12 +239,21 @@ struct Physiology
     hb::F32
     atp_r1::F32
     atp_l0::F32
+    # sheet-flow capillary bed (capillary = :sheet; Fung & Sobin)
+    p_ext::F32
+    sheet_h0_um::F32
+    sheet_alpha_um_cmH2O::F32
+    sheet_s::F32
+    sheet_area_m2_per_ml::F32
+    sheet_mu_cP::F32
+    sheet_kf::F32
+    sheet_path_um::F32
 end
 
 const ORGAN_DIR = normpath(joinpath(@__DIR__, "..", "..", "data", "organs"))
 const REFERENCE_DIR = normpath(joinpath(@__DIR__, "..", "..", "data", "reference"))
 const _REGULATION = (:o2, :passive)
-const _CAPILLARY = (:tube,)
+const _CAPILLARY = (:tube, :sheet)
 
 # One organ's parameter set: name → value, every cited reference file checked to exist.
 function organ_parameters(organ::AbstractString)
@@ -332,7 +347,7 @@ end
 
 """
     circuit(tree, territory_ml; phys = Physiology(), state = :rest, veins = nothing, vleaf = nothing,
-            reference = nothing, kappa = nothing, stenosis = nothing, demand = nothing, to = identity) -> Circuit
+            reference = nothing, kappa = nothing, kappa_init = 1, stenosis = nothing, demand = nothing, to = identity) -> Circuit
 
 Steady coronary circuit driven by pressures: inflow pressure `phys.p_in` at every ostium,
 outflow pressure `phys.p_out` at the coronary-sinus ostium. Every terminal `i` (perfusing `territory_ml[i]`)
@@ -354,7 +369,8 @@ are solved together with all those diameters until they agree.
 
 The venous tree is either grown (`veins`, with `vleaf[i]` the venous segment receiving terminal
 `i`), or, by default, companion veins: each artery's vein has the same topology and holds
-`share_ven/share_art` of its volume. `kappa` reuses the microvascular scale of another circuit.
+`share_ven/share_art` of its volume. `kappa` reuses the microvascular scale of another circuit. Without it, κ is found by fixed-point
+iteration from `kappa_init` (a nearby circuit's κ makes that one or two solves).
 
 `demand`: relative O₂ demand of each terminal's tissue (mean 1; default uniform). Local O₂ use
 varies across the wall and local flow follows it (Bassingthwaighte, Beard & Li 2001; Deussen
@@ -372,7 +388,7 @@ whole iteration then runs; the returned `Circuit` holds host arrays either way.
 function circuit(
         t::VTree, territory_ml::AbstractVector; phys::Physiology = Physiology(), state::Symbol = :rest,
         veins::Union{Nothing, VTree} = nothing, vleaf = nothing, reference::Union{Nothing, Circuit} = nothing,
-        kappa = nothing, stenosis = nothing, demand = nothing, verbose::Bool = false, to = identity
+        kappa = nothing, kappa_init = 1, stenosis = nothing, demand = nothing, verbose::Bool = false, to = identity
     )
     state in (:rest, :stress) || throw(ArgumentError("state must be :rest or :stress"))
     cv(t, salt) = phys.radius_cv <= 0 ? t : (
@@ -381,7 +397,7 @@ function circuit(
         )
     t = cv(t, 0)
     veins === nothing || (veins = cv(veins, 1 << 40))
-    return _circuit(t, territory_ml; phys, state, veins, vleaf, reference, kappa, stenosis, demand, verbose, to)
+    return _circuit(t, territory_ml; phys, state, veins, vleaf, reference, kappa, kappa_init, stenosis, demand, verbose, to)
 end
 
 # Fixed standard normal per segment index (SplitMix64 + Box–Muller), so results are reproducible.
@@ -1209,9 +1225,28 @@ end
 # its stimulus (τ_a ≫ τ_d, Carlson et al. 2008); the network is re-solved after every step.
 # Healthy reference (`fixtone = false`): C_tone is integrated until the coronary-sinus saturation
 # equals the measured resting extraction (`phys.oef`).
+# Sheet-flow capillary beds (Fung & Sobin): K per bed in mL/s per µm⁴, h₀ in µm, α in µm/mmHg,
+# p_ext in mmHg. `_sheet!` sets each bed's resistance from its current end pressures.
+struct _Sheet{VF <: AbstractVector{F32}}
+    K::VF; h0::F32; al::F32; pe::F32
+end
+function _sheet!(S::_Solver, sh::_Sheet, kappa::F32)
+    ni = S.ni; pa = S.pa; pv = S.pv; vd = S.vdrain; rcap = S.rcap; K = sh.K; h0 = sh.h0; al = sh.al; pe = sh.pe
+    AK.foreachindex(rcap) do i
+        @inbounds begin
+            Pa = pa[ni + i]; Pv = pv[vd[i]]
+            ha = max(h0 + al * (Pa - pe), 0.0f0); hv = max(h0 + al * (Pv - pe), 0.0f0)
+            q = K[i] * (ha^4 - hv^4)
+            r = Pa - Pv > 1.0f-3 && q > 0 ? (Pa - Pv) / q : 1.0f0 / (4.0f0 * K[i] * al * max(ha, 1.0f-3)^3)
+            rcap[i] = sqrt(rcap[i] * r / kappa)          # geometric relaxation toward the new resistance
+        end
+    end
+    return nothing
+end
+
 function _autoregulate!(
         S::_Solver, W::_Wall, kappa::F32, phys::Physiology, state::Symbol, ctone::Vector{F32}, fixtone::Bool,
-        terr_g, mu0, sten, lim::_Limits, verbose
+        terr_g, mu0, sten, lim::_Limits, verbose, sheet = nothing
     )
     nw = length(W.seg); hd = phys.hd; stress = state === :stress
     sref = phys.sao2 * (1 - phys.oef); gain = 2.0f0; lasterr = 0.0f0
@@ -1299,6 +1334,7 @@ function _autoregulate!(
         # the 99th percentile is below 10⁻³ when at least 99% of the steps are
         stress && (dxok = nw == 0 || AK.mapreduce((a, b) -> abs(a - b) < 1.0f-3 ? 1 : 0, +, xd, xold; init = 0) >= k99)
         # inexact network solves while the diameters are still moving; exact once they settle
+        sheet === nothing || _sheet!(S, sheet, kappa)
         setfa!(); _solve!(S, kappa; warm = true, tol = clamp(0.1f0 * dq1, 1.0f-6, 1.0f-3))
         qt = qsum(); dq = abs(qt - qhist[mod1(it, 10)]) / qt; qhist[mod1(it, 10)] = qt
         dq1 = abs(qt - qprev) / qt; qprev = qt
@@ -1315,7 +1351,7 @@ function _autoregulate!(
     return iters, p99()
 end
 
-function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, state::Symbol, veins, vleaf, reference, kappa, stenosis, demand, verbose, to)
+function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, state::Symbol, veins, vleaf, reference, kappa, kappa_init, stenosis, demand, verbose, to)
     n = nseg(t)
     nchild, ptr, kids, order = _topology(t.parent)
     terminals = Int32[j for j in 1:n if nchild[j] == 0]
@@ -1372,6 +1408,16 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
         t.parent, nchild, ptr, kids, vt.parent, vptr, vkids, vl, tidx, ra, rv, rcap, ma, mv, len, lim,
         phys.p_in, phys.p_out, 10.0f0 * phys.atp_l0, hd, to
     )
+    sheet = nothing
+    if phys.capillary === :sheet
+        al = phys.sheet_alpha_um_cmH2O * 1.35951f0                   # µm per mmHg
+        alsi = phys.sheet_alpha_um_cmH2O * 1.0f-6 / 98.0665f0          # m per Pa
+        k1 = phys.sheet_s / (4.0f0 * phys.sheet_mu_cP * 1.0f-3 * phys.sheet_kf * (phys.sheet_path_um * 1.0f-6)^2 * alsi)
+        Kt = F32[k1 * phys.sheet_area_m2_per_ml * F32(territory_ml[i]) * 1.0f-18 for i in 1:nt]   # mL/s per µm⁴
+        h = max(phys.sheet_h0_um + al * ((phys.p_in + phys.p_out) / 2 - phys.p_ext), 0.1f0)
+        copyto!(S.rcap, to(F32[1.0f0 / (4.0f0 * Kt[i] * al * h^3) for i in tperm]))
+        sheet = _Sheet(to(Kt[tperm]), phys.sheet_h0_um, al, phys.p_ext)
+    end
     seg = Int32[k for k in 1:n if 2000.0f0 * t.r[perm[k]] < phys.d_active]   # solver numbering
     act = perm[seg]                                                          # caller numbering
     d0 = F32[2000.0f0 * t.r[j] for j in act]
@@ -1407,10 +1453,10 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     kappa === nothing && reference !== nothing && (kappa = reference.resist.kappa)
     kappa === nothing && phys.r_micro_dilated <= 0 && (kappa = 1.0f0)       # no anchor: pure Poiseuille
     if kappa === nothing
-        kappa = 1.0f0
+        kappa = F32(kappa_init)
         Wd = _Wall(seg, d0, lim, to)
         for _ in 1:12
-            _autoregulate!(S, Wd, F32(kappa), phys, :stress, ctone, true, tg, mu0d, to(empty(sten)), lim, false)   # healthy geometry
+            _autoregulate!(S, Wd, F32(kappa), phys, :stress, ctone, true, tg, mu0d, to(empty(sten)), lim, false, sheet)   # healthy geometry
             ratio = phys.r_micro_dilated / _micro_resistance(S, mass_g)[1]
             kappa *= ratio
             abs(ratio - 1) < 1.0f-3 && break
@@ -1419,7 +1465,8 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::Physiology, stat
     kappa = F32(kappa)
     # ---- the state (a bed without active tone is always in its relaxed state)
     phys.regulation === :passive && (state = :stress)
-    iters, dxlast = _autoregulate!(S, W, kappa, phys, state, ctone, reference !== nothing, tg, mu0d, stend, lim, verbose)
+    iters, dxlast = _autoregulate!(S, W, kappa, phys, state, ctone, reference !== nothing, tg, mu0d, stend, lim, verbose, sheet)
+    sheet === nothing || (rcap[tperm] = Array(S.rcap))     # the sheet beds' final resistances
     rmc = _micro_resistance(S, mass_g)
     # back to the caller's numbering
     q = Vector{F32}(undef, n); pa = similar(q); rr = similar(q); qt = Vector{F32}(undef, nt); so2 = similar(qt)

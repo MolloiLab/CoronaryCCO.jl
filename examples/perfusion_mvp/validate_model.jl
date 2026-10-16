@@ -11,6 +11,7 @@
 using Vasculature, Printf, Serialization
 (isdefined(Main, :Flow) || include("flow.jl")); (isdefined(Main, :Territory) || include("territory.jl")); include("coupling.jl")
 using .Flow, .Territory
+const TO_ = isdefined(@__MODULE__, :TO) ? TO : identity       # device (pipeline.jl sets it; identity = CPU threads)
 
 const DATA = joinpath(@__DIR__, "..", "..", "test", "data")
 treefile = get(ARGS, 1, joinpath(@__DIR__, "out", "tree_20000.bin")); outjson = get(ARGS, 2, joinpath(@__DIR__, "out", "validate_20000.json"))
@@ -124,14 +125,14 @@ for (st, state) in (("rest", :rest), ("stress", :stress))
     pulse = Float32[t < 0.02f0 ? 50.0f0 : 0.0f0 for t in 0.0f0:0.005f0:150.0f0]
     inp = Flow.InputCurve(pulse, 0.005f0)
     tt = 0.0f0:0.05f0:150.0f0
-    cum = sinus_outflow(C, inp, tt)
+    cum = sinus_outflow(C, inp, tt; to = TO_)
     tot = cum[end]; h = diff(cum) ./ step(tt) ./ tot; tm = collect(tt[1:(end - 1)]) .+ step(tt) / 2
     mtt_out = sum(tm .* h) * step(tt)
     appear = tm[findfirst(>(0.05 * maximum(h)), h)]
     tpeak = tm[argmax(h)]
     # intravascular tracer (no extraction), as in labelled-red-cell / albumin indicator dilution
     C0 = with_extraction(C, 0)
-    cum0 = sinus_outflow(C0, inp, tt); h0 = diff(cum0) ./ step(tt) ./ cum0[end]
+    cum0 = sinus_outflow(C0, inp, tt; to = TO_); h0 = diff(cum0) ./ step(tt) ./ cum0[end]
     mtt0 = sum(tm .* h0) * step(tt); appear0 = tm[findfirst(>(0.05 * maximum(h0)), h0)]
     # vascular volumes and the central-volume MTT
     qp = sum(C.q[j] for j in 1:ns if tree.parent[j] == 0) * (1 - hd)

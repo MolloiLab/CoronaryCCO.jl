@@ -1,0 +1,202 @@
+# Physiology of the human pulmonary circulation (both lungs), as data. `Physiology(organ = "lung")`.
+# `sources` are file stems in data/reference/ (checked on load). Values marked "derived" are
+# arithmetic on sourced numbers, shown in `note`. The tissue domain is XCAT's two lungs, 2.81 L.
+[meta]
+organ = "lung"
+description = "Human pulmonary circulation at rest, normoxia, end-expiration (zone 3 throughout: gravity not modelled)."
+
+[parameters.p_in]
+value = 17.0
+unit = "mmHg"
+note = "Mean pulmonary arterial pressure at rest, semiupright (17 +/- 3). Kovacs 2009 pooled supine: 14.0 +/- 3.3."
+sources = ["bentley2020_healthy_exercise_pulmonary_hemodynamics", "kovacs2009_normal_pulmonary_pressure"]
+
+[parameters.p_out]
+value = 11.0
+unit = "mmHg"
+note = "Pulmonary arterial wedge pressure (left-atrial proxy) at rest, same cohort as p_in (11 +/- 2)."
+sources = ["bentley2020_healthy_exercise_pulmonary_hemodynamics"]
+
+[parameters.regulation]
+value = "passive"
+note = "Normoxic pulmonary vessels carry little tone; the pressure-flow relation follows distension and recruitment (alpha ~2 %/mmHg). Hypoxic vasoconstriction is not modelled."
+sources = ["naeije2012_pulmonary_circulation_exercise", "reeves2005_human_pulmonary_distensibility"]
+
+[parameters.capillary]
+value = "sheet"
+note = "Alveolar-wall capillaries as Fung-Sobin sheet flow."
+sources = ["huang2011_human_sheet_flow_parameters", "clark2010_acinar_sheet_flow_parameters"]
+
+[parameters.p_ext]
+value = 0.0
+unit = "mmHg"
+note = "Alveolar pressure at end-expiration (atmospheric; all pressures are gauge)."
+
+[parameters.sheet_h0_um]
+value = 3.5
+unit = "um"
+note = "Sheet thickness at zero transmural pressure, human (Sobin et al. 1979 as used by Huang 2011 and Clark 2010)."
+sources = ["huang2011_human_sheet_flow_parameters", "clark2010_acinar_sheet_flow_parameters"]
+
+[parameters.sheet_alpha_um_cmH2O]
+value = 0.127
+unit = "um/cmH2O"
+note = "Sheet compliance, human (Clark 2010: 1.30e-9 m/Pa, the same value)."
+sources = ["huang2011_human_sheet_flow_parameters", "clark2010_acinar_sheet_flow_parameters"]
+
+[parameters.sheet_s]
+value = 0.88
+unit = "1"
+note = "Vascular-space-tissue ratio, paired with A = 126 m2 (Huang 2011 convention)."
+sources = ["huang2011_human_sheet_flow_parameters"]
+
+[parameters.sheet_area_m2_per_ml]
+value = 0.04484
+unit = "m2/mL"
+note = "Derived: capillary surface 126 m2 (Gehr 1978, via Huang 2011) over XCAT's lung volume 2810 mL."
+sources = ["huang2011_human_sheet_flow_parameters"]
+
+[parameters.sheet_mu_cP]
+value = 1.92
+unit = "cP"
+note = "Apparent blood viscosity in the sheet."
+sources = ["huang2011_human_sheet_flow_parameters", "clark2010_acinar_sheet_flow_parameters"]
+
+[parameters.sheet_kf]
+value = 21.6
+unit = "1"
+note = "Product k*f of the sheet-flow friction factors (Huang 2011: k 12, f 1.8; Clark 2010: f 21.6)."
+sources = ["huang2011_human_sheet_flow_parameters", "clark2010_acinar_sheet_flow_parameters"]
+
+[parameters.sheet_path_um]
+value = 1188.0
+unit = "um"
+note = "Mean arteriole-to-venule path length in the sheet: cat 556 um scaled by the human/cat alveolar diameter ratio (Huang 2011; Clark 2010 uses 1186)."
+sources = ["huang2011_human_sheet_flow_parameters", "clark2010_acinar_sheet_flow_parameters"]
+
+[parameters.hd]
+value = 0.45
+unit = "1"
+note = "Discharge hematocrit (same blood as the heart)."
+
+[parameters.fb]
+value = 0.201
+unit = "mL/mL"
+note = "Derived: arteries 319 mL (Huang 1996 left lung 150.1 mL / 0.47 left-lung share of weight 395/840 g, Molina 2012) + veins 163 mL (86.6 mL right lung / 0.53) + capillaries 83 mL (Bouwsema 2017, mean of 89 and 76) = 565 mL over 2810 mL. Dock 1961 PBV ~470 mL (246 mL/m2) is the same order."
+sources = ["huang1996_human_pulmonary_morphometry", "molina2012_lung_weight", "bouwsema2017_capillary_blood_volume_exercise", "dock1961_pulmonary_blood_volume"]
+
+[parameters.share_art]
+value = 0.565
+unit = "1"
+note = "Derived: 319 / 565 (see fb)."
+sources = ["huang1996_human_pulmonary_morphometry", "molina2012_lung_weight"]
+
+[parameters.share_cap]
+value = 0.146
+unit = "1"
+note = "Derived: 83 / 565 (see fb)."
+sources = ["bouwsema2017_capillary_blood_volume_exercise"]
+
+[parameters.share_ven]
+value = 0.289
+unit = "1"
+note = "Derived: 163 / 565 (see fb)."
+sources = ["huang1996_human_pulmonary_morphometry", "molina2012_lung_weight"]
+
+[parameters.cap_length_mm]
+value = 0.0
+unit = "mm"
+note = "Not used (capillary = sheet)."
+
+[parameters.cap_diameter_um]
+value = 0.0
+unit = "um"
+note = "Not used (capillary = sheet)."
+
+[parameters.cap_ht_ratio]
+value = 0.85
+unit = "1"
+note = "Tube/discharge hematocrit in unresolved microvessels (Fahraeus effect; coronary value, no lung measurement in the repo)."
+sources = ["bindschadler2014_iodine_exchange_model_ps"]
+
+[parameters.ve]
+value = 0.0
+unit = "mL/mL"
+note = "OPEN: lung interstitial volume for contrast exchange has no source in the repo yet; 0 = intravascular."
+
+[parameters.ps]
+value = 0.0
+unit = "mL/min/g"
+note = "OPEN: iodinated-contrast PS of the lung has no source in the repo yet; 0 = intravascular tracer."
+
+[parameters.rho]
+value = 0.299
+unit = "g/mL"
+note = "Derived: lung weight 840 g (Molina 2012, right 445 + left 395, with blood) over XCAT's lung volume 2810 mL (air included)."
+sources = ["molina2012_lung_weight"]
+
+[parameters.plasma_viscosity_mPas]
+value = 1.2
+unit = "mPa s"
+note = "Plasma viscosity (same blood as the heart)."
+
+[parameters.radius_cv]
+value = 0.15
+unit = "1"
+note = "Diameter variability within one order: order-1 arterioles 20 +/- 3 um."
+sources = ["huang1996_human_pulmonary_morphometry"]
+
+[parameters.d_art_micro]
+value = 0.0
+unit = "um"
+note = "No microvascular resistance anchor (r_micro_dilated = 0): pure Poiseuille plus sheet flow."
+
+[parameters.d_ven_micro]
+value = 0.0
+unit = "um"
+note = "See d_art_micro."
+
+[parameters.r_micro_dilated]
+value = 0.0
+unit = "mmHg min g/mL"
+note = "0 = no kappa anchor: the lung's resistance is a prediction, not a fit."
+
+[parameters.d_active]
+value = 0.0
+unit = "um"
+note = "No vessels carry active tone (regulation = passive)."
+
+[parameters.oef]
+value = 0.0
+unit = "1"
+note = "Not used (regulation = passive)."
+
+[parameters.g_meta]
+value = 0.0
+unit = "1"
+note = "Not used (regulation = passive)."
+
+[parameters.mvo2]
+value = 0.0
+unit = "mL O2/min/g"
+note = "Not used (regulation = passive)."
+
+[parameters.sao2]
+value = 0.0
+unit = "1"
+note = "Not used (regulation = passive)."
+
+[parameters.hb]
+value = 14.5
+unit = "g/dL"
+note = "Hemoglobin (same blood as the heart)."
+
+[parameters.atp_r1]
+value = 0.0
+unit = "1"
+note = "Not used (regulation = passive)."
+
+[parameters.atp_l0]
+value = 1.0
+unit = "cm"
+note = "Not used (regulation = passive); kept nonzero because the solver's signal decay divides by it."

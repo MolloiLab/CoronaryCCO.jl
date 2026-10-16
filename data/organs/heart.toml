@@ -165,3 +165,44 @@ value = 1.0
 unit = "cm"
 note = "Length constant of the conducted metabolic signal."
 cite = ["Arciero, Carlson & Secomb 2008", "Namani et al. 2018"]
+
+# Sheet-flow capillary constants: not used by the heart (capillary = "tube").
+[parameters.p_ext]
+value = 0.0
+unit = "mmHg"
+note = "Pressure outside the capillary sheet. Not used (capillary = tube)."
+
+[parameters.sheet_h0_um]
+value = 0.0
+unit = "um"
+note = "Not used (capillary = tube)."
+
+[parameters.sheet_alpha_um_cmH2O]
+value = 0.0
+unit = "um/cmH2O"
+note = "Not used (capillary = tube)."
+
+[parameters.sheet_s]
+value = 0.0
+unit = "1"
+note = "Not used (capillary = tube)."
+
+[parameters.sheet_area_m2_per_ml]
+value = 0.0
+unit = "m2/mL"
+note = "Not used (capillary = tube)."
+
+[parameters.sheet_mu_cP]
+value = 0.0
+unit = "cP"
+note = "Not used (capillary = tube)."
+
+[parameters.sheet_kf]
+value = 0.0
+unit = "1"
+note = "Not used (capillary = tube)."
+
+[parameters.sheet_path_um]
+value = 0.0
+unit = "um"
+note = "Not used (capillary = tube)."
