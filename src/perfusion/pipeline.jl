@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # The one flow entry point: grown arteries + veins + the tissue they supply → blood flow from the pressures.
 
-using .Flow: FlowSpec, VTree, Circuit, circuit
+using .Flow: FlowSpec, VTree, Circuit, circuit, vtree
 using .Territory: territory_shares, demand_field, nearest_terminal
 
 # Leaf segments (terminals) of a vessel tree.

@@ -12,9 +12,9 @@ Everything that differs between organs when growing a vascular tree; everything 
   follows as `flow_ml_min / terminal_flow_ml_min`: every organ is then resolved down to terminals of the same size. For an
   organ that perfuses its own tissue the flow is its O₂ demand by Fick, VO₂ / (arterial O₂ content × O₂ extraction); for
   the lungs it is the cardiac output, since the pulmonary arteries carry all of it to pick up O₂.
-- `terminal_flow_ml_min`: the flow of one terminal. Default: the reference heart's resting flow over its terminal count,
-  135.6 mL/min / 957,045 (≈ 15.7 µm terminals), the resolution at which the grown coronary tree matches Kassab's
-  morphometry.
+- `terminal_flow_ml_min`: the flow of one terminal. Default: the reference heart model's resting flow (its own Fick flow
+  from O₂ demand, 135.6 mL/min, not a separate measurement) over its terminal count, 957,045: grown terminals of about
+  12 µm, the resolution of the heart tree this package scores against Kassab's morphometry.
 - `tissue_ml`: the organ's tissue volume (mL).
 - `reference_ml`: the tissue volume HCT-CCO's size-dependent constants are used unchanged at (its longest connection,
   territory reach, convergence tolerance, centreline step). They were set for adult human hearts; the default, 148.1 mL,

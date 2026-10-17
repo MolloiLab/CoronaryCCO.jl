@@ -134,6 +134,16 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test Vasculature._literature_boundaries(Vasculature.LITERATURE_MU, Vasculature.LITERATURE_SD) == Vasculature._LITERATURE_DB
     end
 
+    @testset "README calls run" begin
+        # the README's growth step on the package's sample case: GrowthSpec, grow, vtree, mesh_domain
+        tree = grow(GrowthSpec(nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0), sample("case0.vol"), [sample("case0.xml")])
+        vt = vtree(tree); nch = zeros(Int, length(vt.r)); foreach(p -> p > 0 && (nch[p] += 1), vt.parent)
+        @test count(==(0), vt.parent) >= 1 && count(==(0), nch) >= 300                  # a root, and the 300 grown terminals
+        X = Float64[0 20 0 0; 0 0 20 0; 0 0 0 20]; T = [1 1 1 2; 3 2 4 3; 2 4 3 4]   # a tetrahedron, 20 mm edges
+        img, _ = read_vol(mesh_domain(tempname() * ".vol", X, T))
+        @test 1000 < count(>(0x80), img) < 1600                                      # 1333 mm³
+    end
+
     @testset "terminal count from organ flow" begin
         # the reference heart's flow gives its validated count; any organ's count scales with its flow
         @test terminal_count(GrowthSpec(flow_ml_min = 135.6, tissue_ml = 148.1)) == 957_045

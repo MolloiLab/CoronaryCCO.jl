@@ -42,14 +42,14 @@ spec = GrowthSpec(
     tissue_ml = 148.1, # tissue volume (mL)
     root_caps = [2.54, 1.59], # imaged inlet radii (mm): LCA, RCA
 )
-avoid = (chambers, origin_mm, 0.4) # forbidden mask, its corner (mm), cell size (mm)
+avoid = (chambers, origin_mm, 0.4) # forbidden mask, centre of its first cell (mm), cell size (mm)
 tree = grow(spec, domain, ["lca.xml", "rca.xml"]; blockers = avoid)
 ```
 
-On a laptop GPU (Apple M4) the heart grows 10⁶ terminals in about a minute.
+On a laptop GPU (Apple M4) the heart grows 10⁶ terminals in 1–2 minutes.
 
 `flow_ml_min` sets how many terminals grow: every organ is resolved down to terminals of the same size (one carries
-0.14 µL/min, about 15.7 µm, the resolution at which the grown heart matches Kassab's morphometry), so the count is
+0.14 µL/min, about 12 µm across, the resolution of the heart tree scored against Kassab's morphometry), so the count is
 the organ's flow over that. For tissue the organ feeds, the flow is its O₂ demand by Fick; for the lungs, the cardiac
 output. You can also give `nterm` directly.
 
@@ -67,6 +67,7 @@ Veins grow the same way from their imaged outlet trees (`grow(spec, domain, ["le
 ![flow from pressure](docs/assets/step2_flow.png)
 
 ```julia
+arteries, veins = vtree(tree), vtree(veintree) # grown trees as vessel lists
 F = flow(FlowSpec(organ = "heart"), arteries, veins, tissue) # tissue: 3 × n voxel centres (mm)
 F.rest.resist.mbf, F.stress.resist.mbf # mL/min/g at rest and at maximal dilation
 ```
