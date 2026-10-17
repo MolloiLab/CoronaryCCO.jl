@@ -134,6 +134,15 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test Vasculature._literature_boundaries(Vasculature.LITERATURE_MU, Vasculature.LITERATURE_SD) == Vasculature._LITERATURE_DB
     end
 
+    @testset "terminal count from organ flow" begin
+        # the reference heart's flow gives its validated count; any organ's count scales with its flow
+        @test terminal_count(GrowthSpec(flow_ml_min = 135.6, tissue_ml = 148.1)) == 957_045
+        @test terminal_count(GrowthSpec(flow_ml_min = 2 * 135.6, tissue_ml = 300.0)) == 2 * 957_045
+        @test terminal_count(GrowthSpec(nterm = 500, tissue_ml = 1.0)) == 500
+        @test_throws ArgumentError terminal_count(GrowthSpec(tissue_ml = 1.0))
+        @test_throws ArgumentError terminal_count(GrowthSpec(nterm = 1, flow_ml_min = 1.0, tissue_ml = 1.0))
+    end
+
     @testset "export round trip" begin
         E = grow_case0(100; T = Float64)
         path = tempname() * ".xml"

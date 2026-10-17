@@ -8,7 +8,13 @@
 Everything that differs between organs when growing a vascular tree; everything else is the same for every organ (see
 [`grow`](@ref)).
 
-- `nterm`: terminals to grow. Each feeds an equal share of the tissue; more terminals resolve the tree further.
+- `nterm` or `flow_ml_min` (give one): the number of terminals, or the organ's blood flow (mL/min), from which the count
+  follows as `flow_ml_min / terminal_flow_ml_min`: every organ is then resolved down to terminals of the same size. For an
+  organ that perfuses its own tissue the flow is its O₂ demand by Fick, VO₂ / (arterial O₂ content × O₂ extraction); for
+  the lungs it is the cardiac output, since the pulmonary arteries carry all of it to pick up O₂.
+- `terminal_flow_ml_min`: the flow of one terminal. Default: the reference heart's resting flow over its terminal count,
+  135.6 mL/min / 957,045 (≈ 15.7 µm terminals), the resolution at which the grown coronary tree matches Kassab's
+  morphometry.
 - `tissue_ml`: the organ's tissue volume (mL).
 - `reference_ml`: the tissue volume HCT-CCO's size-dependent constants are used unchanged at (its longest connection,
   territory reach, convergence tolerance, centreline step). They were set for adult human hearts; the default, 148.1 mL,
@@ -34,7 +40,9 @@ Recommended values (XCAT vmale_50; adapt for other subjects):
 | `symmetry_floor` | Schwarz et al. 2020 human coronary knots | none | none |
 """
 Base.@kwdef struct GrowthSpec
-    nterm::Int
+    nterm::Union{Nothing, Int} = nothing
+    flow_ml_min::Union{Nothing, Float64} = nothing
+    terminal_flow_ml_min::Float64 = 135.6 / 957_045
     tissue_ml::Float64
     reference_ml::Float64 = 148.1
     wall_clearance::Float64 = 0.5
@@ -53,6 +61,16 @@ end
 The organ's length against the reference, `(tissue_ml / reference_ml)^(1/3)`; exactly 1 for the reference heart.
 """
 size_scale(s::GrowthSpec) = Float32(cbrt(s.tissue_ml / s.reference_ml))
+
+"""
+    terminal_count(spec::GrowthSpec) -> Int
+
+`spec.nterm` when given; otherwise the organ's flow over the flow of one terminal, `flow_ml_min / terminal_flow_ml_min`.
+"""
+function terminal_count(s::GrowthSpec)
+    (s.nterm === nothing) == (s.flow_ml_min === nothing) && throw(ArgumentError("GrowthSpec: give exactly one of nterm and flow_ml_min"))
+    return s.nterm !== nothing ? s.nterm : round(Int, s.flow_ml_min / s.terminal_flow_ml_min)
+end
 
 """
     grow(spec::GrowthSpec, domain, inlets; root = nothing, blockers = nothing, territories = nothing,
@@ -76,7 +94,7 @@ function grow(spec::GrowthSpec, domain, inlets; root = nothing, blockers = nothi
     # aperf is an area in voxel units, so it scales with the domain's voxel count
     caps = spec.root_caps === nothing ? 1.588 : spec.root_caps
     return generate(
-        domain, inlets; nterm = spec.nterm, aperf = 10000 * V / 255000, min_dist = spec.wall_clearance, root = root,
+        domain, inlets; nterm = terminal_count(spec), aperf = 10000 * V / 255000, min_dist = spec.wall_clearance, root = root,
         seed = spec.seed, T = spec.T, gamma = spec.gamma, volume = :full, metric = :euclidean, sampling = :continuous,
         fix_base = true, collision = :final, max_branch_angle = 90, root_radius_max = caps, root_fixed = spec.root_fixed,
         device = spec.device, territories = territories, base_groups = base_groups, forbidden = blockers,

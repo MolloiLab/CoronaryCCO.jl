@@ -38,7 +38,7 @@ using Vasculature
 
 domain = mesh_domain("heart.vol", vertices, triangles) # organ surface → 1 mm domain
 spec = GrowthSpec(
-    nterm = 1_000_000, # terminals
+    flow_ml_min = 135.6, # resting coronary flow → 957,045 terminals
     tissue_ml = 148.1, # tissue volume (mL)
     root_caps = [2.54, 1.59], # imaged inlet radii (mm): LCA, RCA
 )
@@ -48,11 +48,16 @@ tree = grow(spec, domain, ["lca.xml", "rca.xml"]; blockers = avoid)
 
 On a laptop GPU (Apple M4) the heart grows 10⁶ terminals in about a minute.
 
-| | `nterm` | `tissue_ml` | inlets | `root_caps` |
+`flow_ml_min` sets how many terminals grow: every organ is resolved down to terminals of the same size (one carries
+0.14 µL/min, about 15.7 µm, the resolution at which the grown heart matches Kassab's morphometry), so the count is
+the organ's flow over that. For tissue the organ feeds, the flow is its O₂ demand by Fick; for the lungs, the cardiac
+output. You can also give `nterm` directly.
+
+| | `flow_ml_min` | → terminals | `tissue_ml` | inlets |
 |---|---|---|---|---|
-| heart (adult) | 1,000,000 | 148 (myocardium) | LCA, RCA | imaged ostial radii |
-| lung (adult, both) | 200,000 | 2,800 | main pulmonary artery | imaged main-PA radius |
-| any other organ | your choice (more = finer) | its segmented volume | each imaged inlet (femoral artery, carotids + basilar, ...) | their imaged radii |
+| heart (adult, rest) | 135.6 | 957,045 | 148 (myocardium) | LCA, RCA |
+| lungs (adult) | 4,800 (cardiac output) | 33.9 million | 2,800 | main pulmonary artery |
+| any organ | VO₂ ÷ (arterial O₂ content × O₂ extraction) | flow ÷ 0.14 µL/min | its segmented volume | each imaged inlet (femoral artery, carotids + basilar, ...) |
 
 More inlets are just more files: `grow(spec, brain, ["lica.xml", "rica.xml", "basilar.xml"])`.
 Veins grow the same way from their imaged outlet trees (`grow(spec, domain, ["left_pulmonary_veins.xml", "right_pulmonary_veins.xml"])`).
