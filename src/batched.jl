@@ -19,6 +19,30 @@
 # and independent of the thread count. See docs/deviations.md.
 
 # Set VASCULATURE_ROUND_LOG=1 to print one timing line per batched round to stderr.
+
+
+# Exact radii of this round's changed segments `D` (new ones and their paths to the root), in parallel; new segments
+# (index > n0) get their grid cells' radius bounds set, older ones raise the grid's drift factor if they grew.
+function _path_radii!(E::Engine{T}, D, n0) where {T}
+    m = E.m; g = E.g
+    AK.foreachindex(D; max_tasks = Threads.nthreads(), min_elems = 2048) do i
+        j = D[i]; m.radius[j] = fast_radius(E, j)
+    end
+    gr = g.growth; rmax = E.rmax
+    for j in D
+        r = m.radius[j]; r > rmax && (rmax = r)
+        if j > n0
+            g.rref[j] = r; bx = g.box[j]
+            for k in bx[5]:bx[6], jj in bx[3]:bx[4], i in bx[1]:bx[2]
+                c = _lin(g, i, jj, k); r > g.cellr[c] && (g.cellr[c] = r)
+            end
+        elseif g.rref[j] > 0
+            gr = max(gr, r / g.rref[j])
+        end
+    end
+    g.growth = gr; E.rmax = rmax
+    return
+end
 _round_log() = get(ENV, "VASCULATURE_ROUND_LOG", "") == "1"
 
 mutable struct BatchPool{T}
@@ -188,7 +212,7 @@ function _refresh_dirty!(E::Engine{T}, pool::BatchPool{T}, starts) where {T}
         end
         front, nxt = nxt, front
     end
-    return length(D)
+    return D
 end
 
 """
@@ -293,10 +317,17 @@ function batched_round!(E::Engine{T}, pool::BatchPool{T}, nb::Int; parallel::Boo
     end
     # 5. hydraulics once per round
     tr0 = time_ns()
-    ndirty = _refresh_dirty!(E, pool, starts)
+    D = _refresh_dirty!(E, pool, starts); ndirty = length(D)
     tr1 = time_ns()
     update_length_factor!(m)
-    fast_refresh_radii!(E)
+    # radii: exact on this round's changed paths every round; a full refresh (O(N)) once the tree has grown by
+    # RADII_REFRESH since the last one (the same rule as sequential growth, commit_fast!)
+    E.F.since += length(pool.acc)
+    if E.F.since >= radii_refresh_period(m)
+        fast_refresh_radii!(E)
+    else
+        _path_radii!(E, D, n0)
+    end
     st.t_refresh += (time_ns() - tr0) / 1.0e9
     if _round_log()
         @printf(

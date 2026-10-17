@@ -116,6 +116,12 @@ end
     return fast_root_radius(E, c) * B
 end
 
+# Between full refreshes only the radii on changed paths are exact (they feed the candidate's own solve); the others
+# drift slightly and feed only collision and spacing tests, whose grid bounds carry the drift. A full refresh is O(N), so
+# it runs once the terminal count has grown by RADII_REFRESH since the last one, for sequential and batched growth alike.
+const RADII_REFRESH = 0.05
+radii_refresh_period(m) = max(1, round(Int, RADII_REFRESH * m.kterm_total))
+
 # All radii from the root down, after which every stored radius is exact. A serial
 # breadth-first pass down to a frontier of subtrees, then one depth-first pass per subtree
 # in parallel. Each radius is the same product of betas in the same order either way.
@@ -329,13 +335,20 @@ function commit_fast!(E::Engine{T}, s::Int32, pOpt::P3{T}, p::P3{T}, qNew::T) wh
         j = m.parent[j]
     end
     update_length_factor!(m)
-    # exact radii on the updated path and the new segments; full refresh periodically
-    for j in (s, nl, nr)
+    # exact radii on the updated path and the new segments (as batched rounds do); full refresh periodically
+    for j in (nl, nr)
         m.radius[j] = fast_radius(E, j)
         m.radius[j] > E.rmax && (E.rmax = m.radius[j])
     end
+    j = s
+    while j != 1
+        r = fast_radius(E, j); m.radius[j] = r
+        r > E.rmax && (E.rmax = r)
+        j != s && length(E.g.rref) >= j && E.g.rref[j] > 0 && (E.g.growth = max(E.g.growth, r / E.g.rref[j]))
+        j = m.parent[j]
+    end
     F.since += 1
-    every = F.every > 0 ? F.every : max(1, nsegments(m) ÷ 16384)
+    every = F.every > 0 ? F.every : radii_refresh_period(m)
     F.since >= every && fast_refresh_radii!(E)
     grid_remove!(E.g, s)
     grid_insert!(E.g, m, s); grid_insert!(E.g, m, nl); grid_insert!(E.g, m, nr)
