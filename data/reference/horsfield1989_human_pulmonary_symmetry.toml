@@ -1,0 +1,64 @@
+# Horsfield K, Woldenberg MJ (1989). Diameters and cross-sectional areas of branches in the human
+# pulmonary arterial tree. Anat Rec 223(3):245-251.
+# Only the PubMed abstract (PMID 2923275) could be read; the full text is closed access. One pooled
+# mean of the daughter diameter ratio is stored. No per-mother-class distribution is available.
+
+[meta]
+id = "horsfield1989_human_pulmonary_symmetry"
+data_type = "experimental"
+validates = "Overall mean daughter symmetry S = dS/dL (smaller over larger daughter diameter) at 1,937 bifurcations of the human pulmonary arterial tree, plus the diameter-flow exponent z and the mean area ratio at bifurcations. Use as a pooled target for the mean S of a grown pulmonary arterial tree (human). It does NOT give a per-mother-diameter distribution."
+species = "human"
+preparation = "Resin casts of the pulmonary arterial tree from two fully inflated human lungs; diameters of the parent and both daughters measured at each of 1,937 bifurcations."
+conditions = "Post-mortem resin casts, lungs fully inflated (saline-filled per a citing review, Glenny et al. 1991 J Appl Physiol 70:2351, DOI 10.1152/jappl.1991.70.6.2351). Diameter range of the measured bifurcations is not stated in the abstract."
+verification = "abstract"
+access = "PubMed abstract (eutils efetch, PMID 2923275). Full text closed access at Wiley (Semantic Scholar openAccessPdf status CLOSED; no Wayback capture; Wiley PDF returned HTTP 403). Not read."
+notes = """Abstract text: mean value of the ratio of daughter branch diameters at bifurcations = 0.7849 (n = 1,937 bifurcations, two lungs). The abstract does not define the ratio explicitly; a mean below 1 implies smaller/larger daughter (dS/dL), the usual Horsfield convention.
+Mean cross-sectional area increases by a constant factor of 1.0879 at bifurcations (log-log fit of daughter vs parent area; i.e. (dL^2 + dS^2)/dM^2 about 1.088).
+Diameter-flow exponent z in flow = k d^z: 2.3 +/- 0.1 (abstract). Murray's law would give z = 3.
+Derived, NOT measured: with z = 2.3 and S = 0.7849, dM^z = dL^z + dS^z gives dL/dM about 0.821 and dS/dM about 0.644. This is an arithmetic consequence of the two pooled means, not a reported distribution.
+Not found anywhere readable: SD, median, quartiles, minimum or whisker of S; S binned by parent diameter; daughter-to-mother ratios per class.
+Other human sources checked and rejected: Singhal et al. 1973 (Circ Res 33:190, DOI 10.1161/01.RES.33.2.190) and Horsfield 1978 (Circ Res 42:593, DOI 10.1161/01.res.42.5.593) give per-order counts, diameters and lengths only (no per-bifurcation symmetry); Altieri Correa et al. 2025 (J Biomech Eng 147:081006, DOI 10.1115/1.4068886; CT/MR segmentations, 7 healthy humans) reports only the junction exponent 2.31 +/- 0.60, no symmetry statistic; Mackiewicz et al. 2026 arXiv:2607.04457 (non-peer-reviewed, non-contrast SPECT/CT, arteries and veins not separated) reports pooled delta = 0.88 +/- 0.12 but is biased toward symmetric splits by resolution, so not used. Huang et al. 1996 excluded by instruction (scored reference). No human micro-CT or HiP-CT study with a per-class S distribution was found. Animal data (e.g. fetal and neonatal lamb casts, Am J Physiol Heart Circ Physiol 2000, DOI 10.1152/ajpheart.2000.279.6.H3047, not Crossref-checked; porcine MDCT, J Appl Physiol, DOI 10.1152/japplphysiol.00868.2012, not Crossref-checked) not used because human data exist."""
+use_in_model = """Compare the pooled mean S = dS/dL over all bifurcations of a grown human pulmonary arterial tree with 0.785. A per-class symmetry floor or quartile target cannot be set from this source; if a size-dependent shape is needed, it must come from another source and be labeled as such (the human coronary analogue, schwarz2020_human_coronary_symmetry, shows S becoming more asymmetric with larger mother diameter)."""
+
+[source]
+authors = ["Horsfield K", "Woldenberg MJ"]
+year = 1989
+title = "Diameters and cross-sectional areas of branches in the human pulmonary arterial tree"
+journal = "Anat Rec"
+volume = "223"
+issue = "3"
+pages = "245-251"
+doi = "10.1002/ar.1092230302"
+pmid = "2923275"
+crossref_verified = "2026-10-17; Crossref title exact match (The Anatomical Record vol 223, issue 3, 245-251, 1989-03; authors Horsfield, Woldenberg)"
+
+[data.symmetry_pooled]
+description = "Mean daughter diameter ratio S = dS/dL over all measured bifurcations (all parent sizes pooled)"
+location = "Abstract"
+provenance = "text"
+statistic = "mean only; n = bifurcations"
+n_bifurcations = 1937
+n_lungs = 2
+s_mean = 0.7849
+s_sd = nan
+mother_diameter_lo_um = nan
+mother_diameter_hi_um = nan
+missing_note = "SD, quartiles, lower whisker or minimum, and any split by mother diameter are not in the abstract. The full text (closed access) may hold a scatter plot of daughter vs parent diameter; it was not read."
+
+[data.bifurcation_scaling_pooled]
+description = "Pooled diameter-flow exponent z (flow = k d^z) and mean area ratio at bifurcations"
+location = "Abstract"
+provenance = "text"
+statistic = "z: mean +/- (uncertainty as printed); area ratio: constant proportion from log-log fit"
+z_mean = 2.3
+z_uncertainty = 0.1
+area_ratio_mean = 1.0879
+missing_note = "Whether +/- 0.1 is an SD or a confidence interval is not stated in the abstract."
+
+[provenance]
+doi = "10.1002/ar.1092230302"
+crossref_checked = "2026-10-17 via https://api.crossref.org/works/10.1002/ar.1092230302 (title, journal, volume, issue, pages, authors match)"
+how_taken = "text"
+digitized_from_figure = false
+text_source = "PubMed abstract, PMID 2923275"
+full_text_read = false
