@@ -10,7 +10,7 @@
 using Vasculature, Printf, Statistics, Serialization, Metal   # Metal is only a bench dependency
 
 const D = joinpath(pkgdir(Vasculature), "test", "data")
-grow(n, seed; kw...) = generate(
+grow(n, seed; kw...) = Vasculature.generate(
     joinpath(D, "case0.vol"), joinpath(D, "case0.xml"); nterm = n, aperf = 10000, min_dist = 1,
     root = (-26, 41, 13), seed = seed, T = Float32, gamma = 2.33, volume = :full,
     metric = :euclidean, sampling = :continuous, fix_base = true, collision = :final,

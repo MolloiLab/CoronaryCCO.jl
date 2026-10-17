@@ -17,7 +17,7 @@ function sample(name)
     return path
 end
 
-grow_case0(n; kw...) = generate(
+grow_case0(n; kw...) = Vasculature.generate(
     sample("case0.vol"), sample("case0.xml"); nterm = n, aperf = 10000,
     min_dist = 1, root = (-26, 41, 13), seed = 1, kw...
 )

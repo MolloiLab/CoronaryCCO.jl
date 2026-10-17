@@ -363,6 +363,28 @@ now `max_connection` (default 25 mm). It is a numerical guard, not physiology, a
 its own value; on XCAT's lung 60 mm gave the same result as 25 mm (the long left-lung trunk was
 unchanged), so the lung keeps the default.
 
+## 16. Organ size scaling (`size_scale`)
+
+**What upstream does.** Its longest new connection (25 units), the territory reach of this port (6 mm), the convergence
+tolerance of each bifurcation (a volume) and the spacing of imaged centrelines (2.8 mm here) are fixed numbers, set for
+adult human hearts.
+
+**What Vasculature.jl does.** They scale with the organ's length against a reference tissue volume:
+`size_scale = (tissue_ml / reference_ml)^(1/3)` (`GrowthSpec`; reference 148.1 mL, the adult myocardium the package is
+validated on), lengths × s and the tolerance × s³. At s = 1 every constant is upstream's, so the heart is unchanged bit for
+bit. XCAT lung (s = 2.67, imaged centrelines at 7.5 mm): median terminal depth 107 → 47, 200k terminals 89 → 73 s.
+
+## 17. New terminals keep out of a vessel's final lumen
+
+**What upstream does.** A new terminal must lie at least twice a vessel's radius from it (`isDistanceValid`), at the
+vessel's current radius.
+
+**What Vasculature.jl does.** With sizes tested at the final scale (`collision = :final`, the only setting `grow` uses),
+twice the final radius kept terminals 10–30 mm from the lung's hilar arteries and left 101 mL of XCAT's lung more than
+5 mm from any terminal. A terminal now keeps out of the vessel's final lumen only (one final radius plus the wall
+clearance), as alveoli sit against these arteries: 4 mL remain more than 5 mm from a terminal. Upstream's rule is kept at
+the current scale (`collision = :current`), so the parity tests are unchanged.
+
 ## References
 
 - Cury LFM, Maso Talou GD, Younes-Ibrahim M, Blanco PJ. Parallel generation of extensive vascular networks with application to an archetypal human kidney model. *R. Soc. Open Sci.* 8:210973, 2021. doi:10.1098/rsos.210973

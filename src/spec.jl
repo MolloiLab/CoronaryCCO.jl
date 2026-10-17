@@ -9,9 +9,12 @@ Everything that differs between organs when growing a vascular tree; everything 
 [`grow`](@ref)).
 
 - `nterm`: terminals to grow. Each feeds an equal share of the tissue; more terminals resolve the tree further.
-- `tissue_ml`: the organ's tissue volume (mL). HCT-CCO's size-dependent constants were set on adult human hearts, so they
-  scale with the organ's length against that reference, `size_scale = (tissue_ml / 148.1)^(1/3)` (148.1 mL: XCAT
-  vmale_50 myocardium): the heart keeps every constant, a larger organ gets longer reaches. See `CCOParams.size_scale`.
+- `tissue_ml`: the organ's tissue volume (mL).
+- `reference_ml`: the tissue volume HCT-CCO's size-dependent constants are used unchanged at (its longest connection,
+  territory reach, convergence tolerance, centreline step). They were set for adult human hearts; the default, 148.1 mL,
+  is the adult myocardium this package is validated on (XCAT vmale_50). Every other organ gets
+  `size_scale = (tissue_ml / reference_ml)^(1/3)`: a larger organ gets proportionally longer reaches. See
+  `CCOParams.size_scale`.
 - `wall_clearance`: smallest distance (mm) from a terminal to the organ's boundary.
 - `gamma`: bifurcation exponent r₀^γ = r₁^γ + r₂^γ; 7/3 from coronary structure-function scaling (Huo & Kassab 2012).
 - `root_caps`: root radius per inlet tree (mm), the imaged inlet radii; `nothing` leaves roots to the pressure law.
@@ -33,6 +36,7 @@ Recommended values (XCAT vmale_50; adapt for other subjects):
 Base.@kwdef struct GrowthSpec
     nterm::Int
     tissue_ml::Float64
+    reference_ml::Float64 = 148.1
     wall_clearance::Float64 = 0.5
     gamma::Float64 = 2.33
     root_caps::Union{Nothing, Vector{Float64}} = nothing
@@ -46,9 +50,9 @@ end
 """
     size_scale(spec::GrowthSpec) -> Float32
 
-The organ's length against the reference heart, `(tissue_ml / 148.1)^(1/3)`; exactly 1 for the reference heart.
+The organ's length against the reference, `(tissue_ml / reference_ml)^(1/3)`; exactly 1 for the reference heart.
 """
-size_scale(s::GrowthSpec) = Float32(cbrt(s.tissue_ml / 148.1))
+size_scale(s::GrowthSpec) = Float32(cbrt(s.tissue_ml / s.reference_ml))
 
 """
     grow(spec::GrowthSpec, domain, inlets; root = nothing, blockers = nothing, territories = nothing,
@@ -68,6 +72,8 @@ wall distance, full tree volume, batched on the chosen device. Only `spec` diffe
 """
 function grow(spec::GrowthSpec, domain, inlets; root = nothing, blockers = nothing, territories = nothing, base_groups = nothing)
     img, _ = read_vol(domain); V = count(>(MASK_THRESHOLD), img)
+    # perfusion area per voxel as upstream's sample run sets it (aperf 10000 over its 255,000-voxel case0 domain): HCT-CCO's
+    # aperf is an area in voxel units, so it scales with the domain's voxel count
     caps = spec.root_caps === nothing ? 1.588 : spec.root_caps
     return generate(
         domain, inlets; nterm = spec.nterm, aperf = 10000 * V / 255000, min_dist = spec.wall_clearance, root = root,

@@ -10,7 +10,7 @@ data(name) = (p = joinpath(@__DIR__, "..", "test", "data", name); isfile(p) || (
 n = parse(Int, get(ARGS, 1, "40000"))
 T = get(ARGS, 2, "Float32") == "Float64" ? Float64 : Float32
 volume = Symbol(get(ARGS, 3, "upstream"))
-run(n) = generate(
+run(n) = Vasculature.generate(
     data("case0.vol"), data("case0.xml"); nterm = n, aperf = 10000, min_dist = 1,
     root = (-26, 41, 13), seed = 1, T = T, volume = volume
 )

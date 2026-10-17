@@ -12,7 +12,7 @@ mkpath(dirname(treefile))
 if isfile(treefile)
     tree = load_vtree(treefile)
 else
-    t = @elapsed E = generate(
+    t = @elapsed E = Vasculature.generate(
         joinpath(S, "case0.vol"), joinpath(S, "case0.xml"); nterm = n, aperf = 10000, min_dist = 1,
         root = (-26, 41, 13), seed = 1, T = Float32, gamma = 2.33, volume = :full, metric = :euclidean,
         sampling = :continuous, fix_base = true, collision = :final, max_branch_angle = 90
