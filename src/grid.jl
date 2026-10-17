@@ -9,7 +9,7 @@ mutable struct SegGrid{T}
     h::T
     dims::NTuple{3, Int}
     cells::Vector{Vector{Int32}}
-    box::Vector{NTuple{6, Int32}}   # per segment: cell index range it is registered in
+    box::Vector{NTuple{6, Int16}}   # per segment: cell index range it is registered in (Int16: 12 bytes per segment)
     margin::T
     cellr::Vector{T}                 # per cell: largest reference radius among its segments
     rref::Vector{T}                  # per segment: radius when its cells' bounds were last set
@@ -21,8 +21,9 @@ function SegGrid{T}(lower::P3{T}, upper::P3{T}, h::Real) where {T}
     pad = T(4h)
     origin = (lower[1] - pad, lower[2] - pad, lower[3] - pad)
     dims = ntuple(i -> Int(cld(upper[i] - lower[i] + 2pad, T(h))) + 1, 3)
+    maximum(dims) <= typemax(Int16) || throw(ArgumentError("grid of $(dims) cells: at most $(typemax(Int16)) per axis"))
     cells = [Int32[] for _ in 1:prod(dims)]
-    return SegGrid{T}(origin, T(h), dims, cells, NTuple{6, Int32}[], T(1.0e-3), zeros(T, prod(dims)), T[], one(T), false)
+    return SegGrid{T}(origin, T(h), dims, cells, NTuple{6, Int16}[], T(1.0e-3), zeros(T, prod(dims)), T[], one(T), false)
 end
 
 @inline _cell(g, x, i) = clamp(unsafe_trunc(Int, floor((x - g.origin[i]) / g.h)) + 1, 1, g.dims[i])
@@ -39,7 +40,7 @@ end
 function grid_insert!(g::SegGrid, m::CCOModel, j)
     length(g.box) < j && resize!(g.box, nsegments(m))
     bx = _cellbox(g, m.pos[j], m.pos[m.parent[j]], zero(g.h))
-    g.box[j] = bx
+    g.box[j] = Int16.(bx)
     r = m.radius[j]
     length(g.rref) < j && resize!(g.rref, nsegments(m))
     g.rref[j] = r
