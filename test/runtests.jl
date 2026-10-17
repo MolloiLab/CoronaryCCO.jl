@@ -119,6 +119,21 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test_throws ArgumentError grow_case0(100; T = Float64, mode = :exact, growth = :batched)
     end
 
+    @testset "finer grid cell, same tree" begin
+        kw = (;
+            T = Float32, gamma = 2.33, volume = :full, metric = :euclidean, sampling = :continuous,
+            fix_base = true, collision = :final, max_branch_angle = 90,
+        )
+        for growth in (:sequential, :batched)
+            E1 = grow_case0(1500; kw..., growth)
+            E2 = deepcopy(E1)
+            v = E2.vox; E2.vox = 1; C.regrid!(E2); E2.vox = v # force one halving of the cell
+            @test E2.g.h == E1.g.h / 2
+            grow!(E1; steps = 400, growth, n_seq = 0); grow!(E2; steps = 400, growth, n_seq = 0)
+            @test same_tree(E1.m, E2.m)
+        end
+    end
+
     @testset "root_fixed, upow, ordering reference" begin
         # the root sits exactly at its cap after growth, and every radius scales by the same factor
         kw = (; T = Float32, volume = :full, sampling = :continuous, collision = :final, root_radius_max = 3.0)
