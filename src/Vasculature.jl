@@ -44,6 +44,7 @@ include("perfusion/flow.jl")
 include("perfusion/territory.jl")
 include("perfusion/pipeline.jl")
 include("perfusion/body.jl")
+include("perfusion/transport.jl")
 include("perfusion/cfc.jl")
 include("perfusion/organct.jl")
 include("perfusion/dynamic_phantom.jl")
@@ -51,6 +52,7 @@ include("perfusion/dynamic_phantom.jl")
 export CCOParams, CCOModel, MaskDomain, Engine, nsegments
 export GrowthSpec, grow, size_scale, terminal_count, mesh_domain, write_vol
 export FlowSpec, flow, couple_veins, vtree
+export TransportSpec, transport, circulation
 export read_vol, import_gxl, export_gxl, grow!, dds_orders, tree_qc, set_territories!, set_forbidden!
 
 end
