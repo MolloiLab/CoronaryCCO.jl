@@ -159,6 +159,30 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test 1000 < count(>(0x80), img) < 1600                                      # 1333 mm³
     end
 
+    @testset "transport is the whole-body bolus with the organ's bed" begin
+        heart = FlowSpec(organ = "heart")
+        spec = TransportSpec(; phys = heart, tissue_ml = 148.1, tmax = 20, dt = 0.005, every = 1)
+        r = transport(spec)
+        circ = C.Body.human_circulation(; hct = heart.hd, cor = (; ml = 148.1f0, heart.fb, heart.ve, heart.ps, heart.rho))
+        r2 = C.Body.simulate(circ, C.Body.Injection(); tmax = 20, dt = 0.005, every = 1)
+        @test r.t == r2.t && r.out[:lv] == r2.out[:lv] && r.mean[:coronary] == r2.mean[:coronary]
+        @test r.injected > 0 && maximum(r.out[:lv]) > 0
+        @test circulation(spec).hct == heart.hd
+        # with the organ's own circuit: passes = 0 is the plain chain (body -> plasma input -> masses); one pass feeds the
+        # organ's venous outflow back into the body in place of its lumped bed
+        tree = grow(GrowthSpec(nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0), sample("case0.vol"), [sample("case0.xml")])
+        vt = vtree(tree); nch = zeros(Int, length(vt.r)); foreach(p -> p > 0 && (nch[p] += 1), vt.parent)
+        Cr = C.Flow.circuit(vt, fill(0.1f0, count(==(0), nch)); phys = heart, state = :rest)
+        T0 = transport(spec, Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0)
+        pf = 1 - heart.hd; tf = collect(0.0f0:0.02f0:20.0f0)
+        inp = C.Flow.InputCurve(Float32[C._interp(t, r.t, r.out[:lv]) / pf for t in tf], 0.02f0)
+        @test T0.body.out[:lv] == r.out[:lv] && T0.input.c == inp.c
+        am, vm, tm = Array.(C.Flow.frame_masses(Cr, inp, collect(0.0f0:2.0f0:20.0f0)))
+        @test T0.artery == am && T0.tissue == tm
+        T1 = transport(spec, Cr; passes = 1, times = 0.0f0:2.0f0:20.0f0)
+        @test T1.body.out[:coronary] != T0.body.out[:coronary] && all(>=(0), T1.tissue)
+    end
+
     @testset "terminal count from organ flow" begin
         # the reference heart's flow gives its validated count; any organ's count scales with its flow
         @test terminal_count(GrowthSpec(flow_ml_min = 135.6, tissue_ml = 148.1)) == 957_045

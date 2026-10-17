@@ -41,3 +41,39 @@ concentration of every segment (`out`), the mean blood and interstitial concentr
 the iodine injected, held and excreted by the kidneys.
 """
 transport(s::TransportSpec, inj::Injection = Injection()) = simulate(circulation(s), inj; tmax = s.tmax, dt = s.dt, every = s.every)
+
+using .Flow: Circuit, InputCurve, frame_masses, sinus_outflow
+
+# Linear interpolation of samples y at times ts, held flat outside.
+_interp(t, ts, y) = t <= ts[1] ? y[1] : t >= ts[end] ? y[end] :
+    (k = searchsortedlast(ts, t); w = (t - ts[k]) / (ts[k + 1] - ts[k]); y[k] + w * (y[k + 1] - y[k]))
+
+"""
+    transport(spec::TransportSpec, C::Circuit, injection = Injection(); input = :lv, bed = :coronary, passes = 1,
+              fine = 0.02, dt_out = 0.1, times = 0:60, to = identity)
+        -> (; body, input, t_out, outflow, artery, vein, tissue)
+
+The injection through the whole body and the organ's own solved circuit `C` (from [`flow`](@ref)). The organ's arterial
+input is the plasma concentration leaving body segment `input` (`:lv` for an organ fed by the aorta, `:rv` for the lungs).
+`passes` times, the organ's venous outflow is fed back into the body in place of its lumped bed `bed`, so recirculation
+carries the organ's own transit. Returns the body result, the organ's plasma input curve, its venous plasma outflow
+concentration every `dt_out` s, and the iodine (mg) in every artery, vein and capillary bed at `times` (host arrays).
+"""
+function transport(
+        s::TransportSpec, C::Circuit, inj::Injection = Injection(); input::Symbol = :lv, bed::Symbol = :coronary,
+        passes::Integer = 1, fine::Real = 0.02f0, dt_out::Real = 0.1f0, times = 0.0f0:1.0f0:60.0f0, to = identity
+    )
+    BC = circulation(s); pf = 1 - s.phys.hd
+    fine = Float32(fine); dt_out = Float32(dt_out)
+    r = simulate(BC, inj; tmax = s.tmax, dt = s.dt, every = s.every)
+    curve_in(r) = InputCurve(Float32[_interp(t, r.t, r.out[input]) / pf for t in collect(0.0f0:fine:s.tmax)], fine) # plasma
+    tc = collect(0.0f0:dt_out:s.tmax); fpt = sum(C.fp)
+    outflow(inp) = (cum = sinus_outflow(C, inp, tc; to); [k == 1 ? 0.0f0 : (cum[k] - cum[k - 1]) / dt_out / fpt for k in eachindex(tc)])
+    for _ in 1:passes
+        cs = outflow(curve_in(r))
+        r = simulate(BC, inj; tmax = s.tmax, dt = s.dt, every = s.every, detailed = Dict(bed => t -> pf * _interp(Float32(t), tc, cs)))
+    end
+    inp = curve_in(r); cs = outflow(inp)
+    am, vm, tm = Array.(frame_masses(C, inp, collect(Float32, times); to))
+    return (; body = r, input = inp, t_out = tc, outflow = cs, artery = am, vein = vm, tissue = tm)
+end
