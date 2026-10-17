@@ -530,7 +530,9 @@ HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared bas
     # isValidConnection
     norm3(sub3(p, m.pos[s])) > _maxconn(T, prm) && return fail
     rs = _isfast(E) ? fast_radius(E, s) : m.radius[s]
-    rs * T(0.7) < T(0.005) && return fail
+    # upstream's smallest host (0.7 r < 5 µm), at the final scale like every other size test (collision = :final); at the
+    # current scale early radii shrink with the terminal count and no host passes above ~23 M lung terminals
+    E.cscale * rs * T(0.7) < T(0.005) && return fail
     ps = m.pos[s]
     par = m.parent[s]
     pParent = m.pos[par]
