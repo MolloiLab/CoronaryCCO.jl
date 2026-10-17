@@ -160,12 +160,13 @@ function Engine(
 end
 
 # Grid cell that follows the tree's density. Every grid query scans whole cells, so with a fixed cell the work per query
-# grows with the number of segments. The starting cell (2 mm x size_scale) was tuned on the 10^6-terminal heart, which
-# ends at about 90 segments per cell on average over its domain; once a tree is denser than SEGS_PER_CELL, the cell is
-# halved. The grid only narrows which segments are tested, so the grown tree is unchanged; only the time per query is.
+# grows with the number of segments. Once a tree averages more than SEGS_PER_CELL segments per cell over its domain, the
+# cell is halved. 32 is a speed setting, the fastest of 16, 32 and 128 measured on the XCAT heart (957k terminals) and
+# lung (1 M and 5 M). The grid only narrows which segments are tested, so the grown tree is unchanged; only the time per
+# query is (test "finer grid cell, same tree").
 # The list of thick segments keeps the starting cell as its threshold (`hbig`): a finer cell would move every imaged
 # trunk into it.
-const SEGS_PER_CELL = 128
+const SEGS_PER_CELL = 32
 function regrid!(E::Engine{T}) where {T}
     n = nsegments(E.m); g = E.g
     E.vox == 0 && (E.vox = count(>(MASK_THRESHOLD), E.dom.img))
