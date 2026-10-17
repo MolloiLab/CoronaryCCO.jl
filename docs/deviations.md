@@ -385,6 +385,16 @@ twice the final radius kept terminals 10–30 mm from the lung's hilar arteries 
 clearance), as alveoli sit against these arteries: 4 mL remain more than 5 mm from a terminal. Upstream's rule is kept at
 the current scale (`collision = :current`), so the parity tests are unchanged.
 
+## 18. The smallest host vessel is tested at its final radius
+
+HCT-CCO lets a segment take a new branch only if 0.7 × its radius is at least 5 µm (`isValidConnection`), using the
+radius at the current tree size. With `collision = :final` every other size test here (lumen keep-out, collision,
+degeneracy) uses final radii, so this one does too: `cscale × r × 0.7 ≥ 5 µm`. At the current scale, early radii shrink
+as the target terminal count rises (each terminal carries less flow), and above about 23 million lung terminals no
+segment passed, so growth stalled after a few hundred terminals. `cscale` is the forest's largest cap / current root
+ratio, so where a tree's cap does not bind (the heart's LCA) radii are tested about 1.5× above their final size, the
+same approximation the collision tests make. Exact mode (`collision = :current`, scale 1) is unchanged.
+
 ## References
 
 - Cury LFM, Maso Talou GD, Younes-Ibrahim M, Blanco PJ. Parallel generation of extensive vascular networks with application to an archetypal human kidney model. *R. Soc. Open Sci.* 8:210973, 2021. doi:10.1098/rsos.210973

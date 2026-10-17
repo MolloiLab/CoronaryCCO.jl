@@ -531,7 +531,9 @@ HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared bas
     norm3(sub3(p, m.pos[s])) > _maxconn(T, prm) && return fail
     rs = _isfast(E) ? fast_radius(E, s) : m.radius[s]
     # upstream's smallest host (0.7 r < 5 µm), at the final scale like every other size test (collision = :final); at the
-    # current scale early radii shrink with the terminal count and no host passes above ~23 M lung terminals
+    # current scale early radii shrink with the terminal count and no host passes above ~23 M lung terminals. The scale is
+    # the forest's largest cap / current root ratio, so where a tree's cap does not bind (the heart's LCA, 2.54 mm cap vs a
+    # 1.73 mm grown root) radii are tested ~1.5x above their final size, as in the collision tests (docs/deviations.md §18)
     E.cscale * rs * T(0.7) < T(0.005) && return fail
     ps = m.pos[s]
     par = m.parent[s]
