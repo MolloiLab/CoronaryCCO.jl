@@ -64,27 +64,27 @@ end
 # discovery order of each run is kept because numpy's pairwise mean depends on it.
 function group_strahler_elements(strahler::Vector{Int}, conn, n::Int)
     seg2elem = fill(0, n)
-    elem_segs = Vector{Vector{Int}}()
+    off = [1]; val = Int32[]                   # elements as one flat list (see Ragged), in discovery order
+    stk = Int[]
     for s in 1:n
         seg2elem[s] == 0 || continue
         o = strahler[s]
-        e = length(elem_segs) + 1
-        stk = [s]
+        e = length(off)
         seg2elem[s] = e
-        comp = [s]
+        push!(stk, s); push!(val, s)
         while !isempty(stk)
             cur = pop!(stk)
             for nb in Iterators.flatten((conn.parent[cur], conn.children[cur]))
                 if seg2elem[nb] == 0 && strahler[nb] == o
                     seg2elem[nb] = e
                     push!(stk, nb)
-                    push!(comp, nb)
+                    push!(val, nb)
                 end
             end
         end
-        push!(elem_segs, comp)
+        push!(off, length(val) + 1)
     end
-    return seg2elem, elem_segs
+    return seg2elem, Ragged(off, val)
 end
 
 # Ports refine_root_element: if the root's element spans more than one literature order, split
@@ -98,8 +98,8 @@ function refine_root_element(seg2elem, elem_segs, elem_order, diameters, conn, d
     lit = Dict(s => literature_order_of(diameters[s], db) for s in segs0)
     length(unique(values(lit))) <= 1 && return seg2elem, elem_segs, elem_order
     seg2elem = copy(seg2elem)
-    elem_segs = copy(elem_segs)
     elem_order = copy(elem_order)
+    comps = [Int[]]
     visited = Set{Int}()
     first = true
     for s in segs0
@@ -119,34 +119,53 @@ function refine_root_element(seg2elem, elem_segs, elem_order, diameters, conn, d
             end
         end
         if first
-            elem_segs[e0] = comp
+            comps[1] = comp
             elem_order[e0] = o
             seg2elem[comp] .= e0
             first = false
         else
-            push!(elem_segs, comp)
+            push!(comps, comp)
             push!(elem_order, o)
-            seg2elem[comp] .= length(elem_segs)
+            seg2elem[comp] .= length(elem_segs) + length(comps) - 1
         end
     end
-    return seg2elem, elem_segs, elem_order
+    # element e0 becomes the first run, the others are appended (same lists as upstream's)
+    lists = Iterators.flatten(((e == e0 ? comps[1] : elem_segs[e] for e in 1:length(elem_segs)), comps[2:end]))
+    off = [1]; val = Int32[]
+    for l in lists
+        append!(val, l); push!(off, length(val) + 1)
+    end
+    return seg2elem, Ragged(off, val), elem_order
 end
 
 # Ports element_connectivity_counts: for every (daughter order m, parent order n), one count per
 # parent element of order n of its distinct daughter elements of order m.
 function element_connectivity_counts(seg2elem, elem_order, conn)
     ne = length(elem_order)
-    echildren = [Set{Int}() for _ in 1:ne]
-    for s in eachindex(seg2elem), c in conn.children[s]
-        a, b = seg2elem[s], seg2elem[c]
-        a == b || push!(echildren[a], b)
+    # segments of each element (counting sort), then each element's distinct daughter elements
+    cnt = zeros(Int, ne); foreach(e -> cnt[e] += 1, seg2elem)
+    off = cumsum(vcat(1, cnt)); segs = Vector{Int32}(undef, length(seg2elem)); nxt = off[1:(end - 1)]
+    for s in eachindex(seg2elem)
+        e = seg2elem[s]; segs[nxt[e]] = s; nxt[e] += 1
     end
     present = sort(unique(elem_order))
-    counts = Dict((m, p) => Int[] for m in present for p in present)
+    slot = zeros(Int, maximum(present; init = 0)); for (i, m) in enumerate(present)
+        slot[m] = i
+    end
+    counts = Dict((m, p) => Int32[] for m in present for p in present)
+    buf = Int32[]; tally = zeros(Int32, length(present))
     for e in 1:ne
+        empty!(buf)
+        for k in off[e]:(off[e + 1] - 1), c in conn.children[segs[k]]
+            b = seg2elem[c]; b == e || push!(buf, b)
+        end
+        unique!(sort!(buf)); fill!(tally, 0)
+        for b in buf
+            tally[slot[elem_order[b]]] += 1
+        end
         p = elem_order[e]
-        for m in present
-            push!(counts[(m, p)], count(c -> elem_order[c] == m, echildren[e]))
+        for (i, m) in enumerate(present)
+            push!(counts[(m, p)], tally[i])
         end
     end
     return present, counts
