@@ -94,6 +94,8 @@ struct TreeView{T, M, F, G, D, VI8, VB, VU8, VR, VT}
     lscale::T
     max_angle_cos::T
     rmax::T
+    big::VR                   # segments tested directly by every grid query (Engine.big; buffer may be longer)
+    nbig::Int
     fix_base::Bool
     full::Bool
     keepout::T            # vessel keep-out factor for new terminals (see distance_valid)
@@ -110,6 +112,12 @@ Adapt.@adapt_structure TreeView
 @inline _isfast(::TreeView) = true
 @inline _fullvol(V::TreeView) = V.full
 @inline _level(V::TreeView) = V.level
+@inline function _any_big(f::F, V::TreeView) where {F}
+    @inbounds for i in 1:V.nbig
+        f(V.big[i]) && return true
+    end
+    return false
+end
 @inline _keepout(::Type{T}, V::TreeView) where {T} = T(V.keepout)
 @inline _maxconn(::Type{T}, p::ParamView) where {T} = T(p.max_connection)
 @inline _reach(::Type{T}, p::ParamView) where {T} = T(p.reach)
@@ -187,7 +195,7 @@ function tree_view(E::Engine{T}, vc::ViewCache; to = identity) where {T}
     )
     return TreeView(
         M, F, G, D, P, up(:tcount, E.tcount), up(:middle, E.middle), up(:isbase, E.isbase), up(:treeid, E.treeid), E.cscale,
-        E.lscale, E.max_angle_cos, E.rmax,
+        E.lscale, E.max_angle_cos, E.rmax, up(:big, E.big), length(E.big),
         E.fix_base, E.volume === :full, _keepout(T, E), T(_level(E)), up(:roots, E.roots), up(:rcaps, E.rcaps),
         up(:rest, E.rest), up(:rmin, E.rmin)
     )

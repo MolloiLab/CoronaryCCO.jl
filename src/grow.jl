@@ -51,7 +51,9 @@ mutable struct Engine{T}
     p::CCOParams
     seed::UInt64
     ws::Vector{Workspace{T}}
-    rmax::T
+    rmax::T                   # largest radius among segments not in `big` (pads every grid query)
+    big::Vector{Int32}        # segments thicker than one grid cell, tested directly by every query (see _any_big)
+    isbig::Vector{Bool}
     tcount::Vector{Int8}      # occurrences of each segment in the terminal list
     middle::Vector{Bool}      # scratch: middle-stage connectable set
     mode::Symbol              # :fast (production) or :exact (test-only bitwise reference)
@@ -141,7 +143,7 @@ function Engine(
     end
     E = Engine{T}(
         m, L, g, dom, CRand(seed), m.params, UInt64(seed),
-        [Workspace{T}() for _ in 1:m.params.num_neighbors], zero(T), tc, Bool[],
+        [Workspace{T}() for _ in 1:m.params.num_neighbors], zero(T), Int32[], Bool[], tc, Bool[],
         mode, volume, sampling, fix_base, collision, one(T), one(T),
         max_branch_angle === nothing ? -one(T) : T(cosd(max_branch_angle)),
         trues(nsegments(m)) |> Vector{Bool}, _tree_ids(m, roots), roots, caps, zeros(T, length(roots)),
@@ -155,7 +157,40 @@ function Engine(
     return E
 end
 
-update_rmax!(E::Engine) = (E.rmax = maximum(@view E.m.radius[2:end]); E)
+# A grid query must reach every segment whose own radius could touch the query, so its box is padded by the largest
+# radius; one thick vessel (a lung hilar artery, 15 mm) would pad every query and multiply the cells scanned. Segments
+# thicker than one grid cell are kept in `E.big` and tested directly by every query instead; the box is padded by the
+# largest radius among the others (`E.rmax`). Every segment within reach is still tested, so every answer is unchanged.
+function update_rmax!(E::Engine{T}) where {T}
+    r = E.m.radius; n = length(r); h = E.g.h
+    length(E.isbig) < n && append!(E.isbig, falses(n - length(E.isbig)))
+    empty!(E.big); rm = zero(T)
+    for j in 2:n
+        big = r[j] > h; E.isbig[j] = big
+        big ? push!(E.big, Int32(j)) : (r[j] > rm && (rm = r[j]))
+    end
+    E.rmax = rm
+    return E
+end
+
+# After segment j's radius changed to r: keep `big` and `rmax` consistent (a segment that outgrows a cell joins `big`).
+@inline function note_radius!(E::Engine, j, r)
+    length(E.isbig) < j && append!(E.isbig, falses(length(E.m.radius) - length(E.isbig)))
+    if r > E.g.h
+        E.isbig[j] || (E.isbig[j] = true; push!(E.big, Int32(j)))
+    elseif !E.isbig[j] && r > E.rmax
+        E.rmax = r
+    end
+    return
+end
+
+# Any segment of `big` for which f is true (the direct half of every grid query).
+@inline function _any_big(f::F, E) where {F}
+    @inbounds for j in E.big
+        f(j) && return true
+    end
+    return false
+end
 
 # ---------------------------------------------------------------------------------------
 # Scans over the tree through the spatial grid (same answers as upstream's full scans).
@@ -168,7 +203,7 @@ update_rmax!(E::Engine) = (E.rmax = maximum(@view E.m.radius[2:end]); E)
     m = E.m
     c = E.cscale; rq = r * c
     test(j) = j != e1 && j != e2 && j != e3 && is_intersecting(A, B, rq, segA(m, j), segB(m, j), m.radius[j] * c)
-    return grid_any_r(test, E.g, A, B, r -> rq + r * c, E.rmax)
+    return grid_any_r(test, E.g, A, B, r -> rq + r * c, E.rmax) || _any_big(test, E)
 end
 
 # Upstream's idExcept==0 shortcut: an excluded "index 0" (either "no child" or the root
@@ -201,7 +236,7 @@ end
     kf = _keepout(T, E)
     seg_bad(j) = proj_distance(segA(m, j), segB(m, j), p) < cmax(mpd, m.radius[j] * c * kf)
     term_bad(j) = E.tcount[j] > 0 && norm3(sub3(m.pos[j], p)) < mpd
-    grid_any_r(seg_bad, E.g, p, p, r -> cmax(mpd, r * c * kf), E.rmax) && return false
+    (grid_any_r(seg_bad, E.g, p, p, r -> cmax(mpd, r * c * kf), E.rmax) || _any_big(seg_bad, E)) && return false
     grid_any(term_bad, E.g, p, p, mpd) && return false
     return true
 end
@@ -232,7 +267,7 @@ function generate_a_location!(E::Engine{T}, thr::T, rng::CRand = E.rng) where {T
     grid_any(tclose, E.g, res, res, thr) && return res, false
     c = E.cscale
     sclose(j) = j > nt && !(proj_distance(segA(m, j), segB(m, j), res) > m.radius[j] * c)
-    grid_any_r(sclose, E.g, res, res, r -> r * c, E.rmax) && return res, false
+    (grid_any_r(sclose, E.g, res, res, r -> r * c, E.rmax) || _any_big(sclose, E)) && return res, false
     return res, true
 end
 

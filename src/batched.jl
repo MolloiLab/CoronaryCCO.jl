@@ -28,9 +28,9 @@ function _path_radii!(E::Engine{T}, D, n0) where {T}
     AK.foreachindex(D; max_tasks = Threads.nthreads(), min_elems = 2048) do i
         j = D[i]; m.radius[j] = fast_radius(E, j)
     end
-    gr = g.growth; rmax = E.rmax
+    gr = g.growth
     for j in D
-        r = m.radius[j]; r > rmax && (rmax = r)
+        r = m.radius[j]; note_radius!(E, j, r)
         if j > n0
             g.rref[j] = r; bx = g.box[j]
             for k in bx[5]:bx[6], jj in bx[3]:bx[4], i in bx[1]:bx[2]
@@ -40,7 +40,7 @@ function _path_radii!(E::Engine{T}, D, n0) where {T}
             gr = max(gr, r / g.rref[j])
         end
     end
-    g.growth = gr; E.rmax = rmax
+    g.growth = gr
     return
 end
 _round_log() = get(ENV, "VASCULATURE_ROUND_LOG", "") == "1"

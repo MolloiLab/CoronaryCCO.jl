@@ -177,7 +177,7 @@ function fast_refresh_radii!(E::Engine{T}) where {T}
         end
         tmax[f] = max(tmax[f], rm)
     end
-    E.rmax = nt == 0 ? rmax : maximum(tmax)
+    update_rmax!(E)                       # rmax over ordinary segments, and the list of thick ones
     E.F.since = 0
     E.g.prune = true
     grid_refresh_radii!(E.g, m)
@@ -338,12 +338,12 @@ function commit_fast!(E::Engine{T}, s::Int32, pOpt::P3{T}, p::P3{T}, qNew::T) wh
     # exact radii on the updated path and the new segments (as batched rounds do); full refresh periodically
     for j in (nl, nr)
         m.radius[j] = fast_radius(E, j)
-        m.radius[j] > E.rmax && (E.rmax = m.radius[j])
+        note_radius!(E, j, m.radius[j])
     end
     j = s
     while j != 1
         r = fast_radius(E, j); m.radius[j] = r
-        r > E.rmax && (E.rmax = r)
+        note_radius!(E, j, r)
         j != s && length(E.g.rref) >= j && E.g.rref[j] > 0 && (E.g.growth = max(E.g.growth, r / E.g.rref[j]))
         j = m.parent[j]
     end
