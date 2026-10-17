@@ -1,0 +1,43 @@
+[meta]
+id = "klein2003_femoral_flow_mri"
+data_type = "experimental"
+validates = "Resting supine common femoral artery volume flow (whole-leg arterial inflow) by cardiac-triggered phase-contrast MRI in healthy adults; popliteal flow and its dependence on calf muscle volume"
+species = "human"
+preparation = "50 healthy volunteers, 26-80 y. Cardiac-triggered 2D phase-contrast quantitative flow MRI of the common femoral and popliteal arteries, plus MRI of the calves (muscle volume). 10 subjects scanned three times for reproducibility."
+conditions = "Resting, supine in the MRI scanner (implied by MRI; not restated in the abstract)."
+verification = "abs"
+access = "Abstract only (Europe PMC, PMID 14603218, read 2026-10-16). Full text (J Vasc Surg, Elsevier) not accessible."
+notes = """Abstract gives only means: CFA 353 mL/min, popliteal 61.9 mL/min; no SD and no sex/age-group breakdown.
+Femoral flow depended on age and sex; popliteal flow depended on calf muscle volume (adjusted for age and sex).
+Between-session CV: 16% (femoral), 19% (popliteal).
+Higher than the semi-recumbent Doppler value in kochesteves2023_lower_limb_flow_volume (~290 mL/min); method and posture differ."""
+use_in_model = """Supine PC-MRI cross-check for resting whole-leg inflow (~0.35 L/min per leg). Use with leg tissue volume from kochesteves2023_lower_limb_flow_volume."""
+
+[source]
+authors = ["Klein WM", "Bartels LW", "Bax L", "van der Graaf Y", "Mali WPTM"]
+year = 2003
+title = "Magnetic resonance imaging measurement of blood volume flow in peripheral arteries in healthy subjects"
+journal = "J Vasc Surg"
+volume = "38"
+issue = "5"
+pages = "1060-1066"
+doi = "10.1016/S0741-5214(03)00706-7"
+crossref_verified = "2026-10-16; Crossref title exact match ('Magnetic resonance imaging measurement of blood volume flow in peripheral arteries in healthy subjects'; J Vasc Surg 38(5) 1060-1066; authors Klein, Bartels, Bax, van der Graaf, Mali)"
+pmid = "14603218"
+
+[provenance]
+doi = "10.1016/S0741-5214(03)00706-7"
+crossref_checked = true
+how_taken = "Abstract text (Results): mean CFA and popliteal flow, CVs; n and age range from Methods in the abstract."
+
+[data.resting_leg_artery_flow]
+description = "Mean resting volume flow, cardiac-triggered PC-MRI"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean (SD not given in abstract); n = 50"
+artery = ["common femoral", "popliteal"]
+flow_mean_mL_per_min = [353.0, 61.9]
+reproducibility_cv_pct = [16.0, 19.0]
+n = 50
+age_range_y = [26, 80]
+missing_note = "SD, side measured, sex split and calf muscle volume values are in the full text only (not read)."

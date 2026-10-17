@@ -1,0 +1,50 @@
+[meta]
+id = "vanes2010_total_cerebral_blood_flow"
+data_type = "experimental"
+validates = "Resting total cerebral blood flow (sum of both internal carotid and both vertebral arteries, mL/min) and brain parenchymal volume (mL) in the same adults; tCBF normalized to parenchymal volume (mL/100 mL/min)"
+species = "human"
+preparation = "447 elderly adults (464 scanned, 17 excluded for failed flow or segmentation) from the nested MRI substudy of PROSPER (PROspective Study of Pravastatin in the Elderly at Risk). Age 75 +/- 3 y, 56% male. 1.5 T Philips MRI. Single-slice non-gated 2D phase-contrast MRA (VENC 100 cm/s) perpendicular to both ICAs (vertical petrous segment) and both vertebral arteries; tCBF = sum of the four vessel flows. Brain parenchyma and intracranial volume segmented semi-automatically (SNIPER) from dual FSE and FLAIR."
+conditions = "Resting, supine in the MRI scanner (supine implied by MRI; posture not stated explicitly). Baseline of a statin trial."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC2843728 (PLoS One, open access), read 2026-10-16; Tables 1-2 read from the XML table markup."
+notes = """Population is NOT healthy: inclusion required age 70-82 y plus prior vascular disease or >=1 vascular risk factor (63% hypertension, 16% diabetes, 16% stroke/TIA, 38% MRI stroke; SBP 158 +/- 23 mmHg).
+tCBF in this elderly cohort (510 mL/min) is lower than typical young-adult PC-MRI values (~700-750 mL/min); per-volume perfusion (50.4 mL/100 mL/min) is the more portable number.
+Ratio check: 510 / 1016 x 100 = 50.2 mL/100 mL/min, consistent with the reported per-subject mean 50.4.
+Parenchymal volume is grey + white matter (CSF excluded); multiply by ~1.04-1.05 g/mL for mass.
+tCBF fell 6.2 mL/min per year of age (r = -0.124); tCBF vs parenchymal volume r = 0.430."""
+use_in_model = """Brain arterial inflow target for a whole-body flow split: Q_brain ~ 0.50 mL/min per mL of parenchyma, times the phantom's brain parenchymal volume. For a younger/healthier phantom, scale toward young-adult PC-MRI tCBF, noting this cohort is elderly with vascular disease."""
+
+[source]
+authors = ["van Es ACGM", "van der Grond J", "ten Dam VH", "de Craen AJM", "Blauw GJ", "Westendorp RGJ", "Admiraal-Behloul F", "van Buchem MA", "PROSPER Study Group"]
+year = 2010
+title = "Associations between total cerebral blood flow and age related changes of the brain"
+journal = "PLoS One"
+volume = "5"
+issue = "3"
+pages = "e9825"
+doi = "10.1371/journal.pone.0009825"
+crossref_verified = "2026-10-16; Crossref title exact match ('Associations between Total Cerebral Blood Flow and Age Related Changes of the Brain'; PLoS ONE 5(3) e9825; authors van Es ... van Buchem)"
+pmid = "20352115"
+pmcid = "PMC2843728"
+
+[provenance]
+doi = "10.1371/journal.pone.0009825"
+crossref_checked = true
+how_taken = "Table 2 (MR characteristics) for tCBF, tCBF per 100 mL and parenchymal volume; Table 1 for cohort demographics; Methods text for n (464 - 17 = 447) and PC-MRI technique."
+
+[data.total_cerebral_blood_flow]
+description = "Total cerebral blood flow (L+R ICA + L+R vertebral), brain parenchymal volume, and their ratio"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD (min, max); n = 447"
+quantity = ["tCBF", "tCBF per parenchymal volume", "brain parenchymal volume"]
+unit = ["mL/min", "mL/100 mL/min", "mL"]
+mean = [510.0, 50.4, 1016.0]
+sd = [87.4, 7.8, 98.7]
+min = [315.0, 30.9, 752.0]
+max = [846.0, 74.3, 1259.0]
+n = 447
+age_mean_y = 75.0
+age_sd_y = 3.0
+male_fraction = 0.56
+missing_note = "No sex-specific values; per-vessel flows not tabulated (only correlations). Atrophy 27.3% (fraction of intracranial volume that is CSF) also in Table 2."

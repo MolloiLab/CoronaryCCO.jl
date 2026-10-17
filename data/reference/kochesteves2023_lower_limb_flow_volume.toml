@@ -1,0 +1,65 @@
+[meta]
+id = "kochesteves2023_lower_limb_flow_volume"
+data_type = "experimental"
+validates = "Resting whole-leg arterial inflow (common femoral artery blood flow, diameter, mean velocity) per leg, and anthropometric whole-leg volume and lean fraction, in the same healthy young and elderly adults"
+species = "human"
+preparation = "19 healthy, recreationally trained adults: 10 young (26 +/- 7 y; 7 M / 3 F) and 9 elderly (69 +/- 5 y; 6 M / 3 F). Duplex Doppler ultrasound (GE Vivid E95, 9-MHz linear probe, insonation angle <= 60 deg, sample volume centred in the vessel); velocity averaged over two 12-s recordings, diameter from four B-mode images (EchoPAC). Leg volume and composition from seven circumferences plus skinfolds by the Jones & Pearson (1969) anthropometric method."
+conditions = "Baseline after a 30-min rest, SEMI-RECUMBENT in a knee-extensor ergometer chair, room 21 C. Baseline values are before passive heating of the right leg; left leg is the unheated control leg."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC10988472 (Exp Physiol, open access), read 2026-10-16; Tables 1 and 3 read from the XML table markup."
+notes = """Posture is semi-recumbent, not supine; leg inflow in supine rest may differ slightly (hydrostatic/sympathetic effects).
+Small n (9-10 per group). Participants were trained (recreationally active), not sedentary.
+Elderly and young baseline CFA flows did not differ (P >= 0.07): ~0.27-0.29 L/min per leg in all four group x leg cells.
+Leg volume is anthropometric (truncated-cone model from gluteal furrow to ankle), not imaging; 'lean volume' = muscle + bone fraction.
+Table 1 prints sex percentages for the elderly as 30%/60% of n = 9 (3 F, 6 M); counts stored, percentages ignored.
+Whole-leg perfusion check (young, right leg): 0.29 L/min / 11.0 L = 2.6 mL/min per 100 mL of leg tissue."""
+use_in_model = """Lower-limb arterial inflow target for a whole-body flow split: Q_leg ~ 0.29 L/min per leg at rest, with leg tissue volume ~10-11 L, i.e. ~2.6 mL/min/100 mL. Cross-check against klein2003_femoral_flow_mri (supine PC-MRI, 353 mL/min) and the supine popliteal flow in zhang2025_limb_basal_arterial_flow (114 mL/min, below-knee only)."""
+
+[source]
+authors = ["Koch Esteves N", "Khir AW", "Gonzalez-Alonso J"]
+year = 2023
+title = "Lower limb hyperthermia augments functional hyperaemia during small muscle mass exercise similarly in trained elderly and young humans"
+journal = "Exp Physiol"
+volume = "108"
+issue = "9"
+pages = "1154-1171"
+doi = "10.1113/EP091275"
+crossref_verified = "2026-10-16; Crossref title exact match ('Lower limb hyperthermia augments functional hyperaemia during small muscle mass exercise similarly in trained elderly and young humans'; Experimental Physiology 108(9) 1154-1171; authors Koch Esteves, Khir, Gonzalez-Alonso)"
+pmcid = "PMC10988472"
+
+[provenance]
+doi = "10.1113/EP091275"
+crossref_checked = true
+how_taken = "Table 3 'Baseline' column for CFA blood flow, velocity and diameter (both legs, both cohorts); Table 1 for leg volume and lean fraction; Methods text for posture, rest period and ultrasound technique."
+
+[data.cfa_baseline_flow]
+description = "Common femoral artery blood flow, mean blood velocity and diameter at rest (baseline, before heating)"
+location = "Table 3, Baseline column"
+provenance = "FT"
+statistic = "mean +/- SD; n = 9 elderly, 10 young"
+cohort = ["young", "young", "elderly", "elderly"]
+leg = ["right (later heated)", "left (control)", "right (later heated)", "left (control)"]
+n = [10, 10, 9, 9]
+flow_mean_L_per_min = [0.29, 0.29, 0.27, 0.29]
+flow_sd_L_per_min = [0.11, 0.10, 0.10, 0.08]
+velocity_mean_cm_per_s = [8.5, 8.3, 6.3, 6.3]
+velocity_sd_cm_per_s = [3.6, 2.9, 3.9, 2.2]
+diameter_mean_cm = [0.85, 0.86, 1.00, 1.00]
+diameter_sd_cm = [0.09, 0.10, 0.10, 0.10]
+missing_note = "No sex split. Pooled young+elderly not printed."
+
+[data.leg_volume]
+description = "Whole-leg volume and lean/non-lean fractions by anthropometry (Jones & Pearson 1969)"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD; n = 9 elderly, 10 young"
+cohort = ["young", "young", "elderly", "elderly"]
+leg = ["right", "left", "right", "left"]
+n = [10, 10, 9, 9]
+leg_volume_mean_L = [11.0, 11.3, 10.2, 9.8]
+leg_volume_sd_L = [1.9, 1.8, 1.6, 1.9]
+lean_volume_mean_pct = [78.6, 78.7, 76.3, 76.3]
+lean_volume_sd_pct = [6.7, 6.9, 7.9, 8.1]
+height_mean_cm = [171.7, 171.7, 172.9, 172.9]
+body_mass_mean_kg = [71.0, 71.0, 68.7, 68.7]
+missing_note = "Body height/mass are per cohort (repeated per leg row). No imaging-based leg volume."
