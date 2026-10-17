@@ -1,0 +1,55 @@
+[meta]
+id = "schomig2026_lung_dect_iodine_concentration"
+data_type = "experimental"
+validates = "Absolute lung parenchymal iodine concentration (mg/mL) from dual-layer DECT iodine maps, main pulmonary artery iodine concentration, and their ratio, with CT lung volume, in adults with radiologically normal lungs (portal venous phase, NOT first pass)"
+species = "human"
+preparation = "Retrospective single-center cohort (University Hospital Cologne), 112 adults (59 F, 53 M; age 60.3 +/- 16.6 y; 30 < 50 y, 44 50-70 y, 38 > 70 y) with dermato-oncological disease but no current tumor burden, each with >= 2 staging CTs 2016-2019 (mean interval 262 +/- 169 d). Scans with any lung disease or parenchymal abnormality excluded. Philips IQon spectral (dual-layer detector) CT, 120 kV, dose modulation, 0.33 s rotation, 64 x 0.625 mm, pitch 0.671. 100 mL iohexol 350 mgI/mL (Accupaque) via 20 G antecubital catheter; bolus tracking in the descending aorta at 150 HU, then 50 s delay (portal venous phase). Iodine maps from spectral reconstruction, 2 mm slices. Lungs and lobes auto-segmented (IntelliSpace Portal COPD), merged with iodine maps; large vessels removed by thresholding at the left-atrial iodine concentration; mPA and portal-vein ROIs."
+conditions = "Portal venous phase (~50 s after the aortic 150 HU trigger), i.e. near-equilibrium recirculation, NOT first-pass. Supine. Breath-hold level not stated (clinical staging CT, presumably inspiratory, no spirometric control)."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC13114350 (Diagnostics, open access CC BY), read 2026-10-16; Table 1 read from the XML table markup."
+notes = """Population is oncology follow-up patients (no visible thoracic tumor, lung-healthy on CT), mean age 60 y; no cardiovascular screening (e.g. heart failure not excluded).
+Table 1 vs text discrepancy: Table 1 gives mean lung iodine F 0.87 +/- 0.18 and M 0.69 +/- 0.13 mg/mL; Results text gives F 0.87 +/- 0.13 and M 0.69 +/- 0.18. Table 1 values are recorded below; the SD assignment by sex is uncertain.
+The paper does not say whether Table 1 averages both timepoints or uses one examination per patient. Between-scan correlation of lung iodine r = 0.82; PIPR_mPA r = 0.88.
+PIPR_mPA = lung iodine / mPA iodine = 0.17 +/- 0.05 overall; < 50 y 0.19 vs > 70 y 0.16 (P < 0.01). Lobar PIPR_mPA: RUL 0.181 +/- 0.08 (highest), RML 0.127 +/- 0.04 (lowest), LUL 0.166 +/- 0.05, LLL 0.170 +/- 0.05; left 0.163 vs right 0.159 (text) vs 0.17/0.16 (Table 1, rounded).
+Total lung iodine 3347.9 +/- 596.6 mg (text).
+The lung/mPA ratio here (~0.17, venous phase) is close to Lee 2022 first-pass PBV (~0.15), as expected if it mostly reflects lung blood volume fraction.
+Iodine mg/mL to HU at 120 kV is roughly 25-30 HU per mg/mL (scanner dependent; not reported here)."""
+use_in_model = """Validation target for the late (portal venous; ~50 s after an aortic 150 HU trigger, so roughly 65-80 s post-injection, an estimate made here) lung parenchymal iodine: ~0.78 mg/mL whole-lung mean after 100 mL of 350 mgI/mL, with mPA ~4.95 mg/mL. The ratio lung/mPA ~0.17 is the more portable number (dose independent). Not a first-pass value."""
+
+[source]
+authors = ["Schömig T", "Sabov A", "Zopfs D", "Beste NC", "Fintelmann FJ", "Bunck AC", "Maintz D", "Gertz RJ", "Große Hokamp N"]
+year = 2026
+title = "Effect of age and sex on normalized automated DECT-derived pulmonary iodine concentration"
+journal = "Diagnostics (Basel)"
+volume = "16"
+issue = "8"
+pages = "1134"
+doi = "10.3390/diagnostics16081134"
+crossref_verified = "2026-10-16; Crossref title exact match ('Effect of Age and Sex on Normalized Automated DECT-Derived Pulmonary Iodine Concentration'; Diagnostics 16(8) 1134; authors Schömig ... Große Hokamp; published 2026-04-10)"
+pmid = "42072761"
+pmcid = "PMC13114350"
+
+[provenance]
+doi = "10.3390/diagnostics16081134"
+crossref_checked = true
+how_taken = "Table 1 for lung volume, mPA iodine, lung iodine and PIPR_mPA by sex, age band and side; Methods 2.1-2.4 for population, scanner, contrast and timing; Results 3.1-3.3 text for demographics, total iodine and lobar ratios."
+
+[data.lung_iodine_concentration]
+description = "DECT whole-lung mean iodine concentration, main pulmonary artery iodine concentration, ratio (PIPR_mPA) and CT lung volume, portal venous phase"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD"
+group = ["all", "female", "male", "age_lt50", "age_50to70", "age_gt70"]
+n = [112, 59, 53, 30, 44, 38]
+lung_volume_mean_mL = [4502.6, 3896.5, 5177.3, 4243.7, 4850.0, 4304.7]
+lung_volume_sd_mL = [1294.5, 928.0, 1317.6, 1254.4, 1342.8, 1208.6]
+mpa_iodine_mean_mg_per_mL = [4.95, 5.61, 4.23, 4.64, 4.90, 5.27]
+mpa_iodine_sd_mg_per_mL = [1.28, 1.24, 0.87, 1.25, 1.22, 1.33]
+lung_iodine_mean_mg_per_mL = [0.78, 0.87, 0.69, 0.84, 0.74, 0.79]
+lung_iodine_sd_mg_per_mL = [0.19, 0.18, 0.13, 0.20, 0.16, 0.19]
+pipr_mpa_mean = [0.17, 0.16, 0.17, 0.19, 0.16, 0.16]
+pipr_mpa_sd = [0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+kVp = 120
+contrast = "100 mL iohexol 350 mgI/mL, antecubital, fixed dose (not weight based)"
+timing = "portal venous phase: bolus tracking descending aorta 150 HU + 50 s"
+missing_note = "No Delta HU, no unenhanced lung HU, no breath-hold level. Injection rate not stated. Sex SDs for lung iodine conflict between Table 1 and text (see notes)."

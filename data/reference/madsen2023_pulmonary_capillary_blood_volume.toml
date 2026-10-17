@@ -1,0 +1,69 @@
+[meta]
+id = "madsen2023_pulmonary_capillary_blood_volume"
+data_type = "experimental"
+validates = "Resting pulmonary capillary blood volume (Vc, mL) by single-breath DLNO/DLCO in healthy young adults, upright seated vs supine (same subjects), plus seated values in a second group; between-day repeatability"
+species = "human"
+preparation = "20 healthy, physically active non-smokers (10 men, 10 women; age 24.8 +/- 1.5 y; height 175 +/- 8 cm; DLCOc 92.7 +/- 9.8% predicted). Randomized to Group A (n = 11: seated rest then cycling) or Group B (n = 9: seated rest then 15 min supine rest). Combined single-breath DLCO/DLNO, Jaeger MasterScreen PFT pro, 5 s breath hold, 0.28% CO, 9.3% He, 20.9% O2, NO from 800 ppm stock mixed just before inhalation; duplicate acceptable manoeuvres. Hb-corrected DLCO. Repeated on two days within 1-7 d."
+conditions = "Resting, upright seated (all) and resting supine after 15 min (Group B). Normoxia."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC10103891 (original, Exp Physiol, open access) and PMC11607620 (published Correction, Exp Physiol 2024, CC BY 4.0), both read 2026-10-16. All Dm and Vc numbers below are from the CORRECTED Table 2 in the correction notice."
+notes = """IMPORTANT: the original article's Vc and Dm values are wrong. The correction (doi 10.1113/EP092280) states the Jaeger device reported Dm as DLNO/1.97 rather than the standard Zavorsky 2017 / Munkholm 2018 equations; Tables 2-3 were reissued. Original seated Vc 76.5/77.6 (A) and 71.6/69.1 (B), supine 94.2/91.6 mL are superseded; do not use them.
+Corrected method (per correction): Dm = (1/alpha - 1/k)/(1/DLNO - 1/(k DLCO)), Vc = (1/thetaCO)(1 - alpha/k)/(1/DLCO - alpha/DLNO), alpha = 1.97, thetaNO finite 4.5 mL/(mL blood min mmHg), thetaCO per Munkholm 2018.
+Values are per day; Day 1 and Day 2 did not differ (Holm-adjusted P = 1.000).
+Derived here (not printed): pooled seated Day-1 Vc over both groups (n = 20) = (11 x 67.8 + 9 x 68.1)/20 = 67.9 mL. Supine minus seated in Group B ~ +20 mL (+29%) on both days.
+DLNO/DLCO-derived Vc depends on the thetaCO/thetaNO assumptions; Vc by Roughton-Forster multiple-FIO2 in similar healthy young adults seated is ~76-89 mL (bouwsema2017_capillary_blood_volume_exercise). D'Souza 2026 (ERJ Open Res, doi 10.1183/23120541.00889-2025) found no fixed bias between the two Vc methods but gives values only in figures.
+Units: DLNO, DLCOc, Dm in mmol/(min kPa); multiply by 2.986 for mL/(min mmHg)."""
+use_in_model = """Target for the summed capillary-sheet blood volume of a resting adult lung: ~68 mL seated (SD ~13) rising to ~85-88 mL supine (SD ~18-22). Use the supine value when the phantom represents a supine CT/MRI subject. Vc / total PBV ~ 0.15-0.2 against kanski2013_total_pulmonary_blood_volume (~470 mL). With resting CO ~6 L/min, Vc/Q gives a capillary mean transit of ~0.7-0.9 s."""
+
+[source]
+authors = ["Madsen AC", "Thomsen RS", "Nymand SB", "Hartmann JP", "Rasmussen IE", "Mohammad M", "Skovgaard LT", "Hanel B", "Jonck S", "Iepsen UW", "Christensen RH", "Mortensen J", "Berg RMG"]
+year = 2023
+title = "Pulmonary diffusing capacity to nitric oxide and carbon monoxide during exercise and in the supine position: a test-retest reliability study"
+journal = "Exp Physiol"
+volume = "108"
+issue = "2"
+pages = "307-317"
+doi = "10.1113/EP090883"
+crossref_verified = "2026-10-16; Crossref title exact match; Experimental Physiology 108(2) 307-317; authors Madsen ... Berg (Crossref lists 'Chistensen', the misspelling fixed by the correction)"
+pmid = "36621806"
+pmcid = "PMC10103891"
+correction_doi = "10.1113/EP092280"
+correction_citation = "Correction to 'Pulmonary diffusing capacity to nitric oxide and carbon monoxide during exercise and in the supine position: A test-retest reliability study'. Exp Physiol 2024;109(12):2158-2162. PMC11607620, PMID 39313950."
+correction_crossref_verified = "2026-10-16; Crossref title exact match; Experimental Physiology 109(12) 2158-2162"
+
+[provenance]
+doi = "10.1113/EP090883"
+crossref_checked = true
+how_taken = "table: corrected Table 2 (Correction, doi 10.1113/EP092280) for DLNO, DLCOc, Dm, Vc, VA by group, posture and day; corrected Table 3 for Vc repeatability; original Table 1 for demographics; Methods text (sections 2.2.3-2.2.6) for technique and posture."
+
+[data.vc_seated_supine]
+description = "Pulmonary capillary blood volume, corrected values, by group, posture and test day"
+location = "Correction, Table 2"
+provenance = "FT"
+statistic = "mean (SD)"
+group = ["A seated rest day 1", "A seated rest day 2", "B seated rest day 1", "B seated rest day 2", "B supine rest day 1", "B supine rest day 2"]
+posture = ["seated", "seated", "seated", "seated", "supine", "supine"]
+n = [11, 11, 9, 9, 9, 9]
+vc_mean_mL = [67.8, 71.0, 68.1, 63.9, 88.3, 84.8]
+vc_sd_mL = [12.7, 12.5, 13.9, 13.0, 21.7, 18.2]
+dm_mean_mmol_per_min_per_kPa = [41.6, 41.9, 34.8, 37.4, 33.2, 33.3]
+dm_sd_mmol_per_min_per_kPa = [11.7, 10.0, 8.0, 9.0, 8.0, 7.7]
+dlno_mean_mmol_per_min_per_kPa = [44.9, 46.4, 40.1, 41.1, 43.1, 42.8]
+dlno_sd_mmol_per_min_per_kPa = [8.9, 8.9, 7.2, 8.2, 8.4, 8.6]
+dlcoc_mean_mmol_per_min_per_kPa = [9.79, 10.1, 9.0, 8.9, 10.6, 10.6]
+dlcoc_sd_mmol_per_min_per_kPa = [1.9, 2.0, 1.7, 1.8, 2.2, 2.2]
+va_mean_L = [6.00, 6.06, 5.35, 5.39, 5.10, 5.08]
+va_sd_L = [0.99, 1.00, 0.86, 0.90, 0.87, 0.85]
+method = "single-breath DLNO/DLCO, 5 s breath hold, thetaNO finite (4.5 mL/(mL min mmHg)), alpha 1.97"
+missing_note = "Exercise columns (Group A, n = 11: Vc 93.9 (17.6) and 99.8 (21.9) mL) are omitted from the arrays because the task is resting values. No sex-split values."
+
+[data.vc_repeatability]
+description = "Between-day repeatability of Vc, corrected values"
+location = "Correction, Table 3"
+provenance = "FT"
+statistic = "estimate (95% CI)"
+condition = ["seated rest (A+B, n = 20)", "exercise (A, n = 11)", "supine rest (B, n = 9)"]
+smallest_real_difference_mL = [16.2, 28.3, 30.5]
+cv_percent = [7.9, 9.0, 10.4]
+icc = [0.90, 0.90, 0.88]
+missing_note = "Supine ICC 95% CI printed as (0.58, 0.56) in the correction, an apparent typo; CIs not stored."

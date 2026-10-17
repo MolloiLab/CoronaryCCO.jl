@@ -1,0 +1,60 @@
+[meta]
+id = "kanski2013_total_pulmonary_blood_volume"
+data_type = "experimental"
+validates = "Total pulmonary blood volume (PBV, pulmonary trunk -> left atrium, mL) at rest in healthy adults by CMR (PBV = cardiac output x pulmonary transit time); PBV indexed to lung volume; pulmonary blood volume variation over the cardiac cycle"
+species = "human"
+preparation = "10 healthy volunteers (3 men, 7 women; age 54 +/- 9 y; BSA 1.78 +/- 0.21 m2) recruited by advertisement as controls for 27 newly diagnosed systemic sclerosis patients. Normal ECG, no cardiac history, no cardiopulmonary medication. 1.5 T Philips Intera. PTT = time between centres of gravity of first-pass signal-intensity curves in the pulmonary trunk and left atrium after a 2 mL Gd-DOTA bolus (4 mL/s, 20 mL saline flush), imaged in one atrial short-axis plane. Cardiac output by phase-contrast flow in the pulmonary trunk or aorta. PBV = CO x PTT. Lung volume by planimetry of a transverse SSFP stack at end-expiratory breath hold. PBVV = max - min of the integrated (pulmonary artery flow - summed pulmonary vein flow) over one cardiac cycle."
+conditions = "Resting, supine in the MRI scanner (posture not stated explicitly; implied by CMR). Free breathing for flow and first-pass imaging; end-expiration breath hold for lung volume."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC3850930 (J Cardiovasc Magn Reson, CC BY 2.0, open access), read 2026-10-16; Table 1 and Results text read from the XML."
+notes = """Healthy-control values are only n = 10, middle-aged (54 +/- 9 y), 70% female.
+Order check: the Results sentence lists patients first, controls second (PBVI 16 vs 20%, controls higher), so control PBV is 471 +/- 122 mL (patients 466 +/- 87 mL).
+PBV here spans pulmonary trunk -> left atrium by centre of gravity, so it includes the main PA and pulmonary veins but excludes the LA (same Ugander/Arheden method as nelsson2021_pulmonary_transit_time, healthy 526 +/- 87 mL, n = 21).
+Pulmonary transit time for the controls is not reported. Derived here (not printed): CO ~ 3.5 L/min/m2 x 1.78 m2 ~ 6.2 L/min, so PTT ~ 471 mL / 104 mL/s ~ 4.5 s, and PBV/BSA ~ 265 mL/m2. Implied lung volume ~ 471 / 0.20 ~ 2.4 L (end-expiratory, includes air and parenchyma).
+Interobserver variability for PBV (10 data sets, patients): 4 +/- 12%. No test-retest data.
+PBVV and PBVV/SV values for controls come from the text and Figures 5-6 means stated in the text."""
+use_in_model = """Target for the whole pulmonary vascular compartment (PA trunk + arteries + capillaries + veins, excluding LA) of a resting adult: ~470 mL (SD ~120), i.e. ~265 mL/m2. Check model PBV / model CO against a pulmonary transit of roughly 4-5 s. Pair with nelsson2021 (526 +/- 87 mL, younger controls) and dock1961 (indicator dilution, ~246 mL/m2, n = 4) for a 250-290 mL/m2 band. Capillary share should be compared with Vc (~70-90 mL; madsen2023_pulmonary_capillary_blood_volume)."""
+
+[source]
+authors = ["Kanski M", "Arheden H", "Wuttge DM", "Bozovic G", "Hesselstrand R", "Ugander M"]
+year = 2013
+title = "Pulmonary blood volume indexed to lung volume is reduced in newly diagnosed systemic sclerosis compared to normals - a prospective clinical cardiovascular magnetic resonance study addressing pulmonary vascular changes"
+journal = "J Cardiovasc Magn Reson"
+volume = "15"
+issue = "1"
+pages = "86"
+doi = "10.1186/1532-429X-15-86"
+crossref_verified = "2026-10-16; Crossref title exact match; J Cardiovasc Magn Reson 15(1) article 86; authors Kanski, Arheden, Wuttge, Bozovic, Hesselstrand, Ugander"
+pmid = "24066703"
+pmcid = "PMC3850930"
+
+[provenance]
+doi = "10.1186/1532-429X-15-86"
+crossref_checked = true
+how_taken = "text: Abstract and Results paragraph 'The pulmonary blood volume, pulmonary blood volume index, and pulmonary blood volume variation by CMR' for PBV, PBVI, PBVV, PBVV/SV; table: Table 1 for control demographics and cardiac function."
+
+[data.pulmonary_blood_volume_healthy]
+description = "Resting pulmonary blood volume and related indices in the healthy controls"
+location = "Abstract; Results text; Table 1"
+provenance = "FT"
+statistic = "mean +/- SD; n = 10"
+quantity = ["PBV", "PBV indexed to lung volume (PBVI)", "PBV variation over cardiac cycle (PBVV)", "PBVV / stroke volume"]
+unit = ["mL", "%", "mL", "%"]
+mean = [471.0, 20.0, 33.0, 40.0]
+sd = [122.0, 5.0, 7.0, 6.0]
+n = 10
+method = "CMR first-pass Gd bolus, PTT by centre of gravity pulmonary trunk -> LA, times phase-contrast cardiac output"
+posture = "supine (implied by CMR)"
+missing_note = "No PTT, cardiac output in L/min, or lung volume reported for controls; individual values only in Figures 5-6 (PBVI, PBVV)."
+
+[data.control_characteristics]
+description = "Healthy control demographics and CMR cardiac function"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD; n = 10"
+quantity = ["age", "BSA", "heart rate", "cardiac index", "LV stroke volume index", "LV EDV index", "LV EF", "RV stroke volume index", "RV EDV index", "RV EF"]
+unit = ["y", "m2", "bpm", "L/min/m2", "mL/m2", "mL/m2", "%", "mL/m2", "mL/m2", "%"]
+mean = [54.0, 1.78, 64.0, 3.5, 54.0, 89.0, 60.0, 53.0, 83.0, 64.0]
+sd = [9.0, 0.21, 7.0, 0.6, 7.0, 10.0, 3.0, 7.0, 11.0, 6.0]
+male_fraction = 0.3
+missing_note = "Male:female printed as 3:7 for controls."

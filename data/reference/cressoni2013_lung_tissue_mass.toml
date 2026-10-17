@@ -1,0 +1,74 @@
+[meta]
+id = "cressoni2013_lung_tissue_mass"
+data_type = "experimental"
+validates = "CT-densitometric lung tissue mass (g, both lungs, including intrapulmonary blood) with the matching total lung volume, gas volume and mean parenchymal attenuation at full inspiration, in adults with radiologically normal lungs"
+species = "human"
+preparation = "Retrospective series of 100 adults (53 M, 47 F; age 64 +/- 13 y, none < 30 y, 6% < 50 y) whose clinical helical chest CT was reported as non-pathological. Excluded: contrast-enhanced scans, lobectomy/segmentectomy, nodules, any acute or chronic lung or pleural disease (incl. emphysema, COPD, fibrosis, PE). Siemens Somatom Definition Flash (128-slice), 120 kV, 110 reference mAs, 5 mm reconstruction gap (3 mm in 6), kernels B70f/B50f/B40f/B31f. Lungs manually outlined slice by slice (Maluna), hilar structures excluded by the outline. Tissue volume = (1 - HU/-1000) x voxel volume; tissue density taken as 1 g/mL, so tissue volume in mL = mass in g."
+conditions = "Supine, breath-hold at full inspiration (taken as TLC); spontaneous breathing, no spirometric volume control. Unenhanced."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC4057220 (Crit Care, open access CC BY), read 2026-10-16; Table 2 and Table 3 read from the XML table text."
+notes = """Mass INCLUDES blood: CT cannot separate parenchymal tissue from the blood in capillaries and small intrapulmonary vessels. The outline excludes the hilum and large central vessels. Coxson/Gattinoni-style 'lung weight' = tissue + intrapulmonary blood + any interstitial water.
+Not a young cohort: mean age 64 y, many scanned for cancer follow-up; smoking status known in only 50% (no smoker/non-smoker difference). Height and weight self-reported.
+Lung weight falls weakly with age: weight (g) = 1157.03 - 3.56 x age (y), r2 = 0.06. Lung weight vs height: weight (g) = -1806.1 + 1633.7 x height (m), r2 = 0.49; slopes did not differ by sex.
+Consistency check (derived here): total volume - gas volume = 4995 - 4066 = 929 mL, equal to the reported mean lung weight 929 g (1 g/mL tissue). Using the mean HU directly, (1 - 805/1000) x 4995 = 974 g; the difference is because mean of ratios != ratio of means.
+Supine CT TLC (gas volume) was ~1800 mL below predicted sitting TLC (Quanjer), so these are effort-dependent supine inspiratory volumes, not plethysmographic TLC.
+Comparable value: Lee 2022 (EJRO, DOI 10.1016/j.ejro.2022.100428) found median 939 g (IQR 800-1094) in 103 contrast-enhanced CTPA patients without PE or cardiopulmonary disease; autopsy (Molina 2012) 840 g in young men (blood-filled, see molina2012_lung_weight.toml)."""
+use_in_model = """Lung parenchymal mass for the phantom: ~930 g both lungs (M ~1030 g, F ~820 g), right:left ~ 53:47. Because it includes intrapulmonary blood, subtract the modelled capillary + small-vessel blood volume to get blood-free tissue mass. Use the height regression to scale to a phantom's height. Use mass / total lung volume (~0.19 g/mL at TLC) to set the voxel tissue fraction of lung parenchyma."""
+
+[source]
+authors = ["Cressoni M", "Gallazzi E", "Chiurazzi C", "Marino A", "Brioni M", "Menga F", "Cigada I", "Amini M", "Lemos A", "Lazzerini M", "Carlesso E", "Cadringher P", "Chiumello D", "Gattinoni L"]
+year = 2013
+title = "Limits of normality of quantitative thoracic CT analysis"
+journal = "Crit Care"
+volume = "17"
+issue = "3"
+pages = "R93"
+doi = "10.1186/cc12738"
+crossref_verified = "2026-10-16; Crossref title exact match ('Limits of normality of quantitative thoracic CT analysis'; Critical Care 17(3) R93; authors Cressoni ... Gattinoni; published 2013-05-24)"
+pmid = "23706034"
+pmcid = "PMC4057220"
+
+[provenance]
+doi = "10.1186/cc12738"
+crossref_checked = true
+how_taken = "Table 2 (demographic and CT characteristics) for lung weight, volumes and mean density by sex and side; Results text and Figures 2-3 legends for the height and age regressions; Methods for scanner, kVp, breath-hold and the HU-to-tissue equation."
+
+[data.lung_tissue_mass]
+description = "CT-derived lung weight (tissue + intrapulmonary blood), both lungs and per side, at full-inspiration breath-hold, supine"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean +/- SD; n = 100 (53 M, 47 F)"
+group = ["all", "male", "female"]
+n = [100, 53, 47]
+lung_weight_both_mean_g = [929.0, 1029.0, 817.0]
+lung_weight_both_sd_g = [188.0, 168.0, 140.0]
+lung_weight_right_mean_g = [492.0, 542.0, 435.0]
+lung_weight_right_sd_g = [100.0, 89.0, 79.0]
+lung_weight_left_mean_g = [435.0, 484.0, 380.0]
+lung_weight_left_sd_g = [94.0, 86.0, 68.0]
+blood_included = true
+tissue_density_assumed_g_per_mL = 1.0
+regression_height = "weight_g = -1806.1 + 1633.7 * height_m (r2 = 0.49, P < 0.0001)"
+regression_age = "weight_g = 1157.03 - 3.56 * age_y (r2 = 0.06, P = 0.01)"
+missing_note = "No blood-free tissue mass; no per-lobe values. Age, height, weight per sex in Table 2 (M 63 +/- 12 y, 78 +/- 14 kg; F 65 +/- 14 y, 64 +/- 11 kg)."
+
+[data.lung_volume_and_attenuation_tlc]
+description = "Total lung volume, gas volume and whole-lung mean attenuation at the same full-inspiration scans (120 kV)"
+location = "Table 2; Table 3"
+provenance = "FT"
+statistic = "mean +/- SD; n = 100 (53 M, 47 F)"
+group = ["all", "male", "female"]
+n = [100, 53, 47]
+total_lung_volume_mean_mL = [4995.0, 5757.0, 4136.0]
+total_lung_volume_sd_mL = [1313.0, 1127.0, 923.0]
+gas_volume_mean_mL = [4066.0, 4729.0, 3319.0]
+gas_volume_sd_mL = [1190.0, 1033.0, 875.0]
+mean_lung_density_mean_HU = [-805.0, -816.0, -792.0]
+mean_lung_density_sd_HU = [48.0, 33.0, 58.0]
+gas_tissue_ratio_mean = 4.42
+gas_tissue_ratio_sd = 1.0
+kVp = 120
+breath_hold = "full inspiration (TLC), not spirometrically controlled"
+compartment_fraction_of_weight_pct = { overinflated = 11.0, normally_inflated = 65.0, poorly_inflated = 18.0, noninflated = 7.0 }
+compartment_fraction_sd_pct = { overinflated = 7.0, normally_inflated = 8.0, poorly_inflated = 3.0, noninflated = 4.0 }
+missing_note = "No measured FRC scan. Table 3 FRC HU values (-774 sitting, -696 supine) are ESTIMATED by the authors from predicted FRC equations and the measured tissue volume, not measured; they are not reproduced as data."

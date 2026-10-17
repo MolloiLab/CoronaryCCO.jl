@@ -1,0 +1,68 @@
+[meta]
+id = "iyer2014_lung_attenuation_tlc_frc"
+data_type = "experimental"
+validates = "Whole-lung mean parenchymal CT attenuation (HU) with the matching CT total lung volume (mL) at spirometrically controlled TLC (90% VC) and FRC (20% VC) breath-holds in adults with normal lung function, 120 kV"
+species = "human"
+preparation = "37 adults with normal PFTs (body-box TLC and RV, spirometry), age 20-64 y (F n = 16, 27.4 +/- 6.7 y; M n = 21, 32.9 +/- 13.2 y); 21 never-smokers, 16 current/former smokers. BMI < 32, weight < 100 kg. Siemens Sensation 64 or Definition Flash 128; 120 kV, 110 mAs, pitch 1, 0.72 mm slices at 0.5 mm spacing, B35 kernel, ~0.62 mm voxels; scanners calibrated on the study day. Single center (University of Iowa)."
+conditions = "Supine on the scanner table, unenhanced. Volume-controlled breath-holds with a pneumotachometer and occluding balloon valve, referenced to supine SVC: 'TLC' = 90% VC, 'FRC' = 20% VC; subject relaxed against the closed valve. Each subject had one TLC and one FRC scan, then a randomly assigned repeat at TLC (n = 17) or FRC (n = 20)."
+verification = "FT"
+access = "PMC author version PMC4278434 (HTML via pmc.ncbi.nlm.nih.gov) read 2026-10-16 for Methods/Results text; Table 1 and Table 2 are images in PMC and were read from the PMC table images (JCOPDF-1-097-t001.jpg, t002.jpg). Journal is open access."
+notes = """'TLC' and 'FRC' are 90% VC and 20% VC of SUPINE SVC, not plethysmographic TLC/FRC. Upright body-box TLC exceeded CT TLC air volume by 793 +/- 430 mL (13.2 +/- 6.8%).
+Table 1 splits MLD and TLV by the repeat-group assignment: the TLC column (n = 17) is the TLC-repeat group, the FRC column (n = 20) the FRC-repeat group. So the TLC and FRC values come from different (complementary) subsets, not paired means over all 37.
+'Normal' = normal PFTs; on CT 6/37 had mild emphysema, 12/37 air trapping and 3 ground-glass opacification. Air trapping at FRC (< -856 HU) 6.03 +/- 6.47%; emphysema index at TLC (< -950 HU) 3.60 +/- 2.70%.
+Derived here (not reported): tissue+blood mass = (1 + MLD/1000) x TLV = 0.142 x 5981 = 849 g at TLC and 0.292 x 2919 = 852 g at FRC, so the two groups agree on parenchymal mass (~850 g, younger cohort than Cressoni 2013).
+Repeatability (Table 2): MLD inter-scan difference -5.6 +/- 16.4 HU at FRC (ICC 0.88) and 3.0 +/- 9.0 HU at TLC (ICC 0.87); TLV difference 46.6 +/- 195.3 mL (FRC), -62.6 +/- 190 mL (TLC).
+For comparison, Cressoni 2013 (cressoni2013_lung_tissue_mass.toml) reports -805 +/- 48 HU at an uncontrolled full-inspiration breath-hold (120 kV, 4995 mL, older cohort, 5 mm slices)."""
+use_in_model = """Target whole-lung mean attenuation for a phantom lung at 120 kV: about -858 HU at near-TLC (~6.0 L) and about -708 HU at near-FRC (~2.9 L). The tissue+blood mass is roughly constant (~850 g) across volumes, so lung HU at another volume V can be set as -1000 x (1 - m/V) with m ~ 850 g. Values at other kVp need a spectral correction for the tissue/blood fraction."""
+
+[source]
+authors = ["Iyer KS", "Grout RW", "Zamba GK", "Hoffman EA"]
+year = 2014
+title = "Repeatability and sample size assessment associated with computed tomography-based lung density metrics"
+journal = "Chronic Obstr Pulm Dis"
+volume = "1"
+issue = "1"
+pages = "97-104"
+doi = "10.15326/jcopdf.1.1.2014.0111"
+crossref_verified = "2026-10-16; Crossref title exact match ('Repeatability and Sample Size Assessment Associated with Computed Tomography-Based Lung Density Metrics'; Chronic Obstructive Pulmonary Diseases: Journal of the COPD Foundation 1(1) 97-104; authors Iyer, Grout, Zamba, Hoffman)"
+pmid = "25553338"
+pmcid = "PMC4278434"
+
+[provenance]
+doi = "10.15326/jcopdf.1.1.2014.0111"
+crossref_checked = true
+how_taken = "Table 1 (subject characteristics; MLD and TLV per repeat group) and Table 2 (inter-scan differences) read from the PMC table images; scanner, kV, mAs, slice, kernel and breath-hold protocol from the Methods text; cohort composition from the Results text."
+
+[data.mean_lung_density]
+description = "Whole-lung mean lung density (MLD) and CT total lung volume at volume-controlled TLC (90% VC) and FRC (20% VC), supine, 120 kV"
+location = "Table 1"
+provenance = "FT"
+statistic = "mean +/- SD"
+breath_hold = ["TLC (90% VC)", "FRC (20% VC)"]
+n = [17, 20]
+age_mean_y = [30.2, 27.1]
+age_sd_y = [11.9, 10.8]
+never_smokers = [10, 11]
+smokers = [7, 9]
+mld_mean_HU = [-858.0, -708.0]
+mld_sd_HU = [17.4, 32.9]
+total_lung_volume_mean_mL = [5981.0, 2919.0]
+total_lung_volume_sd_mL = [1200.0, 572.0]
+kVp = 120
+mAs = 110
+kernel = "Siemens B35"
+slice_thickness_mm = 0.72
+missing_note = "No MLD for all 37 subjects at both volumes, no sex-specific MLD, and no air vs tissue volume split in the table. Whether TLV includes airways/large vessels is not stated."
+
+[data.repeatability]
+description = "Inter-scan differences for MLD and TLV in repeated same-day breath-holds"
+location = "Table 2"
+provenance = "FT"
+statistic = "mean difference +/- SD; ICC"
+breath_hold = ["FRC", "TLC"]
+mld_diff_mean_HU = [-5.6, 3.0]
+mld_diff_sd_HU = [16.4, 9.0]
+mld_icc = [0.88, 0.87]
+tlv_diff_mean_mL = [46.6, -62.6]
+tlv_diff_sd_mL = [195.3, 190.0]
+tlv_icc = [0.94, 0.99]

@@ -1,0 +1,57 @@
+[meta]
+id = "lee2022_lung_dect_first_pass_pbv"
+data_type = "experimental"
+validates = "First-pass (CT pulmonary angiography timing) dual-energy CT lung perfused blood volume: lung parenchymal iodine density as a percentage of main pulmonary artery iodine density, per lobe and whole lung, with CT lung volume, mass and density, in patients without PE or cardiopulmonary disease"
+species = "human"
+preparation = "Retrospective single-center series (Sao Paulo, 2016-2019) of 151 in-hospital patients referred for DE-CTA for suspected PE, after excluding cardiopulmonary disease (emphysema, fibrosing ILD, pneumonia, lung malignancy, etc.), poor enhancement (< 200 HU in the pulmonary trunk) and unprocessable scans. Reference group = 103 PE-negative patients (age median 48 y, IQR 34.5-62.5; 72/103 = 69.9% female). GE Discovery CT750 HD rapid kVp switching (80/140 kVp), 630 mA, pitch 1.375, 0.5 s rotation, 64 x 0.625 mm. Iobitridol 300 mgI/mL (Xenetix 300), 1.0 mL/kg at 4.0 mL/s, then 50 mL saline at 5.0 mL/s. Bolus tracking in the pulmonary artery at the carina; caudo-cranial scan started 7 s after the ROI reached 100 HU. Iodine maps from GSI viewer (material decomposition); lobes segmented semi-automatically in 3D Slicer CIP, which also gave lobar volume, mass and density."
+conditions = "First-pass pulmonary arterial phase. Supine (implied, CTPA). Breath-hold state NOT reported (CTPA is normally an inspiratory breath-hold, but no spirometric control). Contrast-enhanced, so CT mass includes iodinated blood."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC9192795 (Eur J Radiol Open, open access CC BY-NC-ND), read 2026-10-16; Table 2 read from the XML table markup."
+notes = """Population is NOT healthy volunteers: hospitalized patients (oncologic, infectious, postoperative, trauma) with suspected PE but negative CTPA and no cardiopulmonary disease. Other comorbidities were not stratified.
+PBV(%) = 100 x mean lobar iodine density (mg/mL) / iodine density in the pulmonary trunk ROI. Absolute iodine concentrations (mg/mL) and enhancement in HU are NOT reported, only the ratio. Lung large vessels were not explicitly removed before averaging (not stated).
+All values are median (IQR), not mean +/- SD.
+Right middle lobe PBV is lower than every other lobe (P < 0.001), attributed to its non-dependent (ventral) position in the supine patient. Lobar PBV correlated with lobar density (Spearman r = 0.57).
+Total lung volume (median 3147 mL) is well below Cressoni 2013 full-inspiration volume (4995 mL), consistent with a less complete clinical breath-hold; lung density 0.28 g/mL corresponds to about -720 HU (derived: (0.28 - 1) x 1000).
+Absolute first-pass mg/mL can be estimated (derived here, not reported) only by multiplying PBV by a typical CTPA trunk iodine level, which this paper does not give."""
+use_in_model = """Validation target for simulated first-pass lung enhancement: at the CTPA moment, whole-lung parenchymal iodine density should be ~15% (median 14.6%, IQR 10.5-18.1%) of the main-PA iodine density, with the RML lowest (~11%). This ratio is also an estimate of the lung's iodinated blood volume fraction at that instant (PA-blood-equivalent volume per unit lung volume). Use with the phantom's simulated PA iodine level to get mg/mL in the lung."""
+
+[source]
+authors = ["Lee HJ", "Wanderley M", "Rubin VCS", "Rodrigues ACT", "Diniz AR", "Parga JR", "Amato MBP"]
+year = 2022
+title = "Lobar pulmonary perfusion quantification with dual-energy CT angiography: Interlobar variability and relationship with regional clot burden in pulmonary embolism"
+journal = "Eur J Radiol Open"
+volume = "9"
+pages = "100428"
+doi = "10.1016/j.ejro.2022.100428"
+crossref_verified = "2026-10-16; Crossref title exact match (European Journal of Radiology Open 9, article 100428; authors Lee, Wanderley, Rubin, Rodrigues, Diniz, Parga, Amato)"
+pmid = "35712646"
+pmcid = "PMC9192795"
+
+[provenance]
+doi = "10.1016/j.ejro.2022.100428"
+crossref_checked = true
+how_taken = "Table 2 (regional quantitative features and lobar PBV, PE-negative rows) for volume, mass, density and PBV; Methods 2.2-2.3 for scanner, contrast protocol, timing and PBV definition; Results text for n, age and sex."
+
+[data.first_pass_pbv_pe_negative]
+description = "Lobar and whole-lung CT volume, mass, density and DECT perfused blood volume (% of pulmonary trunk iodine density), PE-negative patients without cardiopulmonary disease"
+location = "Table 2 (Negative PE rows)"
+provenance = "FT"
+statistic = "median (IQR); n = 103 patients"
+n = 103
+region = ["RUL", "RML", "RLL", "LUL", "LLL", "total_lung"]
+lung_volume_median_mL = [649.0, 355.0, 788.0, 789.0, 657.0, 3147.0]
+lung_volume_q1_mL = [522.0, 285.0, 543.0, 669.0, 437.0, 2590.0]
+lung_volume_q3_mL = [887.0, 452.0, 1047.0, 1089.0, 912.0, 4301.0]
+lung_mass_median_g = [186.0, 91.0, 231.0, 225.0, 201.0, 939.0]
+lung_mass_q1_g = [161.0, 70.0, 189.0, 191.0, 160.0, 800.0]
+lung_mass_q3_g = [218.0, 107.0, 284.0, 263.0, 250.0, 1094.0]
+lung_density_median_g_per_mL = [0.28, 0.24, 0.30, 0.26, 0.32, 0.28]
+lung_density_q1_g_per_mL = [0.23, 0.20, 0.25, 0.22, 0.26, 0.24]
+lung_density_q3_g_per_mL = [0.32, 0.28, 0.38, 0.32, 0.38, 0.34]
+pbv_median_pct = [15.8, 11.4, 15.0, 13.8, 13.8, 14.6]
+pbv_q1_pct = [11.5, 8.7, 10.6, 10.4, 10.4, 10.5]
+pbv_q3_pct = [20.3, 14.4, 17.7, 18.0, 18.7, 18.1]
+kVp = "80/140 rapid switching"
+contrast = "iobitridol 300 mgI/mL, 1.0 mL/kg at 4.0 mL/s + 50 mL saline at 5.0 mL/s"
+timing = "scan start 7 s after pulmonary-artery ROI reached 100 HU"
+missing_note = "No mean +/- SD, no absolute iodine mg/mL, no Delta HU, no breath-hold state. Note the abstract quotes median lobar PBV 13.7% (IQR 10.2-18.0%) pooled over lobes, while Table 2 gives 14.6% for the whole lung."
