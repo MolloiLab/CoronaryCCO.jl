@@ -46,7 +46,7 @@ avoid = (chambers, origin_mm, 0.4) # forbidden mask, centre of its first cell (m
 tree = grow(spec, domain, ["lca.xml", "rca.xml"]; blockers = avoid)
 ```
 
-On a laptop GPU (Apple M4) the heart grows 10⁶ terminals in 1–2 minutes.
+On a laptop GPU (Apple M4) the heart grows 10⁶ terminals in about 40 seconds.
 
 `flow_ml_min` sets how many terminals grow: every organ is resolved down to terminals of the same size (one carries
 0.14 µL/min, about 12 µm across, the resolution of the heart tree scored against Kassab's morphometry), so the count is
@@ -57,6 +57,8 @@ output. You can also give `nterm` directly.
 |---|---|---|---|---|
 | heart (adult, rest) | 135.6 | 957,045 | 148 (myocardium) | LCA, RCA |
 | lungs (adult) | 4,800 (cardiac output) | 33.9 million | 2,800 | main pulmonary artery |
+| brain (older adult, rest) | 510 (van Es et al. 2010) | 3.6 million | 1,016 (parenchyma) | both internal carotids, both vertebrals |
+| one leg (adult, rest) | 290 (Koch Esteves et al. 2023) | 2.0 million | 11,000 | common femoral artery |
 | any organ | VO₂ ÷ (arterial O₂ content × O₂ extraction) | flow ÷ 0.14 µL/min | its segmented volume | each imaged inlet (femoral artery, carotids + basilar, ...) |
 
 More inlets are just more files: `grow(spec, brain, ["lica.xml", "rica.xml", "basilar.xml"])`.
