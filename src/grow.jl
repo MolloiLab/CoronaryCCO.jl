@@ -52,8 +52,10 @@ mutable struct Engine{T}
     seed::UInt64
     ws::Vector{Workspace{T}}
     rmax::T                   # largest radius among segments not in `big` (pads every grid query)
-    big::Vector{Int32}        # segments thicker than one grid cell, tested directly by every query (see _any_big)
+    big::Vector{Int32}        # segments thicker than `hbig`, tested directly by every query (see _any_big)
     isbig::Vector{Bool}
+    vox::Int                  # domain voxels (regrid!), counted on first use
+    hbig::T                   # radius above which a segment is in `big`: the starting grid cell
     tcount::Vector{Int8}      # occurrences of each segment in the terminal list
     middle::Vector{Bool}      # scratch: middle-stage connectable set
     mode::Symbol              # :fast (production) or :exact (test-only bitwise reference)
@@ -143,7 +145,7 @@ function Engine(
     end
     E = Engine{T}(
         m, L, g, dom, CRand(seed), m.params, UInt64(seed),
-        [Workspace{T}() for _ in 1:m.params.num_neighbors], zero(T), Int32[], Bool[], tc, Bool[],
+        [Workspace{T}() for _ in 1:m.params.num_neighbors], zero(T), Int32[], Bool[], 0, T(cell), tc, Bool[],
         mode, volume, sampling, fix_base, collision, one(T), one(T),
         max_branch_angle === nothing ? -one(T) : T(cosd(max_branch_angle)),
         trues(nsegments(m)) |> Vector{Bool}, _tree_ids(m, roots), roots, caps, zeros(T, length(roots)),
@@ -157,12 +159,31 @@ function Engine(
     return E
 end
 
+# Grid cell that follows the tree's density. Every grid query scans whole cells, so with a fixed cell the work per query
+# grows with the number of segments. The starting cell (2 mm x size_scale) was tuned on the 10^6-terminal heart, which
+# ends at about 90 segments per cell on average over its domain; once a tree is denser than SEGS_PER_CELL, the cell is
+# halved. The grid only narrows which segments are tested, so the grown tree is unchanged; only the time per query is.
+# The list of thick segments keeps the starting cell as its threshold (`hbig`): a finer cell would move every imaged
+# trunk into it.
+const SEGS_PER_CELL = 128
+function regrid!(E::Engine{T}) where {T}
+    n = nsegments(E.m); g = E.g
+    E.vox == 0 && (E.vox = count(>(MASK_THRESHOLD), E.dom.img))
+    n * g.h^3 > SEGS_PER_CELL * E.vox || return E
+    lo = (T(E.dom.lower[1]), T(E.dom.lower[2]), T(E.dom.lower[3]))
+    hi = (T(E.dom.upper[1]), T(E.dom.upper[2]), T(E.dom.upper[3]))
+    g2 = SegGrid{T}(lo, hi, g.h / 2); g2.prune = g.prune # cell bounds are set from the current radii
+    E.g = grid_build!(g2, E.m)
+    update_rmax!(E)
+    return E
+end
+
 # A grid query must reach every segment whose own radius could touch the query, so its box is padded by the largest
 # radius; one thick vessel (a lung hilar artery, 15 mm) would pad every query and multiply the cells scanned. Segments
-# thicker than one grid cell are kept in `E.big` and tested directly by every query instead; the box is padded by the
+# thicker than the starting grid cell are kept in `E.big` and tested directly by every query instead; the box is padded by the
 # largest radius among the others (`E.rmax`). Every segment within reach is still tested, so every answer is unchanged.
 function update_rmax!(E::Engine{T}) where {T}
-    r = E.m.radius; n = length(r); h = E.g.h
+    r = E.m.radius; n = length(r); h = E.hbig
     length(E.isbig) < n && append!(E.isbig, falses(n - length(E.isbig)))
     empty!(E.big); rm = zero(T)
     for j in 2:n
@@ -173,10 +194,10 @@ function update_rmax!(E::Engine{T}) where {T}
     return E
 end
 
-# After segment j's radius changed to r: keep `big` and `rmax` consistent (a segment that outgrows a cell joins `big`).
+# After segment j's radius changed to r: keep `big` and `rmax` consistent (a segment that outgrows `hbig` joins `big`).
 @inline function note_radius!(E::Engine, j, r)
     length(E.isbig) < j && append!(E.isbig, falses(length(E.m.radius) - length(E.isbig)))
-    if r > E.g.h
+    if r > E.hbig
         E.isbig[j] || (E.isbig[j] = true; push!(E.big, Int32(j)))
     elseif !E.isbig[j] && r > E.rmax
         E.rmax = r
@@ -814,6 +835,7 @@ function grow!(
             pool === nothing && (pool = BatchPool{T}(; to = _mover(device)))
             i += batched_round!(E, pool, nb; parallel = parallel)
         end
+        regrid!(E)
         if progress > 0 && i >= nextp
             @info "step $i/$(nseed - 1)" segments = nsegments(m) elapsed = round(time() - t0, digits = 1)
             nextp += progress
