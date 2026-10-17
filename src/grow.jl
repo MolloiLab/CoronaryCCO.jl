@@ -115,7 +115,7 @@ end
 @inline _tree_ok(treeid, j, bits::UInt16) = (t = @inbounds(treeid[j]); t == 0 || ((bits >> (t - 0x01)) & 0x0001) == 0x0001)
 
 function Engine(
-        m::CCOModel{T}, dom::MaskDomain{T}; seed::Integer = 0, cell::Real = 2.0,
+        m::CCOModel{T}, dom::MaskDomain{T}; seed::Integer = 0, cell::Real = 2.0 * m.params.size_scale,   # grid cell (mm): 2 mm × size_scale
         mode::Symbol = :fast, volume::Symbol = :upstream, sampling::Symbol = :voxel,
         fix_base::Bool = false, collision::Symbol = :current,
         max_branch_angle::Union{Nothing, Real} = nothing, root_caps = nothing
