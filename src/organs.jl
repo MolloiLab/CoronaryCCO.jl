@@ -31,19 +31,26 @@ const HEART_VEIN_GROWTH = GrowthSpec(;
     root_fixed = false, symmetry_floor = [], seed = 1, T = Float32, device = identity,
 )
 
-# lung arteries: one tree from the main pulmonary artery (XCAT's imaged radius). nterm 200,000 is the pipeline's test size
-# (QUEUE: H-ACINUS replaces it by the lung's own unit count)
+# lung arteries: one tree from the main pulmonary artery (XCAT's imaged radius), grown to the lung's own unit, one terminal
+# per acinus (the vessels inside each acinus are LUNG_FLOW's sub-terminal tables). The lung carries the whole cardiac
+# output, so its terminals are sized by its tissue's gas-exchange units, not by a flow per terminal.
 const LUNG_GROWTH = GrowthSpec(;
-    nterm = 200_000, flow_ml_min = nothing, terminal_flow_ml_min = NaN,
+    # acini (transitional bronchioles) in both lungs, 2 x 14,956 per lung by micro-CT stereology; one terminal artery and
+    # vein per acinus as in Clark 2011 [vasilescu2020_human_terminal_transitional_bronchiole_count, clark2011_acinar_terminal_definition]
+    nterm = 29_912, flow_ml_min = nothing, terminal_flow_ml_min = NaN,
     tissue_ml = 2813.438,               # mL, XCAT's two lungs (lung.vol)
-    reference_ml = 148.1, wall_clearance = 0.5, gamma = 2.33,
+    reference_ml = 148.1, wall_clearance = 0.5,
+    # per-junction exponent of human pulmonary arteries: 2.3 +/- 0.1 over 1,937 cast bifurcations, 2.31 +/- 0.60 by
+    # CT/MRA per bifurcation; 7/3 lies in that range [horsfield1989_human_pulmonary_symmetry, altieri2025_pa_murray_ct_mra]
+    gamma = 2.33,
     root_caps = [15.411707],            # mm, main pulmonary artery (pulmonary_arteries.xml)
     root_fixed = true, symmetry_floor = [], seed = 1, T = Float32, device = identity,
 )
 
-# lung veins: one tree per lung into the left atrium (156,000: the pipeline's test size)
+# lung veins: one tree per lung into the left atrium, one venule per acinus (no human per-junction venous exponent is
+# measured; the arteries' value)
 const LUNG_VEIN_GROWTH = GrowthSpec(
-    LUNG_GROWTH; nterm = 156_000,
+    LUNG_GROWTH;
     root_caps = [8.170588, 8.170588]
 )   # mm, the two pulmonary vein ostia (pulmonary_veins_left/right.xml)
 

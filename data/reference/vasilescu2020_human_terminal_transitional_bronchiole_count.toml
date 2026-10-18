@@ -1,0 +1,54 @@
+[meta]
+id = "vasilescu2020_human_terminal_transitional_bronchiole_count"
+data_type = "experimental"
+validates = "Number of terminal bronchioles (TB) and transitional bronchioles (TrB, = number of acini by the first-respiratory-bronchiole definition) per single human lung, with lung volume, alveolar number and surface area, for setting the number of acinar terminals of a grown lung tree."
+species = "human"
+preparation = "13 nontransplantable single donor lungs (3 left, 10 right; 6 F, 7 M; age 57 +/- 16 y, range 25-77; no known respiratory disease; 5 ex-smokers). Air inflated to 30 cmH2O, held at 10 cmH2O and frozen in liquid nitrogen vapor; whole-lung CT for volume; 2-cm slices; systematic uniform random cores scanned by micro-CT; stereology (disector) for TB and TrB counts."
+conditions = "Frozen at a transpulmonary pressure of 10 cmH2O (not TLC). Counts are per ONE lung (left or right), not per person."
+verification = "FT"
+access = "PMC author manuscript HTML (PMC7311688), read 2026-10-18: Abstract, Results text, Table 2 (comparison with historical data) and Table 3 (per-case data). The McMaster repository PDF showed a bot check and was not used."
+notes = """Results text: 'There were, on average, 7,697 +/- 2,910 terminal bronchioles per lung and 14,956 +/- 6,664 transitional bronchioles per lung.'
+Discussion: 'the respiratory zone of the lung is divided into acini, which start with the first generation of respiratory airways, termed the transitional bronchioles'. So TrB count = acinus count under the Haefeli-Bleuer & Weibel / Rodriguez definition; under the Kitaoka 1992 definition (acinus = everything distal to one TB) the count is the TB count, about half.
+TrB/TB ratio per case is ~1.8-2.1 (Table 3), consistent with each TB dividing once into two TrB.
+The paper compares with Haefeli-Bleuer & Weibel 1988, who 'estimated a total number of 15,000 transitional bronchioles per lung' (Table 2 gives 13,000-16,000, marked 'estimated based on average lung volume and acinar volume').
+Large spread: TrB per lung 5,637-27,363 across 13 lungs. Lung volume here is 2,883 mL for ONE lung at 10 cmH2O.
+Derived (not in the paper): parenchymal volume per TrB-acinus = 2,883 mL x 0.87 / 14,956 = 0.168 mL = 168 mm3; per TB = 326 mm3. Both lungs: ~2 x 14,956 = ~30,000 TrB-acini, matching the ~30,000-32,768 used by Clark 2010/2011 and Ebrahimi 2022."""
+use_in_model = """Lung terminal count if one terminal = one acinus (TrB definition): ~15,000 per lung, ~30,000 for both lungs (SD ~45% between donors). If one terminal = one TB unit (Kitaoka definition): ~7,700 per lung by this study, but 17,427 (Verleden 2014) and 22,300 (McDonough 2011) by earlier micro-CT, so TB counts disagree ~3x between studies. At 4.8 L/min over ~30,000 acini the mean flow is ~160 uL/min (2.7 mm3/s) per acinus (derived)."""
+
+[source]
+authors = ["Vasilescu DM", "Phillion AB", "Kinose D", "Verleden SE", "Vanaudenaerde BM", "Verleden GM", "Van Raemdonck D", "Stevenson CS", "Hague CJ", "Han MK", "Cooper JD", "Hackett TL", "Hogg JC"]
+year = 2020
+title = "Comprehensive stereological assessment of the human lung using multiresolution computed tomography"
+journal = "J Appl Physiol"
+volume = "128"
+issue = "6"
+pages = "1604-1616"
+doi = "10.1152/japplphysiol.00803.2019"
+crossref_verified = "2026-10-18; Crossref title exact match (vol 128, issue 6, 1604-1616; first authors Vasilescu, Phillion, Kinose, Verleden)"
+pmid = "32298211"
+pmcid = "PMC7311688"
+
+[data.airway_unit_counts]
+description = "Terminal and transitional bronchiole counts per single lung, lung volume and parenchymal fraction"
+location = "Results text; Table 3 (Average +/- SD column)"
+provenance = "FT"
+statistic = "mean +/- SD; n = 13 single lungs"
+quantity = ["terminal bronchioles per lung", "transitional bronchioles per lung", "lung volume", "parenchymal volume fraction", "alveolar surface area per lung", "alveoli per lung", "alveolar volume per lung", "number-weighted mean alveolar volume", "mean linear intercept"]
+unit = ["count", "count", "mL", "%", "m2", "count", "mL", "1e6 um3", "um"]
+mean = [7697.0, 14956.0, 2883.0, 87.0, 67.0, 106.0e6, 1790.0, 18.0, 348.0]
+sd = [2910.0, 6664.0, 721.0, 3.0, 20.0, 41.0e6, 531.0, 7.0, 45.0]
+min = [3191.0, 5637.0, 1740.0, 78.0, 39.0, 51.0e6, 1019.0, 12.0, 289.0]
+max = [13203.0, 27363.0, 4080.0, 91.0, 98.0, 168.0e6, 2559.0, 39.0, 444.0]
+missing_note = "Min/max taken from the 13 per-case columns of Table 3. No per-sex means stored (text says TB number equal in men and women; men have more alveoli per acinus)."
+
+[data.historical_comparison]
+description = "Per-lung terminal and transitional bronchiole counts of earlier studies as tabulated by Vasilescu 2020 (secondary citations)"
+location = "Table 2 and Results text"
+provenance = "SC"
+cited_in = "Vasilescu et al. 2020 (J Appl Physiol 128:1604), Table 2"
+study = ["Horsfield & Cumming 1968 (airway cast, n = 1)", "Haefeli-Bleuer & Weibel 1988 (airway cast, n = 2)", "McDonough et al. 2011 (micro-CT, n = 4)", "Verleden et al. 2014 (micro-CT, n = 7)"]
+terminal_bronchioles_per_lung = [13996.0, nan, 22300.0, 17427.0]
+terminal_bronchioles_per_lung_sd = [nan, nan, 3900.0, 6577.0]
+transitional_bronchioles_per_lung_low = [nan, 13000.0, nan, nan]
+transitional_bronchioles_per_lung_high = [nan, 16000.0, nan, nan]
+missing_note = "Horsfield & Cumming value printed as '~13,996'. Haefeli-Bleuer & Weibel range is an estimate from average lung volume and acinar volume (Table 2 footnote); the text quotes 15,000."

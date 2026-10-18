@@ -351,6 +351,23 @@ const LUNG_FLOW = FlowSpec(;
     # cmH2O, beta), every order narrower than the bed's terminal or venule, in series with the sheet. These orders are
     # then model inputs, so the lung morphometry rows score only the orders the grown trees resolve.
     # [huang2011_human_sheet_flow_parameters]
-    sub_art = nothing,
-    sub_ven = nothing,
+    # Vessels inside each acinus (below a grown terminal / above its venule), in series with its sheet: Huang 2011's whole-
+    # lung tables per order (smallest first; number, diameter and length in mm of his casts of inflated lungs at zero
+    # transmural pressure; beta per cmH2O, printed in %/cmH2O); every order narrower than the bed's terminal / venule.
+    # These orders are inputs, so the lung morphometry rows score only the orders the trees resolve. Chosen after
+    # comparison with Horsfield 1978's independent arteries (his orders 1-5 are extrapolated precapillaries counted strictly
+    # in series; 1.1-1.3 vs 3.3-4.0 L/min on whole anatomy, QUEUE A42-7); Huang's set is validated against measured
+    # pressures [huang2011_human_sheet_flow_parameters, horsfield1978_human_small_pulmonary_arteries]
+    sub_art = OrderTable(
+        [102411624, 28114394, 10203806, 4513692, 1348338, 571544, 172040, 44008, 12450, 3448, 900, 254, 86, 14, 4, 1],
+        [0.02, 0.036, 0.056, 0.097, 0.15, 0.22, 0.34, 0.51, 0.77, 1.16, 1.75, 2.71, 4.16, 7.34, 14.8, 30],
+        [0.22, 0.26, 0.36, 0.45, 0.68, 1.08, 1.92, 2.81, 3.73, 6.58, 12.35, 18.07, 25.97, 35.69, 25.3, 90.5],
+        [0.00698, 0.00482, 0.00361, 0.00361, 0.00361, 0.01135, 0.00932, 0.00877, 0.01238, 0.01281, 0.01281, 0.01281, 0.01281, 0.01281, 0.01281, 0.01281],
+    ),
+    sub_ven = OrderTable(
+        [79647106, 16988490, 4332666, 906102, 146050, 31134, 7442, 2134, 870, 286, 126, 62, 22, 8, 4],
+        [0.018, 0.031, 0.067, 0.13, 0.23, 0.38, 0.62, 0.9, 1.42, 1.99, 2.88, 4, 5.86, 8.65, 12.97],
+        [0.13, 0.21, 0.38, 1.06, 1.5, 2.92, 4.79, 6.78, 11.24, 14.78, 17.9, 26.49, 19.49, 34.99, 35.68],
+        [0.0101, 0.00625, 0.00433, 0.01798, 0.0126, 0.0126, 0.00887, 0.00708, 0.00708, 0.00708, 0.00708, 0.00708, 0.00708, 0.00708, 0.00708],
+    ),
 )

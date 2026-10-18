@@ -1,0 +1,46 @@
+[meta]
+id = "sherman1981_dog_lung_miller_artery_vein"
+data_type = "reanalysis"
+validates = "Murray exponent m (n r^m = K over full-flow ranks) for dog pulmonary ARTERIES and VEINS from one dataset (Miller 1893)"
+species = "dog"
+preparation = "Sherman re-analysed W. S. Miller's (1893, J Morphol 8:165-188) morphometric data for the dog lung (vessel numbers and radii by rank)."
+conditions = "Exponent m from the regression ln n = -m ln r + ln K across ranks treated as full-flow sets (same method Sherman applied to Mall's intestinal data, where it gave 2.98-3.01)."
+verification = "FT"
+access = "PDF of the JGP article (free; copy at pdodds.w3.uvm.edu, PMC2228620), read 2026-10-18; text extracted with pdftotext. PDF kept in pdf/sherman/."
+notes = """Quoted: 'The data of Miller (1893) for the dog lung also conform fairly closely to Murray's law ... The exponent m is 2.61 for the arteries and 2.76 for the veins. For all the veins except the final four large pulmonary veins, however, the exponent is 3.01.'
+Sherman's table of Miller's lung data is not printed, so the size ranges are not available; Miller's 1893 method was lobule reconstruction/injection histology (not stated by Sherman).
+Sherman also states that Murray's law is not followed in the most immediate branchings of the pulmonary trunk and the pulmonary veins (citing Mall 1905-06, Patel 1963), where sum r^2 is nearly conserved.
+Exponent is a rank-level (number-radius) exponent, not a per-junction fit."""
+use_in_model = """Only source found giving arteries AND veins of one mammalian lung by one method: dog artery m = 2.61, vein m = 2.76; veins excluding the 4 largest pulmonary veins m = 3.01 (so small and mid veins near Murray, largest veins area-preserving)."""
+
+[source]
+authors = ["Sherman TF"]
+year = 1981
+title = "On connecting large vessels to small. The meaning of Murray's law"
+journal = "J Gen Physiol"
+volume = "78"
+issue = "4"
+pages = "431-453"
+doi = "10.1085/jgp.78.4.431"
+crossref_verified = "2026-10-18; Crossref title exact match (vol 78, issue 4, pp 431-453; author Sherman; issued 1981-10-01)"
+pmid = ""
+pmcid = "PMC2228620"
+
+[data.dog_lung_exponents]
+description = "Number-radius exponent m for dog lung vessels (Miller 1893 data)"
+location = "p. 444, text"
+provenance = "FT"
+statistic = "slope of ln n vs ln r regression across ranks (no SD printed)"
+method = "Miller 1893 morphometry (histological/injection), refit by Sherman"
+vessel_type = ["artery", "vein (all)", "vein (excluding final four large pulmonary veins)"]
+exponent = [2.61, 2.76, 3.01]
+radius_min_mm = [nan, nan, nan]
+radius_max_mm = [nan, nan, nan]
+missing_note = "Size ranges and number of ranks not printed."
+
+[data.dog_lung_airways]
+description = "Same method on Miller's dog airways (for comparison)"
+location = "p. 445, text"
+provenance = "FT"
+vessel_type = "airway"
+exponent = 2.71

@@ -1,0 +1,40 @@
+[meta]
+id = "suwa1971_human_pa_radius_exponent"
+data_type = "experimental"
+validates = "Human pulmonary ARTERIAL radius exponent split at r = 0.1 mm"
+species = "human"
+preparation = "Pulmonary arterial cast morphometry of normal humans (as described by the citing paper)."
+conditions = "Postmortem casts; details not available."
+verification = "SC"
+access = "Primary source is a book (Suwa N, Takahashi T. Morphological and Morphometrical Analysis of Circulation in Hypertension and Ischemic Kidney. Munich: Urban & Schwarzenberg, 1971); not accessible. Numbers from Nakamura & Awa 2014 (PMC3966250) Introduction text, read 2026-10-18. No second secondary source printing 2.47 / 2.66 was found (web + Europe PMC searches)."
+notes = """Quoted text: 'to range from 2.47 +/- 0.09 (r_p < 0.1 mm) to 2.66 +/- 0.07 (r_p >= 0.1 mm) by pulmonary arterial cast morphometry of normal humans (Suwa and Takahashi 1971)'.
+Nakamura & Awa also list Suwa & Takahashi length-radius parameters for human pulmonary arteries: alpha = 1.16, Omega = 2.8 for r >= 0.01 mm (Table 2), from Suwa & Takahashi table 3.
+How the exponent was computed in the book is not stated by the citing paper. No DOI (book)."""
+use_in_model = """Size-resolved human ARTERIAL exponent: 2.47 for r < 0.1 mm, 2.66 for r >= 0.1 mm. Note the opposite trend to systemic beds (larger exponent in larger vessels)."""
+
+[source]
+authors = ["Suwa N", "Takahashi T"]
+year = 1971
+title = "Morphological and Morphometrical Analysis of Circulation in Hypertension and Ischemic Kidney"
+journal = "book (Urban & Schwarzenberg, Munich)"
+volume = ""
+issue = ""
+pages = ""
+doi = ""
+crossref_verified = "not applicable (book, no DOI); citing paper doi 10.1002/phy2.236 Crossref-verified 2026-10-18"
+pmid = ""
+pmcid = ""
+
+[data.radius_exponent]
+description = "Radius exponent of human pulmonary arteries below and above r = 0.1 mm"
+location = "Nakamura & Awa 2014, Introduction (cites Suwa & Takahashi 1971)"
+provenance = "SC"
+citing_paper = "Nakamura Y, Awa S. Physiol Rep 2014;2:e00236. doi 10.1002/phy2.236"
+statistic = "mean +/- SD as quoted"
+method = "arterial cast morphometry"
+vessel_type = "artery"
+radius_min_mm = [nan, 0.1]
+radius_max_mm = [0.1, nan]
+mean = [2.47, 2.66]
+sd = [0.09, 0.07]
+missing_note = "Lower radius bound of the small class and upper bound of the large class not quoted; Nakamura's classes use 0.004-0.1 mm for peripheral."

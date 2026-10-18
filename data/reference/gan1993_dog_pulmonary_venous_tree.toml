@@ -1,0 +1,39 @@
+[meta]
+id = "gan1993_dog_pulmonary_venous_tree"
+data_type = "experimental"
+validates = "Dog pulmonary VEIN diameter fractal dimension (number-diameter exponent) from Strahler ratios"
+species = "dog"
+preparation = "Silicone elastomer cast of the right lung venous tree of a dog; diameters, lengths and branching measured; diameter-defined Strahler ordering and connectivity matrix."
+conditions = "Postmortem cast; 11 orders between left atrium and capillary bed."
+verification = "AB"
+access = "Abstract via Europe PMC (PMID 8376295), read 2026-10-18. Full text on journals.physiology.org is behind a bot check; not used."
+notes = """Average ratios of successive orders: diameter 1.701, length 1.556, number 3.762.
+Diameter fractal dimension 2.49 and length fractal dimension 2.99 (abstract). 2.49 equals ln(3.762)/ln(1.701) = 2.494 (checked here), i.e. the Strahler number-diameter exponent; it is the Murray-type exponent only under flow conservation across orders with self-similar connectivity.
+Huo & Kassab 2012 refit the same Gan data (D vs N over orders): epsilon = 0.5, exponent 2 + epsilon = 2.5 (see huo2012 file).
+Order diameter range not in abstract."""
+use_in_model = """Dog pulmonary VEIN exponent ~2.49-2.50 (whole tree, Strahler). Compare dog arteries 2.52-2.72 (Gan & Yen 1994 via Nakamura & Awa 2014) and Sherman/Miller dog veins 2.76 (3.01 without the 4 largest)."""
+
+[source]
+authors = ["Gan RZ", "Tian Y", "Yen RT", "Kassab GS"]
+year = 1993
+title = "Morphometry of the dog pulmonary venous tree"
+journal = "J Appl Physiol"
+volume = "75"
+issue = "1"
+pages = "432-440"
+doi = "10.1152/jappl.1993.75.1.432"
+crossref_verified = "2026-10-18; Crossref title exact match (vol 75, issue 1, pp 432-440; authors Gan, Tian, Yen, Kassab; issued 1993-07-01)"
+pmid = "8376295"
+pmcid = ""
+
+[data.strahler_ratios]
+description = "Strahler diameter, length, number ratios and fractal dimensions of the dog right pulmonary venous tree"
+location = "Abstract"
+provenance = "AB"
+statistic = "average over orders"
+method = "silicone cast, diameter-defined Strahler ordering"
+vessel_type = "vein"
+quantity = ["diameter ratio", "length ratio", "number (branching) ratio", "diameter fractal dimension", "length fractal dimension"]
+value = [1.701, 1.556, 3.762, 2.49, 2.99]
+n_orders = 11
+missing_note = "No size-resolved exponent in the abstract; order diameters not available."

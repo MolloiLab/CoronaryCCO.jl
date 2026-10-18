@@ -1,0 +1,54 @@
+[meta]
+id = "essey2020_human_lung_cast_fractal_artery_vein"
+data_type = "experimental"
+validates = "Human pulmonary ARTERY and VEIN diameter scaling exponent (number-diameter fractal dimension D_F) from one concurrently cast lung; generation tables give per-generation number and mean diameter"
+species = "human"
+preparation = "One 49-year-old male donor (death from head injury), lungs without visible pathology; bronchial tree, pulmonary artery and pulmonary vein cast concurrently with coloured latex rubber in situ, then macerated and cleared."
+conditions = "Branches classified by Weibel-style generations (from the hilum outward); diameters by digital vernier caliper (three measurements per branch); smallest cleared vessels 0.5-0.8 mm diameter. Arteries 14 generations (7,531 branches), veins 14 generations (7,355 branches)."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC7574555 (open access, CC BY), read 2026-10-18."
+notes = """D_F computed as 1 minus the slope of a log-log regression of 'total diameter' (N x mean diameter per generation) against mean generation diameter. If N ~ D^-x then N*D ~ D^(1-x), so D_F = x, the diameter exponent of number-vs-diameter scaling (Murray exponent under flow conservation across full-flow generations).
+Regression slopes printed: artery -1.88, vein -1.33 (D_F 2.882 and 2.334).
+CAVEATS: single lung; generations 13-14 are incompletely counted (number ratio printed as 0.00 at generation 13), so the deepest points are not full-flow sets; venous diameter CVs are very large (up to 268%), and venous mean diameters are not monotone (gen 9 1.45 mm, gen 10 1.63 mm). The fit is over ~0.6-21 mm diameter only.
+Artery generation mean diameters 12.94 mm (gen 1) to 0.63 mm (gen 14); vein 20.97 mm (gen 1) to 1.12 mm (gen 14)."""
+use_in_model = """Only human source found with arteries and veins measured in the same lung by one method: diameter exponent 2.88 (artery) vs 2.33 (vein) over ~0.6-21 mm. Venous value is lower than arterial here, but the venous data are noisy; treat as weak evidence."""
+
+[source]
+authors = ["Essey M", "Maina JN"]
+year = 2020
+title = "Fractal analysis of concurrently prepared latex rubber casts of the bronchial and vascular systems of the human lung"
+journal = "Open Biol"
+volume = "10"
+issue = "7"
+pages = "190249"
+doi = "10.1098/rsob.190249"
+crossref_verified = "2026-10-18; Crossref title exact match (vol 10, issue 7, article 190249; authors Essey, Maina; issued 2020-07)"
+pmid = "32634372"
+pmcid = "PMC7574555"
+
+[data.diameter_fractal_dimension]
+description = "Diameter-based fractal dimension (= number-diameter scaling exponent) for pulmonary artery and vein"
+location = "Abstract, Results, Figs 2-3, Methods 4.4"
+provenance = "FT"
+statistic = "slope of a single log-log regression over generation means (no CI printed in text)"
+method = "latex cast, caliper, Weibel generations"
+vessel_type = ["artery", "vein"]
+exponent = [2.882, 2.334]
+regression_slope = [-1.88, -1.33]
+diameter_min_mm = [0.63, 1.12]
+diameter_max_mm = [12.94, 20.97]
+n_branches = [7531, 7355]
+missing_note = "Size range given as min/max generation-mean diameters; no size-resolved exponent."
+
+[data.generation_tables]
+description = "Per-generation branch number and mean diameter (allows refitting by size)"
+location = "Tables 2 (artery) and 3 (vein)"
+provenance = "FT"
+generation = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+artery_n = [2, 5, 14, 32, 63, 115, 196, 289, 367, 724, 927, 1274, 1753, 1770]
+artery_mean_d_mm = [12.94, 7.32, 5.23, 4.68, 3.73, 2.96, 2.76, 2.47, 2.30, 1.93, 1.83, 1.64, 0.87, 0.63]
+artery_sd_d_mm = [2.51, 1.87, 1.27, 1.73, 1.26, 0.98, 0.67, 0.63, 0.59, 0.71, 0.50, 0.45, 0.41, 0.14]
+vein_n = [2, 6, 16, 36, 68, 117, 198, 292, 447, 754, 912, 1186, 1542, 1779]
+vein_mean_d_mm = [20.97, 11.81, 6.55, 4.66, 3.65, 2.85, 1.98, 1.74, 1.45, 1.63, 1.47, 1.29, 1.24, 1.12]
+vein_sd_d_mm = [1.66, 3.23, 2.14, 1.53, 2.67, 3.78, 4.56, 2.45, 1.85, 1.67, 2.05, 3.46, 1.09, 0.56]
+missing_note = "Vein SDs as printed (several exceed the mean). Generations 13-14 incompletely sampled."

@@ -1,0 +1,61 @@
+[meta]
+id = "clark2011_acinar_terminal_definition"
+data_type = "model"
+validates = "Model input, not data: how an anatomically based human pulmonary perfusion model defines its terminal unit (one terminal artery/vein per acinus at the terminal-bronchiole level, ~30,000 acini) and sizes the intra-acinar vessels, with the resulting PAP and PVR at 5 L/min."
+species = "human"
+preparation = "MDCT-based lung geometry (FRC 4.47 L); arterial and venous trees grown down to the vessels accompanying the terminal bronchioles (accompanying, non-supernumerary vessels only), one terminal artery and vein per acinus; ladder acinar model (9 arteriole/venule generations, Fung-Sobin sheets) attached to each acinus; tissue mechanics and gravity."
+conditions = "Inlet flow (cardiac output) 5 L/min; left atrial pressure 5 mmHg; FRC; supine, prone and upright."
+verification = "FT"
+access = "PMC HTML (PMC3075121), read 2026-10-18: Methods (Model Geometry, intra-acinar vessel sizing, boundary conditions), Table 1, Table 2, Results and Discussion. Complements the stored clark2011_capillary_compliance_lung_volume.toml (sheet compliance constants)."
+notes = """Text: 'The imaged lung volume ... and the seed point density of acinar units [~30,000 acini (Haefeli-Bleuer & Weibel 1988)] in the lung are input parameters.' Trees are generated 'down to the level of the vessels that accompany the terminal bronchiole in the airway tree (that is, each terminal vessel supplies a single acinus)'. Note this uses the terminal bronchiole, whereas Clark 2010 attaches the acinus at the transitional bronchiole.
+Extra-acinar diameters: left PA 14.80 mm and right PV 12.97 mm (Huang 1996), then a constant Strahler diameter ratio fitted to give a realistic PVR: R_D = 1.53 (arteries), 1.54 (veins); compare 1.56 +/- 0.02 / 1.58 +/- 0.06 from Huang 1996 raw data and 1.56 +/- 0.09 / 1.61 +/- 0.13 from Singhal/Horsfield data.
+Intra-acinar vessels: 'In the absence of data providing diameter information per generation within the acinus', diameters fall linearly with generation from the terminal-bronchiole-level vessel to Huang order-1 sizes (arteriole 0.020 mm, venule 0.018 mm); lengths fall linearly to Huang order-1 lengths (0.22 and 0.13 mm). So the acinar inlet diameter is a model output of the fitted Strahler ratio, not a measured value; no number is printed.
+Nine generations per acinus is 'typical of an acinus in the human lung' (Haefeli-Bleuer & Weibel). A test drawing 6-12 generations at random changed PVR by only 0.16% and per-acinus COV from 34.6% to 36.2%.
+Acinus-sized voxel ~140 mm3 = FRC volume / number of acini (text).
+Boundary condition text prints 'left atrial pressure of 5 mmHg (6.67 kPa)'; 5 mmHg = 0.667 kPa, so the kPa value is a misprint.
+Results: 'The resistance upstream from the acinus has a major influence on the acinar driving pressure'; acinar pressure drop vs upstream resistance is near linear (Fig. 3, values not tabulated)."""
+use_in_model = """Direct precedent for the lung terminal rule: one terminal per acinus, ~30,000 terminals for both lungs (density from acinar size, not from a flow-per-terminal rule), with a ladder of 9 arteriole/venule generations plus sheets lumped behind each terminal. With these choices the model gives PAP 18.2 mmHg and PVR 212 dyn s cm-5 supine at 5 L/min and LAP 5 mmHg."""
+
+[source]
+authors = ["Clark AR", "Tawhai MH", "Hoffman EA", "Burrowes KS"]
+year = 2011
+title = "The interdependent contributions of gravitational and structural features to perfusion distribution in a multiscale model of the pulmonary circulation"
+journal = "J Appl Physiol"
+volume = "110"
+issue = "4"
+pages = "943-955"
+doi = "10.1152/japplphysiol.00775.2010"
+crossref_verified = "2026-10-18; Crossref title exact match (vol 110, issue 4, 943-955; authors Clark, Tawhai, Hoffman, Burrowes)"
+pmid = "21292845"
+pmcid = "PMC3075121"
+
+[data.terminal_unit]
+description = "Terminal (acinar) unit definition and intra-acinar sizing"
+location = "Methods, Model Geometry; Discussion"
+provenance = "FT"
+statistic = "model inputs"
+acini_both_lungs_approx = 30000
+intra_acinar_generations = 9
+intra_acinar_generations_test_range = [6, 12]
+strahler_diameter_ratio_arteries_fitted = 1.53
+strahler_diameter_ratio_veins_fitted = 1.54
+order1_arteriole_diameter_mm = 0.020
+order1_venule_diameter_mm = 0.018
+order1_arteriole_length_mm = 0.22
+order1_venule_length_mm = 0.13
+acinus_sized_voxel_mm3 = 140.0
+FRC_lung_volume_L = 4.47
+missing_note = "Diameter of the vessel accompanying the terminal bronchiole (acinar inlet) not printed. Order-1 sizes are Huang 1996 values (the scored morphometry reference) as quoted here."
+
+[data.whole_lung_output]
+description = "Table 1: predicted mean PAP and PVR at 5 L/min, LAP 5 mmHg, FRC"
+location = "Table 1"
+provenance = "FT"
+statistic = "model output"
+posture = ["supine", "prone", "upright"]
+PAP_mmHg = [18.2, 16.8, 15.8]
+PVR_dyn_s_cm5 = [212.0, 189.0, 172.0]
+COV_per_acinus_percent = [34.6, 37.7, 42.8]
+cardiac_output_L_min = 5.0
+LAP_mmHg = 5.0
+missing_note = "No compartmental (pre-acinar / intra-acinar / sheet) pressure split tabulated."

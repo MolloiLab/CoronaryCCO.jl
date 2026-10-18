@@ -245,7 +245,9 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         T1 = F.OrderTable([1.0], [0.01], [0.1], [0.0])
         @test_throws ArgumentError F.FlowSpec(F.HEART_FLOW; sub_art = T1, sub_ven = T1)
         @test F.FlowSpec(F.LUNG_FLOW; sub_art = T1, sub_ven = T1).sub_art === T1
-        @test F.FlowSpec(F.LUNG_FLOW; p_ref_cmH2O = 10).p_ref_cmH2O == 10 && F.LUNG_FLOW.sub_art === nothing
+        @test F.FlowSpec(F.LUNG_FLOW; p_ref_cmH2O = 10).p_ref_cmH2O == 10
+        # the lung carries its intra-acinar vessels per order (Huang 2011: 16 arterial, 15 venous orders)
+        @test length(F.LUNG_FLOW.sub_art.N) == 16 && length(F.LUNG_FLOW.sub_ven.N) == 15
     end
 
     @testset "organ presets cite existing reference data" begin

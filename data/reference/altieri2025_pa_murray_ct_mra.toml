@@ -1,0 +1,44 @@
+[meta]
+id = "altieri2025_pa_murray_ct_mra"
+data_type = "experimental"
+validates = "Per-bifurcation Murray exponent (r0^x = r1^x + r2^x) of large pulmonary ARTERIES from in vivo CT/MRA segmentations in human, dog, pig, mouse"
+species = "human, dog, pig, mouse (arteries only)"
+preparation = "Human: 7 healthy adults (4 M, 3 F, age 15-51) CT or MR angiography from the Vascular Model Repository. Dog: 5 male beagles (12 +/- 1 kg), MRA. Pig: 4 young female pigs (56 +/- 24 kg), MRA. Mouse: 3 excised C57BL6/J lungs, contrast-perfused micro-CT."
+conditions = "3D Slicer segmentation, SGEXT skeleton/spatial graph, custom MATLAB for radius/length/connectivity. About 6 +/- 1 generations analysed per species (resolution-limited; largest vessels only)."
+verification = "FT"
+access = "PMC HTML of PMC12834150 (author manuscript), read 2026-10-18 (Europe PMC XML endpoint returned an error)."
+notes = """Exponent x solved per bifurcation with MATLAB fzero on r0^x = r1^x + r2^x, then mean +/- SD over all bifurcations of all subjects of a species.
+Pooled over all species: 2.43 +/- 0.32 (p < 0.0001 vs 3).
+Human mean not significantly different from 3 (p = 0.3721) because of large spread with n = 7.
+Human MPA radius 1.00 +/- 0.13 cm; only ~6 generations, so the human values cover roughly radius 1 cm down to a few mm (smallest analysed radius not printed).
+The paper's pulsatile-flow theory predicts x between 2.1 and 3 depending on Womersley number (human MPA Wo 11.0-19.8)."""
+use_in_model = """Large-vessel (first ~6 generations) human pulmonary ARTERIAL per-junction exponent 2.31 +/- 0.60 from in vivo imaging; dog 2.13, pig 2.10. Consistent with cast values ~2.3 for the proximal tree. No veins."""
+
+[source]
+authors = ["Altieri Correa S", "Kachabi A", "Colebank MJ", "Miles CE", "Chesler NC"]
+year = 2025
+title = "Revisiting Murray's Law in Pulmonary Arteries: Exploring Branching Patterns and Principles"
+journal = "J Biomech Eng"
+volume = "147"
+issue = "8"
+pages = "081006"
+doi = "10.1115/1.4068886"
+crossref_verified = "2026-10-18; Crossref title exact match (vol 147, issue 8, article 081006; authors Altieri Correa, Kachabi, Colebank, Miles, Chesler; issued 2025-06-20)"
+pmid = "40489106"
+pmcid = "PMC12834150"
+
+[data.murray_exponent_by_species]
+description = "Per-bifurcation Murray exponent, pulmonary arteries, first ~6 generations"
+location = "Table 1 and Abstract"
+provenance = "FT"
+statistic = "mean +/- SD over bifurcations; p = one-sample t-test vs 3.0"
+method = ["CT or MRA in vivo", "MRA in vivo", "MRA in vivo", "micro-CT ex vivo perfused"]
+vessel_type = "artery"
+species = ["human", "pig", "dog", "mouse"]
+n_subjects = [7, 4, 5, 3]
+exponent_mean = [2.31, 2.10, 2.13, 2.59]
+exponent_sd = [0.60, 0.49, 0.54, 0.58]
+p_value_vs_3 = [0.3721, 0.0166, 0.0011, 0.0309]
+mpa_radius_cm = [1.00, 0.726, 0.50, 0.043]
+mpa_radius_sd_cm = [0.13, 0.079, 0.081, 0.0]
+missing_note = "Number of bifurcations per species and smallest analysed radius not printed; no size-resolved exponent."

@@ -1,0 +1,59 @@
+[meta]
+id = "nakamura2014_pulmonary_radius_exponent"
+data_type = "review_and_reanalysis"
+validates = "Pulmonary ARTERIAL radius exponent x (flow ~ r^x, i.e. junction exponent under flow conservation) resolved by vessel radius class (proximal r > 0.1 mm, peripheral 0.004 <= r <= 0.1 mm), recomputed from published cast-morphometry tables for human, dog, cat, rat; plus quoted literature values (Suwa & Takahashi 1971, Horsfield & Woldenberg 1989, Singhal 1973 flow-radius slope)"
+species = "human, dog, cat, rat (pulmonary arteries only; no veins)"
+preparation = "Re-analysis of published Strahler-ordered postmortem cast morphometry tables: Horsfield 1978 table 6, Singhal et al. 1973 table 4, Huang et al. 1996 table 2 (EXCLUDED source - see notes), Gan & Yen 1994 table 1 (dog right lung), Milnor 1982 table 2.3 (dog), Zhuang et al. 1983 table 1 (cat right lung), Jiang et al. 1994 table 2 (rat left lung)."
+conditions = "x_n computed between each consecutive order pair from mean radius ratio beta_n = r_(n+1)/r_n and number ratio eta_n = N_(n+1)/N_n assuming flow preservation (N_n r_n^x = N_(n+1) r_(n+1)^x, so x_n = ln(eta_n)/ln(1/beta_n)); then mean +/- SD of x_n within each radius class. Radius classes from Suwa & Takahashi 1971 table 1(a)."
+verification = "FT"
+access = "Europe PMC fullTextXML of PMC3966250 (open access, CC BY), read 2026-10-18. Values from Table 3B, Table 1B and Results/Introduction text."
+notes = """Exponent definition here is an ORDER-AVERAGED (Strahler, number-ratio) exponent, not a per-junction fit; it equals the per-junction Murray exponent only for a self-similar tree with flow conserved across orders.
+Radii are vessel RADII in mm (not diameters).
+Huang et al. 1996 rows are re-derived from the scored reference (Huang 1996 J Appl Physiol 81:2123) and must NOT be used as independent evidence; they are stored only with use_flag = "excluded_scored_reference".
+Literature values quoted in the text (stored in [data.quoted_literature], provenance SC for the original authors): Horsfield & Woldenberg 1989 x = 2.3 +/- 0.1 over 0.0065 <= r <= 15 mm; Suwa & Takahashi 1971 x = 2.47 +/- 0.09 for r < 0.1 mm and 2.66 +/- 0.07 for r >= 0.1 mm, 'by pulmonary arterial cast morphometry of normal humans'; Nakamura et al. 2011 x = 2.2 in peripheral human pulmonary arteries (fractal model + catheter data); Singhal 1973 flow-vs-radius log-log slope 2.32 (Fig. 2, from Singhal tables 4 and 5 with assumed cardiac output 4.8 L/min), 'constant from proximal large to peripheral small arteries'.
+Dawson et al. 1999 dog cast data: text only says 'a marked large SD of the arithmetic mean of x_p around 2.9' (Fig. 1B); no exact number printed in text."""
+use_in_model = """Human pulmonary ARTERIAL exponent ~2.3-2.5 at all sizes (non-Huang human sets: proximal 2.30-2.42, peripheral 2.33-2.54; Suwa & Takahashi 2.47 below r = 0.1 mm, 2.66 above). Dog arteries slightly higher (2.5-2.8). No size class reaches Murray's 3. No venous data in this source."""
+
+[source]
+authors = ["Nakamura Y", "Awa S"]
+year = 2014
+title = "Radius exponent in elastic and rigid arterial models optimized by the least energy principle"
+journal = "Physiol Rep"
+volume = "2"
+issue = "2"
+pages = "e00236"
+doi = "10.1002/phy2.236"
+crossref_verified = "2026-10-18; Crossref title exact match (vol 2, e00236; authors Nakamura, Awa; issued 2014-02)"
+pmid = "24744905"
+pmcid = "PMC3966250"
+
+[data.table3b_pulmonary_arteries]
+description = "Estimated radius exponent x_p of pulmonary arteries by radius class, recomputed from published cast morphometry"
+location = "Table 3B"
+provenance = "FT"
+statistic = "mean +/- SD of order-to-order x_n within the radius class"
+method = "postmortem cast morphometry (original studies), Strahler-order re-analysis by Nakamura & Awa"
+vessel_type = "artery"
+dataset = ["human Horsfield1978", "human-left Huang1996", "human Singhal1973", "dog-right GanYen1994", "dog Milnor1982", "cat-right Zhuang1983", "rat-left Jiang1994", "human Horsfield1978", "human-left Huang1996", "human Singhal1973", "dog-right GanYen1994", "cat-right Zhuang1983", "rat-left Jiang1994"]
+size_class = ["proximal", "proximal", "proximal", "proximal", "proximal", "proximal", "proximal", "peripheral", "peripheral", "peripheral", "peripheral", "peripheral", "peripheral"]
+radius_min_mm = [0.112, 0.11, 0.112, 0.14, 0.5, 0.176, 0.13, 0.0065, 0.01, 0.011, 0.014, 0.012, 0.00665]
+radius_max_mm = [0.425, 7.4, 15.0, 5.56, 8.0, 2.54, 0.8, 0.069, 0.075, 0.069, 0.070, 0.096, 0.078]
+exponent_mean = [2.42, 2.82, 2.30, 2.72, 2.76, 2.50, 1.60, 2.54, 2.42, 2.33, 2.52, 2.39, 2.29]
+exponent_sd = [0.33, 0.50, 0.46, 0.57, 0.52, 0.51, 0.56, 0.11, 0.31, 0.04, 0.19, 0.23, 0.83]
+use_flag = ["ok", "excluded_scored_reference", "ok", "ok", "ok", "ok", "ok", "ok", "excluded_scored_reference", "ok", "ok", "ok", "ok"]
+missing_note = "Number of order pairs per class not printed. Horsfield 1978 table 6 revises Singhal table 4 vessel numbers for 0.013 <= r <= 0.850 mm; Nakamura omitted Horsfield orders 11-17 (common with Singhal)."
+
+[data.quoted_literature]
+description = "Literature radius exponents quoted in the text (original sources not read here)"
+location = "Introduction, Fig. 1B caption, Fig. 2"
+provenance = "SC"
+statistic = "as quoted"
+cited_source = ["Horsfield & Woldenberg 1989", "Suwa & Takahashi 1971", "Suwa & Takahashi 1971", "Nakamura et al. 2011", "Singhal et al. 1973 (flow-radius slope computed by Nakamura & Awa)"]
+species = ["human", "human", "human", "human", "human"]
+vessel_type = ["artery", "artery", "artery", "artery", "artery"]
+radius_min_mm = [0.0065, nan, 0.1, 0.01, nan]
+radius_max_mm = [15.0, 0.1, nan, 0.1, nan]
+exponent_mean = [2.3, 2.47, 2.66, 2.2, 2.32]
+exponent_sd = [0.1, 0.09, 0.07, nan, nan]
+method = ["resin casts, per-bifurcation", "arterial cast morphometry", "arterial cast morphometry", "fractal model with catheter data", "cast morphometry tables 4+5, ln q vs ln r slope, CO assumed 4.8 L/min"]
+missing_note = "Suwa & Takahashi 1971 is a book (Urban & Schwarzenberg); its printed table was not accessed. Nakamura 2011 peripheral range assumed 0.01-0.1 mm by Nakamura & Awa."
