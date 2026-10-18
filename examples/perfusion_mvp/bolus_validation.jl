@@ -6,7 +6,7 @@ import Vasculature; (isdefined(Main, :Body) || include(joinpath(@__DIR__, "body.
 # the coronary bed: XCAT vmale_50 myocardium (LV + RV labels, 1 mm grid, 148.1 mL) with the heart's physiology, and one
 # blood for the whole body (the heart's hematocrit), through the one transport spec (Vasculature.TransportSpec)
 const HEART = FlowSpec(organ = "heart")
-human_circulation(; kw...) = Vasculature.circulation(Vasculature.TransportSpec(; phys = HEART, tissue_ml = 148.1f0, kw...))
+human_circulation(; kw...) = Vasculature.circulation(Vasculature.TransportSpec(; phys = HEART, tissue_ml = 148.1f0, bed = :coronary, input = :lv, kw...))
 
 const REF = joinpath(@__DIR__, "..", "..", "data", "reference")
 ref(id) = TOML.parsefile(joinpath(REF, id * ".toml"))["data"]
