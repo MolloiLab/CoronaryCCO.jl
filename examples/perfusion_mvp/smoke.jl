@@ -2,7 +2,7 @@
 # Smoke test: grow a small tree on case0, build the closed circuit, transport a bolus, and check
 # that iodine is conserved (inflow = in network + out through the sinus).
 using Vasculature, Printf
-include("flow.jl"); include("territory.jl")
+@eval(import Vasculature: Flow); @eval(import Vasculature: Territory)
 using .Flow, .Territory
 
 const S = joinpath(@__DIR__, "..", "..", "test", "data")

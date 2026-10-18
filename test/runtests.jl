@@ -203,6 +203,44 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test L1.passes == 1 && LC.passes >= 1 && LC.change <= 1.0e-3
     end
 
+    @testset "phantom stage: spec rules and a small bundle that loads" begin
+        @test_throws ArgumentError PhantomSpec(; times = Float32[0]) # every field required
+        @test_throws ArgumentError PhantomSpec(HEART_PHANTOM; colour = 1)
+        @test_throws ArgumentError PhantomSpec(HEART_PHANTOM; materials = Dict(100 => "air"))
+        @test_throws ArgumentError PhantomSpec(HEART_PHANTOM; pools = [Pool("x", "ncat_blood", :lv, :peak)])
+        @test LUNG_PHANTOM.pools == HEART_PHANTOM.pools && LUNG_PHANTOM.tissue_material == "ncat_lung"
+        # a 300-terminal tree on HCT-CCO's sample, its terminals' voxels as the tissue, everything else LV outflow or air
+        tree = grow(GrowthSpec(HEART_GROWTH; nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])
+        vt = vtree(tree); nch = zeros(Int, length(vt.r)); foreach(p -> p > 0 && (nch[p] += 1), vt.parent)
+        h = 2.0; tp = Float32.(vt.b[:, nch .== 0]); key(p) = Tuple(round.(Int, p ./ h))
+        cells = unique(key(tp[:, i]) for i in axes(tp, 2)); vox = Dict(c => Int32(k) for (k, c) in enumerate(cells))
+        q = Float32.(reduce(hcat, [collect(c) .* h for c in cells])) ./ Float32(h) # unit grid for territory_shares
+        terr, pairs = C.Territory.territory_shares(tp ./ Float32(h), q; voxel_ml = h^3 / 1000)
+        Cr = C.Flow.circuit(vt, terr; phys = HEART_FLOW, state = :rest)
+        spec = PhantomSpec(
+            HEART_PHANTOM; times = collect(0.0f0:2.0f0:20.0f0), tissue_classes = 4, vessel_classes = 3,
+            pools = [Pool("LV outflow", "ncat_blood", :lv, :out), Pool("tissue mean", "ncat_heart", :coronary, :tissue)]
+        )
+        T = transport(TransportSpec(HEART_TRANSPORT; tissue_ml = sum(terr), tmax = 20, dt = 0.005, every = 1), Cr; times = spec.times)
+        lo = minimum(vt.b; dims = 2) .- 4; hi = maximum(vt.b; dims = 2) .+ 4
+        grid = C.VoxelGrid(Tuple(Float64.(vec(lo))), h, Tuple(ceil.(Int, vec(hi .- lo) ./ h) .+ 1))
+        classify(p) = (
+            c = key(collect(p)); haskey(vox, c) ? (VOX_TISSUE, vox[c], 0.0f0) :
+                p[1] < (lo[1] + hi[1]) / 2 ? (VOX_POOL, Int32(1), Float32(0.1 * (p[3] - lo[3]) / (hi[3] - lo[3]))) : (VOX_STATIC, Int32(0), 0.0f0)
+        )
+        out = mktempdir()
+        R = phantom(spec, [("rest", Cr, T)], classify, grid; pairs, terr, nvox = length(cells), out, name = "case0")
+        @test sum(values(R.counts)) == prod(grid.dims) && 0 in R.ids && any(i -> 100 <= i < 1000, R.ids)
+        @test any(i -> 1001 <= i < 2000, R.ids) && any(i -> i > 2000, R.ids) # tissue and drawn vessels
+        @test R.flow[1][2] ≈ sum(Cr.q[j] for j in eachindex(vt.parent) if vt.parent[j] == 0) * 60 / sum(terr)
+        ph = C.DynamicPhantom.load(R.csv; volume = true)
+        @test ph.counts == R.counts && ph.facts["states"] == "rest" && size(ph.labels) == grid.dims
+        tc = sort([i for i in keys(ph.counts) if 1001 <= i < 2000]) # classes rank by enhancement
+        @test issorted([sum(ph.curves[("rest", i)]) for i in tc])
+        m = C.DynamicPhantom.materials_at(ph, "rest", 10.0)
+        @test length(m.materials) <= 64 && all(l -> haskey(m.lut, l), keys(ph.counts))
+    end
+
     @testset "balanced pairing of beds and venules" begin
         # beds and venules on two interleaved grids: nearest pairing would load some venules twice; balanced is one-to-one
         P = Float32.(hcat([[i, 0, 0] for i in 0:9]...)); Q = Float32.(hcat([[i + 0.6f0 * (i % 2), 0.1f0, 0] for i in 0:9]...))

@@ -65,3 +65,40 @@ const LUNG_TRANSPORT = TransportSpec(
     HEART_TRANSPORT; phys = LUNG_FLOW, tissue_ml = 2813.438f0, bed = :lung, input = :rv,
     coronary = (; ml = 148.052f0, fb = HEART_FLOW.fb, ve = HEART_FLOW.ve, ps = HEART_FLOW.ps, rho = HEART_FLOW.rho)
 )
+
+# ---------------------------------------------------------------------------------------------------------- phantoms
+# The XCAT body around an organ, as pools of the whole-body model (shared by every organ's phantom; a classifier names them
+# by index). XCAT labels: 19-22 chamber blood, 25/28 arteries, 24 veins, 6 lung, 10 liver, 14 spleen, 4/13 muscle, 23 skin,
+# 1 body (fat), 5 rib, 8 cortical bone, 9 spine, 12 stomach, 3/29 soft tissue. Organ beds: blood + extracellular iodine over
+# the body model's tissue volumes (ICRP 89 masses; the thorax holds 30% of each peripheral tissue).
+const XCAT_BODY_POOLS = [
+    Pool("right atrium blood", "ncat_blood", :ra, :mean), Pool("right ventricle blood", "ncat_blood", :rv, :mean), # 1, 2
+    Pool("left atrium blood", "ncat_blood", :la, :mean), Pool("left ventricle blood", "ncat_blood", :lv, :mean), # 3, 4
+    Pool("aorta and systemic arteries", "ncat_blood", :lv, :out), Pool("pulmonary arteries", "ncat_blood", :rv, :out), # 5, 6
+    Pool("pulmonary veins", "ncat_blood", :lung, :out), Pool("superior vena cava", "ncat_blood", :svc, :mean), # 7, 8
+    Pool("right brachiocephalic vein", "ncat_blood", :brachiocephalic_r, :mean), # 9
+    Pool("left brachiocephalic vein", "ncat_blood", :brachiocephalic_l, :mean), # 10
+    Pool("inferior vena cava", "ncat_blood", :ivc_hepatic, :mean), # 11
+    Pool("atrial myocardium", "ncat_heart", :coronary, :organ; ml = 148.052), # 12
+    Pool("lung", "ncat_lung", :lung, :mean; scale = 0.1), # 13
+    Pool("liver", "ncat_liver", :liver, :organ; ml = 1800), Pool("spleen", "ncat_spleen", :gut, :organ; ml = 1500), # 14, 15
+    Pool("thoracic muscle", "ncat_muscle", :muscle_upper, :organ; ml = 0.3 * 28000), # 16
+    Pool("thoracic skin", "skin", :skin_upper, :organ; ml = 0.3 * 3300), Pool("thoracic fat", "ncat_body", :fat_upper, :organ; ml = 0.3 * 15000), # 17, 18
+    Pool("rib", "ncat_rib", :bone_upper, :organ; ml = 0.3 * 10000), Pool("cortical bone", "corticalbone", :bone_upper, :organ; ml = 0.3 * 10000), # 19, 20
+    Pool("spine", "ncat_spine", :bone_upper, :organ; ml = 0.3 * 10000), Pool("stomach", "stomach", :other_upper, :organ; ml = 0.3 * 8000), # 21, 22
+    Pool("muscle (other)", "ncat_muscle", :other_upper, :organ; ml = 0.3 * 8000), Pool("soft tissue", "softtissue", :other_upper, :organ; ml = 0.3 * 8000), # 23, 24
+    Pool("ventricular myocardium", "ncat_heart", :coronary, :organ; ml = 148.052), # 25 (when the heart is not the organ)
+    Pool("organ tissue mean", "ncat_heart", :coronary, :tissue), # 26: the organ's own mean
+]
+const XCAT_STATIC = Dict(0 => "air", 2 => "cartilage", 7 => "air", 11 => "air", 30 => "softtissue", 31 => "softtissue", 32 => "softtissue", 70 => "air")
+
+# heart: XCAT's native 0.2 mm grid; the myocardium in 64 kinetic classes (1.3 HU worst-time RMS against per-voxel truth in
+# the 2026-10-16 export), grown and imaged coronary vessels in 64 classes, great-artery transit delays in 0.05 s bins
+const HEART_PHANTOM = PhantomSpec(;
+    times = collect(0.0f0:1.0f0:60.0f0), tissue_material = "ncat_heart", tissue_classes = 64, vessel_classes = 64,
+    vessel_rmin_mm = 0.1, delay_bin_s = 0.05, energy_keV = 70, materials = XCAT_STATIC, pools = XCAT_BODY_POOLS,
+)
+
+# lung: the lung's 1 mm territories (one terminal per acinus) on a 0.5 mm grid; the pulmonary trees' grown lumens of
+# radius >= 0.25 mm drawn as blood; one state (the lung has no pharmacological stress state here)
+const LUNG_PHANTOM = PhantomSpec(HEART_PHANTOM; tissue_material = "ncat_lung", tissue_classes = 64, vessel_classes = 64, vessel_rmin_mm = 0.25)

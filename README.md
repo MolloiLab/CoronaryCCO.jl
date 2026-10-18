@@ -45,15 +45,16 @@ tree = grow(spec, domain, ["lca.xml", "rca.xml"]; blockers = avoid)
 
 On a laptop GPU (Apple M4) the heart grows 10⁶ terminals in about 40 seconds.
 
-`flow_ml_min` sets how many terminals grow: every organ is resolved down to terminals of the same size (one carries
-0.14 µL/min, about 12 µm across, the resolution of the heart tree scored against Kassab's morphometry), so the count is
-the organ's flow over that. For tissue the organ feeds, the flow is its O₂ demand by Fick; for the lungs, the cardiac
-output. You can also give `nterm` directly.
+How many terminals grow is the organ's own number. For an organ that feeds its tissue, `flow_ml_min` sets it: the
+flow is the tissue's O₂ demand by Fick, over the flow of one terminal of the heart tree scored against Kassab's
+morphometry (0.14 µL/min, about 12 µm across). The lungs carry the whole cardiac output but are not fed by it, so their
+count comes from their structure instead: one terminal per acinus (`nterm`), with the vessels inside each acinus
+solved below it in `flow`. You can always give `nterm` directly.
 
 | | `flow_ml_min` | → terminals | `tissue_ml` | inlets |
 |---|---|---|---|---|
 | heart (adult, rest) | 135.6 | 957,045 | 148 (myocardium) | LCA, RCA |
-| lungs (adult) | 4,800 (cardiac output) | 33.9 million | 2,800 | main pulmonary artery |
+| lungs (adult) | (4,800 cardiac output, not used for the count) | 29,912 acini (Vasilescu et al. 2020) | 2,813 | main pulmonary artery |
 | brain (older adult, rest) | 510 (van Es et al. 2010) | 3.6 million | 1,016 (parenchyma) | both internal carotids, both vertebrals |
 | one leg (adult, rest) | 290 (Koch Esteves et al. 2023) | 2.0 million | 11,000 | common femoral artery |
 | any organ | VO₂ ÷ (arterial O₂ content × O₂ extraction) | flow ÷ 0.14 µL/min | its segmented volume | each imaged inlet (femoral artery, carotids + basilar, ...) |
@@ -81,7 +82,15 @@ measured and cited; a variant is `FlowSpec(HEART_FLOW; p_in = 70)`.
 
 A clinical injection (dose, rate, saline flush, injection site) travels through a whole-body circulation into the
 organ's grown tree, then through every capillary bed and vein, with exchange into the tissue and washout by the kidneys.
-(Being folded into one call, `transport(spec, F, injection)`, like `grow` and `flow`.)
+
+```julia
+T = transport(HEART_TRANSPORT, F.rest; times = HEART_PHANTOM.times) # default injection; LUNG_TRANSPORT for the lungs
+T.tissue, T.artery, T.vein # iodine (mg) in every terminal bed and vessel, every second
+```
+
+`HEART_TRANSPORT` and `LUNG_TRANSPORT` are instances of the one `TransportSpec` struct: which body segment the organ
+replaces, where its blood comes from, its tissue volume. The organ's venous outflow is fed back into the body until it
+stops changing, so recirculation is included.
 
 ## 4. Phantom
 
@@ -90,7 +99,22 @@ organ's grown tree, then through every capillary bed and vein, with exchange int
 The result is one compartment volume (one integer per voxel) and one CSV per scenario: each compartment's base material
 and its iodine concentration every second, plus the ground-truth blood flow. Load it at any time point as material
 maps for a CT simulator such as [BasisSimulator.jl](https://github.com/MolloiLab/BasisSimulator.jl).
-(Being folded into one call, `phantom(spec, ...)`, like `grow` and `flow`.)
+
+```julia
+scans = [("rest", F.rest, Trest), ("stress", F.stress, Tstress)]
+R = phantom(HEART_PHANTOM, scans, classify, Vasculature.VoxelGrid(origin, 0.2, dims); F.pairs, F.terr, nvox, out = "heart_phantom")
+
+ph = Vasculature.DynamicPhantom.load(R.csv) # the bundle
+P, m = Vasculature.DynamicPhantom.bs_phantom(ph, BasisSimulator; state = "rest", t = 25) # material map at t = 25 s
+```
+
+`classify(p)` is the one subject-specific step: for a voxel centre it says what is there (a static material, a blood
+pool of the body model, perfused tissue, or a grown vessel). Everything else, the tissue's kinetic classes, the grown
+vessels drawn into the tissue and the pools' curves, is the same for every organ. `HEART_PHANTOM` and `LUNG_PHANTOM`
+are instances of the one `PhantomSpec` struct.
+
+A new organ (brain, kidney, leg) is four more instances, `GrowthSpec`, `FlowSpec`, `TransportSpec` and `PhantomSpec`,
+plus its classifier; no new code path.
 
 ![lung CT](docs/assets/step5_ct.png)
 

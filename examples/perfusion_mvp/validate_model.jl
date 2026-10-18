@@ -9,7 +9,7 @@
 # companion veins. Flow is pressure-driven: stress = maximal vasodilation, rest = autoregulated
 # arteriolar diameters (myogenic, shear and metabolic tone).
 using Vasculature, Printf, Serialization, Random
-(isdefined(Main, :Flow) || include("flow.jl")); (isdefined(Main, :Territory) || include("territory.jl")); include("coupling.jl")
+(isdefined(Main, :Flow) || @eval(import Vasculature: Flow)); (isdefined(Main, :Territory) || @eval(import Vasculature: Territory)); @eval(import Vasculature: couple_veins)
 using .Flow, .Territory
 const TO_ = isdefined(@__MODULE__, :TO) ? TO : identity       # device (pipeline.jl sets it; identity = CPU threads)
 

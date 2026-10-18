@@ -291,7 +291,8 @@ const LUNG_FLOW = FlowSpec(;
     # 1. Vascular-space-tissue ratio: the vascular fraction of the sheet's face-on area (Sobin 1970), human value via
     # Huang 2011, paired with his A = 126 m2 (below). [huang2011_human_sheet_flow_parameters, sobin1970_vstr_definition]
     sheet_s = 0.88f0,
-    # m2/mL. Huang 2011's sheet area, 126 m2 (Gehr 1978's capillary surface) over XCAT's lung volume 2810 mL. The solver
+    # m2/mL. Huang 2011's sheet area, 126 m2 (Gehr 1978's capillary surface) over XCAT's lung volume 2810 mL; the lung flow
+    # row's pass rests on it (73 m2: 3.09 L/min, below the 2-SD bound; 126 m2: 3.51). The solver
     # uses only the sheet conductance S A / (4 mu k f Lbar^2 alpha), and Huang's whole set (S 0.88, A 126 m2, h0, alpha,
     # k f, Lbar, all in this instance) reproduces his validated model's flows in three normal subjects within 1% (Table 4,
     # Harris 1968 data; scratchpad replication, QUEUE K3 revisited 2026-10-18), while the one-face area (73 m2, Clark
@@ -340,17 +341,12 @@ const LUNG_FLOW = FlowSpec(;
     # transpulmonary 3.7 at relaxation volume) and -3.3 cmH2O (Owens 2012, lean adults sitting).
     # [washko2006_esophageal_pressure_posture, owens2012_esophageal_pressure_sitting_supine]
     p_pleural_cmH2O = -3.5f0,
-    # cmH2O. Transmural pressure at which the grown radii hold; distension D = D0 (1 + beta (P_tm - p_ref)). 0 keeps the
-    # model as accepted so far. OPEN, for Dale (QUEUE K6): Huang 2011's per-order diameters, against which the grown trees
-    # are scored, are given at PA - Ppl = 10 cmH2O (Tables 1-2), so 10 is the consistent value; it lowers the lung's flow
-    # (200k: 3.36 -> 2.75 L/min, the flow row pass -> fail). [huang2011_human_sheet_flow_parameters]
+    # cmH2O. Transmural pressure at which the grown radii hold; distension D = D0 (1 + beta (P_tm - p_ref)). 0, as in
+    # Huang 2011's validated whole-lung model (its "PA - Ppl = 10 cmH2O" is the casts' inflation, not a vessel pressure;
+    # with 0 this solver reproduces his Table 4 flows within 1%). Caveat: the grown radii scale from XCAT's in vivo main-PA
+    # radius, so the true reference of the largest vessels lies between their resting pressure and zero; at 0 the main PA
+    # distends ~34% at rest. [huang2011_human_sheet_flow_parameters]
     p_ref_cmH2O = 0.0f0,
-    # Not used yet (gate A: the mechanism lands inert; H-ACINUS turns it on with
-    # huang2011_human_sheet_flow_parameters). Vessels between a grown terminal (one per acinus) and its alveolar
-    # sheet: Huang 2011's per-order arterial and venous tables (whole human lung; number, diameter, length at 10
-    # cmH2O, beta), every order narrower than the bed's terminal or venule, in series with the sheet. These orders are
-    # then model inputs, so the lung morphometry rows score only the orders the grown trees resolve.
-    # [huang2011_human_sheet_flow_parameters]
     # Vessels inside each acinus (below a grown terminal / above its venule), in series with its sheet: Huang 2011's whole-
     # lung tables per order (smallest first; number, diameter and length in mm of his casts of inflated lungs at zero
     # transmural pressure; beta per cmH2O, printed in %/cmH2O); every order narrower than the bed's terminal / venule.

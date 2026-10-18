@@ -2,7 +2,7 @@
 # Validates the bolus model (body.jl) against human first-pass data, each study simulated with its
 # own injection protocol, injection site and cardiac output, and scored against the values stored
 # in data/reference. Usage: julia --project=. bolus_validation.jl [out.json]
-import Vasculature; (isdefined(Main, :Body) || include(joinpath(@__DIR__, "body.jl"))); (isdefined(Main, :Flow) || include(joinpath(@__DIR__, "flow.jl"))); using .Body, .Flow, Printf, TOML
+import Vasculature; (isdefined(Main, :Body) || @eval(import Vasculature: Body)); (isdefined(Main, :Flow) || @eval(import Vasculature: Flow)); using .Body, .Flow, Printf, TOML
 # the coronary bed: XCAT vmale_50 myocardium (LV + RV labels, 1 mm grid, 148.1 mL) with the heart's physiology, and one
 # blood for the whole body (the heart's hematocrit), through the one transport spec (Vasculature.TransportSpec)
 const HEART = HEART_FLOW

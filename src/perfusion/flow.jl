@@ -153,7 +153,7 @@ Boundary conditions and blood
   `d_alveolus_um`, `p_pleural_cmH2O` for larger ones; β takes its small/large value on the same
   split. Diameters follow the pressures inside the solve. `p_ref_cmH2O` is the transmural pressure at
   which the grown radii (and the sub-terminal tables below) hold, so ΔP is counted from it
-  (the lung's would be 10 cmH2O, the pressure of Huang et al. 2011's diameters; LUNG_FLOW keeps 0 for now, QUEUE K6).
+  (0 for the lung, as in Huang et al. 2011's validated model).
 - `sub_art`, `sub_ven`: `nothing`, or an [`OrderTable`](@ref) of the vessels between a grown
   terminal and its capillaries, which the grown tree does not resolve:
   each bed gets, in series before and after its capillaries, every order narrower than its own
