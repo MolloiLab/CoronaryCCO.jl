@@ -79,19 +79,29 @@ function nearest_locations!(nc, bd, bj, V, pts)
     return
 end
 
+# In two passes, so that the costly part (Kamiya iterations and the path walk) runs only on candidates that survive the
+# bifurcation collision test (a third or more do not): first the test for every pair, then the survivors packed into one
+# list, so a GPU's threads stay busy instead of idling beside rejected neighbours. Each candidate's result is the same as
+# in one pass (eval_candidate).
 function evaluate_candidates!(cok, cscore, copt, cq, cit, bj, nc, V, pts)
     nn = size(bj, 1)
     AK.foreachindex(cok; max_tasks = Threads.nthreads(), min_elems = 16) do i
         T = typeof(V.m.lf)
         c = (i - 1) % nn + 1; k = (i - 1) ÷ nn + 1
-        if c <= nc[k]
-            p = pts[k]; s = bj[c, k]
-            ok, vol, pOpt, qNew, it = eval_candidate(V, nothing, p, s)
-            cok[i] = ok; cscore[i] = ok ? candidate_score(V, s, vol) : zero(T)
-            copt[i] = pOpt; cq[i] = qNew; cit[i] = Int32(max(it, 0))
-        else
-            cok[i] = false; cit[i] = Int32(0)
-        end
+        live = false
+        c <= nc[k] && (live = bifurcation_clear(V, pts[k], bj[c, k]))
+        cok[i] = live; cit[i] = Int32(0)
+    end
+    hlive = Array(cok); idx = Int32[i for i in eachindex(hlive) if hlive[i]]
+    isempty(idx) && return
+    didx = similar(cok, Int32, length(idx)); copyto!(didx, idx)
+    AK.foreachindex(didx; max_tasks = Threads.nthreads(), min_elems = 16) do j
+        T = typeof(V.m.lf)
+        i = didx[j]; c = (i - 1) % nn + 1; k = (i - 1) ÷ nn + 1
+        p = pts[k]; s = bj[c, k]
+        ok, vol, pOpt, qNew, it = try_candidate!(nothing, V, p, s)
+        cok[i] = ok; cscore[i] = ok ? candidate_score(V, s, vol) : zero(T)
+        copt[i] = pOpt; cq[i] = qNew; cit[i] = Int32(max(it, 0))
     end
     return
 end

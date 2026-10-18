@@ -715,11 +715,17 @@ end
 # Evaluate candidate segment s for terminal point pt (the bifurcation-intersection pre-check,
 # then isAddable). Shared by sequential steps and batched rounds.
 @inline function eval_candidate(E, ws, pt::P3{T}, s::Int32) where {T}
+    bifurcation_clear(E, pt, s) || return (false, zero(T), pt, zero(T), -1)
+    return try_candidate!(ws, E, pt, s)
+end
+
+# The pre-test of a candidate: the provisional bifurcation (at the centroid of the new point and segment s's two ends)
+# must not intersect the tree. Batched evaluation runs it as its own pass (batched.jl).
+@inline function bifurcation_clear(E, pt::P3{T}, s::Int32) where {T}
     m = E.m
     ptB = div3(add3(add3(pt, m.pos[s]), m.pos[m.parent[s]]), T(3))
     rs = _isfast(E) ? fast_radius(E, s) : m.radius[s]
-    intersects_bifurcation(E, pt, ptB, rs, s) && return (false, zero(T), pt, zero(T), -1)
-    return try_candidate!(ws, E, pt, s)
+    return !intersects_bifurcation(E, pt, ptB, rs, s)
 end
 
 # Score of an accepted candidate (expandTree's side-branch bias).
