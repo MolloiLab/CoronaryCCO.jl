@@ -69,8 +69,8 @@ let
     FL = nothing
     if haskey(ENV, "CIRC") && haskey(ENV, "INPUTS")
         FI = deserialize(ENV["INPUTS"]); terr = FI.terr; tshare = FI.pairs; vleaf = loadcirc().Cr.vleaf
-    elseif haskey(ENV, "CIRC")                   # saved circuits without their inputs file: the same territories, formed here
-        terr, tshare = territory_shares(tree.b[:, terms], q); terr .= max.(terr, 1.0f-7); vleaf = loadcirc().Cr.vleaf
+    elseif haskey(ENV, "CIRC")
+        error("validate_model: CIRC (saved circuits) needs INPUTS, the territories and pairing they were solved with")
     elseif veins !== nothing
         FL = Vasculature.flow(FlowSpec(organ = "heart", radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))), tree, veins, q)
         terr = FL.terr; tshare = FL.pairs; vleaf = FL.vleaf

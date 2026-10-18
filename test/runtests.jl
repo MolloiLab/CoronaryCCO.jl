@@ -198,6 +198,9 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         sL = TransportSpec(; phys = lungp, tissue_ml = 2813, bed = :lung, input = :rv, coronary = hb, tmax = 20, dt = 0.005, every = 1)
         L0 = transport(sL, Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0); L1 = transport(sL, Cr; passes = 1, times = 0.0f0:2.0f0:20.0f0)
         @test L1.body.out[:lung] != L0.body.out[:lung] && all(>=(0), L1.tissue)
+        # by default the feedback repeats until the organ's outflow stops changing, so the curves come from one body run
+        LC = transport(sL, Cr; times = 0.0f0:2.0f0:20.0f0)
+        @test L1.passes == 1 && LC.passes >= 1 && LC.change <= 1.0e-3
     end
 
     @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin
