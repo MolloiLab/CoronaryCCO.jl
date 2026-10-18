@@ -534,16 +534,15 @@ function tentative!(ws::Workspace{T}, E::Engine{T}, s, pOpt::P3{T}, p::P3{T}, qN
     return vol[1], rroot * cum[ks], rroot * cum_nl, rroot * cum_nr
 end
 
-"""
-    try_candidate!(ws, E, p, s) -> (ok, vol, pOpt, qNew, iterations)
-
-HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared base tree.
-"""
 # The radius of segment s: exact in fast mode (a walk to the root), the stored value otherwise.
 @inline seg_radius(E, s::Int32) = _isfast(E) ? fast_radius(E, s) : E.m.radius[s]
 
-@inline try_candidate!(ws, E, p::P3, s::Int32) = try_candidate!(ws, E, p, s, seg_radius(E, s))
-# `rs` is segment s's radius (seg_radius), passed in when the caller already has it (it costs a walk to the root).
+"""
+    try_candidate!(ws, E, p, s, rs) -> (ok, vol, pOpt, qNew, iterations)
+
+HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared base tree. `rs` is segment s's radius
+(seg_radius), which the caller has already computed for the collision pre-test (it costs a walk to the root).
+"""
 @inline function try_candidate!(ws, E, p::P3{T}, s::Int32, rs::T) where {T}
     m = E.m; dom = E.dom; prm = E.p
     fail = (false, zero(T), p, zero(T), 0)
