@@ -6,7 +6,7 @@ module Territory
 import AcceleratedKernels as AK
 using Random
 
-export nearest_terminal, territory_shares, demand_field
+export nearest_terminal, balanced_terminal, territory_shares, demand_field
 
 const F32 = Float32
 
@@ -76,6 +76,52 @@ function nearest_terminal(pts::Matrix{F32}, q::Matrix{F32}; h::Real = 2.0f0)
     out = Vector{Int32}(undef, size(q, 2))
     AK.foreachindex(out; min_elems = 4096) do v
         out[v] = _nearest(B, pts, q[1, v], q[2, v], q[3, v])
+    end
+    return out
+end
+
+"""
+    balanced_terminal(pts, q; k = 8) -> Vector{Int32}
+
+For every point of `q` (3×N, e.g. capillary beds), the column of `pts` (3×M, e.g. venous terminals) it pairs with, closest
+pairs first, with no point of `pts` taking more than max(1, ⌊N/M⌋) points of `q` while a free one lies among a point's `k` nearest;
+a point whose `k` nearest are all full takes its nearest. With matched counts this is close to one-to-one: two trees
+grown to drain the same tissue each get their own partner, where plain nearest-neighbour pairing leaves many points of
+`pts` unused and loads others with several. Ties go to the lower indices, so the result is deterministic.
+"""
+function balanced_terminal(pts::Matrix{F32}, q::Matrix{F32}; k::Integer = 8)
+    np = size(pts, 2); nq = size(q, 2)
+    lo = ntuple(d -> minimum(@view pts[d, :]), 3); hi = ntuple(d -> maximum(@view pts[d, :]), 3)
+    h = F32(max(cbrt(prod(max.(hi .- lo, 1.0f0)) * k / np), 0.1f0)) # cells holding about k points of `pts`
+    B = Buckets(pts, h)
+    cd = fill(Inf32, k, nq); ck = zeros(Int32, k, nq)        # each point's k nearest, sorted
+    AK.foreachindex(1:nq; min_elems = 4096) do i
+        x = q[1, i]; y = q[2, i]; z = q[3, i]
+        c0 = (floor(Int, (x - B.lo[1]) / B.h), floor(Int, (y - B.lo[2]) / B.h), floor(Int, (z - B.lo[3]) / B.h))
+        for kc in (c0[3] - 1):(c0[3] + 1), jc in (c0[2] - 1):(c0[2] + 1), ic in (c0[1] - 1):(c0[1] + 1)
+            (0 <= ic < B.dims[1] && 0 <= jc < B.dims[2] && 0 <= kc < B.dims[3]) || continue
+            c = 1 + ic + B.dims[1] * (jc + B.dims[2] * kc)
+            for s in B.start[c]:(B.start[c + 1] - 1)
+                j = B.items[s]; d = (pts[1, j] - x)^2 + (pts[2, j] - y)^2 + (pts[3, j] - z)^2
+                (d < cd[k, i] || (d == cd[k, i] && j < ck[k, i])) || continue
+                m = k
+                while m > 1 && (cd[m - 1, i] > d || (cd[m - 1, i] == d && ck[m - 1, i] > j))
+                    cd[m, i] = cd[m - 1, i]; ck[m, i] = ck[m - 1, i]; m -= 1
+                end
+                cd[m, i] = d; ck[m, i] = j
+            end
+        end
+    end
+    cand = [(cd[m, i], Int32(i), ck[m, i]) for i in 1:nq for m in 1:k if ck[m, i] > 0]
+    sort!(cand)
+    cap = max(1, nq ÷ np); load = zeros(Int32, np); out = zeros(Int32, nq) # one each when the counts match
+    for (_, i, j) in cand
+        (out[i] != 0 || load[j] >= cap) && continue
+        out[i] = j; load[j] += 1
+    end
+    near = nearest_terminal(pts, q)
+    for i in 1:nq
+        out[i] == 0 && (out[i] = near[i])
     end
     return out
 end

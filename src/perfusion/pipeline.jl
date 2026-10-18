@@ -2,7 +2,7 @@
 # The one flow entry point: grown arteries + veins + the tissue they supply → blood flow from the pressures.
 
 using .Flow: FlowSpec, VTree, Circuit, circuit, vtree
-using .Territory: territory_shares, demand_field, nearest_terminal
+using .Territory: territory_shares, demand_field, nearest_terminal, balanced_terminal
 
 # Leaf segments (terminals) of a vessel tree.
 _leaves(t::VTree) = (nch = zeros(Int, length(t.r)); foreach(p -> p > 0 && (nch[p] += 1), t.parent); findall(==(0), nch))
@@ -11,7 +11,9 @@ _leaves(t::VTree) = (nch = zeros(Int, length(t.r)); foreach(p -> p > 0 && (nch[p
     couple_veins(arteries, terr, veins, terms, vterms; phys, reach = 3, passes = 24, tol = 5e-4, to = identity)
         -> (vleaf, circuit)   # circuit === nothing with assemble = false
 
-Which venule drains each capillary bed. Start from the nearest venous terminal; a capillary network connects each
+Which venule drains each capillary bed. Start from a balanced pairing (`balanced_terminal`): closest pairs first, no venule
+draining more than its share of the beds while a free one lies near (plain nearest-venule pairing left ~40% of grown venules
+draining nothing and loaded others with several). A capillary network connects each
 terminal arteriole to several venules, and blood leaves through the lowest-pressure one, so a bed whose paired venule
 sits above its arterial pressure (reversed flow) is re-paired with the lowest-pressure venous terminal within `reach` mm
 (widened by 1 mm per pass, at most 6 mm: a capillary network spans millimetres, not centimetres). Solved at maximal
@@ -20,7 +22,7 @@ or when a pass no longer removes at least 10% of them. With `assemble = false` t
 the pairing is returned).
 """
 function couple_veins(F, terr, VT, terms, vterms; phys, reach = 3.0f0, passes = 24, tol = 5.0f-4, to = identity, assemble::Bool = true)
-    vleaf = Int32.(vterms[nearest_terminal(VT.b[:, vterms], F.b[:, terms])])
+    vleaf = Int32.(vterms[balanced_terminal(VT.b[:, vterms], F.b[:, terms])]) # each bed its own nearby venule first
     VB = VT.b[:, vterms]; last = typemax(Int); k0 = 1.0f0
     B = Territory.Buckets(VB, 2.0f0)
     # one solver for all passes: each pass only re-pairs the beds and starts from the previous pass's solution; a pass

@@ -203,6 +203,18 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test L1.passes == 1 && LC.passes >= 1 && LC.change <= 1.0e-3
     end
 
+    @testset "balanced pairing of beds and venules" begin
+        # beds and venules on two interleaved grids: nearest pairing would load some venules twice; balanced is one-to-one
+        P = Float32.(hcat([[i, 0, 0] for i in 0:9]...)); Q = Float32.(hcat([[i + 0.6f0 * (i % 2), 0.1f0, 0] for i in 0:9]...))
+        b = C.Territory.balanced_terminal(P, Q); n = C.Territory.nearest_terminal(P, Q)
+        @test length(unique(n)) < 10                                   # nearest pairing loads some venules twice
+        @test sort(b) == collect(1:10) && b == C.Territory.balanced_terminal(P, Q)
+        @test all(i -> abs(P[1, b[i]] - Q[1, i]) <= 1, 1:10)            # every bed drains into a neighbouring venule
+        # more beds than venules: each venule takes at most max(1, beds ÷ venules)
+        Q2 = Float32.(hcat([[i / 2, 0.2f0, 0] for i in 0:19]...)); b2 = C.Territory.balanced_terminal(P, Q2)
+        @test maximum(count(==(j), b2) for j in 1:10) <= 3 && all(in(1:10), b2)
+    end
+
     @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin
         # on the CPU a solver array can be its own host copy (par === hpar): freeing the work arrays must keep it (audit 29)
         tree = grow(GrowthSpec(nterm = 2500, tissue_ml = 100.0, wall_clearance = 1.0), sample("case0.vol"), [sample("case0.xml")])
