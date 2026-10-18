@@ -1,0 +1,37 @@
+[meta]
+id = "weibel2009_human_capillary_volume_morphometry"
+data_type = "measurement"
+validates = "Morphometric human capillary blood volume (~194 mL), alveolar and capillary surface areas, and the statement that capillary blood is exposed to air on both sides of each septum (so morphometric surfaces count both faces)."
+species = "human"
+preparation = "Review of Gehr, Bachofen & Weibel 1978 (8 normal human lungs, instillation-fixed, EM stereology) with values partly revised by Weibel et al. 1993."
+conditions = "Young healthy adults, 70 kg, 175 cm; lungs fixed at ~60% TLC (total lung volume 4340 mL)."
+verification = "FT"
+access = "Open PDF from smw.ch (Swiss Med Wkly), text extracted from a scratch copy (not stored in any repo). Table 1 and text p. 377-378 read."
+notes = """Table 1 'Morphometric estimate of DLO2 for young, healthy adult humans of 70 kg body weight, measuring 175 cm in height' (mean +/- 1 SE): total lung volume (60% TLC) 4340 +/- 285 mL; alveolar surface area 130 +/- 12 m2; capillary surface area 115 +/- 12 m2; capillary volume 194 +/- 30 mL; tissue barrier harmonic mean thickness 0.62 +/- 0.04 um; total barrier 1.11 +/- 0.1 um; DLO2 158 mL/min/mmHg. Footnote: 'Data from Gehr et al. [29] and Weibel et al. [24]' ('in part revised on the basis of later studies').
+p. 377: 'The capillary blood volume amounts to about 200 ml; spread out over this large surface this represents an extremely thin layer of blood, just about half as thick as an erythrocyte, because the capillary is contained in the walls between two alveoli and is thus exposed to air on both sides of the septum.'
+p. 377: Roughton-Forster D_eO2 = theta_O2 V(c), 'where V(c) is the volume of capillary blood'.
+p. 378: morphometric DLO2 ~150 vs clinical resting physiological DLO2 ~30 and heavy-exercise ~100 mL/min/mmHg (no physiological Vc given).
+The ORIGINAL Gehr 1978 values (often quoted as alveolar 143, capillary 126 m2, Vc 213 mL; Clark 2010 quotes 146 and 126 m2) could not be read: the Gehr abstract is not in PubMed/Europe PMC and ScienceDirect returned 403.
+Derived here (not printed): with one-face septal area = 130/2 = 65 m2, mean blood thickness per septum = 194 mL / 65 m2 = 3.0 um = S h; with S = 0.86, h = 3.5 um, matching Sobin's human h0. Using the capillary surface instead: 194 / (115/2) = 3.4 um."""
+use_in_model = """Morphometric target for total (recruited + unperfused, fixed-lung) capillary blood volume: ~194 +/- 30 mL (Gehr 1978 / Weibel 1993 revision), ~200 mL in round numbers. Consistent with V = S A h only if A is the one-face septal area (~65-73 m2), not the 115-146 m2 morphometric surfaces."""
+
+[source]
+authors = ["Weibel ER"]
+year = 2009
+title = "What makes a good lung? The morphometric basis of lung function"
+journal = "Swiss Med Wkly"
+volume = "139"
+issue = "27-28"
+pages = "375-386"
+doi = "10.4414/smw.2009.12270"
+crossref_verified = "2026-10-17; Crossref title 'What makes a good lung?' (vol 139, issue 27-28, 375-386; author Weibel)"
+
+[data.human_morphometry]
+description = "Morphometric data for the young healthy adult human lung"
+location = "Table 1 (p. 377); text p. 377"
+provenance = "FT"
+statistic = "mean +/- 1 SE; n not stated in table (Gehr 1978: 8 lungs)"
+parameter = ["total_lung_volume_mL", "alveolar_surface_m2", "capillary_surface_m2", "capillary_volume_mL", "tissue_barrier_harmonic_um", "total_barrier_harmonic_um", "DLO2_mL_per_min_per_mmHg"]
+value = [4340.0, 130.0, 115.0, 194.0, 0.62, 1.11, 158.0]
+se = [285.0, 12.0, 12.0, 30.0, 0.04, 0.1, nan]
+missing_note = "DLO2 SE not printed. Original Gehr 1978 primary not read."

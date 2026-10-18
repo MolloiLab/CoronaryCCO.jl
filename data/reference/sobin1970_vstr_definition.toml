@@ -1,0 +1,36 @@
+[meta]
+id = "sobin1970_vstr_definition"
+data_type = "measurement"
+validates = "Definition of the vascular space-tissue ratio (VSTR, the S of sheet-flow theory) as a planform (face-on) area fraction of one alveolar wall, and the cat VSTR value. Fixes how S, the sheet area and the sheet thickness h combine into a blood volume."
+species = "cat"
+preparation = "Cat lungs perfused in situ with liquid silicone elastomer at 25 mmHg, catalysed at 15 or 25 mmHg static pressure, airway pressure 10 cmH2O; formalin-steam fixed; planimetry of face-on photographs of frozen sections of interalveolar walls (six lobes per cat)."
+conditions = "Zone-3-like static filling, airway pressure 10 cmH2O."
+verification = "FT"
+access = "Full-text PDF from a Wayback Machine capture of circres.ahajournals.org (2017-08-12), read from a scratch copy (not stored in any repo). Abstract, p. 400 (VSTR definition and footnote 1) and Methods 'Morphometric Analysis' (~p. 405) read from the text layer."
+notes = """Abstract: the sheet-flow model is 'a continuous sheet bounded on two sides by endothelium held apart by connective tissue and cellular posts'. 'A vascular space-tissue ratio, VSTR, is defined as the ratio of vascular lumen volume to the circumscribing tissue volume.'
+p. 400 footnote 1: 'the circumscribing volume is that enclosed between surfaces T and B [the two endothelial surfaces]. The tissues (epithelial, interstitial and endothelial) external to the surfaces T and B are excluded. Thus, VSTR does not represent the volumetric fraction of the total interalveolar septum occupied by blood.'
+Methods: VSTR was 'obtained from two planimetric measurements of the tracing: the total surface area A_s of a demarcated area of the alveolar wall and the surface area of all the posts A_p within that area ... A_v = A_s - A_p, and ... VSTR = A_v/A_s.'
+So VSTR is an area fraction of the wall seen face-on (planform), and the circumscribing volume is A_s x h. Blood volume of a wall of planform area A_s is therefore VSTR x A_s x h, with A_s counted ONCE per septum (one face), not per alveolar surface (each septum faces two alveoli).
+Results (abstract): mean VSTR per cat 0.91-0.92, irrespective of intracapillary pressure (15 vs 25 mmHg). One photograph quoted in the Discussion gave 0.894."""
+use_in_model = """Capillary blood volume of a sheet: V = S x A_planform x h, with S = VSTR (area fraction of vascular space in the face-on view) and A_planform = area of one face of the septum. Do not use a morphometric surface that counts both faces (alveolar or capillary surface area) as A_planform without halving it."""
+
+[source]
+authors = ["Sobin SS", "Tremer HM", "Fung YC"]
+year = 1970
+title = "Morphometric basis of the sheet-flow concept of the pulmonary alveolar microcirculation in the cat"
+journal = "Circ Res"
+volume = "26"
+issue = "3"
+pages = "397-414"
+doi = "10.1161/01.RES.26.3.397"
+crossref_verified = "2026-10-17; Crossref title exact match (vol 26, pages 397-414; authors Sobin, Tremer, Fung)"
+
+[data.vstr_cat]
+description = "Vascular space-tissue ratio of the cat interalveolar capillary sheet (planform area fraction of vascular lumen)"
+location = "Abstract; Methods 'Morphometric Analysis' (VSTR = A_v/A_s); Discussion (single photograph 0.894)"
+provenance = "FT"
+statistic = "range of per-cat means (six lobes each); SDs are in a table not stored here"
+VSTR_per_cat_mean_range = [0.91, 0.92]
+perfusion_pressure_mmHg = [15.0, 25.0]
+airway_pressure_cmH2O = 10.0
+missing_note = "Per-animal table values (with SD) not transcribed. No whole-lung volume or area is given."
