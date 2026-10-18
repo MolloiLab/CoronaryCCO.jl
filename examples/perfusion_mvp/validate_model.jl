@@ -59,15 +59,21 @@ let
     for (v, I) in enumerate(vidx), d in 1:3
         q[d, v] = lower[d] + I[d] - 1
     end
-    terr, tshare = territory_shares(tree.b[:, terms], q)
-    terr .= max.(terr, 1.0f-7)
     # solved circuits: the pipeline session's shared copy when it has one, else the file
     loadcirc() = isdefined(@__MODULE__, :circuits) ? circuits() : deserialize(ENV["CIRC"])
     veins = length(ARGS) >= 4 ? load_vtree(ARGS[4]) : nothing
-    vleaf = veins === nothing ? nothing : haskey(ENV, "CIRC") ? loadcirc().Cr.vleaf : (
-            vn = zeros(Int, length(veins.r)); foreach(p -> p > 0 && (vn[p] += 1), veins.parent);
-            couple_veins(tree, terr, veins, terms, findall(==(0), vn); phys = FlowSpec(organ = "heart"))[1]
-        )
+    # territories, their voxel shares and the venous pairing come from flow() (Vasculature.flow): the pipeline's flow step
+    # (INPUTS + CIRC), or one flow() call here; only without grown veins (companion veins, which flow() does not take) are
+    # the territories formed here and the circuits solved below
+    FL = nothing
+    if haskey(ENV, "CIRC") && haskey(ENV, "INPUTS")
+        FI = deserialize(ENV["INPUTS"]); terr = FI.terr; tshare = FI.pairs; vleaf = loadcirc().Cr.vleaf
+    elseif veins !== nothing
+        FL = Vasculature.flow(FlowSpec(organ = "heart", radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))), tree, veins, q)
+        terr = FL.terr; tshare = FL.pairs; vleaf = FL.vleaf
+    else
+        terr, tshare = territory_shares(tree.b[:, terms], q); terr .= max.(terr, 1.0f-7); vleaf = nothing
+    end
     # coverage: distance from every myocardial voxel to its nearest terminal, and terminal density
     own1 = nearest_terminal(tree.b[:, terms], q)
     gapd = [sqrt(sum(abs2, q[:, v] .- tree.b[:, terms[own1[v]]])) for v in 1:size(q, 2)]
@@ -122,7 +128,7 @@ let
     phase("inputs+coverage")
     res = Dict{String, Any}("n" => n, "segments" => ns, "terminals" => length(terms), "coverage" => coverage)
     # maximal dilation first: its microvascular scale κ is shared by the rest state
-    Cstress = haskey(ENV, "CIRC") ? nothing : circuit(tree, terr; state = :stress, veins, vleaf, phys = FlowSpec(organ = "heart", radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))))
+    Cstress = haskey(ENV, "CIRC") ? nothing : FL !== nothing ? FL.stress : circuit(tree, terr; state = :stress, veins, vleaf, phys = FlowSpec(organ = "heart", radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))))
     # pieces: 1 mm voxels, then Voronoi cells of K random voxel seeds (equal mean volume; they follow the thin
     # wall, unlike cubes); fixed seed, so both states use the same pieces every run
     RNG = Xoshiro(1); nv = length(vidx)
@@ -137,7 +143,7 @@ let
         C = if haskey(ENV, "CIRC")                 # solved circuits (; Cs, Cr) from an earlier run on the same inputs
             (cc = loadcirc(); state === :rest ? cc.Cr : cc.Cs)
         else
-            state === :rest ? circuit(tree, terr; state, veins, vleaf, phys = FlowSpec(organ = "heart", radius_cv = rcv), kappa = Cstress.resist.kappa) : Cstress
+            state === :stress ? Cstress : FL !== nothing ? FL.rest : circuit(tree, terr; state, veins, vleaf, phys = FlowSpec(organ = "heart", radius_cv = rcv), kappa = Cstress.resist.kappa)
         end
         hd = C.phys.hd
         d_um = 2000 .* tree.r
