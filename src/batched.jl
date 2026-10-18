@@ -90,7 +90,11 @@ function evaluate_candidates!(cok, cscore, copt, cq, cit, bj, nc, V, pts)
         T = typeof(V.m.lf)
         c = (i - 1) % nn + 1; k = (i - 1) ÷ nn + 1
         live = false
-        c <= nc[k] && (live = bifurcation_clear(V, pts[k], bj[c, k]))
+        if c <= nc[k]
+            s = bj[c, k]; rs = seg_radius(V, s)
+            live = bifurcation_clear(V, pts[k], s, rs)
+            cscore[i] = rs # the segment's radius, for pass 2 (its score overwrites it)
+        end
         cok[i] = live; cit[i] = Int32(0)
     end
     hlive = Array(cok); idx = Int32[i for i in eachindex(hlive) if hlive[i]]
@@ -100,7 +104,7 @@ function evaluate_candidates!(cok, cscore, copt, cq, cit, bj, nc, V, pts)
         T = typeof(V.m.lf)
         i = didx[j]; c = (i - 1) % nn + 1; k = (i - 1) ÷ nn + 1
         p = pts[k]; s = bj[c, k]
-        ok, vol, pOpt, qNew, it = try_candidate!(nothing, V, p, s)
+        ok, vol, pOpt, qNew, it = try_candidate!(nothing, V, p, s, cscore[i])
         cok[i] = ok; cscore[i] = ok ? candidate_score(V, s, vol) : zero(T)
         copt[i] = pOpt; cq[i] = qNew; cit[i] = Int32(max(it, 0))
     end

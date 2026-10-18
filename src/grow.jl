@@ -539,7 +539,12 @@ end
 
 HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared base tree.
 """
-@inline function try_candidate!(ws, E, p::P3{T}, s::Int32) where {T}
+# The radius of segment s: exact in fast mode (a walk to the root), the stored value otherwise.
+@inline seg_radius(E, s::Int32) = _isfast(E) ? fast_radius(E, s) : E.m.radius[s]
+
+@inline try_candidate!(ws, E, p::P3, s::Int32) = try_candidate!(ws, E, p, s, seg_radius(E, s))
+# `rs` is segment s's radius (seg_radius), passed in when the caller already has it (it costs a walk to the root).
+@inline function try_candidate!(ws, E, p::P3{T}, s::Int32, rs::T) where {T}
     m = E.m; dom = E.dom; prm = E.p
     fail = (false, zero(T), p, zero(T), 0)
     # the stage schedule already chose s (nearest_k!); upstream also requires a terminal or its parent at every stage
@@ -547,7 +552,6 @@ HctccoModel::isAddable(p, s, nbIter, tolerance) evaluated against the shared bas
     distance_valid(E, p, T(0.05)) || return fail
     # isValidConnection
     norm3(sub3(p, m.pos[s])) > _maxconn(T, prm) && return fail
-    rs = _isfast(E) ? fast_radius(E, s) : m.radius[s]
     # upstream's smallest host (0.7 r < 5 µm), at the final scale like every other size test (collision = :final); at the
     # current scale early radii shrink with the terminal count and no host passes above ~23 M lung terminals. The scale is
     # the forest's largest cap / current root ratio, so where a tree's cap does not bind (the heart's LCA, 2.54 mm cap vs a
@@ -715,16 +719,16 @@ end
 # Evaluate candidate segment s for terminal point pt (the bifurcation-intersection pre-check,
 # then isAddable). Shared by sequential steps and batched rounds.
 @inline function eval_candidate(E, ws, pt::P3{T}, s::Int32) where {T}
-    bifurcation_clear(E, pt, s) || return (false, zero(T), pt, zero(T), -1)
-    return try_candidate!(ws, E, pt, s)
+    rs = seg_radius(E, s)
+    bifurcation_clear(E, pt, s, rs) || return (false, zero(T), pt, zero(T), -1)
+    return try_candidate!(ws, E, pt, s, rs)
 end
 
 # The pre-test of a candidate: the provisional bifurcation (at the centroid of the new point and segment s's two ends)
 # must not intersect the tree. Batched evaluation runs it as its own pass (batched.jl).
-@inline function bifurcation_clear(E, pt::P3{T}, s::Int32) where {T}
+@inline function bifurcation_clear(E, pt::P3{T}, s::Int32, rs::T) where {T}
     m = E.m
     ptB = div3(add3(add3(pt, m.pos[s]), m.pos[m.parent[s]]), T(3))
-    rs = _isfast(E) ? fast_radius(E, s) : m.radius[s]
     return !intersects_bifurcation(E, pt, ptB, rs, s)
 end
 
