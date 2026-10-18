@@ -448,8 +448,8 @@ function _hashnormal(j::Integer)
     return sqrt(-2log(u1)) * cospi(2u2)
 end
 
-# children (CSR) and breadth-first order of a tree
-function _topology(parent::Vector{Int32})
+# children of a tree (CSR): number of children, offsets, children
+function _children(parent::Vector{Int32})
     n = length(parent)
     nchild = zeros(Int32, n)
     for j in 1:n
@@ -464,7 +464,13 @@ function _topology(parent::Vector{Int32})
         p = parent[j]; p == 0 && continue
         kids[fill_[p]] = j; fill_[p] += 1
     end
-    order = Int32[j for j in 1:n if parent[j] == 0]
+    return nchild, ptr, kids
+end
+
+# breadth-first order of a tree (every parent before its children)
+function _bfs(parent::Vector{Int32})
+    _, ptr, kids = _children(parent)
+    order = Int32[j for j in 1:length(parent) if parent[j] == 0]
     h = 1
     while h <= length(order)
         j = order[h]; h += 1
@@ -472,17 +478,39 @@ function _topology(parent::Vector{Int32})
             push!(order, kids[c])
         end
     end
-    return nchild, ptr, kids, order
+    return order
+end
+
+# the terminal segments (no children) in index order
+function _terminals(parent::Vector{Int32})
+    n = length(parent); inner = falses(n)
+    for j in 1:n
+        p = parent[j]; p == 0 || (inner[p] = true)
+    end
+    return Int32[j for j in 1:n if !inner[j]]
+end
+
+# each of the n segments' terminal number (0 if it has children)
+function _tindex(terminals, n)
+    tidx = zeros(Int32, n)
+    for (i, j) in enumerate(terminals)
+        tidx[j] = i
+    end
+    return tidx
+end
+
+@inline function _seglen(t::VTree, j)
+    L = 0.0f0
+    for d in 1:3
+        L += (t.b[d, j] - t.a[d, j])^2
+    end
+    return max(sqrt(L), 1.0f-3)
 end
 
 function _lengths(t::VTree)
     n = nseg(t); len = Vector{F32}(undef, n); vol = similar(len)
     AK.foreachindex(1:n; min_elems = 4096) do j
-        L = 0.0f0
-        for d in 1:3
-            L += (t.b[d, j] - t.a[d, j])^2
-        end
-        L = max(sqrt(L), 1.0f-3)
+        L = _seglen(t, j)
         len[j] = L; vol[j] = F32(π) * t.r[j]^2 * L * 1.0f-3
     end
     return len, vol
@@ -556,6 +584,23 @@ function _preorder(parent::Vector{Int32}, ptr, kids)
     h == n || throw(ArgumentError("parent pointers do not form a forest"))
     return pre
 end
+_preorder(parent::Vector{Int32}) = ((_, ptr, kids) = _children(parent); _preorder(parent, ptr, kids))
+
+# The solver's arterial numbering: segments with children first, then the terminals, both in preorder. Returns `perm`
+# (perm[k] = the caller's segment k), `tb` (terminals before each segment with children, in preorder) and ni.
+function _arterial_numbering(parent::Vector{Int32})
+    nchild, ptr, kids = _children(parent)
+    n = length(parent); ni = count(>(0), nchild)
+    perm = Vector{Int32}(undef, n); tb = zeros(Int32, ni); a = 0; b = ni
+    for j in _preorder(parent, ptr, kids)
+        if nchild[j] > 0
+            a += 1; perm[a] = j; tb[a] = b - ni
+        else
+            b += 1; perm[b] = j
+        end
+    end
+    return perm, tb, ni
+end
 
 # Arterial tree + terminal beds + venous tree, solved for flows and pressures, in the solver's own
 # numbering (see above). Venous segments are numbered in preorder; `vsorted` lists the terminals
@@ -613,9 +658,11 @@ struct _Solver{VF <: AbstractVector{F32}, VI <: AbstractVector{Int32}, VB <: Abs
     hpar::Vector{Int32}; hvpar::Vector{Int32}; hma::Vector{Bool}; hmv::Vector{Bool}
 end
 
-# Builds the solver in its own numbering. Returns it and the permutations back to the caller's
-# numbering: `perm[k]` is the caller's arterial segment k of the solver, `tperm[i]` the caller's
-# terminal i, `vperm[k]` the caller's vein k.
+# Builds the solver in its own numbering. Returns it, the permutations back to the caller's
+# numbering (`perm[k]` is the caller's arterial segment k of the solver, `tperm[i]` the caller's
+# terminal i, `vperm[k]` the caller's vein k) and the arteries' relative viscosity at their passive diameter.
+# Resistances and micro-vessel flags are computed directly in solver numbering, so no caller-numbered copies coexist
+# with the solver's arrays (memory: the build is the flow's peak).
 # After the last solve only the solution (q, pa, qt, qv, pv, so2), the resistances (rr, rv, rcap) and the host topology and
 # micro-vessel flags (_micro_resistance) are read: release the
 # solver's work arrays (CG vectors, scan and Euler-tour buffers, preconditioner, layout) before the circuit's outputs are
@@ -634,20 +681,12 @@ function _release_work!(S::_Solver)
 end
 
 function _solver(
-        parent, nchild, ptr, kids, vparent, vptr, vkids, vleaf, tidx, ra, rv, rcap, ma, mv, len, lim, Pa, Pb, l0, hd, to;
+        t::VTree, vt::VTree, vleaf, terminals, rcap, lim, Pa, Pb, l0, hd, mup, d_art_micro, d_ven_micro, to;
         metabolic::Bool = true
     )
+    parent = t.parent; vparent = vt.parent
     n = length(parent); nv = length(vparent)
-    # arteries: segments with children first, then the terminals, both in preorder
-    ni = count(>(0), nchild); nt = n - ni
-    perm = Vector{Int32}(undef, n); tb = zeros(Int32, ni); a = 0; b = ni
-    for j in _preorder(parent, ptr, kids)
-        if nchild[j] > 0
-            a += 1; perm[a] = j; tb[a] = b - ni
-        else
-            b += 1; perm[b] = j
-        end
-    end
+    perm, tb, ni = _arterial_numbering(parent); nt = n - ni; tidx = _tindex(terminals, n)
     iperm = similar(perm); iperm[perm] = 1:n
     par = Int32[parent[perm[k]] == 0 ? 0 : iperm[parent[perm[k]]] for k in 1:n]
     sz = ones(Int32, ni); nl = zeros(Int32, ni)
@@ -685,7 +724,7 @@ function _solver(
     resize!(ckid, cptr[end] - 1)
     tperm = Int32[tidx[perm[ni + i]] for i in 1:nt]
     # veins: preorder
-    vperm = _preorder(vparent, vptr, vkids)
+    vperm = _preorder(vparent)
     viperm = similar(vperm); viperm[vperm] = 1:nv
     vpar = Int32[vparent[vperm[k]] == 0 ? 0 : viperm[vparent[vperm[k]]] for k in 1:nv]
     vsz = ones(Int32, nv)
@@ -703,9 +742,20 @@ function _solver(
         vcum[vdrain[i] + 1] += 1
     end
     vcum = accumulate(+, vcum)
-    # path lengths ℓ for the conducted metabolic signal, whose subtree sums run in bands of ℓ
-    lp = len[perm]; Lp = zeros(F32, n)
-    for k in 1:n
+    # Poiseuille resistances with the in vivo viscosity at the passive diameters, and the micro-vessel flags
+    ra = Vector{F32}(undef, n); mu0 = similar(ra); ma = Vector{Bool}(undef, n)
+    AK.foreachindex(1:n; min_elems = 4096) do k
+        j = perm[k]; d = 2000.0f0 * t.r[j]
+        mu0[k] = mu_rel(d, hd); ra[k] = poiseuille(_seglen(t, j), t.r[j], mup * mu0[k]); ma[k] = d < d_art_micro
+    end
+    rv = Vector{F32}(undef, nv); mv = Vector{Bool}(undef, nv)
+    AK.foreachindex(1:nv; min_elems = 4096) do k
+        j = vperm[k]; d = 2000.0f0 * vt.r[j]
+        rv[k] = poiseuille(_seglen(vt, j), vt.r[j], mup * mu_rel(d, hd)); mv[k] = d < d_ven_micro
+    end
+    # path lengths ℓ for the conducted metabolic signal, whose subtree sums run in bands of ℓ (O₂-regulated organs only)
+    lp = metabolic ? F32[_seglen(t, perm[k]) for k in 1:n] : F32[]; Lp = zeros(F32, length(lp))
+    for k in eachindex(lp)
         p = par[k]; Lp[k] = (p == 0 ? 0.0f0 : Lp[p]) + lp[k]
     end
     # the conducted metabolic signal is computed only for an O2-regulated organ at rest (`_metabolic!`); otherwise its band
@@ -741,7 +791,7 @@ function _solver(
         n, ni, nt, nv, AK.get_backend(to(zeros(F32, 1))), lev,
         to(par), to(sz), to(dep), to(tb), to(te), to(cptr), to(ckid), to(croot), to(lord),
         to(vpar), to(vsz), to(vdep), to(vcum), to(vsorted), to(vdrain),
-        to(ra[perm]), to(rv[vperm]), to(F32.(rcap[tperm])), to(ma[perm]), to(mv[vperm]),
+        to(ra), to(rv), to(F32.(rcap[tperm])), to(ma), to(mv),
         to(ones(F32, n)), z(n), z(nv), F32(Pa), F32(Pb),
         xs(nt + nv), xs(nband * nt), et(2ni + 2nv), xs(nt), et(2ni), xs(nv), et(2nv),
         z(ni), z(nv), z(nv),
@@ -752,9 +802,9 @@ function _solver(
         to(lim.hi), to(lim.lo), to(mut), mua, mudl,
         z(4096), s(), s(), s(), s(), s(), s(), s(), s(), s(), s(), s(), to(F32[3nt]), s(), s(),
         Ref(0), Ref(false), Ref(-1.0f0),
-        par, vpar, ma[perm], mv[vperm]
+        par, vpar, ma, mv
     )
-    return S, perm, iperm, tperm, vperm
+    return S, perm, iperm, tperm, vperm, to(mu0)
 end
 
 # Path sums D[k] = Σ w over the path from the root to segment k (inclusive), for the first
@@ -1505,63 +1555,73 @@ end
 
 # Everything one steady solve needs: the solver in its own numbering (`_solver`), the vessel walls, the capillary sheets,
 # distension, stenoses and the terminals' O₂ use, and what the circuit's outputs are assembled from.
-function _build(t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::Symbol, veins, vleaf, reference, stenosis, demand, to)
+# Resolved arterial and venous lumen volumes (mL). Companion veins (`s`, no grown tree) hold s² of each artery's volume.
+function _resolved_volumes(t::VTree, vt::VTree, companion::Bool, s)
+    vol = _lengths(t)[2]
+    return sum(vol), companion ? sum((s * s) .* vol) : sum(_lengths(vt)[2])
+end
+
+# Capillary bed of terminal i (tube capillaries): its share w[i] of the capillary volume as parallel functional capillaries.
+function _cap_resistance(phys::FlowSpec, w, vcap_total)
+    rc = phys.cap_diameter_um * 0.5f-3
+    v1 = F32(π) * rc^2 * phys.cap_length_mm * 1.0f-3
+    r1 = poiseuille(phys.cap_length_mm, rc, phys.plasma_viscosity_mPas * mu_rel(phys.cap_diameter_um, phys.hd))
+    ncap = [vcap_total * w[i] / v1 for i in eachindex(w)]
+    return [r1 / ncap[i] for i in eachindex(w)]
+end
+
+# Smallest and largest passive diameter (µm) of the vasoactive arteries (D₀ < d_active).
+function _active_range(t::VTree, d_active)
+    lo = Inf32; hi = -Inf32; found = false
+    for j in 1:nseg(t)
+        d = 2000.0f0 * t.r[j]
+        d < d_active && (lo = min(lo, d); hi = max(hi, d); found = true)
+    end
+    return found ? (lo, hi) : (1.0f0, 2.0f0)
+end
+
+# Build-only arrays live in the helpers above and in `_solver`, so they are freed before the solve; what the circuit's
+# outputs need after the solve (lengths, volumes, orders, the venous resistances and flags) is recomputed or read back
+# from the solver then (`_circuit`), not held through it.
+# `reference`, `stenosis` and `demand` are not specialized on: one compiled build serves every scenario.
+function _build(
+        t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::Symbol, veins, vleaf, @nospecialize(reference),
+        @nospecialize(stenosis), @nospecialize(demand), to
+    )
     n = nseg(t)
-    nchild, ptr, kids, order = _topology(t.parent)
-    terminals = Int32[j for j in 1:n if nchild[j] == 0]
+    terminals = _terminals(t.parent)
     nt = length(terminals)
     length(territory_ml) == nt || throw(ArgumentError("territory_ml needs one entry per terminal ($nt)"))
-    tidx = zeros(Int32, n)
-    for (i, j) in enumerate(terminals)
-        tidx[j] = i
-    end
     vol_tissue = F32(sum(territory_ml)); mass_g = vol_tissue * phys.rho; hd = phys.hd; mup = phys.plasma_viscosity_mPas
-    len, vol = _lengths(t); vart = sum(vol)
     vblood = phys.fb * vol_tissue
     # venous tree (companion veins share the arterial topology)
-    s = sqrt(phys.share_ven / phys.share_art)
-    if veins === nothing
+    s = sqrt(phys.share_ven / phys.share_art); companion = veins === nothing
+    if companion
         vt = VTree(t.parent, t.a, t.b, s .* t.r, t.isbase); vl = terminals
-        vptr = ptr; vkids = kids; vorder = order; vlen = len; vvol = (s * s) .* vol
     else
         length(vleaf) == nt || throw(ArgumentError("vleaf needs one venous segment per terminal"))
         vl = Int32.(vleaf)
         # A grown venous tree is sized by CCO's arterial law. With venous_scale = :volume_share its
         # radii are scaled uniformly so it holds share_ven/share_art of the resolved arterial volume
         # (Kassab et al. 1994), as companion veins do; with :grown its own (anatomically anchored)
-        # radii stay.
-        vlen, vvol = _lengths(veins)
-        fr = phys.venous_scale === :grown ? 1.0f0 : sqrt(s * s * vart / sum(vvol))
-        vt = VTree(veins.parent, veins.a, veins.b, veins.r .* F32(fr), veins.isbase)
-        _, vptr, vkids, vorder = _topology(vt.parent); vlen, vvol = _lengths(vt)
+        # radii stay (the tree itself, no copy).
+        if phys.venous_scale === :grown
+            vt = veins
+        else
+            vart0, vven0 = _resolved_volumes(t, veins, false, s)
+            vt = VTree(veins.parent, veins.a, veins.b, veins.r .* F32(sqrt(s * s * vart0 / vven0)), veins.isbase)
+        end
     end
-    nv = nseg(vt); vven = sum(vvol)
+    vart, vven = _resolved_volumes(t, vt, companion, s)
+    nv = nseg(vt)
     vv_unres = max(0.0f0, phys.share_ven * vblood - vven)
     vcap_total = phys.share_cap * vblood
-    ra = similar(len); rv = Vector{F32}(undef, nv); mu0 = similar(len)
-    AK.foreachindex(1:n; min_elems = 4096) do j
-        mu0[j] = mu_rel(2000.0f0 * t.r[j], hd)
-        ra[j] = poiseuille(len[j], t.r[j], mup * mu0[j])
-    end
-    AK.foreachindex(1:nv; min_elems = 4096) do k
-        rv[k] = poiseuille(vlen[k], vt.r[k], mup * mu_rel(2000.0f0 * vt.r[k], hd))
-    end
-    # capillary bed of terminal i: its share of the capillary volume as parallel functional capillaries
-    rc = phys.cap_diameter_um * 0.5f-3
-    v1 = F32(π) * rc^2 * phys.cap_length_mm * 1.0f-3
-    r1 = poiseuille(phys.cap_length_mm, rc, mup * mu_rel(phys.cap_diameter_um, hd))
-    w = F32.(territory_ml) ./ vol_tissue
-    ncap = [vcap_total * w[i] / v1 for i in 1:nt]
-    rcap = [r1 / ncap[i] for i in 1:nt]
-    # microcirculation: arteries < d_art_micro, veins < d_ven_micro and the capillary beds
-    ma = [2000.0f0 * t.r[j] < phys.d_art_micro for j in 1:n]
-    mv = [2000.0f0 * vt.r[k] < phys.d_ven_micro for k in 1:nv]
     # vasoactive arteries
-    d0c = F32[2000.0f0 * t.r[j] for j in 1:n if 2000.0f0 * t.r[j] < phys.d_active]
-    lim = _Limits(isempty(d0c) ? 1.0f0 : minimum(d0c), isempty(d0c) ? 2.0f0 : maximum(d0c), max(phys.p_in, 1.0f0), _wall(phys))
-    S, perm, iperm, tperm, vperm = _solver(
-        t.parent, nchild, ptr, kids, vt.parent, vptr, vkids, vl, tidx, ra, rv, rcap, ma, mv, len, lim,
-        phys.p_in, phys.p_out, 10.0f0 * phys.atp_l0, hd, to; metabolic = state === :rest && phys.regulation !== :passive
+    dlo, dhi = _active_range(t, phys.d_active)
+    lim = _Limits(dlo, dhi, max(phys.p_in, 1.0f0), _wall(phys))
+    S, perm, iperm, tperm, vperm, mu0d = _solver(
+        t, vt, vl, terminals, _cap_resistance(phys, F32.(territory_ml) ./ vol_tissue, vcap_total), lim, phys.p_in, phys.p_out,
+        10.0f0 * phys.atp_l0, hd, mup, phys.d_art_micro, phys.d_ven_micro, to; metabolic = state === :rest && phys.regulation !== :passive
     )
     sheet = nothing
     if phys.capillary === :sheet
@@ -1606,25 +1666,27 @@ function _build(t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::S
     for (j, area, Ls) in stens
         A0 = F32(π) * (t.r[j] * 1.0f-3)^2; As = F32(area) * A0
         mu = mup * 1.0f-3 * mu_rel(2000.0f0 * t.r[j], hd)
-        Ls = min(F32(Ls), len[j])
+        Lj = _seglen(t, j)
+        Ls = min(F32(Ls), Lj)
         f = 8.0f0 * F32(π) * mu * Ls * 1.0f-3 / As^2 * 1.0f-6 / 133.322f0
         exit = !any(k -> t.parent[k] == j, segs)
         s2 = exit ? 1060.0f0 * 1.52f0 / (2A0^2) * (1 / F32(area) - 1)^2 * 1.0f-12 / 133.322f0 : 0.0f0
-        push!(sten, (iperm[j], Ls / len[j], f, s2))
+        push!(sten, (iperm[j], Ls / Lj, f, s2))
     end
-    tg = to(terr_g[tperm]); mu0d = to(mu0[perm]); stend = to(sten)
-    return (; S, W, act, d0, dem, dist, hd, iperm, len, lim, mass_g, mu0d, mv, n, nt, nv, order, perm, rcap, rv, s, seg, sheet, sten, stend, t, terminals, tg, tidx, tperm, vart, vblood, vcap_total, vl, vol, vorder, vperm, vt, vv_unres, vven, vvol, w)
+    tg = to(terr_g[tperm]); stend = to(sten)
+    tsol = iperm[terminals]                                                  # terminal i's solver segment
+    return (; S, W, act, companion, d0, dem, dist, hd, lim, mass_g, mu0d, n, nt, nv, perm, s, seg, sheet, sten, stend, t, terminals, tg, tperm, tsol, vart, vblood, vcap_total, vl, vperm, vt, vv_unres, vven)
 end
 
 function _circuit(
-        t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::Symbol, veins, vleaf, reference, kappa, kappa_init, stenosis,
-        demand, verbose, to, pairing = nothing
+        t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::Symbol, veins, vleaf, @nospecialize(reference),
+        @nospecialize(kappa), kappa_init, @nospecialize(stenosis), @nospecialize(demand), verbose, to, @nospecialize(pairing = nothing)
     )
     # a venous coupling pass (`pairing`) keeps the solver and its last state, and only re-pairs the beds with their venules
     B = pairing !== nothing && pairing.B !== nothing ? _repair(pairing.B, vleaf, to) :
         _build(t, territory_ml; phys, state, veins, vleaf, reference, stenosis, demand, to)
     pairing === nothing || (pairing.B = B)
-    (; S, W, act, d0, dem, dist, hd, iperm, len, lim, mass_g, mu0d, mv, n, nt, nv, order, perm, rcap, rv, s, seg, sheet, sten, stend, t, terminals, tg, tidx, tperm, vart, vblood, vcap_total, vl, vol, vorder, vperm, vt, vv_unres, vven, vvol, w) = B
+    (; S, W, act, companion, d0, dem, dist, hd, lim, mass_g, mu0d, n, nt, nv, perm, s, seg, sheet, sten, stend, t, terminals, tg, tperm, tsol, vart, vblood, vcap_total, vl, vperm, vt, vv_unres, vven) = B
 
 
     # ---- microvascular scale κ at maximal dilation (vessels on their passive curves): the whole bed's
@@ -1664,17 +1726,31 @@ function _circuit(
     if pairing !== nothing && pairing.probe
         # a coupling pass reads only the bed pressures (arterial at each terminal, venous at every vein); the solver is kept
         pv = Vector{F32}(undef, nv); pv[vperm] = Array(S.pv)
-        return (; pa_term = Array(S.pa)[iperm[terminals]], pv, kappa)
+        return (; pa_term = Array(S.pa)[tsol], pv, kappa)
     end
+    return _assemble(B, territory_ml, phys, state, kappa, ctone, iters, dxlast)
+end
+
+# The circuit's outputs from a finished solve (`B` from `_build`), in the caller's numbering. A function of its own, with
+# the same argument types for every state, reference and stenosis, so it is compiled once per organ layout.
+function _assemble(B, territory_ml::AbstractVector, phys::FlowSpec, state::Symbol, kappa::F32, ctone, iters, dxlast)
+    (; S, W, act, companion, dem, hd, mass_g, n, nt, nv, perm, s, t, terminals, tperm, vart, vblood, vcap_total, vl, vperm, vt, vv_unres, vven) = B
     _release_work!(S) # only the solution and resistances are read from here on
-    sheet === nothing || (rcap[tperm] = Array(S.rcap))     # the sheet beds' final resistances
     rmc = _micro_resistance(S, mass_g)
+    # what the outputs need besides the solution, rebuilt now rather than held through the solve (the same values): the
+    # capillary, venous (distended, if the veins distend) and sheet resistances and venous micro flags from the solver;
+    # lengths, volumes, orders and terminal numbers from the trees
+    rcap = Vector{F32}(undef, nt); rcap[tperm] = Array(S.rcap)
+    rv = Vector{F32}(undef, nv); rv[vperm] = Array(S.rv)
+    mv = Vector{Bool}(undef, nv); mv[vperm] = S.hmv
+    len, vol = _lengths(t); vvol = companion ? (s * s) .* vol : _lengths(vt)[2]
+    order = _bfs(t.parent); vorder = companion ? order : _bfs(vt.parent)
+    tidx = _tindex(terminals, n); w = F32.(territory_ml) ./ F32(sum(territory_ml))
     # back to the caller's numbering
     q = Vector{F32}(undef, n); pa = similar(q); rr = similar(q); qt = Vector{F32}(undef, nt); so2 = similar(qt)
     qv = Vector{F32}(undef, nv); pv = similar(qv)
     q[perm] = Array(S.q); pa[perm] = Array(S.pa); rr[perm] = Array(S.rr)
     qt[tperm] = Array(S.qt); so2[tperm] = Array(S.so2); qv[vperm] = Array(S.qv); pv[vperm] = Array(S.pv)
-    dist === nothing || (rv[vperm] = Array(S.rv))     # distended venous resistances, for the pressure-drop shares
     nneg = count(<=(0), qt)
     nneg > 0 && @warn "$nneg terminals with reversed or zero flow (venous pressure above arterial); their beds are treated as stagnant"
     @inbounds for i in 1:nt
