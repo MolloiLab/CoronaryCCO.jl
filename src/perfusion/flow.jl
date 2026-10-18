@@ -1499,6 +1499,7 @@ function _repair(B, vleaf, to)
         vcum[vdrain[i] + 1] += 1
     end
     copyto!(S.vdrain, to(vdrain)); copyto!(S.vsorted, to(Int32.(sortperm(vdrain)))); copyto!(S.vcum, to(accumulate(+, vcum)))
+    S.iters[] = 0 # CG sweeps are counted per solve (resist.sweeps), not over all passes
     return merge(B, (; vl))
 end
 
