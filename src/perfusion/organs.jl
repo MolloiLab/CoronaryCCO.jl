@@ -289,18 +289,19 @@ const LUNG_FLOW = FlowSpec(;
     # [huang2011_human_sheet_flow_parameters, clark2010_acinar_sheet_flow_parameters]
     sheet_alpha_um_cmH2O = 0.127f0,
     # 1. Vascular-space-tissue ratio: the vascular fraction of the sheet's face-on area (Sobin 1970), human value via
-    # Huang 2011; paired with A = one face (73 m2), S x A = 64 m2, close to half the 126 m2 two-faced capillary
-    # surface (Clark 2010: 0.86 x 73 = 63). [huang2011_human_sheet_flow_parameters, sobin1970_vstr_definition]
+    # Huang 2011, paired with his A = 126 m2 (below). [huang2011_human_sheet_flow_parameters, sobin1970_vstr_definition]
     sheet_s = 0.88f0,
-    # m2/mL. Derived: the sheet area of Fung & Sobin's law is the alveolar sheet seen face-on, one face ('the total
-    # vascular space is SA', Fung & Sobin 1972 p. 460). Each septum has air on both faces, so A = half of Gehr's 146
-    # m2 alveolar surface = 73 m2 (Clark 2010, 2011), over XCAT's lung volume 2810 mL. Corrected 2026-10-18 from 126
-    # m2 (Huang 2011), which is the capillary surface counting both faces (audit; For Dale K3). Gehr's areas are at
-    # full inflation and are applied to XCAT's 2810 mL without volume scaling (as before; Clark scales by
-    # (V/V_TLC)^(2/3)). Check: S A h0 = 0.88 x 73 m2 x 3.5 um = 225 mL vs Weibel's morphometric 194 mL (at zero
-    # transmural pressure only). [fung1972_alveolar_sheet_elasticity, clark2010_acinar_sheet_flow_parameters,
-    # clark2011_capillary_compliance_lung_volume, weibel2009_human_capillary_volume_morphometry]
-    sheet_area_m2_per_ml = 0.02598f0,
+    # m2/mL. Huang 2011's sheet area, 126 m2 (Gehr 1978's capillary surface) over XCAT's lung volume 2810 mL. The solver
+    # uses only the sheet conductance S A / (4 mu k f Lbar^2 alpha), and Huang's whole set (S 0.88, A 126 m2, h0, alpha,
+    # k f, Lbar, all in this instance) reproduces his validated model's flows in three normal subjects within 1% (Table 4,
+    # Harris 1968 data; scratchpad replication, QUEUE K3 revisited 2026-10-18), while the one-face area (73 m2, Clark
+    # 2010/2011) with the same S gives Clark's PVR of 2.65-2.9 WU against ~1 WU measured. By Fung & Sobin's definition A
+    # is one face, so one factor of Huang's set must offset ~1.7x; the likeliest is Lbar, scaled from the cat, not
+    # measured in humans. Caveat: S A h0 = 0.88 x 126 m2 x 3.5 um = 388 mL is twice Weibel's morphometric capillary volume
+    # (194 mL); here the sheet sets only conductance (volumes come from fb x share_*). [huang2011_human_sheet_flow_parameters,
+    # fung1972_alveolar_sheet_elasticity, clark2010_acinar_sheet_flow_parameters, clark2011_capillary_compliance_lung_volume,
+    # weibel2009_human_capillary_volume_morphometry]
+    sheet_area_m2_per_ml = 0.04484f0,
     # cP. Apparent blood viscosity in the sheet. [huang2011_human_sheet_flow_parameters,
     # clark2010_acinar_sheet_flow_parameters]
     sheet_mu_cP = 1.92f0,
