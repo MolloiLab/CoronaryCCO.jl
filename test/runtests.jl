@@ -210,9 +210,11 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test length(unique(n)) < 10                                   # nearest pairing loads some venules twice
         @test sort(b) == collect(1:10) && b == C.Territory.balanced_terminal(P, Q)
         @test all(i -> abs(P[1, b[i]] - Q[1, i]) <= 1, 1:10)            # every bed drains into a neighbouring venule
-        # more beds than venules: each venule takes at most max(1, beds ÷ venules)
-        Q2 = Float32.(hcat([[i / 2, 0.2f0, 0] for i in 0:19]...)); b2 = C.Territory.balanced_terminal(P, Q2)
-        @test maximum(count(==(j), b2) for j in 1:10) <= 3 && all(in(1:10), b2)
+        # one bed more than venules, two beds at each even venule with the odd venules free beside them: capacity
+        # max(1, 11 ÷ 10) = 1 sends each second bed to a free neighbour and leaves at most one venule with two beds (a bed
+        # with no free venule within reach falls back to its nearest), where ⌈11 / 10⌉ = 2 would load the five even ones
+        Q2 = Float32.(hcat([[j + 0.1f0 * k, 0.1f0, 0] for j in 0:2:8 for k in 1:2]..., [9.5f0, 0.1f0, 0])); b2 = C.Territory.balanced_terminal(P, Q2)
+        @test count(j -> count(==(j), b2) == 2, 1:10) <= 1 && all(in(1:10), b2)
     end
 
     @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin

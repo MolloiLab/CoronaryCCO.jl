@@ -84,8 +84,9 @@ end
     balanced_terminal(pts, q; k = 8) -> Vector{Int32}
 
 For every point of `q` (3×N, e.g. capillary beds), the column of `pts` (3×M, e.g. venous terminals) it pairs with, closest
-pairs first, with no point of `pts` taking more than max(1, ⌊N/M⌋) points of `q` while a free one lies among a point's `k` nearest;
-a point whose `k` nearest are all full takes its nearest. With matched counts this is close to one-to-one: two trees
+pairs first, with no point of `pts` taking more than max(1, ⌊N/M⌋) points of `q` while a free one is among a point's
+candidates: its `k` closest points of `pts` in the 27 grid cells around it (cells sized to hold about `k` points each, so
+these are its `k` nearest unless the points cluster); a point whose candidates are all full takes its nearest. With matched counts this is close to one-to-one: two trees
 grown to drain the same tissue each get their own partner, where plain nearest-neighbour pairing leaves many points of
 `pts` unused and loads others with several. Ties go to the lower indices, so the result is deterministic.
 """
@@ -119,10 +120,8 @@ function balanced_terminal(pts::Matrix{F32}, q::Matrix{F32}; k::Integer = 8)
         (out[i] != 0 || load[j] >= cap) && continue
         out[i] = j; load[j] += 1
     end
-    near = nearest_terminal(pts, q)
-    for i in 1:nq
-        out[i] == 0 && (out[i] = near[i])
-    end
+    miss = findall(==(0), out)
+    isempty(miss) || (out[miss] = nearest_terminal(pts, q[:, miss]))
     return out
 end
 

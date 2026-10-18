@@ -80,7 +80,7 @@ function nearest_locations!(nc, bd, bj, V, pts)
 end
 
 # In two passes, so that the costly part (Kamiya iterations and the path walk) runs only on candidates that survive the
-# bifurcation collision test (a third or more do not): first the test for every pair, then the survivors packed into one
+# bifurcation collision test (31-47% of a 1 M lung's candidates end before any Kamiya iteration, most of them here): first the test for every pair, then the survivors packed into one
 # list, so a GPU's threads stay busy instead of idling beside rejected neighbours. Each candidate's result is the same as
 # in one pass (eval_candidate).
 function evaluate_candidates!(cok, cscore, copt, cq, cit, bj, nc, V, pts)
