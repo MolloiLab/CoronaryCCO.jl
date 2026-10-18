@@ -621,9 +621,12 @@ end
 # allocated, so the two never coexist in memory. Host arrays only (a device keeps its buffers until S is collected).
 function _release_work!(S::_Solver)
     keep = (:q, :pa, :qt, :qv, :pv, :so2, :rr, :rv, :rcap, :hpar, :hvpar, :hma, :hmv) # the last four: _micro_resistance
+    kept = [getfield(S, f) for f in keep]
     for f in fieldnames(typeof(S))
         f in keep && continue
         x = getfield(S, f)
+        x isa SubArray && (x = parent(x)) # the scan buffers are views of one buffer
+        any(k -> k === x, kept) && continue # on the CPU a device array can be the host copy itself (par === hpar)
         x isa Vector && length(x) > 4096 && (empty!(x); sizehint!(x, 0))
     end
     return S
@@ -727,14 +730,19 @@ function _solver(
     # μ_rel on a log-spaced grid of diameters from 2 µm (where `mu_rel` clamps) to 400 µm
     nmu = 16384; mua = log(2.0f0); mudl = (log(400.0f0) - mua) / (nmu - 1)
     mut = F32[mu_rel(exp(mua + (m - 1) * mudl), hd) for m in 1:nmu]
-    z(k) = to(zeros(F32, k)); zl(k) = to(zeros(Int64, k)); s() = to(zeros(F32, 1))
+    z(k) = to(zeros(F32, k)); s() = to(zeros(F32, 1))
+    # one Int64 scan buffer for all passes. W[1] stays 0, the leading zero of every prefix sum (X, Xm, Xp, Xv start there);
+    # the Euler tours (Eu, Ep, Ev) start after the longest prefix sum. Only the buffers one pass uses together must not
+    # overlap (X with Eu, Xp with Ep, Xv with Ev), and every pass rewrites all of its own entries before reading them.
+    lx = max(nt + nv, nband * nt); W = to(zeros(Int64, 1 + lx + 2ni + 2nv))
+    xs(m) = view(W, 1:(1 + m)); et(m) = view(W, (2 + lx):(1 + lx + m))
     S = _Solver(
         n, ni, nt, nv, AK.get_backend(to(zeros(F32, 1))), lev,
         to(par), to(sz), to(dep), to(tb), to(te), to(cptr), to(ckid), to(croot), to(lord),
         to(vpar), to(vsz), to(vdep), to(vcum), to(vsorted), to(vdrain),
         to(ra[perm]), to(rv[vperm]), to(F32.(rcap[tperm])), to(ma[perm]), to(mv[vperm]),
         to(ones(F32, n)), z(n), z(nv), F32(Pa), F32(Pb),
-        zl(1 + nt + nv), zl(1 + nband * nt), zl(2ni + 2nv), zl(1 + nt), zl(2ni), zl(1 + nv), zl(2nv),
+        xs(nt + nv), xs(nband * nt), et(2ni + 2nv), xs(nt), et(2ni), xs(nv), et(2nv),
         z(ni), z(nv), z(nv),
         z(n), z(n), z(ni), z(ni), z(ni), z(nt), z(ni), z(ni), Ref(1), Ref(1),
         z(n), z(n), z(nt), z(nv), z(nv),

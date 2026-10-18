@@ -200,6 +200,15 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test L1.body.out[:lung] != L0.body.out[:lung] && all(>=(0), L1.tissue)
     end
 
+    @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin
+        # on the CPU a solver array can be its own host copy (par === hpar): freeing the work arrays must keep it (audit 29)
+        tree = grow(GrowthSpec(nterm = 2500, tissue_ml = 100.0, wall_clearance = 1.0), sample("case0.vol"), [sample("case0.xml")])
+        vt = vtree(tree); nch = zeros(Int, length(vt.r)); foreach(p -> p > 0 && (nch[p] += 1), vt.parent)
+        @test length(vt.r) > 4096
+        Cr = C.Flow.circuit(vt, fill(0.04f0, count(==(0), nch)); phys = FlowSpec(organ = "heart"), state = :rest)
+        @test isfinite(Cr.resist.r_micro) && all(isfinite, Cr.resist.chilian_shares)
+    end
+
     @testset "terminal count from organ flow" begin
         # the reference heart's flow gives its validated count; any organ's count scales with its flow
         @test terminal_count(GrowthSpec(flow_ml_min = 135.6, tissue_ml = 148.1)) == 957_045
