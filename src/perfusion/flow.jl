@@ -615,8 +615,23 @@ end
 # Builds the solver in its own numbering. Returns it and the permutations back to the caller's
 # numbering: `perm[k]` is the caller's arterial segment k of the solver, `tperm[i]` the caller's
 # terminal i, `vperm[k]` the caller's vein k.
+# After the last solve only the solution (q, pa, qt, qv, pv, so2), the resistances (rr, rv, rcap) and the host topology and
+# micro-vessel flags (_micro_resistance) are read: release the
+# solver's work arrays (CG vectors, scan and Euler-tour buffers, preconditioner, layout) before the circuit's outputs are
+# allocated, so the two never coexist in memory. Host arrays only (a device keeps its buffers until S is collected).
+function _release_work!(S::_Solver)
+    keep = (:q, :pa, :qt, :qv, :pv, :so2, :rr, :rv, :rcap, :hpar, :hvpar, :hma, :hmv) # the last four: _micro_resistance
+    for f in fieldnames(typeof(S))
+        f in keep && continue
+        x = getfield(S, f)
+        x isa Vector && length(x) > 4096 && (empty!(x); sizehint!(x, 0))
+    end
+    return S
+end
+
 function _solver(
-        parent, nchild, ptr, kids, vparent, vptr, vkids, vleaf, tidx, ra, rv, rcap, ma, mv, len, lim, Pa, Pb, l0, hd, to
+        parent, nchild, ptr, kids, vparent, vptr, vkids, vleaf, tidx, ra, rv, rcap, ma, mv, len, lim, Pa, Pb, l0, hd, to;
+        metabolic::Bool = true
     )
     n = length(parent); nv = length(vparent)
     # arteries: segments with children first, then the terminals, both in preorder
@@ -689,10 +704,12 @@ function _solver(
     for k in 1:n
         p = par[k]; Lp[k] = (p == 0 ? 0.0f0 : Lp[p]) + lp[k]
     end
+    # the conducted metabolic signal is computed only for an O2-regulated organ at rest (`_metabolic!`); otherwise its band
+    # tables, the largest arrays of the solver, stay empty
     band = 12.0f0 * l0
-    nband = floor(Int, maximum(view(Lp, 1:ni); init = 0.0f0) / band) + 1
-    mlf = Vector{F32}(undef, nt); mbw = Vector{F32}(undef, nt * nband)
-    mnf = Vector{F32}(undef, ni); mband = Vector{Int32}(undef, ni)
+    nband = metabolic ? floor(Int, maximum(view(Lp, 1:ni); init = 0.0f0) / band) + 1 : 0
+    mlf = Vector{F32}(undef, metabolic ? nt : 0); mbw = Vector{F32}(undef, nt * nband)
+    mnf = Vector{F32}(undef, metabolic ? ni : 0); mband = Vector{Int32}(undef, metabolic ? ni : 0)
     AK.foreachindex(mlf; min_elems = 4096) do i
         @inbounds begin
             L = Lp[ni + i]; mlf[i] = exp(-0.5f0 * lp[ni + i] / l0)
@@ -1510,7 +1527,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state:
     lim = _Limits(isempty(d0c) ? 1.0f0 : minimum(d0c), isempty(d0c) ? 2.0f0 : maximum(d0c), max(phys.p_in, 1.0f0), _wall(phys))
     S, perm, iperm, tperm, vperm = _solver(
         t.parent, nchild, ptr, kids, vt.parent, vptr, vkids, vl, tidx, ra, rv, rcap, ma, mv, len, lim,
-        phys.p_in, phys.p_out, 10.0f0 * phys.atp_l0, hd, to
+        phys.p_in, phys.p_out, 10.0f0 * phys.atp_l0, hd, to; metabolic = state === :rest && phys.regulation !== :passive
     )
     sheet = nothing
     if phys.capillary === :sheet
@@ -1597,6 +1614,7 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state:
     # ---- the state (a bed without active tone is always in its relaxed state)
     phys.regulation === :passive && (state = :stress)
     iters, dxlast = _autoregulate!(S, W, kappa, phys, state, ctone, reference !== nothing, tg, mu0d, stend, lim, verbose, sheet, dist)
+    _release_work!(S) # only the solution and resistances are read from here on
     sheet === nothing || (rcap[tperm] = Array(S.rcap))     # the sheet beds' final resistances
     rmc = _micro_resistance(S, mass_g)
     # back to the caller's numbering
