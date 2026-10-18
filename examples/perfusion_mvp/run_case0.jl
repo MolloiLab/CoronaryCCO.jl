@@ -29,7 +29,7 @@ inside = map(1:length(tree.r)) do j
     i, k, l = Phantom._vox(g, (tree.a[1, j] + tree.b[1, j]) / 2, (tree.a[2, j] + tree.b[2, j]) / 2, (tree.a[3, j] + tree.b[3, j]) / 2)
     all((1, 1, 1) .<= (i, k, l) .<= g.dims) && g.myo[i, k, l]
 end
-mark_lumen!(g, tree, sqrt(FlowSpec(organ = "heart").share_ven / FlowSpec(organ = "heart").share_art))
+mark_lumen!(g, tree, sqrt(HEART_FLOW.share_ven / HEART_FLOW.share_art))
 @printf("lumen: %d myocardial voxels are resolved vessel lumen\n", count(g.myo .& (g.labels .== 0x03)))
 
 inp = gamma_input(; t0 = 2.0f0, tpeak = 10.0f0, peak_blood = 12.0f0)
@@ -41,7 +41,7 @@ truth_times = 0.0f0:0.25f0:30.0f0
 
 for state in ("rest", "stress")
     dir = joinpath(@__DIR__, "out", "case0_$(n)_$(state)"); mkpath(dir)
-    C = circuit(tree, terr; state = Symbol(state), phys = FlowSpec(organ = "heart"))
+    C = circuit(tree, terr; state = Symbol(state), phys = HEART_FLOW)
     t1 = @elapsed art, ven, tis = frame_masses(C, inp, truth_times)
     out = sinus_outflow(C, inp, truth_times)
     m_in = [sum(@view tis[f, :]) + sum(@view(art[f, inside])) + sum(@view(ven[f, inside])) for f in eachindex(truth_times)]

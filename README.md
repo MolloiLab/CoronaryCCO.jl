@@ -37,11 +37,8 @@ You give four things; everything else is the same for every organ:
 using Vasculature
 
 domain = mesh_domain("heart.vol", vertices, triangles) # organ surface → 1 mm domain
-spec = GrowthSpec(
-    flow_ml_min = 135.6, # resting coronary flow → 957,045 terminals
-    tissue_ml = 148.1, # tissue volume (mL)
-    root_caps = [2.54, 1.59], # imaged inlet radii (mm): LCA, RCA
-)
+# an organ is an instance of the one GrowthSpec struct (HEART_GROWTH, LUNG_GROWTH, ...); a run varies it
+spec = GrowthSpec(HEART_GROWTH; device = MtlArray)
 avoid = (chambers, origin_mm, 0.4) # forbidden mask, centre of its first cell (mm), cell size (mm)
 tree = grow(spec, domain, ["lca.xml", "rca.xml"]; blockers = avoid)
 ```
@@ -70,13 +67,13 @@ Veins grow the same way from their imaged outlet trees (`grow(spec, domain, ["le
 
 ```julia
 arteries, veins = vtree(tree), vtree(veintree) # grown trees as vessel lists
-F = flow(FlowSpec(organ = "heart"), arteries, veins, tissue) # tissue: 3 × n voxel centres (mm)
+F = flow(HEART_FLOW, arteries, veins, tissue) # tissue: 3 × n voxel centres (mm)
 F.rest.resist.mbf, F.stress.resist.mbf # mL/min/g at rest and at maximal dilation
 ```
 
 No flow is prescribed: each vessel's flow follows from the inlet and outlet pressures, the vessel sizes and the
-arterioles' tone. `FlowSpec(organ = "heart")` and `FlowSpec(organ = "lung")` hold measured values, each with its
-source; override any of them by keyword.
+arterioles' tone. `HEART_FLOW` and `LUNG_FLOW` are instances of the one `FlowSpec` struct, every value
+measured and cited; a variant is `FlowSpec(HEART_FLOW; p_in = 70)`.
 
 ## 3. Contrast
 

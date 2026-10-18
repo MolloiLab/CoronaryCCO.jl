@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # The one flow entry point: grown arteries + veins + the tissue they supply → blood flow from the pressures.
 
-using .Flow: FlowSpec, VTree, Circuit, circuit, vtree
+using .Flow: FlowSpec, HEART_FLOW, LUNG_FLOW, VTree, Circuit, circuit, vtree
 using .Territory: territory_shares, demand_field, nearest_terminal, balanced_terminal
 
 # Leaf segments (terminals) of a vessel tree.
@@ -64,7 +64,7 @@ end
         -> (; rest, stress, terr, pairs, vleaf, terms, vterms, demand)
 
 Blood flow in a grown vascular bed from its two pressures alone, the same for every organ; only `spec` differs
-(`FlowSpec(organ = "heart")`, `FlowSpec(organ = "lung")`, or your own values). `tissue` is 3 × n points (mm), one per
+(`HEART_FLOW`, `LUNG_FLOW`, or your own values). `tissue` is 3 × n points (mm), one per
 tissue voxel. Steps: each voxel's tissue is shared among its nearest terminals (`terr`, `pairs`); each capillary bed is
 paired with the venule it drains into (`vleaf`); then the circuit is solved. With `spec.regulation = :o2` (arteriolar
 tone follows each bed's O₂ balance, heart) the bed is solved at maximal dilation first (`stress`, which sets the tone

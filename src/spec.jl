@@ -2,58 +2,52 @@
 # The one growth entry point: an organ-generic specification and `grow`.
 
 """
-    GrowthSpec(; nterm, tissue_ml, wall_clearance = 0.5, gamma = 2.33, root_caps = nothing, root_fixed = false,
-               symmetry_floor = Tuple{Float64, Float64}[], seed = 1, T = Float32, device = identity)
+    GrowthSpec(; nterm, flow_ml_min, terminal_flow_ml_min, tissue_ml, reference_ml, wall_clearance, gamma, root_caps,
+               root_fixed, symmetry_floor, seed, T, device)
+    GrowthSpec(spec::GrowthSpec; kwargs...)
 
 Everything that differs between organs when growing a vascular tree; everything else is the same for every organ (see
-[`grow`](@ref)).
+[`grow`](@ref)). Every field is a keyword and every one is required: an organ is an instance (`HEART_GROWTH`,
+`HEART_VEIN_GROWTH`, `LUNG_GROWTH`, `LUNG_VEIN_GROWTH`, organs.jl), and a run varies one with the second form, e.g.
+`GrowthSpec(LUNG_GROWTH; seed = 2, device = dev)` (`dev` e.g. `MtlArray`).
 
-- `nterm` or `flow_ml_min` (give one): the number of terminals, or the organ's blood flow (mL/min), from which the count
-  follows as `flow_ml_min / terminal_flow_ml_min`: every organ is then resolved down to terminals of the same size. For an
-  organ that perfuses its own tissue the flow is its O₂ demand by Fick, VO₂ / (arterial O₂ content × O₂ extraction); for
-  the lungs it is the cardiac output, since the pulmonary arteries carry all of it to pick up O₂.
-- `terminal_flow_ml_min`: the flow of one terminal. Default: the reference heart model's resting flow (its own Fick flow
-  from O₂ demand, 135.6 mL/min, not a separate measurement) over its terminal count, 957,045: grown terminals of about
-  12 µm, the resolution of the heart tree this package scores against Kassab's morphometry.
+- `nterm` or `flow_ml_min` (one of them, the other `nothing`): the number of terminals, or the organ's blood flow
+  (mL/min), from which the count follows as `flow_ml_min / terminal_flow_ml_min`.
+- `terminal_flow_ml_min`: the flow of one terminal, used with `flow_ml_min`.
 - `tissue_ml`: the organ's tissue volume (mL).
 - `reference_ml`: the tissue volume HCT-CCO's size-dependent constants are used unchanged at (its longest connection,
-  territory reach, convergence tolerance, centreline step). They were set for adult human hearts; the default, 148.1 mL,
-  is the adult myocardium this package is validated on (XCAT vmale_50). Every other organ gets
-  `size_scale = (tissue_ml / reference_ml)^(1/3)`: a larger organ gets proportionally longer reaches. See
-  `CCOParams.size_scale`.
+  territory reach, convergence tolerance, centreline step); they were set for adult human hearts (148.1 mL, the XCAT
+  vmale_50 myocardium). Every organ gets `size_scale = (tissue_ml / reference_ml)^(1/3)`. See `CCOParams.size_scale`.
 - `wall_clearance`: smallest distance (mm) from a terminal to the organ's boundary.
-- `gamma`: bifurcation exponent r₀^γ = r₁^γ + r₂^γ; 7/3 from coronary structure-function scaling (Huo & Kassab 2012).
+- `gamma`: bifurcation exponent r₀^γ = r₁^γ + r₂^γ.
 - `root_caps`: root radius per inlet tree (mm), the imaged inlet radii; `nothing` leaves roots to the pressure law.
 - `root_fixed`: `true` sets the forest's radius scale so the binding root sits exactly at its cap after growth.
 - `symmetry_floor`: measured minimum daughter symmetry by mother diameter, `(µm, ratio)` knots; empty for none.
 - `seed`, `T`, `device`: random stream, number type, array device (`MtlArray`, `CuArray`, ... or `identity` for CPU).
-
-Recommended values (XCAT vmale_50; adapt for other subjects):
-
-| | heart arteries | lung arteries | lung veins |
-|---|---|---|---|
-| `nterm` | 957_045 | 200_000 | 156_000 |
-| `tissue_ml` | 148.1 (myocardium) | 2813 (both lungs) | 2813 |
-| `wall_clearance` | 0.5 | 0.5 | 0.5 |
-| `root_caps` | imaged LCA and RCA ostial radii | imaged main PA radius | imaged vein ostia |
-| `root_fixed` | `false` | `true` | `true` |
-| `symmetry_floor` | Schwarz et al. 2020 human coronary knots | none | none |
 """
-Base.@kwdef struct GrowthSpec
-    nterm::Union{Nothing, Int} = nothing
-    flow_ml_min::Union{Nothing, Float64} = nothing
-    terminal_flow_ml_min::Float64 = 135.6 / 957_045
+struct GrowthSpec
+    nterm::Union{Nothing, Int}
+    flow_ml_min::Union{Nothing, Float64}
+    terminal_flow_ml_min::Float64
     tissue_ml::Float64
-    reference_ml::Float64 = 148.1
-    wall_clearance::Float64 = 0.5
-    gamma::Float64 = 2.33
-    root_caps::Union{Nothing, Vector{Float64}} = nothing
-    root_fixed::Bool = false
-    symmetry_floor::Vector{Tuple{Float64, Float64}} = Tuple{Float64, Float64}[]
-    seed::Int = 1
-    T::Type = Float32
-    device::Any = identity
+    reference_ml::Float64
+    wall_clearance::Float64
+    gamma::Float64
+    root_caps::Union{Nothing, Vector{Float64}}
+    root_fixed::Bool
+    symmetry_floor::Vector{Tuple{Float64, Float64}}
+    seed::Int
+    T::Type
+    device::Any
 end
+function GrowthSpec(; kwargs...)
+    bad = setdiff(keys(kwargs), fieldnames(GrowthSpec))
+    isempty(bad) || throw(ArgumentError("unknown GrowthSpec fields $(collect(bad))"))
+    miss = setdiff(fieldnames(GrowthSpec), keys(kwargs))
+    isempty(miss) || throw(ArgumentError("GrowthSpec: no value for $(collect(miss))"))
+    return GrowthSpec((kwargs[f] for f in fieldnames(GrowthSpec))...)
+end
+GrowthSpec(s::GrowthSpec; kwargs...) = GrowthSpec(; merge((; (f => getfield(s, f) for f in fieldnames(GrowthSpec))...), values(kwargs))...)
 
 """
     size_scale(spec::GrowthSpec) -> Float32

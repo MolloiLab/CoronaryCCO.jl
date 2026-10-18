@@ -4,31 +4,41 @@
 using .Body: Injection, human_circulation, simulate, ORGAN_SLOTS
 
 """
-    TransportSpec(; phys, tissue_ml, bed, input, co = 81.6, beat = 1, f_coronary = 0.033, tmax = 70, dt = 0.002,
-                  every = 0.1, coronary = nothing)
+    TransportSpec(; phys, tissue_ml, bed, input, co, beat, f_coronary, tmax, dt, every, coronary)
+    TransportSpec(spec::TransportSpec; kwargs...)
 
-Everything that sets where an injected bolus goes. `phys` is the organ's [`FlowSpec`](@ref): its blood hematocrit (`hd`,
-used for the whole body), blood and interstitial fractions, contrast permeability and tissue density. `tissue_ml` is the
-organ's tissue volume (mL). `bed` is the body segment the organ is (`:coronary` for the heart, `:lung` for the lungs) and
-`input` the segment whose outflow feeds it (`:lv` for an organ fed by the aorta, `:rv` for the lungs). `co` is the cardiac
-output (mL/s; rest 81.6, adenosine stress `Body.adenosine()`), `beat` the heart period (s), and `f_coronary` the coronary
-bed's share of the cardiac output (for the heart: its root flow / `co`). When the organ is not the heart, `coronary` gives
-the body's own lumped coronary bed as `(; ml, fb, ve, ps, rho)` (the heart's FlowSpec values and myocardial volume).
-`tmax`, `dt` and `every` are the simulated time, the step and the output spacing (s).
+Everything that sets where an injected bolus goes. Every field is a keyword and every one is required: an organ is an
+instance (`HEART_TRANSPORT`, `LUNG_TRANSPORT`, organs.jl), and a run varies one with the second form. `phys` is the
+organ's [`FlowSpec`](@ref): its blood hematocrit (`hd`, used for the whole body), blood and interstitial fractions,
+contrast permeability and tissue density. `tissue_ml` is the organ's tissue volume (mL). `bed` is the body segment the
+organ is (`:coronary` for the heart, `:lung` for the lungs) and `input` the segment whose outflow feeds it (`:lv` for an
+organ fed by the aorta, `:rv` for the lungs). `co` is the cardiac output (mL/s; rest 81.6, adenosine stress
+`Body.adenosine()`), `beat` the heart period (s), and `f_coronary` the coronary bed's share of the cardiac output (for
+the heart: its root flow / `co`). When the organ is not the heart, `coronary` gives the body's own lumped coronary bed as
+`(; ml, fb, ve, ps, rho)` (the heart's FlowSpec values and myocardial volume); otherwise `nothing`. `tmax`, `dt` and
+`every` are the simulated time, the step and the output spacing (s).
 """
-Base.@kwdef struct TransportSpec
+struct TransportSpec
     phys::FlowSpec
     tissue_ml::Float32
     bed::Symbol
     input::Symbol
-    co::Float32 = 81.6f0
-    beat::Float32 = 1.0f0
-    f_coronary::Float32 = 0.033f0
-    tmax::Float32 = 70.0f0
-    dt::Float32 = 0.002f0
-    every::Float32 = 0.1f0
-    coronary::Union{Nothing, NamedTuple} = nothing
+    co::Float32
+    beat::Float32
+    f_coronary::Float32
+    tmax::Float32
+    dt::Float32
+    every::Float32
+    coronary::Union{Nothing, NamedTuple}
 end
+function TransportSpec(; kwargs...)
+    bad = setdiff(keys(kwargs), fieldnames(TransportSpec))
+    isempty(bad) || throw(ArgumentError("unknown TransportSpec fields $(collect(bad))"))
+    miss = setdiff(fieldnames(TransportSpec), keys(kwargs))
+    isempty(miss) || throw(ArgumentError("TransportSpec: no value for $(collect(miss))"))
+    return TransportSpec((kwargs[f] for f in fieldnames(TransportSpec))...)
+end
+TransportSpec(s::TransportSpec; kwargs...) = TransportSpec(; merge((; (f => getfield(s, f) for f in fieldnames(TransportSpec))...), values(kwargs))...)
 
 """
     circulation(spec::TransportSpec) -> Body.Circulation

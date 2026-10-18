@@ -72,7 +72,7 @@ let
     elseif haskey(ENV, "CIRC")
         error("validate_model: CIRC (saved circuits) needs INPUTS, the territories and pairing they were solved with")
     elseif veins !== nothing
-        FL = Vasculature.flow(FlowSpec(organ = "heart", radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))), tree, veins, q)
+        FL = Vasculature.flow(FlowSpec(HEART_FLOW; radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))), tree, veins, q)
         terr = FL.terr; tshare = FL.pairs; vleaf = FL.vleaf
     else
         terr, tshare = territory_shares(tree.b[:, terms], q); terr .= max.(terr, 1.0f-7); vleaf = nothing
@@ -97,7 +97,7 @@ let
         coverage["gap_p99_mm"], coverage["gap_max_mm"], 100coverage["frac_voxels_gt_1p5mm"], coverage["density_cv_4mm"]
     )
 
-    P_AO = FlowSpec(organ = "heart").p_in     # mean aortic pressure, mmHg (pressures are reported relative to it)
+    P_AO = HEART_FLOW.p_in     # mean aortic pressure, mmHg (pressures are reported relative to it)
 
     js(x) = x isa AbstractString ? "\"" * x * "\"" : x isa AbstractDict ? "{" * join(["\"$k\":" * js(v) for (k, v) in x], ",") * "}" :
         x isa Union{AbstractVector, Tuple} ? "[" * join(js.(collect(x)), ",") * "]" : x isa AbstractFloat ? (isfinite(x) ? @sprintf("%.5g", x) : "null") : string(x)
@@ -131,7 +131,7 @@ let
     phase("inputs+coverage")
     res = Dict{String, Any}("n" => n, "segments" => ns, "terminals" => length(terms), "coverage" => coverage)
     # maximal dilation first: its microvascular scale κ is shared by the rest state
-    Cstress = haskey(ENV, "CIRC") ? nothing : FL !== nothing ? FL.stress : circuit(tree, terr; state = :stress, veins, vleaf, phys = FlowSpec(organ = "heart", radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))))
+    Cstress = haskey(ENV, "CIRC") ? nothing : FL !== nothing ? FL.stress : circuit(tree, terr; state = :stress, veins, vleaf, phys = FlowSpec(HEART_FLOW; radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))))
     # pieces: 1 mm voxels, then Voronoi cells of K random voxel seeds (equal mean volume; they follow the thin
     # wall, unlike cubes); fixed seed, so both states use the same pieces every run
     RNG = Xoshiro(1); nv = length(vidx)
@@ -146,7 +146,7 @@ let
         C = if haskey(ENV, "CIRC")                 # solved circuits (; Cs, Cr) from an earlier run on the same inputs
             (cc = loadcirc(); state === :rest ? cc.Cr : cc.Cs)
         else
-            state === :stress ? Cstress : FL !== nothing ? FL.rest : circuit(tree, terr; state, veins, vleaf, phys = FlowSpec(organ = "heart", radius_cv = rcv), kappa = Cstress.resist.kappa)
+            state === :stress ? Cstress : FL !== nothing ? FL.rest : circuit(tree, terr; state, veins, vleaf, phys = FlowSpec(HEART_FLOW; radius_cv = rcv), kappa = Cstress.resist.kappa)
         end
         hd = C.phys.hd
         d_um = 2000 .* tree.r

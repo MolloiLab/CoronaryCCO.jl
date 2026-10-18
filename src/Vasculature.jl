@@ -49,11 +49,12 @@ include("perfusion/transport.jl")
 include("perfusion/cfc.jl")
 include("perfusion/organct.jl")
 include("perfusion/dynamic_phantom.jl")
+include("organs.jl")
 
 export CCOParams, CCOModel, MaskDomain, Engine, nsegments
-export GrowthSpec, grow, size_scale, terminal_count, mesh_domain, write_vol
-export FlowSpec, flow, couple_veins, vtree, Unified
-export TransportSpec, transport, circulation
+export GrowthSpec, HEART_GROWTH, HEART_VEIN_GROWTH, LUNG_GROWTH, LUNG_VEIN_GROWTH, grow, size_scale, terminal_count, mesh_domain, write_vol
+export FlowSpec, HEART_FLOW, LUNG_FLOW, flow, couple_veins, vtree, Unified
+export TransportSpec, HEART_TRANSPORT, LUNG_TRANSPORT, transport, circulation
 export read_vol, import_gxl, export_gxl, grow!, dds_orders, tree_qc, set_territories!, set_forbidden!
 
 end

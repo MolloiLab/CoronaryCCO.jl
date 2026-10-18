@@ -40,7 +40,7 @@ end
 terr .= max.(terr, 1.0f-4)
 
 for label in ("rest", "stress")
-    tc = @elapsed C = circuit(tree, terr; state = Symbol(label), phys = FlowSpec(organ = "heart"))
+    tc = @elapsed C = circuit(tree, terr; state = Symbol(label), phys = HEART_FLOW)
     inp = gamma_input()
     times = 0.0f0:1.0f0:30.0f0
     tf = @elapsed art, ven, tis = frame_masses(C, inp, times)

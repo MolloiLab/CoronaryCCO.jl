@@ -364,7 +364,7 @@ site, the four heart chambers, the lungs, the coronary bed, and the systemic org
 are keyword arguments; sources are in `docs` of each block below.
 
 Coronary bed: `coronary = (; ml, fb, ve, ps, rho)` (required): myocardial tissue volume and the heart's
-blood fraction, interstitial fraction, contrast PS and density (`Flow.FlowSpec(organ = "heart")`). Lungs: `lung` in the
+blood fraction, interstitial fraction, contrast PS and density (`Flow.HEART_FLOW`). Lungs: `lung` in the
 same form (optional) replaces `v_lung`, `e_lung` and `ps_lung` below with the lung's own values.
 
 Heart (from the XCAT phantom): `co` 81.6 mL/s (stroke volume 132.2 − 50.6 mL at 60/min),
@@ -376,7 +376,7 @@ Lungs: `v_pa` 40 mL pulmonary trunk and main branches (plug), `v_lung` 510 mL (I
 blood 10.5% of 5.3 L ≈ 550 mL in all), `lung_plug` and `lung_rd` give its transit-time shape.
 The lung exchanges contrast with its interstitium like any bed, so it washes in and out with the plasma. `e_lung`
 151 mL: the extravascular water reachable from the blood of perfused lung in normal humans at rest, 2.16 g/kg × 70 kg
-by indicator dilution (Goresky 1975, [goresky1975]), the same value as `data/organs/lung.toml` ve. Indicator dilution
+by indicator dilution (Goresky 1975, [goresky1975]), the same value as the lung preset's `ve` (Flow organs.jl). Indicator dilution
 sees only perfused lung, so it reads below gravimetric lung water (≈ 7.4 mL/kg ≈ 520 mL, the Tagami note in the same
 file); a solute carried in by the blood reaches the perfused part, so 151 mL is the measured volume to use. Other
 estimates: 86 mL (Levitt's standard human, [levitt2003]), pig extravascular ECV 21% of non-air tissue ≈ 240 mL
@@ -465,7 +465,7 @@ function human_circulation(;
     push!(S, Segment(:aortic_root, :av, :root; kind = :artery, v = F(v_aortic_root), plug = 0.8f0, rd = 0.1f0))
     # lumped coronary bed from the heart's own physiology: `coronary = (; ml, fb, ve, ps, rho)` with the
     # myocardial tissue volume (mL) and the blood fraction, interstitial fraction, contrast PS
-    # (mL/min/g) and density of `Flow.FlowSpec(organ = "heart")`
+    # (mL/min/g) and density of `Flow.HEART_FLOW`
     cb = _bed_values(coronary)
     push!(S, Segment(:coronary, :root, :cs; kind = :bed, q = F(f_cor), v = cb.v, ve = cb.ve, ps = cb.ps))
     push!(S, Segment(:coronary_sinus, :cs, :ra_in; kind = :vein, v = 3.0f0, plug = 0.8f0, rd = 0.1f0))

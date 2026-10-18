@@ -153,7 +153,7 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
 
     @testset "README calls run" begin
         # the README's growth step on the package's sample case: GrowthSpec, grow, vtree, mesh_domain
-        tree = grow(GrowthSpec(nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0), sample("case0.vol"), [sample("case0.xml")])
+        tree = grow(GrowthSpec(HEART_GROWTH; nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])
         vt = vtree(tree); nch = zeros(Int, length(vt.r)); foreach(p -> p > 0 && (nch[p] += 1), vt.parent)
         @test count(==(0), vt.parent) >= 1 && count(==(0), nch) >= 300                  # a root, and the 300 grown terminals
         X = Float64[0 20 0 0; 0 0 20 0; 0 0 0 20]; T = [1 1 1 2; 3 2 4 3; 2 4 3 4]   # a tetrahedron, 20 mm edges
@@ -162,8 +162,8 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
     end
 
     @testset "transport is the whole-body bolus with the organ's bed" begin
-        heart = FlowSpec(organ = "heart")
-        spec = TransportSpec(; phys = heart, tissue_ml = 148.1, bed = :coronary, input = :lv, tmax = 20, dt = 0.005, every = 1)
+        heart = HEART_FLOW
+        spec = TransportSpec(HEART_TRANSPORT; tissue_ml = 148.1, tmax = 20, dt = 0.005, every = 1)
         r = transport(spec)
         circ = C.Body.human_circulation(; hct = heart.hd, coronary = (; ml = 148.1f0, heart.fb, heart.ve, heart.ps, heart.rho))
         r2 = C.Body.simulate(circ, C.Body.Injection(); tmax = 20, dt = 0.005, every = 1)
@@ -172,7 +172,7 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test circulation(spec).hct == heart.hd
         # with the organ's own circuit: passes = 0 is the plain chain (body -> plasma input -> masses); one pass feeds the
         # organ's venous outflow back into the body in place of its lumped bed
-        tree = grow(GrowthSpec(nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0), sample("case0.vol"), [sample("case0.xml")])
+        tree = grow(GrowthSpec(HEART_GROWTH; nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])
         vt = vtree(tree); nch = zeros(Int, length(vt.r)); foreach(p -> p > 0 && (nch[p] += 1), vt.parent)
         Cr = C.Flow.circuit(vt, fill(0.1f0, count(==(0), nch)); phys = heart, state = :rest)
         T0 = transport(spec, Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0)
@@ -185,17 +185,17 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test T1.body.out[:coronary] != T0.body.out[:coronary] && all(>=(0), T1.tissue)
         # the lungs as the organ: the body's lung segment takes the lung's own blood, interstitium and PS; the coronary bed
         # stays the reference heart's
-        lungp = FlowSpec(organ = "lung")
+        lungp = LUNG_FLOW
         hb = (; ml = 148.1f0, heart.fb, heart.ve, heart.ps, heart.rho)
-        BL = circulation(TransportSpec(; phys = lungp, tissue_ml = 2813, bed = :lung, input = :rv, coronary = hb))
+        BL = circulation(TransportSpec(LUNG_TRANSPORT; tissue_ml = 2813, coronary = hb))
         sl = BL.segs[findfirst(x -> x.name === :lung, BL.segs)]; sc = BL.segs[findfirst(x -> x.name === :coronary, BL.segs)]
         @test sl.v ≈ lungp.fb * 2813 && sl.ve ≈ lungp.ve * 2813 && sl.ps ≈ lungp.ps / 60 * 2813 * lungp.rho && sc.v ≈ heart.fb * 148.1f0
-        @test_throws ArgumentError circulation(TransportSpec(; phys = lungp, tissue_ml = 2813, bed = :lung, input = :rv)) # no coronary bed
-        @test_throws ArgumentError circulation(TransportSpec(; phys = lungp, tissue_ml = 1, bed = :brain, input = :lv, coronary = hb))
-        @test_throws ArgumentError circulation(TransportSpec(; phys = heart, tissue_ml = 1, bed = :coronary, input = :lv, coronary = hb))
-        @test_throws ArgumentError circulation(TransportSpec(; phys = heart, tissue_ml = 1, bed = :coronary, input = :nowhere))
+        @test_throws ArgumentError circulation(TransportSpec(LUNG_TRANSPORT; tissue_ml = 2813, coronary = nothing)) # no coronary bed
+        @test_throws ArgumentError circulation(TransportSpec(LUNG_TRANSPORT; tissue_ml = 1, bed = :brain, input = :lv, coronary = hb))
+        @test_throws ArgumentError circulation(TransportSpec(HEART_TRANSPORT; tissue_ml = 1, coronary = hb))
+        @test_throws ArgumentError circulation(TransportSpec(HEART_TRANSPORT; tissue_ml = 1, input = :nowhere))
         # an organ in the lung slot fed back once: its outflow replaces the body's lung segment
-        sL = TransportSpec(; phys = lungp, tissue_ml = 2813, bed = :lung, input = :rv, coronary = hb, tmax = 20, dt = 0.005, every = 1)
+        sL = TransportSpec(LUNG_TRANSPORT; tissue_ml = 2813, coronary = hb, tmax = 20, dt = 0.005, every = 1)
         L0 = transport(sL, Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0); L1 = transport(sL, Cr; passes = 1, times = 0.0f0:2.0f0:20.0f0)
         @test L1.body.out[:lung] != L0.body.out[:lung] && all(>=(0), L1.tissue)
         # by default the feedback repeats until the organ's outflow stops changing, so the curves come from one body run
@@ -219,20 +219,46 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
 
     @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin
         # on the CPU a solver array can be its own host copy (par === hpar): freeing the work arrays must keep it (audit 29)
-        tree = grow(GrowthSpec(nterm = 2500, tissue_ml = 100.0, wall_clearance = 1.0), sample("case0.vol"), [sample("case0.xml")])
+        tree = grow(GrowthSpec(HEART_GROWTH; nterm = 2500, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])
         vt = vtree(tree); nch = zeros(Int, length(vt.r)); foreach(p -> p > 0 && (nch[p] += 1), vt.parent)
         @test length(vt.r) > 4096
-        Cr = C.Flow.circuit(vt, fill(0.04f0, count(==(0), nch)); phys = FlowSpec(organ = "heart"), state = :rest)
+        Cr = C.Flow.circuit(vt, fill(0.04f0, count(==(0), nch)); phys = HEART_FLOW, state = :rest)
         @test isfinite(Cr.resist.r_micro) && all(isfinite, Cr.resist.chilian_shares)
+    end
+
+    @testset "sub-terminal vessels in series with a sheet bed" begin
+        F = C.Flow; z = zeros(Float32, 3, 1)
+        K = 0.02f0; h0 = 3.5f0; al = 0.17f0; pe = 0.0f0; hm = 20.0f0
+        # no sub-terminal orders: the Fung sheet alone
+        q, _ = F._bed(17.0f0, 11.0f0, K, h0, al, pe, hm, 1.0f0, Int32(0), Int32(0), z, z, 0.0f0)
+        @test q ≈ K * ((h0 + al * 17)^4 - (h0 + al * 11)^4)
+        # a sheet far wider than the vessels: the bed is the vessels' series resistance (rigid, beta = 0), weight w
+        sa = Float32[2.0 3.0; 0 0; 0 0]; sv = Float32[5.0; 0; 0;;]; w = 0.5f0
+        q, r = F._bed(17.0f0, 11.0f0, 1.0f6, h0, al, pe, hm, w, Int32(2), Int32(1), sa, sv, 0.0f0)
+        @test r ≈ (2 + 3 + 5) / w rtol = 1.0e-3
+        @test q ≈ 6 / r rtol = 1.0e-3
+        # reversed pressures reverse the flow
+        q2, _ = F._bed(11.0f0, 17.0f0, 1.0f6, h0, al, pe, hm, w, Int32(1), Int32(2), sv[:, [1, 1]], sa, 0.0f0)
+        @test q2 < 0
+        @test F.HEART_FLOW.sub_art === nothing
+        @test F.FlowSpec(F.LUNG_FLOW; p_ref_cmH2O = 10).p_ref_cmH2O == 10 && F.LUNG_FLOW.sub_art === nothing
+    end
+
+    @testset "organ presets cite existing reference data" begin
+        # the presets are code (organs.jl); every [id] in their comments must be a measurement file in data/reference
+        src = read(joinpath(pkgdir(C), "src", "perfusion", "organs.jl"), String)
+        ids = unique(vcat([split(m.captures[1], r",\s*") for m in eachmatch(r"\[([a-z][a-z0-9_]*(?:,\s*[a-z][a-z0-9_]*)*)\]", src)]...))
+        @test length(ids) > 20
+        @test all(id -> isfile(joinpath(pkgdir(C), "data", "reference", id * ".toml")), ids)
     end
 
     @testset "terminal count from organ flow" begin
         # the reference heart's flow gives its validated count; any organ's count scales with its flow
-        @test terminal_count(GrowthSpec(flow_ml_min = 135.6, tissue_ml = 148.1)) == 957_045
-        @test terminal_count(GrowthSpec(flow_ml_min = 2 * 135.6, tissue_ml = 300.0)) == 2 * 957_045
-        @test terminal_count(GrowthSpec(nterm = 500, tissue_ml = 1.0)) == 500
-        @test_throws ArgumentError terminal_count(GrowthSpec(tissue_ml = 1.0))
-        @test_throws ArgumentError terminal_count(GrowthSpec(nterm = 1, flow_ml_min = 1.0, tissue_ml = 1.0))
+        @test terminal_count(GrowthSpec(HEART_GROWTH; nterm = nothing, flow_ml_min = 135.6)) == 957_045
+        @test terminal_count(GrowthSpec(HEART_GROWTH; nterm = nothing, flow_ml_min = 2 * 135.6, tissue_ml = 300.0)) == 2 * 957_045
+        @test terminal_count(GrowthSpec(HEART_GROWTH; nterm = 500, tissue_ml = 1.0)) == 500
+        @test_throws ArgumentError terminal_count(GrowthSpec(HEART_GROWTH; nterm = nothing, tissue_ml = 1.0))
+        @test_throws ArgumentError terminal_count(GrowthSpec(HEART_GROWTH; nterm = 1, flow_ml_min = 1.0, tissue_ml = 1.0))
     end
 
     @testset "export round trip" begin

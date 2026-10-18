@@ -33,9 +33,8 @@ module Flow
 
 import AcceleratedKernels as AK
 using Atomix: @atomic
-using TOML
 
-export VTree, vtree, save_vtree, load_vtree, merge_vtrees, FlowSpec, Circuit, circuit, with_extraction, InputCurve,
+export VTree, vtree, save_vtree, load_vtree, merge_vtrees, FlowSpec, HEART_FLOW, LUNG_FLOW, Circuit, circuit, with_extraction, InputCurve,
     gamma_input, Transport, transport, frame_masses, sinus_outflow
 
 const F32 = Float32
@@ -118,13 +117,26 @@ end
 # ---------------------------------------------------------------------------------------------
 
 """
-    FlowSpec(; organ, kwargs...)
+    OrderTable(N, D, L, beta)
+
+Vessels of one tree by order, smallest first: the organ's whole number of vessels `N`, their diameter `D` and length `L`
+(mm) at the reference transmural pressure, and compliance `beta` (per cmH2O). Used for the vessels a grown tree does not
+resolve (`FlowSpec` `sub_art`, `sub_ven`).
+"""
+struct OrderTable
+    N::Vector{F32}; D::Vector{F32}; L::Vector{F32}; beta::Vector{F32}
+end
+
+"""
+    FlowSpec(; kwargs...)
+    FlowSpec(spec::FlowSpec; kwargs...)
 
 Boundary conditions, tissue constants and vessel-wall mechanics of one organ's vascular bed.
 Flow is not prescribed: it follows from the geometry, the two pressures and the arteriolar
-diameters (see [`circuit`](@ref)). Values are data, not code: they are read from
-`data/organs/<organ>.toml` (or from a path), where each one names its sources in
-`data/reference/`; keyword arguments override single values. The values below are the heart's.
+diameters (see [`circuit`](@ref)). Every field is a keyword and every one is required; an organ is
+an instance, `HEART_FLOW` and `LUNG_FLOW` (organs.jl), each value commented with its sources in
+`data/reference/` (the measurements, which results are also tested against). A variant of an
+instance: `FlowSpec(LUNG_FLOW; p_in = 20)`. The values below are the heart's.
 
 Boundary conditions and blood
 - `p_in`: mean inflow pressure. Heart: aortic pressure at the ostia, 90 mmHg (normal human mean
@@ -139,7 +151,16 @@ Boundary conditions and blood
   D = D₀·(1 + β·ΔP) (Huang et al. 2011 Eq. 1, D₀ the morphometric diameter), with ΔP its mean
   pressure minus the pressure around it: `p_ext` (alveolar) for vessels smaller than
   `d_alveolus_um`, `p_pleural_cmH2O` for larger ones; β takes its small/large value on the same
-  split. Diameters follow the pressures inside the solve.
+  split. Diameters follow the pressures inside the solve. `p_ref_cmH2O` is the transmural pressure at
+  which the grown radii (and the sub-terminal tables below) hold, so ΔP is counted from it
+  (lung: 10 cmH2O, the pressure of Huang et al. 2011's diameters).
+- `sub_art`, `sub_ven`: `nothing`, or an [`OrderTable`](@ref) of the vessels between a grown
+  terminal and its capillaries, which the grown tree does not resolve:
+  each bed gets, in series before and after its capillaries, every order narrower than its own
+  terminal (arterial side) and its draining venule (venous side), with its tissue share of their
+  number in parallel, Poiseuille with the in vivo viscosity, distending like the grown vessels.
+  An organ's terminal unit then sets the grown resolution, and the measured anatomy below it
+  carries the rest (lung: one terminal per acinus, Huang et al. 2011's orders below it).
 - `venous_scale`: `:volume_share` (a grown venous tree is scaled to `share_ven/share_art` of the
   arterial volume) or `:grown` (its radii stay as grown, e.g. anchored at an imaged root).
 - `capillary`: `:tube` (parallel functional capillaries, below) or `:sheet` (Fung & Sobin sheet
@@ -281,43 +302,38 @@ struct FlowSpec
     beta_ven_large::F32
     d_alveolus_um::F32
     p_pleural_cmH2O::F32
+    p_ref_cmH2O::F32
+    # vessels between a terminal and its capillaries, arterial and venous (nothing: none)
+    sub_art::Union{Nothing, OrderTable}
+    sub_ven::Union{Nothing, OrderTable}
 end
 
-const ORGAN_DIR = normpath(joinpath(@__DIR__, "..", "..", "data", "organs"))
-const REFERENCE_DIR = normpath(joinpath(@__DIR__, "..", "..", "data", "reference"))
 const _REGULATION = (:o2, :passive)
-const _WARNED = Set{String}()
 const _CAPILLARY = (:tube, :sheet)
 const _VENOUS_SCALE = (:volume_share, :grown)
 
-# One organ's parameter set: name → value, every cited reference file checked to exist.
-function organ_parameters(organ::AbstractString)
-    path = isfile(organ) ? organ : joinpath(ORGAN_DIR, organ * ".toml")
-    isfile(path) || throw(ArgumentError("no organ parameter file $path"))
-    d = TOML.parsefile(path)["parameters"]
-    for (k, v) in d, id in get(v, "sources", String[])
-        isfile(joinpath(REFERENCE_DIR, id * ".toml")) || throw(ArgumentError("$path: $k cites missing reference $id"))
-    end
-    # values the model uses that cite no reference file in the repo: say so, once per file
-    loose = sort([k for (k, v) in d if isempty(get(v, "sources", String[])) && !any(startswith(get(v, "note", ""), w) for w in ("Not used", "Definition"))])
-    isempty(loose) || path in _WARNED || (push!(_WARNED, path); @warn "$(basename(path)): no reference file in data/reference for $(join(loose, ", "))")
-    return Dict(Symbol(k) => v["value"] for (k, v) in d)
-end
-
-function FlowSpec(; organ::AbstractString, kwargs...)
-    d = organ_parameters(organ)
+# One keyword per field, every one required: an organ is an instance of this struct (organs.jl: `HEART_FLOW`,
+# `LUNG_FLOW`), and nothing sits underneath it.
+function FlowSpec(; kwargs...)
     bad = setdiff(keys(kwargs), fieldnames(FlowSpec))
     isempty(bad) || throw(ArgumentError("unknown FlowSpec fields $(collect(bad))"))
+    miss = setdiff(fieldnames(FlowSpec), keys(kwargs))
+    isempty(miss) || throw(ArgumentError("FlowSpec: no value for $(collect(miss))"))
     vals = map(fieldnames(FlowSpec)) do f
-        v = haskey(kwargs, f) ? kwargs[f] : haskey(d, f) ? d[f] : throw(ArgumentError("organ $organ: no value for $f"))
-        fieldtype(FlowSpec, f) === Symbol ? Symbol(v) : F32(v)
+        v = kwargs[f]; T = fieldtype(FlowSpec, f)
+        T === Symbol ? Symbol(v) : T === F32 ? F32(v) : v
     end
     p = FlowSpec(vals...)
     p.regulation in _REGULATION || throw(ArgumentError("regulation must be one of $_REGULATION"))
     p.capillary in _CAPILLARY || throw(ArgumentError("capillary must be one of $_CAPILLARY"))
     p.venous_scale in _VENOUS_SCALE || throw(ArgumentError("venous_scale must be one of $_VENOUS_SCALE"))
+    (p.sub_art === nothing) == (p.sub_ven === nothing) || throw(ArgumentError("give both sub_art and sub_ven, or neither"))
     return p
 end
+# A variant of an instance: its values, except the keywords given (e.g. `FlowSpec(HEART_FLOW; p_in = 70)`).
+FlowSpec(p::FlowSpec; kwargs...) = FlowSpec(; merge((; (f => getfield(p, f) for f in fieldnames(FlowSpec))...), values(kwargs))...)
+
+include("organs.jl")
 
 # Tube/discharge hematocrit ratio (Pries, Neuhaus & Gaehtgens 1992), D in µm.
 @inline fahraeus(d::F32, hd::F32) = hd + (1.0f0 - hd) * (1.0f0 + 1.7f0 * exp(-0.415f0 * d) - 0.6f0 * exp(-0.011f0 * d))
@@ -1346,19 +1362,61 @@ end
 # Healthy reference (`fixtone = false`): C_tone is integrated until the coronary-sinus saturation
 # equals the measured resting extraction (`phys.oef`).
 # Sheet-flow capillary beds (Fung & Sobin): K per bed in mL/s per µm⁴, h₀ in µm, α in µm/mmHg,
-# p_ext in mmHg. `_sheet!` sets each bed's resistance from its current end pressures.
-struct _Sheet{VF <: AbstractVector{F32}}
+# p_ext in mmHg. Each bed may hold sub-terminal vessels (`FlowSpec` `sub_art`, `sub_ven`) in series before and after its
+# sheet: `ka[i]` arterial and `kv[i]` venous orders, of the per-order tables `sa`/`sv` (rows: whole-organ Poiseuille
+# resistance at the reference pressure, β per mmHg, outside pressure in mmHg), with weight `w[i]` (the bed's share of
+# the organ's vessels of each order). `_sheet!` sets each bed's resistance from its current end pressures.
+struct _Sheet{VF <: AbstractVector{F32}, VI <: AbstractVector{Int32}, MF <: AbstractMatrix{F32}}
     K::VF; h0::F32; al::F32; pe::F32; hmax::F32
+    w::VF; ka::VI; kv::VI; sa::MF; sv::MF; pref::F32
 end
+
+# resistance of the first `k` sub-terminal orders of table `t` for a bed of weight w at mean pressure P (mmHg)
+@inline function _subres(t, k, w, P, pref)
+    r = 0.0f0
+    for m in 1:k
+        x = max(1.0f0 + t[2, m] * (P - t[3, m] - pref), 0.1f0)
+        r += t[1, m] / (w * x^4)
+    end
+    return r
+end
+@inline _hsheet(P, h0, al, pe, hm) = clamp(h0 + al * (P - pe), 0.0f0, hm)
+
+# One bed between end pressures Pa (its terminal) and Pv (its venule): flow through sub-terminal arterioles, sheet and
+# sub-terminal venules in series, and the bed's resistance (secant; derivative near a zero gradient). With no
+# sub-terminal orders it is the sheet alone. The flow is found by bisection: the sheet's flow at the inner pressures
+# falls as the flow (and so the sub-terminal pressure drops) rises.
+@inline function _bed(Pa, Pv, K, h0, al, pe, hm, w, ka, kv, sa, sv, pref)
+    if ka == 0 && kv == 0
+        ha = _hsheet(Pa, h0, al, pe, hm); hv = _hsheet(Pv, h0, al, pe, hm)
+        q = K * (ha^4 - hv^4)
+        r = abs(Pa - Pv) > 1.0f-3 && q * (Pa - Pv) > 0 ? (Pa - Pv) / q : 1.0f0 / (4.0f0 * K * al * max(max(ha, hv), 1.0f-3)^3)
+        return q, r
+    end
+    fwd = Pa >= Pv; P1 = fwd ? Pa : Pv; P2 = fwd ? Pv : Pa          # flow runs from P1 to P2
+    k1 = fwd ? ka : kv; k2 = fwd ? kv : ka; t1 = fwd ? sa : sv; t2 = fwd ? sv : sa
+    h1 = _hsheet(P1, h0, al, pe, hm); h2 = _hsheet(P2, h0, al, pe, hm)
+    if P1 - P2 <= 1.0f-3
+        r = _subres(t1, k1, w, P1, pref) + _subres(t2, k2, w, P2, pref) + 1.0f0 / (4.0f0 * K * al * max(max(h1, h2), 1.0f-3)^3)
+        return (Pa - Pv) / r, r
+    end
+    lo = 0.0f0; hi = K * (h1^4 - h2^4); r1 = _subres(t1, k1, w, P1, pref); r2 = _subres(t2, k2, w, P2, pref)
+    for _ in 1:40
+        q = (lo + hi) / 2
+        r1 = _subres(t1, k1, w, P1 - q * r1 / 2, pref); r2 = _subres(t2, k2, w, P2 + q * r2 / 2, pref)
+        g = K * (_hsheet(P1 - q * r1, h0, al, pe, hm)^4 - _hsheet(P2 + q * r2, h0, al, pe, hm)^4)
+        g > q ? (lo = q) : (hi = q)
+    end
+    q = (lo + hi) / 2
+    return fwd ? q : -q, (P1 - P2) / max(q, 1.0f-30)
+end
+
 function _sheet!(S::_Solver, sh::_Sheet, kappa::F32)
     ni = S.ni; pa = S.pa; pv = S.pv; vd = S.vdrain; rcap = S.rcap; K = sh.K; h0 = sh.h0; al = sh.al; pe = sh.pe; hm = sh.hmax
+    w = sh.w; ka = sh.ka; kv = sh.kv; sa = sh.sa; sv = sh.sv; pref = sh.pref
     AK.foreachindex(rcap) do i
         @inbounds begin
-            Pa = pa[ni + i]; Pv = pv[vd[i]]
-            ha = clamp(h0 + al * (Pa - pe), 0.0f0, hm); hv = clamp(h0 + al * (Pv - pe), 0.0f0, hm)
-            q = K[i] * (ha^4 - hv^4)
-            # secant (the bed's actual resistance at this state) for either flow direction; derivative only near zero gradient
-            r = abs(Pa - Pv) > 1.0f-3 && q * (Pa - Pv) > 0 ? (Pa - Pv) / q : 1.0f0 / (4.0f0 * K[i] * al * max(max(ha, hv), 1.0f-3)^3)
+            _, r = _bed(pa[ni + i], pv[vd[i]], K[i], h0, al, pe, hm, w[i], ka[i], kv[i], sa, sv, pref)
             rcap[i] = sqrt(rcap[i] * r / kappa)          # geometric relaxation toward the new resistance
         end
     end
@@ -1369,13 +1427,11 @@ end
 # the one its own end pressures give (the relaxation above converges bed by bed, the loop stops on total flow)
 function _sheet_residual(S::_Solver, sh::_Sheet, kappa::F32)
     ni = S.ni; pa = S.pa; pv = S.pv; vd = S.vdrain; rcap = S.rcap; K = sh.K; h0 = sh.h0; al = sh.al; pe = sh.pe; hm = sh.hmax
+    w = sh.w; ka = sh.ka; kv = sh.kv; sa = sh.sa; sv = sh.sv; pref = sh.pref
     res = similar(rcap)
     AK.foreachindex(rcap) do i
         @inbounds begin
-            Pa = pa[ni + i]; Pv = pv[vd[i]]
-            ha = clamp(h0 + al * (Pa - pe), 0.0f0, hm); hv = clamp(h0 + al * (Pv - pe), 0.0f0, hm)
-            q = K[i] * (ha^4 - hv^4)
-            r = abs(Pa - Pv) > 1.0f-3 && q * (Pa - Pv) > 0 ? (Pa - Pv) / q : 1.0f0 / (4.0f0 * K[i] * al * max(max(ha, hv), 1.0f-3)^3)
+            _, r = _bed(pa[ni + i], pv[vd[i]], K[i], h0, al, pe, hm, w[i], ka[i], kv[i], sa, sv, pref)
             res[i] = abs(r / kappa - rcap[i]) / rcap[i]
         end
     end
@@ -1388,10 +1444,11 @@ end
 struct _Dist{VB <: AbstractVector{Bool}, VF <: AbstractVector{F32}}
     asmall::VB; vsmall::VB; aact::VB; rv0::VF
     bas::F32; bal::F32; bvs::F32; bvl::F32; pal::F32; ppl::F32      # β per mmHg; pressures in mmHg
+    pref::F32                                                       # transmural pressure of the grown radii, mmHg
 end
 function _distend!(S::_Solver, D::_Dist)
     pa = S.pa; par = S.par; fa = S.fa; Pa = S.Pa; asm = D.asmall; act = D.aact
-    bas = D.bas; bal = D.bal; pal = D.pal; ppl = D.ppl
+    bas = D.bas; bal = D.bal; pal = D.pal + D.pref; ppl = D.ppl + D.pref
     AK.foreachindex(fa) do k
         @inbounds if !act[k]
             p = par[k]; P = ((p == 0 ? Pa : pa[p]) + pa[k]) / 2
@@ -1549,6 +1606,8 @@ function _repair(B, vleaf, to)
         vcum[vdrain[i] + 1] += 1
     end
     copyto!(S.vdrain, to(vdrain)); copyto!(S.vsorted, to(Int32.(sortperm(vdrain)))); copyto!(S.vcum, to(accumulate(+, vcum)))
+    # sheet beds with sub-terminal vessels: each bed's venous orders follow its new venule
+    B.sheet === nothing || isempty(B.subdv) || copyto!(B.sheet.kv, to(_sub_venous_orders(B.subdv, B.vt, vl, B.tperm)))
     S.iters[] = 0 # CG sweeps are counted per solve (resist.sweeps), not over all passes
     return merge(B, (; vl))
 end
@@ -1569,6 +1628,48 @@ function _cap_resistance(phys::FlowSpec, w, vcap_total)
     ncap = [vcap_total * w[i] / v1 for i in eachindex(w)]
     return [r1 / ncap[i] for i in eachindex(w)]
 end
+
+# The sub-terminal vessels of every bed (`FlowSpec` `sub_art`, `sub_ven`), in solver bed order (`tperm`): the per-order tables
+# (rows: whole-organ Poiseuille resistance at the reference pressure in mmHg·s/mL, β per mmHg, outside pressure in mmHg),
+# each bed's weight (its tissue share `w`), how many arterial / venous orders are narrower than its terminal / draining
+# venule, and their resistance at the reference pressure (`r0`, the starting value of the bed resistance).
+function _subterminal(phys::FlowSpec, t::VTree, vt::VTree, vl, terminals, w, tperm, mup, hd, to)
+    nt = length(terminals); c = 1.35951f0; pref = phys.p_ref_cmH2O / c
+    if phys.sub_art === nothing
+        z = zeros(F32, 3, 1)
+        return (; w = to(F32.(w[tperm])), ka = to(zeros(Int32, nt)), kv = to(zeros(Int32, nt)), sa = to(z), sv = to(copy(z)), pref, r0 = zeros(F32, nt), dv = F32[])
+    end
+    A = phys.sub_art; V = phys.sub_ven
+    rows(T) = F32[
+        k == 1 ? poiseuille(F32(T.L[j]), F32(T.D[j] / 2), mup * mu_rel(F32(1000 * T.D[j]), hd)) / F32(T.N[j]) :
+            k == 2 ? F32(T.beta[j]) * c : (1000 * T.D[j] < phys.d_alveolus_um ? phys.p_ext : phys.p_pleural_cmH2O / c)
+            for k in 1:3, j in eachindex(T.N)
+    ]
+    sa = rows(A); sv = rows(V)
+    ka = Int32[count(<(2 * t.r[terminals[i]]), A.D) for i in tperm]
+    kv = _sub_venous_orders(V.D, vt, vl, tperm)
+    ws = F32.(w[tperm])
+    r0 = F32[sum(@view(sa[1, 1:ka[b]]); init = 0.0f0) / ws[b] + sum(@view(sv[1, 1:kv[b]]); init = 0.0f0) / ws[b] for b in 1:nt]
+    return (; w = to(ws), ka = to(ka), kv = to(kv), sa = to(sa), sv = to(sv), pref, r0, dv = V.D)
+end
+# Power (flow × pressure drop) in the sub-terminal arterioles and venules of all beds, at the final pressures and bed
+# flows (caller numbering; `tperm` maps solver beds to terminals): the same series solution as `_bed`.
+function _subterminal_drops(sh::_Sheet, pa, pv, qt, terminals, vl, tperm)
+    w = Array(sh.w); ka = Array(sh.ka); kv = Array(sh.kv); sa = Array(sh.sa); sv = Array(sh.sv); pref = sh.pref
+    da = 0.0f0; dv = 0.0f0
+    for b in eachindex(tperm)
+        i = tperm[b]; q = qt[i]; Pa = pa[terminals[i]]; Pv = pv[vl[i]]
+        ra = _subres(sa, ka[b], w[b], Pa, pref); rv = _subres(sv, kv[b], w[b], Pv, pref)
+        for _ in 1:5
+            ra = _subres(sa, ka[b], w[b], Pa - q * ra / 2, pref); rv = _subres(sv, kv[b], w[b], Pv + q * rv / 2, pref)
+        end
+        da += q^2 * ra; dv += q^2 * rv
+    end
+    return da, dv
+end
+
+# venous sub-terminal orders of each bed (solver order): the orders narrower than the venule it drains into
+_sub_venous_orders(dv, vt::VTree, vl, tperm) = Int32[count(<(2 * vt.r[vl[i]]), dv) for i in tperm]
 
 # Smallest and largest passive diameter (µm) of the vasoactive arteries (D₀ < d_active).
 function _active_range(t::VTree, d_active)
@@ -1623,15 +1724,23 @@ function _build(
         t, vt, vl, terminals, _cap_resistance(phys, F32.(territory_ml) ./ vol_tissue, vcap_total), lim, phys.p_in, phys.p_out,
         10.0f0 * phys.atp_l0, hd, mup, phys.d_art_micro, phys.d_ven_micro, to; metabolic = state === :rest && phys.regulation !== :passive
     )
-    sheet = nothing
+    sheet = nothing; subdv = F32[]
     if phys.capillary === :sheet
         al = phys.sheet_alpha_um_cmH2O * 1.35951f0                   # µm per mmHg
         alsi = phys.sheet_alpha_um_cmH2O * 1.0f-6 / 98.0665f0          # m per Pa
         k1 = phys.sheet_s / (4.0f0 * phys.sheet_mu_cP * 1.0f-3 * phys.sheet_kf * (phys.sheet_path_um * 1.0f-6)^2 * alsi)
         Kt = F32[k1 * phys.sheet_area_m2_per_ml * F32(territory_ml[i]) * 1.0f-18 for i in 1:nt]   # mL/s per µm⁴
         h = clamp(phys.sheet_h0_um + al * ((phys.p_in + phys.p_out) / 2 - phys.p_ext), 0.1f0, phys.sheet_h0_um + al * phys.sheet_pmax_cmH2O / 1.35951f0)
-        copyto!(S.rcap, to(F32[1.0f0 / (4.0f0 * Kt[i] * al * h^3) for i in tperm]))
-        sheet = _Sheet(to(Kt[tperm]), phys.sheet_h0_um, al, phys.p_ext, phys.sheet_h0_um + al * phys.sheet_pmax_cmH2O / 1.35951f0)
+        sub = _subterminal(phys, t, vt, vl, terminals, F32.(territory_ml) ./ vol_tissue, tperm, mup, hd, to)
+        copyto!(S.rcap, to(F32[1.0f0 / (4.0f0 * Kt[i] * al * h^3) for i in tperm] .+ sub.r0))
+        sheet = _Sheet(
+            to(Kt[tperm]), phys.sheet_h0_um, al, phys.p_ext, phys.sheet_h0_um + al * phys.sheet_pmax_cmH2O / 1.35951f0,
+            sub.w, sub.ka, sub.kv, sub.sa, sub.sv, sub.pref
+        ); subdv = sub.dv
+    elseif phys.sub_art !== nothing
+        # tube beds: the sub-terminal vessels add their resistance at the reference pressure (rigid, with the first pairing)
+        sub = _subterminal(phys, t, vt, vl, terminals, F32.(territory_ml) ./ vol_tissue, tperm, mup, hd, to)
+        copyto!(S.rcap, S.rcap .+ to(sub.r0))
     end
     dist = nothing
     if max(phys.beta_art_small, phys.beta_art_large, phys.beta_ven_small, phys.beta_ven_large) > 0
@@ -1642,7 +1751,7 @@ function _build(
         dist = _Dist(
             to(Bool[2000.0f0 * t.r[perm[k]] < phys.d_alveolus_um for k in 1:n]), to(Bool[2000.0f0 * vt.r[vperm[k]] < phys.d_alveolus_um for k in 1:nv]),
             to(Vector{Bool}(aact)), to(copy(Array(S.rv))), phys.beta_art_small * c, phys.beta_art_large * c,
-            phys.beta_ven_small * c, phys.beta_ven_large * c, phys.p_ext, phys.p_pleural_cmH2O / c
+            phys.beta_ven_small * c, phys.beta_ven_large * c, phys.p_ext, phys.p_pleural_cmH2O / c, phys.p_ref_cmH2O / c
         )
     end
     seg = Int32[k for k in 1:n if 2000.0f0 * t.r[perm[k]] < phys.d_active]   # solver numbering
@@ -1675,7 +1784,7 @@ function _build(
     end
     tg = to(terr_g[tperm]); stend = to(sten)
     tsol = iperm[terminals]                                                  # terminal i's solver segment
-    return (; S, W, act, companion, d0, dem, dist, hd, lim, mass_g, mu0d, n, nt, nv, perm, s, seg, sheet, sten, stend, t, terminals, tg, tperm, tsol, vart, vblood, vcap_total, vl, vperm, vt, vv_unres, vven)
+    return (; S, W, act, companion, d0, dem, dist, hd, lim, mass_g, mu0d, n, nt, nv, perm, s, seg, sheet, sten, stend, subdv, t, terminals, tg, tperm, tsol, vart, vblood, vcap_total, vl, vperm, vt, vv_unres, vven)
 end
 
 function _circuit(
@@ -1734,7 +1843,7 @@ end
 # The circuit's outputs from a finished solve (`B` from `_build`), in the caller's numbering. A function of its own, with
 # the same argument types for every state, reference and stenosis, so it is compiled once per organ layout.
 function _assemble(B, territory_ml::AbstractVector, phys::FlowSpec, state::Symbol, kappa::F32, ctone, iters, dxlast)
-    (; S, W, act, companion, dem, hd, mass_g, n, nt, nv, perm, s, t, terminals, tperm, vart, vblood, vcap_total, vl, vperm, vt, vv_unres, vven) = B
+    (; S, W, act, companion, dem, hd, mass_g, n, nt, nv, perm, s, sheet, t, terminals, tperm, vart, vblood, vcap_total, vl, vperm, vt, vv_unres, vven) = B
     _release_work!(S) # only the solution and resistances are read from here on
     rmc = _micro_resistance(S, mass_g)
     # what the outputs need besides the solution, rebuilt now rather than held through the solve (the same values): the
@@ -1805,6 +1914,10 @@ function _assemble(B, territory_ml::AbstractVector, phys::FlowSpec, state::Symbo
     # ---- pressure-drop shares (flow-weighted) and summary flows
     dpa = sum(q[j] * rr[j] * q[j] for j in 1:n)
     dpv = sum(qv[k]^2 * (mv[k] ? kappa : 1.0f0) * rv[k] for k in 1:nv); dpc = sum(qt .^ 2 .* rcap) * kappa
+    # sub-terminal vessels count with the arteries and veins they are, not with the capillaries
+    if sheet !== nothing && !isempty(B.subdv)
+        da, dv = _subterminal_drops(sheet, pa, pv, qt, terminals, vl, tperm); dpa += da; dpv += dv; dpc -= da + dv
+    end
     roots = Int32[j for j in 1:n if t.parent[j] == 0]
     qtot = sum(q[roots])
     nw = length(act)
