@@ -22,16 +22,18 @@ function couple_veins(F, terr, VT, terms, vterms; phys, reach = 3.0f0, passes = 
     vleaf = Int32.(vterms[nearest_terminal(VT.b[:, vterms], F.b[:, terms])])
     VB = VT.b[:, vterms]; last = typemax(Int); k0 = 1.0f0
     B = Territory.Buckets(VB, 2.0f0)
-    C = nothing
+    # one solver for all passes: each pass only re-pairs the beds and starts from the previous pass's solution; a pass
+    # returns the bed pressures alone, and the final call assembles the circuit
+    P = Flow._Pairing()
     for pass in 1:passes
         t0 = time()
-        C = nothing; GC.gc(false) # the previous pass's circuit is not needed: at most one full circuit in memory
-        C = circuit(F, terr; state = :stress, veins = VT, vleaf, phys, kappa_init = k0, to); k0 = C.resist.kappa
-        bad = [i for i in eachindex(terms) if C.pa[C.terminals[i]] <= C.pv[vleaf[i]]]
+        R = circuit(F, terr; state = :stress, veins = VT, vleaf, phys, kappa_init = k0, to, pairing = P); k0 = R.kappa
+        bad = [i for i in eachindex(terms) if R.pa_term[i] <= R.pv[vleaf[i]]]
         @printf("coupling pass %d: %d beds with reversed flow (%.1f s)\n", pass, length(bad), time() - t0); flush(stdout)
-        (length(bad) <= tol * length(terms) || length(bad) > 0.9 * last) && return vleaf, C
+        (length(bad) <= tol * length(terms) || length(bad) > 0.9 * last) && break
         last = length(bad)
         rr = reach + min(pass - 1, 3); nr = ceil(Int, rr / B.h)
+        pvs = R.pv
         AK.foreachindex(1:length(bad); min_elems = 1) do ii
             i = bad[ii]; x = F.b[1, terms[i]]; y = F.b[2, terms[i]]; z = F.b[3, terms[i]]
             c0 = (floor(Int, (x - B.lo[1]) / B.h), floor(Int, (y - B.lo[2]) / B.h), floor(Int, (z - B.lo[3]) / B.h))
@@ -42,15 +44,15 @@ function couple_veins(F, terr, VT, terms, vterms; phys, reach = 3.0f0, passes = 
                 for s in B.start[c]:(B.start[c + 1] - 1)
                     k = B.items[s]
                     (VB[1, k] - x)^2 + (VB[2, k] - y)^2 + (VB[3, k] - z)^2 <= rr^2 || continue
-                    pv = C.pv[vterms[k]]
+                    pv = pvs[vterms[k]]
                     (pv < bp || (pv == bp && k < bk)) && (bp = pv; bk = k)
                 end
             end
             bk == typemax(Int32) || (vleaf[i] = Int32(vterms[bk]))
         end
     end
-    C = nothing; GC.gc(false)
-    return vleaf, circuit(F, terr; state = :stress, veins = VT, vleaf, phys, kappa_init = k0, to)
+    P.probe = false
+    return vleaf, circuit(F, terr; state = :stress, veins = VT, vleaf, phys, kappa_init = k0, to, pairing = P)
 end
 
 """

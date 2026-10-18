@@ -422,12 +422,13 @@ k_e = 1.52 (counted once, at the narrowing's exit). It is solved with the rest o
 whatever the pressures and the distal arterioles make it.
 
 `to` moves the solver's arrays to a device (for example `to = MtlArray` or `CuArray`), where the
-whole iteration then runs; the returned `Circuit` holds host arrays either way.
+whole iteration then runs; the returned `Circuit` holds host arrays either way. `pairing` is internal (`couple_veins`):
+it keeps the solver between venous coupling passes.
 """
 function circuit(
         t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::Symbol = :rest,
         veins::Union{Nothing, VTree} = nothing, vleaf = nothing, reference::Union{Nothing, Circuit} = nothing,
-        kappa = nothing, kappa_init = 1, stenosis = nothing, demand = nothing, verbose::Bool = false, to = identity
+        kappa = nothing, kappa_init = 1, stenosis = nothing, demand = nothing, verbose::Bool = false, to = identity, pairing = nothing
     )
     state in (:rest, :stress) || throw(ArgumentError("state must be :rest or :stress"))
     cv(t, salt) = phys.radius_cv <= 0 ? t : (
@@ -436,7 +437,7 @@ function circuit(
         )
     t = cv(t, 0)
     veins === nothing || (veins = cv(veins, 1 << 40))
-    return _circuit(t, territory_ml; phys, state, veins, vleaf, reference, kappa, kappa_init, stenosis, demand, verbose, to)
+    return _circuit(t, territory_ml; phys, state, veins, vleaf, reference, kappa, kappa_init, stenosis, demand, verbose, to, pairing)
 end
 
 # Fixed standard normal per segment index (SplitMix64 + Box–Muller), so results are reproducible.
@@ -1479,7 +1480,31 @@ function _autoregulate!(
     return iters, p99()
 end
 
-function _circuit(t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::Symbol, veins, vleaf, reference, kappa, kappa_init, stenosis, demand, verbose, to)
+# Venous coupling state kept across passes (`couple_veins`): the solver and its last solution. With `probe`, a solve
+# returns only the bed pressures; the last call (probe = false) assembles the circuit.
+mutable struct _Pairing
+    B::Any
+    probe::Bool
+end
+_Pairing() = _Pairing(nothing, true)
+
+# The same solver with terminal i draining into vein vleaf[i]: only the drainage lists change (`_solver`'s vdrain,
+# vsorted, vcum); the resistances, walls, sheets and the last solution stay, so the next solve starts from them.
+function _repair(B, vleaf, to)
+    S = B.S; nt = B.nt; nv = B.nv; vl = Int32.(vleaf)
+    viperm = similar(B.vperm); viperm[B.vperm] = 1:nv
+    vdrain = Int32[viperm[vl[B.tperm[i]]] for i in 1:nt]
+    vcum = zeros(Int32, nv + 1)
+    for i in 1:nt
+        vcum[vdrain[i] + 1] += 1
+    end
+    copyto!(S.vdrain, to(vdrain)); copyto!(S.vsorted, to(Int32.(sortperm(vdrain)))); copyto!(S.vcum, to(accumulate(+, vcum)))
+    return merge(B, (; vl))
+end
+
+# Everything one steady solve needs: the solver in its own numbering (`_solver`), the vessel walls, the capillary sheets,
+# distension, stenoses and the terminals' O₂ use, and what the circuit's outputs are assembled from.
+function _build(t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::Symbol, veins, vleaf, reference, stenosis, demand, to)
     n = nseg(t)
     nchild, ptr, kids, order = _topology(t.parent)
     terminals = Int32[j for j in 1:n if nchild[j] == 0]
@@ -1587,6 +1612,19 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state:
         push!(sten, (iperm[j], Ls / len[j], f, s2))
     end
     tg = to(terr_g[tperm]); mu0d = to(mu0[perm]); stend = to(sten)
+    return (; S, W, act, d0, dem, dist, hd, iperm, len, lim, mass_g, mu0d, mv, n, nt, nv, order, perm, rcap, rv, s, seg, sheet, sten, stend, t, terminals, tg, tidx, tperm, vart, vblood, vcap_total, vl, vol, vorder, vperm, vt, vv_unres, vven, vvol, w)
+end
+
+function _circuit(
+        t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::Symbol, veins, vleaf, reference, kappa, kappa_init, stenosis,
+        demand, verbose, to, pairing = nothing
+    )
+    # a venous coupling pass (`pairing`) keeps the solver and its last state, and only re-pairs the beds with their venules
+    B = pairing !== nothing && pairing.B !== nothing ? _repair(pairing.B, vleaf, to) :
+        _build(t, territory_ml; phys, state, veins, vleaf, reference, stenosis, demand, to)
+    pairing === nothing || (pairing.B = B)
+    (; S, W, act, d0, dem, dist, hd, iperm, len, lim, mass_g, mu0d, mv, n, nt, nv, order, perm, rcap, rv, s, seg, sheet, sten, stend, t, terminals, tg, tidx, tperm, vart, vblood, vcap_total, vl, vol, vorder, vperm, vt, vv_unres, vven, vvol, w) = B
+
 
     # ---- microvascular scale κ at maximal dilation (vessels on their passive curves): the whole bed's
     # resistance (inlet pressure ÷ flow per gram) equals the measured human value, r_total_dilated; the older
@@ -1622,6 +1660,11 @@ function _circuit(t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state:
     # ---- the state (a bed without active tone is always in its relaxed state)
     phys.regulation === :passive && (state = :stress)
     iters, dxlast = _autoregulate!(S, W, kappa, phys, state, ctone, reference !== nothing, tg, mu0d, stend, lim, verbose, sheet, dist)
+    if pairing !== nothing && pairing.probe
+        # a coupling pass reads only the bed pressures (arterial at each terminal, venous at every vein); the solver is kept
+        pv = Vector{F32}(undef, nv); pv[vperm] = Array(S.pv)
+        return (; pa_term = Array(S.pa)[iperm[terminals]], pv, kappa)
+    end
     _release_work!(S) # only the solution and resistances are read from here on
     sheet === nothing || (rcap[tperm] = Array(S.rcap))     # the sheet beds' final resistances
     rmc = _micro_resistance(S, mass_g)
