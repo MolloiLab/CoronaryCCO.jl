@@ -36,7 +36,7 @@ struct FastView{VT}
 end
 Adapt.@adapt_structure FastView
 
-# CSR grid: segments of cell c are items[start[c]:start[c + 1] - 1].
+# The grid's cell lists as on the host (see SegGrid): head per cell, next and item per entry.
 struct GridView{T, VI, VT, VB}
     origin::P3{T}
     h::T
@@ -45,8 +45,9 @@ struct GridView{T, VI, VT, VB}
     cellr::VT
     growth::T
     prune::Bool
-    start::VI
-    items::VI
+    head::VI
+    next::VI
+    item::VI
     box::VB               # per segment: registered cell range (for de-duplication)
 end
 Adapt.@adapt_structure GridView
@@ -107,7 +108,7 @@ struct TreeView{T, M, F, G, D, VI8, VB, VU8, VR, VT}
 end
 Adapt.@adapt_structure TreeView
 
-@inline cell_items(g::GridView, c) = @inbounds view(g.items, g.start[c]:(g.start[c + 1] - 1))
+@inline cell_items(g::GridView, c) = @inbounds CellItems(g.next, g.item, g.head[c])
 
 @inline _isfast(::TreeView) = true
 @inline _fullvol(V::TreeView) = V.full
@@ -123,20 +124,40 @@ end
 @inline _reach(::Type{T}, p::ParamView) where {T} = T(p.reach)
 @inline _ktol(::Type{T}, p::ParamView) where {T} = T(p.kamiya_tol)
 
-# Host-side buffers reused across rounds (CSR grid and, for devices, the static domain).
+"""
+    Unified(wrap, copy)
+
+A device that shares memory with the host (Apple silicon, integrated GPUs). `wrap(x)` returns a device array over the same
+memory as the host vector `x` without copying; `copy(x)` moves any other array there. Each batched round then hands the
+growing tree to the device in place instead of copying it, which halves the memory of a large tree. With `GPUArray` the
+GPU package's array type and its no-copy wrapper of host memory:
+
+    Unified(x -> unsafe_wrap(GPUArray{eltype(x), ndims(x)}, x), x -> GPUArray(x))
+
+`wrap` and `copy` must return the same array type (the round's views mix wrapped and copied arrays).
+"""
+struct Unified{W, C}
+    wrap::W
+    copy::C
+end
+(u::Unified)(x) = u.copy(x)
+
+# Host-side buffers reused across rounds (for devices: the static domain and the tree's device arrays).
 mutable struct ViewCache
-    start::Vector{Int32}
-    items::Vector{Int32}
     dom::Any               # (img, dist) already moved by `to`, keyed by the `to` function
     to::Any
     bufs::Dict{Symbol, Any}   # device buffers reused across rounds (grown geometrically)
 end
-ViewCache() = ViewCache(Int32[], Int32[], nothing, nothing, Dict{Symbol, Any}())
+ViewCache() = ViewCache(nothing, nothing, Dict{Symbol, Any}())
 
 # x on the device: aliases x on the CPU; otherwise refills a reusable device buffer that is at
 # least as long as x (kernels index explicitly, so trailing capacity is never read).
 function _up!(vc::ViewCache, key::Symbol, x::AbstractVector, to)
     to === identity && return x
+    to isa Unified && return _wrap!(vc, key, x, to)
+    return _copyup!(vc, key, x, to)
+end
+function _copyup!(vc::ViewCache, key::Symbol, x::AbstractVector, to)
     buf = get(vc.bufs, key, nothing)
     if buf === nothing || length(buf) < length(x)
         buf = to(similar(x, max(length(x), 1) + length(x) ÷ 2))
@@ -146,21 +167,41 @@ function _up!(vc::ViewCache, key::Symbol, x::AbstractVector, to)
     return buf
 end
 
-function _csr!(vc::ViewCache, g::SegGrid)
-    nc = length(g.cells)
-    resize!(vc.start, nc + 1)
-    vc.start[1] = 1
-    @inbounds for c in 1:nc
-        vc.start[c + 1] = vc.start[c] + Int32(length(g.cells[c]))
+# A unified-memory device takes x in place: a device array over the first m elements of x's memory, the fewest that fill
+# whole pages (a no-copy device buffer must start and end on a page boundary; large host arrays start on one). Elements
+# past length(x) are never read. Re-wrapped only when x was reallocated or outgrew the wrapped length.
+const _PAGE = Mmap.PAGESIZE
+function _pagelen(T, n)
+    m = max(n, 1)
+    while (m * sizeof(T)) % _PAGE != 0
+        m += 1
     end
-    resize!(vc.items, vc.start[end] - 1)
-    AK.foreachindex(1:nc; max_tasks = Threads.nthreads(), min_elems = 4096) do c
-        o = vc.start[c] - 1
-        @inbounds for (i, j) in enumerate(g.cells[c])
-            vc.items[o + i] = j
+    return m
+end
+function _wrap!(vc::ViewCache, key::Symbol, x::Vector, to::Unified)
+    c = get(vc.bufs, key, nothing)
+    UInt(pointer(x)) % _PAGE == 0 || return _copyup!(vc, Symbol(key, :_copy), x, to.copy) # not page-aligned: copy
+    if c === nothing || c[1] !== x.ref.mem || c[3] < length(x)
+        # wrap all whole pages of the capacity (not just the length), so a growing tree is re-wrapped only when its host
+        # array is reallocated (geometric growth); reserve half again first when even that would not hold x
+        m = _pagefloor(eltype(x), length(x.ref.mem))
+        if m < max(length(x), 1) # also: at least one page, even for an empty array
+            sizehint!(x, _pagelen(eltype(x), length(x) + length(x) ÷ 2))
+            m = _pagefloor(eltype(x), length(x.ref.mem))
         end
+        UInt(pointer(x)) % _PAGE == 0 || return _copyup!(vc, Symbol(key, :_copy), x, to.copy) # moved by sizehint!: check again
+        d = to.wrap(unsafe_wrap(Array, pointer(x), m))
+        c = (x.ref.mem, d, m); vc.bufs[key] = c
     end
-    return vc
+    return c[2]
+end
+# the most elements of type T, at most n, that fill whole pages
+function _pagefloor(T, n)
+    m = n
+    while m > 0 && (m * sizeof(T)) % _PAGE != 0
+        m -= 1
+    end
+    return m
 end
 
 """
@@ -179,10 +220,9 @@ function tree_view(E::Engine{T}, vc::ViewCache; to = identity) where {T}
         m.root_radius_max, m.gamma, m.kterm_total
     )
     F = FastView(up(:Rt, E.F.Rt), up(:W, E.F.W))
-    _csr!(vc, g)
     G = GridView(
-        g.origin, g.h, g.dims, g.margin, up(:cellr, g.cellr), g.growth, g.prune, up(:start, vc.start),
-        up(:items, vc.items), up(:box, g.box)
+        g.origin, g.h, g.dims, g.margin, up(:cellr, g.cellr), g.growth, g.prune, up(:head, g.head),
+        up(:next, g.next), up(:item, g.item), up(:box, g.box)
     )
     if vc.dom === nothing || vc.to !== to
         vc.dom = (to(E.dom.img), to(E.dom.dist), to(E.dom.allow), to(E.dom.fine)); vc.to = to

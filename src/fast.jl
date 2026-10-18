@@ -181,6 +181,7 @@ function fast_refresh_radii!(E::Engine{T}) where {T}
     E.F.since = 0
     E.g.prune = true
     grid_refresh_radii!(E.g, m)
+    grid_compact!(E.g)                    # cell lists contiguous again (see grid_compact!)
     return E
 end
 

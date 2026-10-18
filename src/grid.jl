@@ -8,7 +8,12 @@ mutable struct SegGrid{T}
     origin::P3{T}
     h::T
     dims::NTuple{3, Int}
-    cells::Vector{Vector{Int32}}
+    # cell lists as linked lists: head[c] is the newest entry of cell c, next[e] the entry after e (0 ends a list), item[e]
+    # its segment (0: removed). Inserting prepends and removing clears item[e], so every array only grows or changes in
+    # place: no per-cell vectors, and a device can take them as they are every round (compacted when the grid is rebuilt)
+    head::Vector{Int32}
+    next::Vector{Int32}
+    item::Vector{Int32}
     box::Vector{NTuple{6, Int16}}   # per segment: cell index range it is registered in (Int16: 12 bytes per segment)
     margin::T
     cellr::Vector{T}                 # per cell: largest reference radius among its segments
@@ -22,8 +27,7 @@ function SegGrid{T}(lower::P3{T}, upper::P3{T}, h::Real) where {T}
     origin = (lower[1] - pad, lower[2] - pad, lower[3] - pad)
     dims = ntuple(i -> Int(cld(upper[i] - lower[i] + 2pad, T(h))) + 1, 3)
     maximum(dims) <= typemax(Int16) || throw(ArgumentError("grid of $(dims) cells: at most $(typemax(Int16)) per axis"))
-    cells = [Int32[] for _ in 1:prod(dims)]
-    return SegGrid{T}(origin, T(h), dims, cells, NTuple{6, Int16}[], T(1.0e-3), zeros(T, prod(dims)), T[], one(T), false)
+    return SegGrid{T}(origin, T(h), dims, zeros(Int32, prod(dims)), Int32[], Int32[], NTuple{6, Int16}[], T(1.0e-3), zeros(T, prod(dims)), T[], one(T), false)
 end
 
 @inline _cell(g, x, i) = clamp(unsafe_trunc(Int, floor((x - g.origin[i]) / g.h)) + 1, 1, g.dims[i])
@@ -46,7 +50,7 @@ function grid_insert!(g::SegGrid, m::CCOModel, j)
     g.rref[j] = r
     for k in bx[5]:bx[6], jj in bx[3]:bx[4], i in bx[1]:bx[2]
         c = _lin(g, i, jj, k)
-        push!(g.cells[c], Int32(j))
+        push!(g.item, Int32(j)); push!(g.next, g.head[c]); g.head[c] = Int32(length(g.item))
         r > g.cellr[c] && (g.cellr[c] = r)
     end
     return
@@ -55,15 +59,17 @@ end
 function grid_remove!(g::SegGrid, j)
     bx = g.box[j]
     for k in bx[5]:bx[6], jj in bx[3]:bx[4], i in bx[1]:bx[2]
-        c = g.cells[_lin(g, i, jj, k)]
-        idx = findfirst(==(Int32(j)), c)
-        c[idx] = c[end]; pop!(c)
+        e = g.head[_lin(g, i, jj, k)]
+        while g.item[e] != j
+            e = g.next[e]
+        end
+        g.item[e] = 0
     end
     return
 end
 
 function grid_build!(g::SegGrid, m::CCOModel)
-    foreach(empty!, g.cells)
+    fill!(g.head, 0); empty!(g.next); empty!(g.item)
     resize!(g.box, nsegments(m))
     for j in 2:nsegments(m)
         grid_insert!(g, m, j)
@@ -91,10 +97,10 @@ function grid_refresh_radii!(g::SegGrid{T}, m::CCOModel{T}; tol = 1.25) where {T
     gr = maximum(part)
     g.growth = gr
     gr <= T(tol) && return g
-    cr = g.cellr; cells = g.cells
-    AK.foreachindex(cells; max_tasks = Threads.nthreads(), min_elems = 4096) do c
+    cr = g.cellr
+    AK.foreachindex(cr; max_tasks = Threads.nthreads(), min_elems = 4096) do c
         r = zero(T)
-        @inbounds for j in cells[c]
+        @inbounds for j in cell_items(g, c)
             rad[j] > r && (r = rad[j])
         end
         @inbounds cr[c] = r
@@ -104,8 +110,55 @@ function grid_refresh_radii!(g::SegGrid{T}, m::CCOModel{T}; tol = 1.25) where {T
     return g
 end
 
-# Segments registered in cell c (a SegGrid cell list or a CSR slice of a GridView).
-@inline cell_items(g::SegGrid, c) = @inbounds g.cells[c]
+# Re-lay the cell lists contiguously in cell order, dropping removed entries: a cell's entries are then read in sequence
+# (memory locality for every query) instead of chased across the arrays. Run every few percent of growth (with the full
+# radius refresh); entries added since then are prepended as usual.
+function grid_compact!(g::SegGrid)
+    nc = length(g.head)
+    cnt = zeros(Int32, nc)
+    AK.foreachindex(cnt; max_tasks = Threads.nthreads(), min_elems = 4096) do c
+        k = Int32(0)
+        for _ in cell_items(g, c)
+            k += Int32(1)
+        end
+        @inbounds cnt[c] = k
+    end
+    first = Vector{Int32}(undef, nc); acc = Int32(0)
+    for c in 1:nc
+        @inbounds first[c] = acc + Int32(1); acc += cnt[c]
+    end
+    item = Vector{Int32}(undef, acc); next = Vector{Int32}(undef, acc)
+    AK.foreachindex(cnt; max_tasks = Threads.nthreads(), min_elems = 4096) do c
+        e = first[c]
+        for j in cell_items(g, c)
+            @inbounds item[e] = j; @inbounds next[e] = e + Int32(1); e += Int32(1)
+        end
+        @inbounds cnt[c] > 0 && (next[e - Int32(1)] = Int32(0))
+    end
+    AK.foreachindex(cnt; max_tasks = Threads.nthreads(), min_elems = 4096) do c
+        @inbounds g.head[c] = cnt[c] > 0 ? first[c] : Int32(0)
+    end
+    g.item = item; g.next = next
+    return g
+end
+
+# Segments registered in cell c, newest first, skipping removed entries (allocation-free, so it also runs in kernels).
+struct CellItems{V}
+    next::V
+    item::V
+    first::Int32
+end
+Base.IteratorSize(::Type{<:CellItems}) = Base.SizeUnknown()
+Base.eltype(::Type{<:CellItems}) = Int32
+@inline function Base.iterate(it::CellItems, e::Int32 = it.first)
+    @inbounds while e != 0
+        j = it.item[e]; e2 = it.next[e]
+        j != 0 && return (j, e2)
+        e = e2
+    end
+    return nothing
+end
+@inline cell_items(g::SegGrid, c) = @inbounds CellItems(g.next, g.item, g.head[c])
 
 # Like grid_any, for tests whose reach depends on each segment's radius: `need(r)` is the
 # padding a segment of radius r requires. Cells are searched within need(rmax); with pruning

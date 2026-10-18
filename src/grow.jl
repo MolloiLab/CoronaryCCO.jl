@@ -159,6 +159,22 @@ function Engine(
     return E
 end
 
+# Every per-segment array at its final capacity once (the segments now plus two per terminal still to add), so push!
+# never reallocates during growth: no spare capacity and no moment with old and new copies of a large tree both alive.
+function reserve!(E::Engine, nnew::Integer)
+    m = E.m; N = nsegments(m) + 2nnew
+    for x in (
+            m.pos, m.radius, m.kterm, m.resistance, m.flow, m.beta, m.parent, m.left, m.right, m.glen, m.listed,
+            E.F.Rt, E.F.W, E.tcount, E.isbase, E.treeid, E.middle, E.isbig, E.g.box, E.g.rref,
+        )
+        _reserve!(x, N)
+    end
+    _reserve!(m.terminals, length(m.terminals) + nnew)
+    return E
+end
+# (capacity rounded up to whole memory pages, so a unified-memory device can take the array in place without regrowing it)
+_reserve!(x::Vector, N) = (n = length(x); M = _pagelen(eltype(x), N); length(x.ref.mem) < M && (resize!(x, M); resize!(x, n)); x)
+
 # Grid cell that follows the tree's density. Every grid query scans whole cells, so with a fixed cell the work per query
 # grows with the number of segments. Once a tree averages more than SEGS_PER_CELL segments per cell over its domain, the
 # cell is halved. 32 is a speed setting, the fastest of 16, 32 and 128 measured on the XCAT heart (957k terminals) and
@@ -174,6 +190,8 @@ function regrid!(E::Engine{T}) where {T}
     lo = (T(E.dom.lower[1]), T(E.dom.lower[2]), T(E.dom.lower[3]))
     hi = (T(E.dom.upper[1]), T(E.dom.upper[2]), T(E.dom.upper[3]))
     g2 = SegGrid{T}(lo, hi, g.h / 2); g2.prune = g.prune # cell bounds are set from the current radii
+    cap = length(E.m.pos.ref.mem) # the reserved final segment count (reserve!)
+    _reserve!(g2.box, cap); _reserve!(g2.rref, cap)
     E.g = grid_build!(g2, E.m)
     update_rmax!(E)
     return E
@@ -826,6 +844,7 @@ function grow!(
     results = Vector{Tuple{Bool, T, P3{T}, T, Int}}(undef, E.p.num_neighbors)
     t0 = time()
     total = min(nseed - 1, steps)
+    reserve!(E, total)
     i = 0
     nextp = progress
     pool = nothing

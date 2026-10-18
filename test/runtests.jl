@@ -109,6 +109,8 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         # the device argument: an array constructor or a KernelAbstractions backend
         @test same_tree(bat.m, grow_case0(3000; kw..., growth = :batched, n_seq = 500, device = Array).m)
         @test same_tree(bat.m, grow_case0(3000; kw..., growth = :batched, n_seq = 500, device = C.KA.CPU()).m)
+        # a unified-memory device takes the tree in place (here the host itself): the same tree
+        @test same_tree(bat.m, grow_case0(3000; kw..., growth = :batched, n_seq = 500, device = C.Unified(x -> x, copy)).m)
         ref = grow_case0(3000; kw...)
         @test length(bat.m.terminals) == length(ref.m.terminals)
         vol(E) = sum(Float64(E.m.radius[j])^2 * Float64(E.m.glen[j]) for j in 2:nsegments(E.m))
@@ -161,9 +163,9 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
 
     @testset "transport is the whole-body bolus with the organ's bed" begin
         heart = FlowSpec(organ = "heart")
-        spec = TransportSpec(; phys = heart, tissue_ml = 148.1, tmax = 20, dt = 0.005, every = 1)
+        spec = TransportSpec(; phys = heart, tissue_ml = 148.1, bed = :coronary, input = :lv, tmax = 20, dt = 0.005, every = 1)
         r = transport(spec)
-        circ = C.Body.human_circulation(; hct = heart.hd, cor = (; ml = 148.1f0, heart.fb, heart.ve, heart.ps, heart.rho))
+        circ = C.Body.human_circulation(; hct = heart.hd, coronary = (; ml = 148.1f0, heart.fb, heart.ve, heart.ps, heart.rho))
         r2 = C.Body.simulate(circ, C.Body.Injection(); tmax = 20, dt = 0.005, every = 1)
         @test r.t == r2.t && r.out[:lv] == r2.out[:lv] && r.mean[:coronary] == r2.mean[:coronary]
         @test r.injected > 0 && maximum(r.out[:lv]) > 0
@@ -178,9 +180,24 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         inp = C.Flow.InputCurve(Float32[C._interp(t, r.t, r.out[:lv]) / pf for t in tf], 0.02f0)
         @test T0.body.out[:lv] == r.out[:lv] && T0.input.c == inp.c
         am, vm, tm = Array.(C.Flow.frame_masses(Cr, inp, collect(0.0f0:2.0f0:20.0f0)))
-        @test T0.artery == am && T0.tissue == tm
+        @test T0.artery == am && T0.vein == vm && T0.tissue == tm
         T1 = transport(spec, Cr; passes = 1, times = 0.0f0:2.0f0:20.0f0)
         @test T1.body.out[:coronary] != T0.body.out[:coronary] && all(>=(0), T1.tissue)
+        # the lungs as the organ: the body's lung segment takes the lung's own blood, interstitium and PS; the coronary bed
+        # stays the reference heart's
+        lungp = FlowSpec(organ = "lung")
+        hb = (; ml = 148.1f0, heart.fb, heart.ve, heart.ps, heart.rho)
+        BL = circulation(TransportSpec(; phys = lungp, tissue_ml = 2813, bed = :lung, input = :rv, coronary = hb))
+        sl = BL.segs[findfirst(x -> x.name === :lung, BL.segs)]; sc = BL.segs[findfirst(x -> x.name === :coronary, BL.segs)]
+        @test sl.v ≈ lungp.fb * 2813 && sl.ve ≈ lungp.ve * 2813 && sl.ps ≈ lungp.ps / 60 * 2813 * lungp.rho && sc.v ≈ heart.fb * 148.1f0
+        @test_throws ArgumentError circulation(TransportSpec(; phys = lungp, tissue_ml = 2813, bed = :lung, input = :rv)) # no coronary bed
+        @test_throws ArgumentError circulation(TransportSpec(; phys = lungp, tissue_ml = 1, bed = :brain, input = :lv, coronary = hb))
+        @test_throws ArgumentError circulation(TransportSpec(; phys = heart, tissue_ml = 1, bed = :coronary, input = :lv, coronary = hb))
+        @test_throws ArgumentError circulation(TransportSpec(; phys = heart, tissue_ml = 1, bed = :coronary, input = :nowhere))
+        # an organ in the lung slot fed back once: its outflow replaces the body's lung segment
+        sL = TransportSpec(; phys = lungp, tissue_ml = 2813, bed = :lung, input = :rv, coronary = hb, tmax = 20, dt = 0.005, every = 1)
+        L0 = transport(sL, Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0); L1 = transport(sL, Cr; passes = 1, times = 0.0f0:2.0f0:20.0f0)
+        @test L1.body.out[:lung] != L0.body.out[:lung] && all(>=(0), L1.tissue)
     end
 
     @testset "terminal count from organ flow" begin

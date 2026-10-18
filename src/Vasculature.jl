@@ -16,6 +16,7 @@ module Vasculature
 
 import AcceleratedKernels as AK
 import KernelAbstractions as KA
+import Mmap
 
 include("upstream_math.jl")
 include("params.jl")
@@ -51,7 +52,7 @@ include("perfusion/dynamic_phantom.jl")
 
 export CCOParams, CCOModel, MaskDomain, Engine, nsegments
 export GrowthSpec, grow, size_scale, terminal_count, mesh_domain, write_vol
-export FlowSpec, flow, couple_veins, vtree
+export FlowSpec, flow, couple_veins, vtree, Unified
 export TransportSpec, transport, circulation
 export read_vol, import_gxl, export_gxl, grow!, dds_orders, tree_qc, set_territories!, set_forbidden!
 

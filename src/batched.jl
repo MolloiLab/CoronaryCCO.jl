@@ -59,7 +59,7 @@ mutable struct BatchPool{T}
     to::Any                    # array constructor for the evaluation device (identity: CPU)
 end
 # `device` is an array constructor (`MtlArray`, `CuArray`, ...; `identity` or `Array` for the
-# CPU) or a KernelAbstractions backend; both become a function that moves an array there.
+# CPU), a KernelAbstractions backend, or a `Unified` device; all become a function that moves an array there.
 _mover(device) = device === identity || device === Array || device isa KA.CPU ? identity :
     device isa KA.Backend ? (x -> copyto!(KA.allocate(device, eltype(x), size(x)), x)) : device
 
