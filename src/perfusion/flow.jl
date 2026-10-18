@@ -153,7 +153,7 @@ Boundary conditions and blood
   `d_alveolus_um`, `p_pleural_cmH2O` for larger ones; β takes its small/large value on the same
   split. Diameters follow the pressures inside the solve. `p_ref_cmH2O` is the transmural pressure at
   which the grown radii (and the sub-terminal tables below) hold, so ΔP is counted from it
-  (lung: 10 cmH2O, the pressure of Huang et al. 2011's diameters).
+  (the lung's would be 10 cmH2O, the pressure of Huang et al. 2011's diameters; LUNG_FLOW keeps 0 for now, QUEUE K6).
 - `sub_art`, `sub_ven`: `nothing`, or an [`OrderTable`](@ref) of the vessels between a grown
   terminal and its capillaries, which the grown tree does not resolve:
   each bed gets, in series before and after its capillaries, every order narrower than its own
@@ -328,6 +328,9 @@ function FlowSpec(; kwargs...)
     p.capillary in _CAPILLARY || throw(ArgumentError("capillary must be one of $_CAPILLARY"))
     p.venous_scale in _VENOUS_SCALE || throw(ArgumentError("venous_scale must be one of $_VENOUS_SCALE"))
     (p.sub_art === nothing) == (p.sub_ven === nothing) || throw(ArgumentError("give both sub_art and sub_ven, or neither"))
+    # tube beds scale their whole resistance by κ, which must not touch measured sub-terminal vessels; only the sheet bed
+    # solves them (its relaxation targets the bed's own resistance) (audit A42-2)
+    p.sub_art === nothing || p.capillary === :sheet || throw(ArgumentError("sub_art / sub_ven are solved with capillary = :sheet only"))
     return p
 end
 # A variant of an instance: its values, except the keywords given (e.g. `FlowSpec(HEART_FLOW; p_in = 70)`).
@@ -1683,7 +1686,7 @@ end
 
 # Build-only arrays live in the helpers above and in `_solver`, so they are freed before the solve; what the circuit's
 # outputs need after the solve (lengths, volumes, orders, the venous resistances and flags) is recomputed or read back
-# from the solver then (`_circuit`), not held through it.
+# from the solver then (`_assemble`), not held through it.
 # `reference`, `stenosis` and `demand` are not specialized on: one compiled build serves every scenario.
 function _build(
         t::VTree, territory_ml::AbstractVector; phys::FlowSpec, state::Symbol, veins, vleaf, @nospecialize(reference),
@@ -1737,10 +1740,6 @@ function _build(
             to(Kt[tperm]), phys.sheet_h0_um, al, phys.p_ext, phys.sheet_h0_um + al * phys.sheet_pmax_cmH2O / 1.35951f0,
             sub.w, sub.ka, sub.kv, sub.sa, sub.sv, sub.pref
         ); subdv = sub.dv
-    elseif phys.sub_art !== nothing
-        # tube beds: the sub-terminal vessels add their resistance at the reference pressure (rigid, with the first pairing)
-        sub = _subterminal(phys, t, vt, vl, terminals, F32.(territory_ml) ./ vol_tissue, tperm, mup, hd, to)
-        copyto!(S.rcap, S.rcap .+ to(sub.r0))
     end
     dist = nothing
     if max(phys.beta_art_small, phys.beta_art_large, phys.beta_ven_small, phys.beta_ven_large) > 0

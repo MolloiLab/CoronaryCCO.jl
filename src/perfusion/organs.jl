@@ -183,8 +183,8 @@ const LUNG_FLOW = FlowSpec(;
     # mmHg. Pulmonary arterial wedge pressure (left-atrial proxy) at rest, same cohort as p_in (11 +/- 2).
     # [bentley2020_healthy_exercise_pulmonary_hemodynamics]
     p_out = 11.0f0,
-    # Normoxic pulmonary vessels carry little tone (Naeije 2012; distensibility ~2 %/mmHg, Reeves 2005). In the model
-    # only the capillary sheet distends; arteries and veins are rigid tubes (OPEN). Hypoxic vasoconstriction is not
+    # Normoxic pulmonary vessels carry little tone (Naeije 2012; distensibility ~2 %/mmHg, Reeves 2005): no active tone;
+    # vessels distend passively (beta_* below) and the capillary sheet with its own law. Hypoxic vasoconstriction is not
     # modelled. [naeije2012_pulmonary_circulation_exercise, reeves2005_human_pulmonary_distensibility]
     regulation = :passive,
     # Alveolar-wall capillaries as Fung-Sobin sheet flow. [huang2011_human_sheet_flow_parameters,

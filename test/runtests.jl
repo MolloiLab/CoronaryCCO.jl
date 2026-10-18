@@ -241,6 +241,10 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         q2, _ = F._bed(11.0f0, 17.0f0, 1.0f6, h0, al, pe, hm, w, Int32(1), Int32(2), sv[:, [1, 1]], sa, 0.0f0)
         @test q2 < 0
         @test F.HEART_FLOW.sub_art === nothing
+        # sub-terminal vessels are solved with sheet beds only (a tube bed's κ would scale them; audit A42-2)
+        T1 = F.OrderTable([1.0], [0.01], [0.1], [0.0])
+        @test_throws ArgumentError F.FlowSpec(F.HEART_FLOW; sub_art = T1, sub_ven = T1)
+        @test F.FlowSpec(F.LUNG_FLOW; sub_art = T1, sub_ven = T1).sub_art === T1
         @test F.FlowSpec(F.LUNG_FLOW; p_ref_cmH2O = 10).p_ref_cmH2O == 10 && F.LUNG_FLOW.sub_art === nothing
     end
 
