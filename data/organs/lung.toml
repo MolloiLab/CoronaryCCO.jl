@@ -52,14 +52,14 @@ sources = ["huang2011_human_sheet_flow_parameters", "clark2010_acinar_sheet_flow
 [parameters.sheet_s]
 value = 0.88
 unit = "1"
-note = "Vascular-space-tissue ratio, paired with A = 126 m2 (Huang 2011 convention)."
+note = "Vascular-space-tissue ratio: the vascular fraction of the sheet's face-on area (Sobin 1970), human value via Huang 2011; paired with A = one face (73 m2), S x A = 64 m2, close to half the 126 m2 two-faced capillary surface (Clark 2010: 0.86 x 73 = 63)."
 sources = ["huang2011_human_sheet_flow_parameters"]
 
 [parameters.sheet_area_m2_per_ml]
-value = 0.04484
+value = 0.02598
 unit = "m2/mL"
-note = "Derived: capillary surface 126 m2 (Gehr 1978, via Huang 2011) over XCAT's lung volume 2810 mL."
-sources = ["huang2011_human_sheet_flow_parameters"]
+note = "Derived: the sheet area of Fung & Sobin's law is the alveolar sheet seen face-on, one face ('the total vascular space is SA', Fung & Sobin 1972 p. 460). Each septum has air on both faces, so A = half of Gehr's 146 m2 alveolar surface = 73 m2 (Clark 2010, 2011), over XCAT's lung volume 2810 mL. Corrected 2026-10-18 from 126 m2 (Huang 2011), which is the capillary surface counting both faces (audit; For Dale K3)."
+sources = ["fung1972_alveolar_sheet_elasticity", "clark2010_acinar_sheet_flow_parameters", "clark2011_capillary_compliance_lung_volume"]
 
 [parameters.sheet_mu_cP]
 value = 1.92
