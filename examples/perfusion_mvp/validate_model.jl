@@ -63,11 +63,14 @@ let
     loadcirc() = isdefined(@__MODULE__, :circuits) ? circuits() : deserialize(ENV["CIRC"])
     veins = length(ARGS) >= 4 ? load_vtree(ARGS[4]) : nothing
     # territories, their voxel shares and the venous pairing come from flow() (Vasculature.flow): the pipeline's flow step
-    # (INPUTS + CIRC), or one flow() call here; only without grown veins (companion veins, which flow() does not take) are
+    # (INPUTS + CIRC), or one flow() call here (which, as in the pipeline, includes the fractal O₂-demand field; before
+    # 2026-10-17 this standalone mode used uniform demand); only without grown veins (companion veins, which flow() does not take) are
     # the territories formed here and the circuits solved below
     FL = nothing
     if haskey(ENV, "CIRC") && haskey(ENV, "INPUTS")
         FI = deserialize(ENV["INPUTS"]); terr = FI.terr; tshare = FI.pairs; vleaf = loadcirc().Cr.vleaf
+    elseif haskey(ENV, "CIRC")                   # saved circuits without their inputs file: the same territories, formed here
+        terr, tshare = territory_shares(tree.b[:, terms], q); terr .= max.(terr, 1.0f-7); vleaf = loadcirc().Cr.vleaf
     elseif veins !== nothing
         FL = Vasculature.flow(FlowSpec(organ = "heart", radius_cv = parse(Float32, get(ENV, "RADIUS_CV", "0.12"))), tree, veins, q)
         terr = FL.terr; tshare = FL.pairs; vleaf = FL.vleaf
