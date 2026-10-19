@@ -284,6 +284,16 @@ function iodinated(base::XA.Material, c::Real)
     return XA.Material(string(base.name, " + I ", round(c; digits = 4), " mg/mL"), za, exp(lnI) * u"eV", rho * u"g/cm^3", comp)
 end
 
+"""
+    hu_per_mg_ml(material, energy_keV) -> HU per mg/mL
+
+The CT number change (HU) that 1 mg/mL of iodine adds to `XA.Materials` entry `material` at `energy_keV`.
+"""
+function hu_per_mg_ml(material::AbstractString, energy_keV::Real)
+    E = energy_keV * u"keV"; μ(m) = ustrip(XA.linear_attenuation_coeff(m, E)); b = getproperty(XA.Materials, Symbol(material))
+    return 1000 * (μ(iodinated(b, 1.0)) - μ(b)) / (μ(XA.Materials.water) - μ(XA.Materials.air))
+end
+
 function _assign(ph, conc, tol)
     groups = Dict{String, Vector{Int}}(); for l in keys(ph.counts)
         push!(get!(groups, ph.table[l].base, Int[]), l)

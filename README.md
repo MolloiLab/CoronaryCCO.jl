@@ -108,8 +108,10 @@ ph = Vasculature.DynamicPhantom.load(R.csv) # the bundle
 P, m = Vasculature.DynamicPhantom.bs_phantom(ph, BasisSimulator; state = "rest", t = 25) # material map at t = 25 s
 ```
 
-Each tissue class in the CSV also carries its own ground truth (blood flow per gram at rest and stress, CFR, mass), so a
-perfusion map can be checked region by region. A large phantom can be loaded a slab at a time:
+Each tissue class in the CSV also carries its own ground truth (blood flow per gram at rest and stress, CFR, mass), and
+so does every region you name (`regions = ["LAD territory" => mask, ...]`, with its true time-attenuation curve), so a
+perfusion map can be checked region by region. `rois = ["descending aorta" => (x, y, z)]` adds a bolus-tracking curve in
+HU, from which `DynamicPhantom.scan_times` picks the scan times. A large phantom can be loaded a slab at a time:
 `DynamicPhantom.load(csv; zrange = 400:700)`.
 
 `classify(p)` is the one subject-specific step: for a voxel centre it says what is there (a static material, a blood

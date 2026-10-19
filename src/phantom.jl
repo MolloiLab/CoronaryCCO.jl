@@ -4,7 +4,7 @@
 # classifier, which voxel of the subject's label volume is what, comes from the caller: it holds the subject's (licensed)
 # anatomy.
 
-using .DynamicPhantom: compartment_classes, VolumeWriter, write_slice!, write_phantom_csv
+using .DynamicPhantom: compartment_classes, VolumeWriter, write_slice!, write_phantom_csv, hu_per_mg_ml
 using .OrganCT: tissue_iodine, vessel_volumes
 
 """
@@ -80,7 +80,8 @@ const VOX_TISSUE = 0x02 # a = the territories' tissue voxel number (0: tissue th
 const VOX_VESSEL = 0x03 # a = grown segment: > 0 an arterial segment, < 0 a venous one (-a)
 
 """
-    phantom(spec, scans, classify, grid; pairs, terr, nvox, out, name = "phantom", facts = []) -> NamedTuple
+    phantom(spec, scans, classify, grid; pairs, terr, nvox, out, name = "phantom", facts = [], regions = [], rois = [])
+        -> NamedTuple
 
 Writes the phantom of a transported bed into folder `out`: `<name>_compartments.u16.zst` (UInt16 ids, column-major,
 zstd) and `label_healthy.csv`, in the DynamicPhantom format (`DynamicPhantom.load`, `DynamicPhantom.bs_phantom`).
@@ -97,12 +98,19 @@ zstd) and `label_healthy.csv`, in the DynamicPhantom format (`DynamicPhantom.loa
 Iodine is in mg per mL of voxel. Ids: 0-99 static labels, 100-999 pools (and delay bins), 1000 tissue without a territory
 (static), 1001… tissue classes (1 = least enhancing), 2001… vessel classes. Each tissue class's ground truth is in its
 CSV columns: its mean blood flow per gram in each state (`mbf_rest_ml_min_g`, `mbf_stress_ml_min_g`, by the same
-territory weights as its iodine), their ratio (`cfr`) and its mass. The result holds the ids, their voxel counts and each
-state's organ flow (mL/min per mL of tissue).
+territory weights as its iodine), their ratio (`cfr`) and its mass.
+
+- `regions`: `name => mask` over the `nvox` tissue voxels (e.g. a wall or an artery's territory); each becomes a CSV column
+  `region:<name>` with the same ground truth and its mean iodine curve, for region-by-region checks.
+- `rois`: `name => (x, y, z)` (mm); each becomes a column `roi:<name>`: the curve of the compartment at that point in ΔHU of
+  `spec.blood_material` at `spec.energy_keV`, a bolus-tracking ROI (`DynamicPhantom.scan_times` reads it).
+
+The result holds the ids, their voxel counts and each state's organ flow (mL/min per mL of tissue).
 """
 function phantom(
         spec::PhantomSpec, scans, classify, grid::VoxelGrid; pairs, terr, nvox::Integer, out::AbstractString,
-        name::AbstractString = "phantom", facts = Pair{String, Any}[]
+        name::AbstractString = "phantom", facts = Pair{String, Any}[], regions = Pair{String, Vector{Bool}}[],
+        rois = Pair{String, Tuple}[]
     )
     mkpath(out); nT = length(spec.times); nS = length(scans); states = [String(s[1]) for s in scans]
     # ---- tissue: every tissue voxel's curve in every state, k-means into kinetic classes
@@ -234,17 +242,52 @@ function phantom(
         end
         push!(cols, c)
     end
+    # regions of the tissue: ground truth and mean iodine curve over each mask
+    voxml = sum(terr) / nvox; rcurve = Dict{String, Vector{Vector{Float32}}}()
+    for (rn, m) in regions
+        length(m) == nvox || throw(ArgumentError("phantom: region $rn has $(length(m)) entries, not nvox = $nvox"))
+        n = count(m); n > 0 || continue
+        mbf = Dict(st => round(sum(vflow[s][m]) / n / rho; digits = 4) for (s, st) in enumerate(states))
+        push!(
+            cols, (
+                key = "region:$rn", name = rn, kinetics = "region", mass_g = round(n * voxml * rho; digits = 2),
+                mbf_rest = get(mbf, "rest", nothing), mbf_stress = get(mbf, "stress", nothing),
+                cfr = haskey(mbf, "rest") && haskey(mbf, "stress") ? round(mbf["stress"] / mbf["rest"]; digits = 3) : nothing,
+            )
+        )
+        rcurve["region:$rn"] = [vec(sum(Xs[s][m, :]; dims = 1)) ./ n for s in 1:nS]
+    end
+    # tracking ROIs: the compartment at each point, in ΔHU
+    hpm = hu_per_mg_ml(spec.blood_material, spec.energy_keV); roiid = Dict{String, Int}()
+    for (rn, p) in rois
+        k, aa, d = classify(Tuple(1.0 .* p)) # host mm, as the grid's voxel centres
+        roiid["roi:$rn"] = k == VOX_STATIC ? aa : k == VOX_POOL ? poolid(aa, d) : k == VOX_TISSUE ? (aa > 0 ? tid[aa] : 1000) :
+            vessel_id(aa > 0 ? 1 : 2, abs(aa))
+        push!(
+            cols, (
+                key = "roi:$rn", name = rn, kinetics = "roi",
+                notes = "ΔHU of $(spec.blood_material) at $(spec.energy_keV) keV; compartment $(roiid["roi:$rn"]) at $(join(round.(p; digits = 1), " ")) mm",
+            )
+        )
+    end
     flow = [s => sum(C.q[j] for j in eachindex(C.tree.parent) if C.tree.parent[j] == 0) * 60 / sum(terr) for (s, C, _) in scans]
     allfacts = Pair{String, Any}[
         "compartment_volume" => file, "dims" => "$nx $ny $nz", "voxel_mm" => h, "origin_mm" => join(string.(o), " "),
         "states" => join(states, " "), ("flow_ml_min_per_ml_" * s => round(f; digits = 4) for (s, f) in flow)..., facts...,
     ]
-    function curve(j, st, f)
-        id = cols[j].key; s = findfirst(==(st), states)
-        (id < 100 || id == 1000) && return nothing
+    pkey = Dict(v => k for (k, v) in pid) # again: an ROI may name a pool bin the volume does not hold
+    function ccurve(id, s, f)
+        (id < 100 || id == 1000) && return 0.0f0
         id < 1000 && return (ib = pkey[id]; pcurve(ib[1], ib[2], s, f))
         id < 2000 && return cen[(s - 1) * nT + f, ord[id - 1000]]
         return vcen[(s - 1) * nT + f, vinv[Int32(id)]]
+    end
+    function curve(j, st, f)
+        key = cols[j].key; s = findfirst(==(st), states)
+        key isa AbstractString && startswith(key, "region:") && return rcurve[key][s][f]
+        key isa AbstractString && return Float32(hpm * ccurve(roiid[key], s, f))
+        (key < 100 || key == 1000) && return nothing
+        return ccurve(key, s, f)
     end
     csv = write_phantom_csv(joinpath(out, "label_healthy.csv"); facts = allfacts, columns = cols, times = spec.times, states, curve, energy_keV = spec.energy_keV)
     return (; csv, volume = joinpath(out, file), ids = sort!(collect(keys(cnt))), counts = cnt, flow)

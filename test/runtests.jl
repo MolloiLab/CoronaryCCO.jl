@@ -236,7 +236,11 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
                 p[1] < (lo[1] + hi[1]) / 2 ? (VOX_POOL, Int32(1), Float32(0.1 * (p[3] - lo[3]) / (hi[3] - lo[3]))) : (VOX_STATIC, Int32(0), 0.0f0)
         )
         out = mktempdir()
-        R = phantom(spec, [("rest", Cr, T)], classify, grid; pairs, terr, nvox = length(cells), out, name = "case0")
+        half = [c[1] <= cells[1][1] for c in cells] # a region of the tissue
+        R = phantom(
+            spec, [("rest", Cr, T)], classify, grid; pairs, terr, nvox = length(cells), out, name = "case0",
+            regions = ["half" => half, "all" => fill(true, length(cells))], rois = ["outflow" => (lo[1] + 0.5, lo[2] + 2.0, lo[3] + 2.0)]
+        )
         @test sum(values(R.counts)) == prod(grid.dims) && 0 in R.ids && any(i -> 100 <= i < 1000, R.ids)
         @test any(i -> 1001 <= i < 2000, R.ids) && any(i -> i > 2000, R.ids) # tissue and drawn vessels
         @test R.flow[1][2] ≈ sum(Cr.q[j] for j in eachindex(vt.parent) if vt.parent[j] == 0) * 60 / sum(terr)
@@ -247,6 +251,11 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         tcols = [c for c in 3:length(hdr) if all(isdigit, hdr[c]) && 1000 < parse(Int, hdr[c]) < 2000]
         mbf = Float64.(rw("mbf_rest_ml_min_g")[tcols]); nv = Float64.(rw("voxels")[tcols])
         @test all(>(0), mbf) && isapprox(sum(mbf .* nv) / sum(nv), R.flow[1][2] / HEART_FLOW.rho; rtol = 0.1)
+        # regions carry the same ground truth; the whole tissue as a region is the organ's flow; the ROI is in ΔHU
+        ac = findfirst(==("region:all"), hdr)
+        @test isapprox(Float64(rw("mbf_rest_ml_min_g")[ac]), R.flow[1][2] / HEART_FLOW.rho; rtol = 0.02)
+        @test haskey(ph.reference, ("rest", "roi:outflow")) && maximum(ph.reference[("rest", "roi:outflow")]) > 80
+        st = C.DynamicPhantom.scan_times(ph; state = "rest"); @test st.arrival <= st.peak
         ps = C.DynamicPhantom.load(R.csv; zrange = 2:3) # a z slab of a large phantom
         @test ps.labels == ph.labels[:, :, 2:3] && sum(values(ps.counts)) == length(ps.labels) && ps.facts["zrange"] == "2:3"
         @test_throws ArgumentError C.DynamicPhantom.load(R.csv; zrange = 0:2)
