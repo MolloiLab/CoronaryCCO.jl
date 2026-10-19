@@ -313,6 +313,13 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         tree = grow(GrowthSpec(HEART_GROWTH; nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])
         vt = vtree(tree); terms = C._leaves(vt); terr = fill(0.1f0, length(terms))
         vn = C.Flow.VTree(vt.parent, vt.a .+ 0.5f0, vt.b .+ 0.5f0, vt.r, vt.isbase)   # a venous tree beside the arteries
+        # venous coupling returns the κ of its last stress solve; flow() starts the stress circuit's κ search there, so it must
+        # be the κ that circuit finds with the same pairing
+        vleaf, Cc, k = couple_veins(vt, terr, vn, terms, terms; phys = HEART_FLOW, assemble = false)
+        S = C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf, phys = HEART_FLOW)
+        @test Cc === nothing && abs(S.resist.kappa / k - 1) < 1.0f-3
+        vleaf2, C2, k2 = couple_veins(vt, terr, vn, terms, terms; phys = HEART_FLOW)
+        @test vleaf2 == vleaf && k2 == C2.resist.kappa
         # beds behind a 99% stenosis that share venules with healthy beds partly reverse; their veins then solve to less
         # flow than transport routes up them, and a vein's transit uses the routed plasma (audit A50-6)
         nb = zeros(Int, length(vt.r)); for t in terms
