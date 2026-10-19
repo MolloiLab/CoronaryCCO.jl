@@ -243,6 +243,12 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         ib = findall(Cr.tree.isbase); @test isempty(ib) || all(Cr.vp_a[ib] ./ bv[ib] .≈ 1 - Cr.phys.hd) # imaged: discharged blood
         gr = findall(.!Cr.tree.isbase); hd = Cr.phys.hd # grown: their own blood volume, tone (xd²) and tube hematocrit
         @test all(Cr.vp_a[gr] ./ bv[gr] .≈ [1 - C.Flow.fahraeus(2000.0f0 * Cr.tree.r[j] * Cr.xd[j], hd) * hd for j in gr])
+        # unresolved_masses: thin vessels' iodine goes to the beds they feed and drain, all of it (flows conserve)
+        U = C.OrganCT.unresolved_masses(Cr, T.artery, T.vein; rmin = 0.1)
+        thinA = [Cr.tree.r[j] < 0.1f0 && !Cr.tree.isbase[j] for j in eachindex(Cr.tree.r)]
+        thinV = [Cr.veins.r[k] < 0.1f0 && !Cr.veins.isbase[k] for k in eachindex(Cr.veins.r)]
+        fpk = argmax(vec(sum(T.artery; dims = 2)))
+        @test isapprox(sum(U[fpk, :]), sum(T.artery[fpk, thinA]) + sum(T.vein[fpk, thinV]); rtol = 0.02)
         # pool_curve: the one definition of a body compartment's curve (phantoms and pictures)
         @test pool_curve(Pool("LV blood", "ncat_blood", :lv, :mean), T.body, 10.0f0) ≈ C._interp(10.0f0, T.body.t, T.body.mean[:lv])
         @test pool_curve(Pool("LV out", "ncat_blood", :lv, :out), T.body, 10.0f0; delay = 1) ≈ C._interp(9.0f0, T.body.t, T.body.out[:lv])

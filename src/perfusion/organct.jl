@@ -18,10 +18,10 @@ module OrganCT
 
 import AcceleratedKernels as AK
 using Atomix: @atomic
-using ..Flow: Circuit, InputCurve, VTree, frame_masses, _lengths
+using ..Flow: Circuit, InputCurve, VTree, frame_masses, _lengths, _bfs
 
 export Plane, pixel_point, GridSample, sample_grid, tissue_iodine, region_iodine, VesselStamp,
-    stamp_vessels, blood_volumes, render_plane
+    stamp_vessels, blood_volumes, unresolved_masses, render_plane
 
 const F32 = Float32
 
@@ -270,16 +270,18 @@ function _deposit(P::Plane, a, b, step, emit)
 end
 
 """
-    stamp_vessels(P, trees...; rtube = P.px / 2, step = 0.1) -> VesselStamp
+    stamp_vessels(P, trees...; rtube = P.px / 2, step = 0.1, deposit = true, weight = nothing) -> VesselStamp
 
 Draws the segments of `trees` (`VTree`s, numbered one tree after the other, the order of `hcat`
 of their mass matrices) into plane `P`. A segment of radius ≥ `rtube` mm is a tube: its lumen
 holds the pixel sub-samples within its radius of its axis (3-D distance), and each pixel shows the
 segment that covers most of it. A thinner segment is sampled every `step` mm along its axis, and
 each sample inside the slab deposits its share of the segment's mass into its pixel, per mL of
-the pixel's voxel (`px² · slab`), so its iodine is conserved.
+the pixel's voxel (`px² · slab`), so its iodine is conserved. With `deposit = false` thinner segments draw nothing (their
+iodine then belongs in the tissue: [`unresolved_masses`](@ref)). `weight` (per pixel, 0-1) is the share of a pixel a lumen
+may replace, e.g. the share of its sub-samples that are tissue, as a phantom replaces only tissue voxels.
 """
-function stamp_vessels(P::Plane, trees::VTree...; rtube::Real = P.px / 2, step::Real = 0.1)
+function stamp_vessels(P::Plane, trees::VTree...; rtube::Real = P.px / 2, step::Real = 0.1, deposit::Bool = true, weight = nothing)
     rt = F32(rtube); st = F32(step)
     tp = Int32[]; ts = Int32[]; tm = UInt8[]; tq = F32[]; dp = Int32[]; ds = Int32[]; dw = F32[]
     off = 0
@@ -313,7 +315,69 @@ function stamp_vessels(P::Plane, trees::VTree...; rtube::Real = P.px / 2, step::
             best[q] = c; bq[q] = tq[e]; seg[q] = ts[e]
         end
     end
-    return VesselStamp(seg, F32.(count_ones.(bits)) ./ 4.0f0, dp, ds, dw)
+    cover = F32.(count_ones.(bits)) ./ 4.0f0
+    weight === nothing || (cover .*= F32.(weight); seg[cover .== 0] .= 0)
+    deposit || (dp = Int32[]; ds = Int32[]; dw = F32[])
+    return VesselStamp(seg, cover, dp, ds, dw)
+end
+
+"""
+    unresolved_masses(C::Circuit, artery, vein; rmin) -> Matrix (ntimes × nterminals), mg
+
+The iodine in the grown arteries and veins of `C` narrower than `rmin` mm (`frame_masses`' `artery` and `vein`), given to
+the terminal beds each one feeds or drains in proportion to their flow (an artery: terminal flow over its own; a vein:
+terminal plasma over the plasma routed through it). Added to the beds' masses, it keeps in the tissue the iodine of the
+vessels a picture or phantom does not draw as lumens. Imaged segments (`isbase`) are left out: the scan draws them.
+"""
+# a tree's segments grouped by depth (roots first), so each level can be processed in parallel after its parents
+function _levels(parent::AbstractVector{<:Integer})
+    order = _bfs(Vector{Int32}(parent)); d = zeros(Int32, length(parent))
+    for j in order
+        p = parent[j]; d[j] = p == 0 ? 1 : d[p] + 1
+    end
+    L = [Int32[] for _ in 1:maximum(d; init = 0)]
+    for j in order
+        push!(L[d[j]], Int32(j))
+    end
+    return L
+end
+
+function unresolved_masses(C::Circuit, am::AbstractMatrix, vm::AbstractMatrix; rmin::Real)
+    nf = size(am, 1); t = C.tree; v = C.veins; nt = length(C.terminals); rm = F32(rmin)
+    H = zeros(F32, nf, length(t.r))                 # Σ over thin ancestors (and itself) of mass / flow
+    par = t.parent; q = C.q; tr = t.r; tb = t.isbase
+    for lv in _levels(t.parent)                     # a level's segments are independent; each holds its frames contiguous
+        AK.foreachindex(lv; min_elems = 2048) do h
+            j = lv[h]; p = par[j]; thin = tr[j] < rm && !tb[j] && q[j] > 0
+            for f in 1:nf
+                H[f, j] = (p == 0 ? 0.0f0 : H[f, p]) + (thin ? am[f, j] / q[j] : 0.0f0)
+            end
+        end
+    end
+    vorder = _bfs(v.parent); qr = zeros(F32, length(v.r))  # plasma routed through each vein
+    for i in 1:nt
+        qr[C.vleaf[i]] += C.fp[i]
+    end
+    for h in length(vorder):-1:1
+        k = vorder[h]; p = v.parent[k]; p > 0 && (qr[p] += qr[k])
+    end
+    Hv = zeros(F32, nf, length(v.r)); vpar = v.parent; vr = v.r; vb = v.isbase
+    for lv in _levels(v.parent)
+        AK.foreachindex(lv; min_elems = 2048) do h
+            k = lv[h]; p = vpar[k]; thin = vr[k] < rm && !vb[k] && qr[k] > 0
+            for f in 1:nf
+                Hv[f, k] = (p == 0 ? 0.0f0 : Hv[f, p]) + (thin ? vm[f, k] / qr[k] : 0.0f0)
+            end
+        end
+    end
+    X = zeros(F32, nf, nt); term = C.terminals; vl = C.vleaf; fpv = C.fp
+    AK.foreachindex(1:nt; min_elems = 4096) do i
+        j = term[i]; k = vl[i]; qa = q[j]; fp = fpv[i]
+        for f in 1:nf
+            X[f, i] = qa * H[f, j] + fp * Hv[f, k]
+        end
+    end
+    return X
 end
 
 """

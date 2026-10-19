@@ -5,7 +5,7 @@
 # anatomy.
 
 using .DynamicPhantom: compartment_classes, VolumeWriter, write_slice!, write_phantom_csv, hu_per_mg_ml
-using .OrganCT: tissue_iodine, blood_volumes
+using .OrganCT: tissue_iodine, blood_volumes, unresolved_masses
 
 """
     Pool(name, material, segment, what; scale = 1, ml = 0)
@@ -132,7 +132,16 @@ function phantom(
     )
     mkpath(out); nT = length(spec.times); nS = length(scans); states = [String(s[1]) for s in scans]
     # ---- tissue: every tissue voxel's curve in every state, k-means into kinetic classes
-    Xs = [Array(tissue_iodine(Array(T.tissue), pairs, terr, collect(Int32(1):Int32(nvox)))) for (_, _, T) in scans] # nvox × nT each
+    # each bed's mass plus the iodine of the grown vessels too thin to draw (radius < vessel_rmin_mm), which stays in the
+    # tissue they feed and drain (OrganCT.unresolved_masses)
+    Xs = [
+        Array(
+            tissue_iodine(
+                Array(T.tissue) .+ unresolved_masses(C, T.artery, T.vein; rmin = spec.vessel_rmin_mm), pairs, terr,
+                collect(Int32(1):Int32(nvox))
+            )
+        ) for (_, C, T) in scans
+    ] # nvox × nT each
     X = Matrix{Float32}(reduce(vcat, permutedims.(Xs))) # (nS nT) × nvox
     a, cen = compartment_classes(X, spec.tissue_classes)
     ord = sortperm(vec(sum(cen; dims = 1))); rank = invperm(ord)
