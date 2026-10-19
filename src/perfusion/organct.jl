@@ -10,7 +10,7 @@
 #   G = sample_grid(P, vox, lower)                           # organ voxels under each pixel
 #   S = stamp_vessels(P, C.tree, C.veins)                    # lumens and sub-pixel vessels
 #   hu = render_plane(P, base, tissue_iodine(tm, pairs, terr, G), S, hcat(am, vm),
-#                     vessel_volumes(C.tree, C.veins); hu_per_mg, blood_hu)
+#                     blood_volumes(C); hu_per_mg, blood_hu)
 #
 # Geometry (planes, samples, stamps) is built once on the host; the per-frame kernels take `to`.
 
@@ -21,7 +21,7 @@ using Atomix: @atomic
 using ..Flow: Circuit, InputCurve, VTree, frame_masses, _lengths
 
 export Plane, pixel_point, GridSample, sample_grid, tissue_iodine, region_iodine, VesselStamp,
-    stamp_vessels, vessel_volumes, blood_volumes, render_plane
+    stamp_vessels, blood_volumes, render_plane
 
 const F32 = Float32
 
@@ -317,19 +317,6 @@ function stamp_vessels(P::Plane, trees::VTree...; rtube::Real = P.px / 2, step::
 end
 
 """
-    vessel_volumes(trees...) -> Vector (mL)
-
-Geometric lumen volume `π r² L` of every segment of `trees`, in the numbering of [`stamp_vessels`](@ref). For the blood
-concentration of a solved circuit's transported masses use [`blood_volumes`](@ref): a toned artery holds less blood.
-"""
-vessel_volumes(trees::VTree...) = reduce(
-    vcat, [
-        F32[F32(π) * t.r[j]^2 * max(sqrt(sum((t.b[d, j] - t.a[d, j])^2 for d in 1:3)), 1.0f-3) * 1.0f-3 for j in eachindex(t.r)]
-            for t in trees
-    ]
-)
-
-"""
     blood_volumes(C::Circuit) -> Vector (mL)
 
 The volume to divide every arterial and venous segment's `frame_masses` mass by for the whole-blood iodine concentration
@@ -363,7 +350,7 @@ HU of every pixel of `P` at every frame. A pixel shows `base[k] + hu_per_mg · t
 deposits. Where a tube covers the fraction `c` of a pixel, that fraction shows its lumen,
 `blood_hu + hu_per_mg · masses[f, g] / vol[g]`, instead. `masses` (ntimes × nsegments) and `vol`
 (mL) follow the numbering of `S` ([`stamp_vessels`](@ref)); for a circuit `C` they are
-`hcat(am, vm)` of `frame_masses` and `vessel_volumes(C.tree, C.veins)`.
+`hcat(am, vm)` of `frame_masses` and [`blood_volumes`](@ref)`(C)`.
 """
 function render_plane(
         P::Plane, base::AbstractVector, tissue, S::VesselStamp, masses::AbstractMatrix, vol::AbstractVector;
