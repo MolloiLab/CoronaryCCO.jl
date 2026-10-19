@@ -91,7 +91,8 @@ heart (`spec.bed === :coronary`), the body's coronary share of the cardiac outpu
 so the body and the grown tree carry the same coronary flow (`spec.f_coronary` is not used). The organ's arterial
 input is the plasma concentration leaving body segment `spec.input`. The organ's venous outflow is fed back into the
 body in place of its lumped segment `spec.bed`, so recirculation carries the organ's own transit; that changes the
-organ's input, so the feedback is repeated until the outflow changes by at most `tol` of its peak (at most `passes`
+organ's input, so the feedback is repeated until the outflow's change, weighted by the organ's share of the cardiac output
+(its weight in the body's mixed blood, which is how it reaches the input), is at most `tol` of its peak (at most `passes`
 times; `passes = 0` is the plain chain with the lumped segment). Every curve returned is then from the same final body
 run: the organ's input, its outflow and the body's segment that receives it agree. Returns the body result, the organ's
 plasma input curve, its venous plasma outflow concentration every `dt_out` s, the iodine (mg) in every artery, vein and
@@ -109,11 +110,12 @@ function transport(
     tc = collect(0.0f0:dt_out:s.tmax); fpt = sum(C.fp)
     outflow(inp) = (cum = sinus_outflow(C, inp, tc; to); [k == 1 ? 0.0f0 : (cum[k] - cum[k - 1]) / dt_out / fpt for k in eachindex(tc)])
     cs = outflow(curve_in(r)); npass = 0; change = 0.0f0
+    share = min(1.0f0, Float32(sum(C.q[j] for j in eachindex(C.tree.parent) if C.tree.parent[j] == 0) / s.co)) # organ flow / output
     while npass < passes
         fb = cs # the outflow fed back in this pass
         r = simulate(BC, inj; tmax = s.tmax, dt = s.dt, every = s.every, detailed = Dict(s.bed => t -> pf * _interp(Float32(t), tc, fb)))
         cs = outflow(curve_in(r)); npass += 1
-        change = maximum(abs.(cs .- fb)) / max(maximum(abs.(cs)), floatmin(Float32))
+        change = share * maximum(abs.(cs .- fb)) / max(maximum(abs.(cs)), floatmin(Float32))
         change <= tol && break
     end
     inp = curve_in(r)
