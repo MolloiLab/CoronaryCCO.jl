@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Post-processing: pure-Julia port of HCT-CCO postprocessing/coronary_postprocess.py (commit
-# 9bc141f), entry point run(xml_path, prefix, domain_vol). Figures live in the CairoMakie
-# extension (ext/VasculatureMakieExt.jl).
+# 9bc141f), entry point run(xml_path, prefix, domain_vol). Writes the data upstream plots, not the plots.
 
 include("postprocess/numpy.jl")
 include("postprocess/tree.jl")
@@ -11,17 +10,8 @@ include("postprocess/hemodynamics.jl")
 include("postprocess/vtk.jl")
 
 """
-    plot_postprocess(result, prefix)
-
-Write `<prefix>_diameter_vs_order.png` and, when `result.hemodynamics` is present,
-`<prefix>_hemodynamics.png` from the output of [`postprocess`](@ref). Defined by the
-CairoMakie extension: run `using CairoMakie` first.
-"""
-function plot_postprocess end
-
-"""
     postprocess(xml_path, prefix; domain_vol = nothing, mass = :mask, elements = :series,
-                obj = true, plots = true, verbose = true) -> NamedTuple
+                obj = true, verbose = true) -> NamedTuple
 
 Port of upstream `coronary_postprocess.run(xml_path, prefix, domain_vol)`. Reads a tree XML
 written by [`export_gxl`](@ref) and writes
@@ -30,8 +20,6 @@ written by [`export_gxl`](@ref) and writes
   - `<prefix>_tree.vtp` (cell arrays `radius` and `final_order`) and `<prefix>_tree.obj`
     (24-sided capped tube mesh; skipped with `obj = false`)
   - `<prefix>_hemodynamics.csv` when `domain_vol` is given
-  - `<prefix>_diameter_vs_order.png` and `<prefix>_hemodynamics.png` when CairoMakie is loaded
-    and `plots = true`
 
 Returns the computed data: per-segment `diameters` and diameter-defined `orders`, the ordering
 internals (`strahler`, `seg2elem`, `elem_order`), the `connectivity` mean/SE matrices
@@ -50,7 +38,7 @@ behaviour, used to verify the port against the Python:
 """
 function postprocess(
         xml_path::AbstractString, prefix::AbstractString; domain_vol = nothing,
-        mass::Symbol = :mask, elements::Symbol = :series, obj::Bool = true, plots::Bool = true,
+        mass::Symbol = :mask, elements::Symbol = :series, obj::Bool = true,
         verbose::Bool = true
     )
     mkpath(dirname(abspath(prefix)))
@@ -89,15 +77,8 @@ function postprocess(
         connectivity = (order = present, mean = cmean, se = cse),
         diameter_stats = stats, hemodynamics = hemo, files = files,
     )
-    if plots
-        if applicable(plot_postprocess, result, prefix)
-            append!(files, plot_postprocess(result, prefix))
-        else
-            @info "postprocess: load CairoMakie to also write the figures" maxlog = 1
-        end
-    end
     verbose && println("[postprocess] root order=", maximum(orders; init = 0), ". Wrote: ", join(files, ", "))
     return result
 end
 
-export postprocess, plot_postprocess
+export postprocess

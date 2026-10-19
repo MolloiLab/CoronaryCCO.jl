@@ -73,7 +73,7 @@ end
         dir = mktempdir()
         xml = export_gxl(E.m, joinpath(dir, "tree.xml"))
         prefix = joinpath(dir, "out", "pp")
-        r = postprocess(xml, prefix; domain_vol = sample("case0.vol"), plots = false, verbose = false)
+        r = postprocess(xml, prefix; domain_vol = sample("case0.vol"), verbose = false)
         n = nsegments(E.m) - 1                          # one XML edge per non-root-node segment
         @test length(r.orders) == length(r.diameters) == n
         @test all(1 .<= r.orders .<= 11)
@@ -120,7 +120,7 @@ end
         r = postprocess(
             joinpath(PP_DIR, "tree$n.xml"), joinpath(dir, "jl"); obj = withobj,
             domain_vol = joinpath(PP_DIR, "..", "..", "build", "src", "samples", "case0.vol"),
-            plots = false, verbose = false, mass = :upstream, elements = :upstream
+            verbose = false, mass = :upstream, elements = :upstream
         )
         for k in PP_CSV
             @test read(joinpath(dir, "jl_$k.csv"), String) == read(joinpath(PP_DIR, "ref$(n)_$k.csv"), String)

@@ -18,18 +18,12 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 XrayAttenuation = "7811750c-a499-436e-8b04-55fc0593dd37"
 Zlib_jll = "83775a58-1f1d-513f-b197-d71354ab007a"
 
-[weakdeps]
-CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-
-[extensions]
-VasculatureMakieExt = "CairoMakie"
 
 [compat]
 AcceleratedKernels = "0.4, 0.5"
 Adapt = "4"
 Atomix = "1"
 Base64 = "1"
-CairoMakie = "0.15"
 DelimitedFiles = "1"
 Downloads = "1"
 KernelAbstractions = "0.9, 0.10"

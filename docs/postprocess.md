@@ -16,7 +16,6 @@ postprocess("tree.xml", "out/case0"; domain_vol = "case0.vol", mass = :upstream,
 using Vasculature
 E = generate("case0.vol", "case0.xml"; nterm = 2000, aperf = 10000, min_dist = 1,
              root = (-26, 41, 13), seed = 1, export_xml = "tree.xml")
-using CairoMakie                      # optional: also writes the two figures
 r = postprocess("tree.xml", "out/case0"; domain_vol = "case0.vol")
 r.orders                              # diameter-defined order of every segment (XML edge order)
 ```
@@ -31,16 +30,13 @@ r.orders                              # diameter-defined order of every segment 
 | `<prefix>_hemodynamics.csv` | only with `domain_vol`: myocardial mass, then per order the median diameter, WSS, pressure and flow at resting (1.0 mL/min/g) and stress (3.5 mL/min/g) perfusion |
 | `<prefix>_tree.vtp` | VTK XML PolyData: one point per node id (Float32), one line per segment, cell arrays `radius` (Float64) and `final_order` (Int32, active scalars) |
 | `<prefix>_tree.obj` | 24-sided capped tube mesh, built like `vtkCellDataToPointData` + `vtkTubeFilter` + `vtkOBJWriter` (`obj = false` skips it; it is about 1.3 GB for a 40k-terminal tree) |
-| `<prefix>_diameter_vs_order.png` | needs CairoMakie: per-order median and IQR of the tree's diameters over the literature (Kassab) mean ± SD |
-| `<prefix>_hemodynamics.png` | needs CairoMakie and `domain_vol`: per-order median WSS and pressure against median diameter |
 
 The CSV files use the same format as the Python, including the `±` signs, `nan` for an
 undefined SE, and `\r\n` line endings. The returned NamedTuple holds the computed data:
 `orders`, `diameters`, the ordering internals (`strahler`, `seg2elem`, `elem_order`), the
 `connectivity` matrices, the `diameter_stats` table, and `hemodynamics` (per-segment flow,
-pressure and WSS for both states, plus the per-order medians). The figures are drawn by the
-`VasculatureMakieExt` package extension. Without CairoMakie, `postprocess` writes everything
-else and logs a note.
+pressure and WSS for both states, plus the per-order medians). Upstream's two figures (diameter
+by order, hemodynamics) are not drawn: every series they show is in the CSVs.
 
 ## Verification
 
@@ -101,9 +97,7 @@ Both are fixed by default. The upstream behaviour stays available for verificati
   not appended and zlib-compressed as `vtkXMLPolyDataWriter` does. The content is the same,
   and the file opens in ParaView and VTK.
 - **OBJ header.** The first comment line names Vasculature.jl instead of VTK.
-- **Figures** are redrawn with Makie at the Python figure sizes (8 x 5.5 in and 12 x 5 in,
-  150 dpi). They show the same series, bands, scales, labels and titles as the matplotlib
-  figures. They are not pixel-identical.
+- **Figures** are not drawn; their data are in the CSVs.
 - **Malformed input.** A node without a position is placed at the origin, which is what the
   Python does for the VTK output. In this case the Python's hemodynamics step would instead
   raise a `KeyError`. A missing edge radius reads as 0.
