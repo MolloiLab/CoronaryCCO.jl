@@ -5,7 +5,7 @@
 # anatomy.
 
 using .DynamicPhantom: compartment_classes, VolumeWriter, write_slice!, write_phantom_csv, hu_per_mg_ml
-using .OrganCT: tissue_iodine, vessel_volumes
+using .OrganCT: tissue_iodine, blood_volumes
 
 """
     Pool(name, material, segment, what; scale = 1, ml = 0)
@@ -155,8 +155,9 @@ function phantom(
     end
     rho = scans[1][2].phys.rho
     # ---- vessels: grown segments of radius ≥ vessel_rmin_mm and the imaged (base) ones, k-means on their curves
-    C1 = scans[1][2]; trees = (C1.tree, C1.veins); vol = vessel_volumes(trees...); na = length(C1.tree.r)
-    vcurve_of(t, j) = Float32[(T = scans[s][3]; (t == 1 ? T.artery[f, j] : T.vein[f, j]) / vol[t == 1 ? j : na + j]) for s in 1:nS for f in 1:nT]
+    C1 = scans[1][2]; trees = (C1.tree, C1.veins); na = length(C1.tree.r)
+    vols = [blood_volumes(C) for (_, C, _) in scans]   # each state's own: tone changes an artery's blood volume
+    vcurve_of(t, j) = Float32[(T = scans[s][3]; (t == 1 ? T.artery[f, j] : T.vein[f, j]) / vols[s][t == 1 ? j : na + j]) for s in 1:nS for f in 1:nT]
     seg = Tuple{Int, Int}[(t, j) for t in 1:2 for j in eachindex(trees[t].r) if trees[t].r[j] >= spec.vessel_rmin_mm || trees[t].isbase[j]]
     V = isempty(seg) ? zeros(Float32, nS * nT, 0) : reduce(hcat, (vcurve_of(t, j) for (t, j) in seg))
     nvc = clamp(spec.vessel_classes, 1, max(1, length(seg)))

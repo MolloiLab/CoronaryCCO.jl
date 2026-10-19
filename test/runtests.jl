@@ -229,6 +229,10 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
             pools = [Pool("LV outflow", "ncat_blood", :lv, :out), Pool("tissue mean", "ncat_heart", :coronary, :tissue)]
         )
         T = transport(TransportSpec(HEART_TRANSPORT; tissue_ml = sum(terr), tmax = 20, dt = 0.005, every = 1), Cr; times = spec.times)
+        # blood_volumes: an artery's mass over it is its blood concentration (plasma volume / plasma fraction)
+        bv = C.OrganCT.blood_volumes(Cr); na_ = length(Cr.tree.r)
+        @test length(bv) == na_ + length(Cr.veins.r) && all(0.4 .< Cr.vp_a ./ bv[1:na_] .<= 1.0) && all(0.4 .< Cr.vp_v ./ bv[(na_ + 1):end] .<= 1.0)
+        ib = findall(Cr.tree.isbase); @test isempty(ib) || all(Cr.vp_a[ib] ./ bv[ib] .≈ 1 - Cr.phys.hd) # imaged: discharged blood
         # pool_curve: the one definition of a body compartment's curve (phantoms and pictures)
         @test pool_curve(Pool("LV blood", "ncat_blood", :lv, :mean), T.body, 10.0f0) ≈ C._interp(10.0f0, T.body.t, T.body.mean[:lv])
         @test pool_curve(Pool("LV out", "ncat_blood", :lv, :out), T.body, 10.0f0; delay = 1) ≈ C._interp(9.0f0, T.body.t, T.body.out[:lv])

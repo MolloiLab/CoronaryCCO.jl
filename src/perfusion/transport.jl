@@ -96,7 +96,7 @@ organ's input, so the feedback is repeated until the outflow's change, weighted 
 times; `passes = 0` is the plain chain with the lumped segment). Every curve returned is then from the same final body
 run: the organ's input, its outflow and the body's segment that receives it agree. Returns the body result, the organ's
 plasma input curve, its venous plasma outflow concentration every `dt_out` s, the iodine (mg) in every artery, vein and
-capillary bed at `times` (host arrays), the passes run and the last pass's relative change.
+capillary bed at `times` (host arrays), the passes run and the last pass's weighted relative change.
 """
 function transport(
         s::TransportSpec, C::Circuit, inj::Injection = Injection(); passes::Integer = 10, tol::Real = 1.0f-3, fine::Real = 0.02f0, dt_out::Real = 0.1f0,
@@ -110,7 +110,8 @@ function transport(
     tc = collect(0.0f0:dt_out:s.tmax); fpt = sum(C.fp)
     outflow(inp) = (cum = sinus_outflow(C, inp, tc; to); [k == 1 ? 0.0f0 : (cum[k] - cum[k - 1]) / dt_out / fpt for k in eachindex(tc)])
     cs = outflow(curve_in(r)); npass = 0; change = 0.0f0
-    share = min(1.0f0, Float32(sum(C.q[j] for j in eachindex(C.tree.parent) if C.tree.parent[j] == 0) / s.co)) # organ flow / output
+    sg = BC.segs[findfirst(x -> x.name === s.bed, BC.segs)]
+    share = sg.kind === :central ? 1.0f0 : sg.q # the organ segment's share of the cardiac output (central: all of it)
     while npass < passes
         fb = cs # the outflow fed back in this pass
         r = simulate(BC, inj; tmax = s.tmax, dt = s.dt, every = s.every, detailed = Dict(s.bed => t -> pf * _interp(Float32(t), tc, fb)))

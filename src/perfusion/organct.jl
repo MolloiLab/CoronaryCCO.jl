@@ -18,10 +18,10 @@ module OrganCT
 
 import AcceleratedKernels as AK
 using Atomix: @atomic
-using ..Flow: Circuit, InputCurve, VTree, frame_masses
+using ..Flow: Circuit, InputCurve, VTree, frame_masses, _lengths
 
 export Plane, pixel_point, GridSample, sample_grid, tissue_iodine, region_iodine, VesselStamp,
-    stamp_vessels, vessel_volumes, render_plane
+    stamp_vessels, vessel_volumes, blood_volumes, render_plane
 
 const F32 = Float32
 
@@ -319,8 +319,8 @@ end
 """
     vessel_volumes(trees...) -> Vector (mL)
 
-Lumen volume `π r² L` of every segment of `trees`, in the numbering of [`stamp_vessels`](@ref)
-(as `Flow.circuit` computes it, so mass / volume is the blood concentration).
+Geometric lumen volume `π r² L` of every segment of `trees`, in the numbering of [`stamp_vessels`](@ref). For the blood
+concentration of a solved circuit's transported masses use [`blood_volumes`](@ref): a toned artery holds less blood.
 """
 vessel_volumes(trees::VTree...) = reduce(
     vcat, [
@@ -328,6 +328,28 @@ vessel_volumes(trees::VTree...) = reduce(
             for t in trees
     ]
 )
+
+"""
+    blood_volumes(C::Circuit) -> Vector (mL)
+
+The volume to divide every arterial and venous segment's `frame_masses` mass by for the whole-blood iodine concentration
+in its lumen, in the numbering of [`stamp_vessels`](@ref). Iodine is in the plasma. A grown segment, drawn at its own
+radius: its blood volume as the circuit holds it (geometric lumen times its tone's `xd²`), so the concentration carries
+its own tube hematocrit. An imaged segment (`isbase`), drawn where the scan shows a millimetre lumen: its plasma volume
+over the plasma fraction of discharged blood, `vp / (1 - hd)`, the concentration of blood at the size the scan shows,
+whatever radius growth left the segment.
+"""
+function blood_volumes(C::Circuit)
+    pf = 1.0f0 - C.phys.hd
+    va = _lengths(C.tree)[2] .* C.xd .^ 2; vv = _lengths(C.veins)[2]
+    for j in eachindex(va)
+        C.tree.isbase[j] && (va[j] = C.vp_a[j] / pf)
+    end
+    for k in eachindex(vv)
+        C.veins.isbase[k] && (vv[k] = C.vp_v[k] / pf)
+    end
+    return vcat(va, vv)
+end
 
 # ---------------------------------------------------------------------------------------------
 # Rendering
