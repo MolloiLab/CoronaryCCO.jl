@@ -1878,10 +1878,19 @@ function _assemble(B, territory_ml::AbstractVector, phys::FlowSpec, state::Symbo
         vp_a[j] = vol[j] * (1.0f0 - fahraeus(2000.0f0 * t.r[j] * xd[j], hd) * hd)
         tau_a[j] = vp_a[j] / (max(q[j], 1.0f-12) * (1.0f0 - hd))      # reversed segments: stagnant
     end
+    # the plasma each vein carries under transport's routing (every terminal's outflow up its own venous path): a solved
+    # flow below it (a reversed or near-stagnant segment, seen at maximal dilation) would hold that outflow there for ~1/0 s
+    qr = zeros(F32, nv)
+    for i in 1:nt
+        qr[vl[i]] += qt[i] * (1.0f0 - hd)
+    end
+    for h in nv:-1:1
+        k = vorder[h]; p = vt.parent[k]; p > 0 && (qr[p] += qr[k])
+    end
     vp_v = Vector{F32}(undef, nv); tau_v = similar(vp_v)
     AK.foreachindex(1:nv; min_elems = 4096) do k
         vp_v[k] = vvol[k] * (1.0f0 - fahraeus(2000.0f0 * vt.r[k], hd) * hd)
-        tau_v[k] = vp_v[k] / max(qv[k] * (1.0f0 - hd), 1.0f-12)
+        tau_v[k] = vp_v[k] / max(qv[k] * (1.0f0 - hd), qr[k], 1.0f-12)
     end
     t_end = similar(len)
     for h in 1:n

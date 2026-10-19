@@ -229,6 +229,14 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
             pools = [Pool("LV outflow", "ncat_blood", :lv, :out), Pool("tissue mean", "ncat_heart", :coronary, :tissue)]
         )
         T = transport(TransportSpec(HEART_TRANSPORT; tissue_ml = sum(terr), tmax = 20, dt = 0.005, every = 1), Cr; times = spec.times)
+        # no vein holds a terminal's outflow longer than the plasma routed through it allows: transit <= volume / routed flow
+        qr = zeros(Float32, length(Cr.veins.r))
+        for i in eachindex(Cr.vleaf)
+            k = Int(Cr.vleaf[i]); while k != 0
+                qr[k] += Cr.fp[i]; k = Cr.veins.parent[k]
+            end
+        end
+        @test all(k -> qr[k] <= 0 || Cr.tau_v[k] <= 1.001f0 * Cr.vp_v[k] / qr[k], eachindex(qr))
         # blood_volumes: an artery's mass over it is its blood concentration (plasma volume / plasma fraction)
         bv = C.OrganCT.blood_volumes(Cr); na_ = length(Cr.tree.r)
         @test length(bv) == na_ + length(Cr.veins.r) && all(0.4 .< Cr.vp_a ./ bv[1:na_] .<= 1.0) && all(0.4 .< Cr.vp_v ./ bv[(na_ + 1):end] .<= 1.0)
