@@ -154,22 +154,6 @@ function write_base_gxl(path::AbstractString, t::BaseTree)
 end
 
 """
-    write_vol(path, mask::AbstractArray{Bool,3}, lower)
-
-DGtal `.vol` (Version 2, uncompressed) with inside voxels 255, so voxel `(i, j, k)` is the
-integer point `lower .+ (i, j, k) .- 1` (mm when the voxel size is 1 mm).
-"""
-function write_vol(path::AbstractString, mask::AbstractArray{Bool, 3}, lower::NTuple{3, <:Integer})
-    s = size(mask); c = lower .+ (s .- 1) .÷ 2
-    open(path, "w") do io
-        print(io, "Center-X: $(c[1])\nCenter-Y: $(c[2])\nCenter-Z: $(c[3])\nX: $(s[1])\nY: $(s[2])\nZ: $(s[3])\n")
-        print(io, "Voxel-Size: 1\nAlpha-Color: 0\nVoxel-Endian: 0\nInt-Endian: 0123\nVersion: 2\n.\n")
-        write(io, UInt8[m ? 0xff : 0x00 for m in mask])
-    end
-    return path
-end
-
-"""
     heart_masks(S, g; phase = "dias", res = (160, 160)) -> NamedTuple of Array{Bool,3}
 
 LV and RV myocardium and cavities of an XCAT heart on grid `g`:

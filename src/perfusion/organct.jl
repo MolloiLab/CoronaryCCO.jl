@@ -393,9 +393,9 @@ end
 The volume to divide every arterial and venous segment's `frame_masses` mass by for the whole-blood iodine concentration
 in its lumen, in the numbering of [`stamp_vessels`](@ref). Iodine is in the plasma. A grown segment, drawn at its own
 radius: its blood volume as the circuit holds it (geometric lumen times its tone's `xd²`), so the concentration carries
-its own tube hematocrit. An imaged segment (`isbase`), drawn where the scan shows a millimetre lumen: its plasma volume
-over the plasma fraction of discharged blood, `vp / (1 - hd)`, the concentration of blood at the size the scan shows,
-whatever radius growth left the segment.
+its own tube hematocrit. An imaged segment (`isbase`), drawn at the lumen the scan shows: its plasma volume over the
+plasma fraction of discharged blood, `vp / (1 - hd)`, the concentration of blood at the size the scan shows, whatever
+radius growth left the segment.
 """
 function blood_volumes(C::Circuit)
     pf = 1.0f0 - C.phys.hd

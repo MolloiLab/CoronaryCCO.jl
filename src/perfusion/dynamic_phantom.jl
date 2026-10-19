@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 # The shareable dynamic CT perfusion phantom: ONE compartment volume plus ONE CSV per phantom design (scenario).
 #
 # Each voxel of the volume (`<phantom>_compartments.u16.zst`, UInt16, column-major, zstd) holds the id of its kinetic
@@ -16,7 +17,7 @@
 # μ(E) = μ_base(E) + (c/1000)(μ/ρ)_I(E) exactly; c is mg iodine per mL of voxel.
 module DynamicPhantom
 
-using DelimitedFiles, TOML, Unitful, Printf, Random, Statistics
+using DelimitedFiles, Unitful, Printf, Random, Statistics
 import XrayAttenuation as XA
 import AcceleratedKernels as AK
 

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Organs as instances of the one `FlowSpec` struct: each organ is only different values. test/reference/ holds the
 # measurements they come from and that the results are tested against. Each value's comment gives its unit, how it was
 # obtained and its sources [test/reference ids]. A variant: `FlowSpec(LUNG_FLOW; p_in = 20)`.

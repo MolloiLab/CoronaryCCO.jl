@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Vasculature.jl. The tree growth engine is a Julia port of HCT-CCO
 # (Vajire, Choy, Kassab, Lee), which extends OpenCCO (Kerautret, Ngo, Passat, Talbot, Jaquet).
-# See NOTICE.md for provenance.
+# See docs/NOTICE.md for provenance.
 
 """
     Vasculature
@@ -10,7 +10,7 @@ Vendor-neutral vascular network tools: grow → flow → mesh + voxelize + mater
 growth is a port of HCT-CCO (Hierarchy CT-Driven Constrained Constructive Optimization).
 
 Upstream: <https://github.com/Sujal-vajire/HCT-CCO> (GPL-3.0-or-later), itself built on
-OpenCCO <https://github.com/kerautret/OpenCCO>. Please cite both; see `NOTICE.md`.
+OpenCCO <https://github.com/kerautret/OpenCCO>. Please cite both; see `docs/NOTICE.md`.
 """
 module Vasculature
 

@@ -60,8 +60,12 @@ solved below it in `flow`. You can always give `nterm` directly.
 | any organ | VO₂ ÷ (arterial O₂ content × O₂ extraction) | flow ÷ 0.14 µL/min | its segmented volume | each imaged inlet (femoral artery, carotids + basilar, ...) |
 
 `tissue_ml` is the volume of the domain you grow into, and the flow must be that domain's: for a leg, 2.6 mL/min per
-100 mL of tissue at rest (a muscle-only domain of 7 L gets about 180 mL/min, not the whole leg's 290). Count a `.vol`
+100 mL of tissue at rest (at that whole-leg mean, a 7 L domain gets about 180 mL/min, not the whole leg's 290; muscle at rest may take a larger
+share). Count a `.vol`
 domain's volume with `img, _ = read_vol("leg.vol"); count(>(0x80), img) / 1000` (mL, 1 mm voxels).
+
+XCAT inputs (NURBS surfaces, vessel centrelines, organ masks) are read with `Vasculature.XCAT` (`read_nrb`, `centerline`,
+`base_forest`, `fill_supply_gaps`).
 
 More inlets are just more files: `grow(spec, brain, ["lica.xml", "rica.xml", "basilar.xml"])`.
 Veins grow the same way from their imaged outlet trees (`grow(spec, domain, ["left_pulmonary_veins.xml", "right_pulmonary_veins.xml"])`).

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Supply gaps of an imaged vessel tree.
 #
 # An imaged (base) tree is only as complete as the imaging. Where it resolves no vessel near some tissue, the growth has

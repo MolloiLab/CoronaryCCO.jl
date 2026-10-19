@@ -5,7 +5,7 @@ vascular tree growth engine. That part is a derivative work. The growth algorith
 its constants, and its control flow come from the upstream authors listed below. The
 port changes the language and the execution strategy. It does not claim the method.
 The flow, transport and phantom stages are new code built on the published
-physiology cited in `docs/`.
+physiology whose measurements are in `test/reference/`.
 
 ## Upstream works this package is derived from
 
@@ -54,8 +54,8 @@ physiology cited in `docs/`.
 
 Vasculature.jl is distributed under the GNU General Public License v3.0 or (at
 your option) any later version (`GPL-3.0-or-later`), the same terms as HCT-CCO.
-The full text is in [`LICENSE`](LICENSE). Every source file carries an SPDX
-header and a short provenance line naming the upstream file it ports.
+The full text is in [`LICENSE`](../LICENSE). Every source file carries an SPDX
+header, and each ported file a short provenance line naming the upstream file it ports.
 
 ## Upstream dependencies that this port does NOT redistribute
 
