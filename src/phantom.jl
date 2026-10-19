@@ -26,6 +26,24 @@ end
 Pool(name, material, segment, what; scale = 1, ml = 0) = Pool(name, material, segment, what, scale, ml)
 
 """
+    pool_curve(P::Pool, r, t; delay = 0, tissue = 0) -> Float32
+
+Pool `P`'s iodine (mg per mL) at time `t` (s) in a `Body.simulate` result `r` (a `transport` result's `body`): `:out` is
+the segment's outflow `delay` s earlier, `:mean` its mean blood, `:organ` its blood and extracellular iodine over `P.ml`,
+`:tissue` the organ's own tissue value `tissue`. The one definition of the body's compartments, for phantoms and pictures.
+"""
+function pool_curve(P::Pool, r, t; delay = 0.0f0, tissue = 0.0f0)
+    c = P.what === :tissue ? tissue :
+        P.what === :out ? _interp(t - delay, r.t, r.out[P.segment]) :
+        P.what === :mean ? _interp(t, r.t, r.mean[P.segment]) :
+        (
+            g = r.circ.segs[findfirst(x -> x.name === P.segment, r.circ.segs)];
+            (g.v * _interp(t, r.t, r.mean[P.segment]) + g.ve * _interp(t, r.t, r.ecv[P.segment])) / P.ml
+        )
+    return Float32(P.scale * c)
+end
+
+"""
     PhantomSpec(; times, tissue_material, blood_material, tissue_classes, vessel_classes, vessel_rmin_mm, delay_bin_s,
                 energy_keV, materials, pools)
     PhantomSpec(spec::PhantomSpec; kwargs...)
@@ -163,17 +181,7 @@ function phantom(
         id <= 999 || error("phantom: more than 900 pool compartments (pools x delay bins); widen delay_bin_s")
         return id
     end
-    function pcurve(i, b, s, f)
-        P = spec.pools[i]; t = spec.times[f]; r = scans[s][3].body
-        c = P.what === :tissue ? tmean[s][f] :
-            P.what === :out ? _interp(t - b * spec.delay_bin_s, r.t, r.out[P.segment]) :
-            P.what === :mean ? _interp(t, r.t, r.mean[P.segment]) :
-            (
-                g = r.circ.segs[findfirst(x -> x.name === P.segment, r.circ.segs)];
-                (g.v * _interp(t, r.t, r.mean[P.segment]) + g.ve * _interp(t, r.t, r.ecv[P.segment])) / P.ml
-            )
-        return Float32(P.scale * c)
-    end
+    pcurve(i, b, s, f) = pool_curve(spec.pools[i], scans[s][3].body, spec.times[f]; delay = b * spec.delay_bin_s, tissue = tmean[s][f])
     # ---- stream the volume, one z slice at a time
     nx, ny, nz = grid.dims; h = grid.h; o = grid.origin
     file = "$(name)_compartments.u16.zst"; w = VolumeWriter(joinpath(out, file), (nx, ny, nz))

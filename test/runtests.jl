@@ -229,6 +229,9 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
             pools = [Pool("LV outflow", "ncat_blood", :lv, :out), Pool("tissue mean", "ncat_heart", :coronary, :tissue)]
         )
         T = transport(TransportSpec(HEART_TRANSPORT; tissue_ml = sum(terr), tmax = 20, dt = 0.005, every = 1), Cr; times = spec.times)
+        # pool_curve: the one definition of a body compartment's curve (phantoms and pictures)
+        @test pool_curve(Pool("LV blood", "ncat_blood", :lv, :mean), T.body, 10.0f0) ≈ C._interp(10.0f0, T.body.t, T.body.mean[:lv])
+        @test pool_curve(Pool("LV out", "ncat_blood", :lv, :out), T.body, 10.0f0; delay = 1) ≈ C._interp(9.0f0, T.body.t, T.body.out[:lv])
         lo = minimum(vt.b; dims = 2) .- 4; hi = maximum(vt.b; dims = 2) .+ 4
         grid = C.VoxelGrid(Tuple(Float64.(vec(lo))), h, Tuple(ceil.(Int, vec(hi .- lo) ./ h) .+ 1))
         classify(p) = (
