@@ -95,8 +95,10 @@ zstd) and `label_healthy.csv`, in the DynamicPhantom format (`DynamicPhantom.loa
   numbers.
 
 Iodine is in mg per mL of voxel. Ids: 0-99 static labels, 100-999 pools (and delay bins), 1000 tissue without a territory
-(static), 1001… tissue classes (1 = least enhancing), 2001… vessel classes. The result holds the ids, their voxel counts
-and each state's tissue flow (mL/min per mL of tissue), the ground truth.
+(static), 1001… tissue classes (1 = least enhancing), 2001… vessel classes. Each tissue class's ground truth is in its
+CSV columns: its mean blood flow per gram in each state (`mbf_rest_ml_min_g`, `mbf_stress_ml_min_g`, by the same
+territory weights as its iodine), their ratio (`cfr`) and its mass. The result holds the ids, their voxel counts and each
+state's organ flow (mL/min per mL of tissue).
 """
 function phantom(
         spec::PhantomSpec, scans, classify, grid::VoxelGrid; pairs, terr, nvox::Integer, out::AbstractString,
@@ -110,6 +112,22 @@ function phantom(
     ord = sortperm(vec(sum(cen; dims = 1))); rank = invperm(ord)
     tid = Int32[1000 + rank[a[v]] for v in 1:nvox]
     tmean = [vec(sum(Xs[s]; dims = 1)) ./ nvox for s in 1:nS]
+    # ground truth per tissue class: each voxel's blood flow by the same territory weights as its iodine (mL/min per mL)
+    vflow = [
+        vec(Array(tissue_iodine(reshape(Float32[C.q[j] for j in C.terminals], 1, :), pairs, terr, collect(Int32(1):Int32(nvox))))) .* 60
+            for (_, C, _) in scans
+    ]
+    cflow = [zeros(Float32, spec.tissue_classes) for _ in 1:nS]; cn = zeros(Int, spec.tissue_classes)
+    for v in 1:nvox
+        c = tid[v] - 1000; cn[c] += 1
+        for s in 1:nS
+            cflow[s][c] += vflow[s][v]
+        end
+    end
+    for s in 1:nS
+        cflow[s] ./= max.(cn, 1)
+    end
+    rho = scans[1][2].phys.rho
     # ---- vessels: grown segments of radius ≥ vessel_rmin_mm and the imaged (base) ones, k-means on their curves
     C1 = scans[1][2]; trees = (C1.tree, C1.veins); vol = vessel_volumes(trees...); na = length(C1.tree.r)
     vcurve_of(t, j) = Float32[(T = scans[s][3]; (t == 1 ? T.artery[f, j] : T.vein[f, j]) / vol[t == 1 ? j : na + j]) for s in 1:nS for f in 1:nT]
@@ -205,7 +223,12 @@ function phantom(
         elseif id == 1000
             (key = id, name = "tissue (no territory)", base_material = spec.tissue_material, kinetics = "static", voxels = cnt[id])
         elseif id < 2000
-            (key = id, name = "tissue class $(id - 1000)", base_material = spec.tissue_material, kinetics = "tissue", voxels = cnt[id])
+            k = id - 1000; mbf = Dict(st => round(cflow[s][k] / rho; digits = 4) for (s, st) in enumerate(states))
+            (
+                key = id, name = "tissue class $(id - 1000)", base_material = spec.tissue_material, kinetics = "tissue", voxels = cnt[id],
+                mass_g = round(cnt[id] * h^3 / 1000 * rho; digits = 3), mbf_rest = get(mbf, "rest", nothing), mbf_stress = get(mbf, "stress", nothing),
+                cfr = haskey(mbf, "rest") && haskey(mbf, "stress") ? round(mbf["stress"] / mbf["rest"]; digits = 3) : nothing,
+            )
         else
             (key = id, name = "vessel class $(id - 2000)", base_material = spec.blood_material, kinetics = "vessel", voxels = cnt[id])
         end

@@ -179,13 +179,13 @@ struct Dyn
     counts::Dict{Int, Int}
 end
 
-function read_volume(path, dims, ::Type{T}) where {T}
+function read_volume(path, dims, ::Type{T}; zrange = 1:dims[end]) where {T}
     io = endswith(path, ".zst") ? open(`zstd -dc $path`) : open(path)
     try
         # one z slice at a time: a single read of several GB from a pipe fails on macOS (EINVAL)
-        A = Array{T}(undef, dims...); nxy = prod(dims[1:(end - 1)]); buf = Vector{T}(undef, nxy)
-        for k in 1:dims[end]
-            read!(io, buf); copyto!(A, (k - 1) * nxy + 1, buf, 1, nxy)
+        nxy = prod(dims[1:(end - 1)]); A = Array{T}(undef, dims[1:(end - 1)]..., length(zrange)); buf = Vector{T}(undef, nxy)
+        for k in 1:last(zrange)
+            read!(io, buf); k >= first(zrange) && copyto!(A, (k - first(zrange)) * nxy + 1, buf, 1, nxy)
         end
         return A
     finally
@@ -194,13 +194,14 @@ function read_volume(path, dims, ::Type{T}) where {T}
 end
 
 """
-    load(csv; volume = true) -> Dyn
+    load(csv; volume = true, zrange = nothing) -> Dyn
 
 Reads one phantom design: `label_<scenario>.csv` and (with `volume = true`) the compartment volume it names, from the
-same folder. `ph.facts` holds the scenario facts, `ph.table` each compartment's name / base material / kinetics,
+same folder. `zrange` (slice numbers, 1 = the first) reads only those z slices, to scan part of a large phantom: the
+labels and counts are then that slab's, and `ph.facts["zrange"]` records it (slice k is at origin z + (k - 1) voxels). `ph.facts` holds the scenario facts, `ph.table` each compartment's name / base material / kinetics,
 `ph.curves[(state, id)]` its iodine curve, `ph.reference[(state, "roi:…")]` the tracking ROI.
 """
-function load(csv::AbstractString; volume::Bool = true)
+function load(csv::AbstractString; volume::Bool = true, zrange::Union{Nothing, AbstractUnitRange{<:Integer}} = nothing)
     A = readdlm(csv, ','; header = false, quotes = true)
     hdr = string.(A[1, :]); rows = string.(A[:, 1])
     facts = Dict{String, String}(); times = Float64[]; tab = Dict{String, Vector{Any}}(); trows = Dict{String, Vector{Int}}()
@@ -239,7 +240,10 @@ function load(csv::AbstractString; volume::Bool = true)
     lab = Array{UInt16, 3}(undef, 0, 0, 0); cnt = Dict{Int, Int}()
     if volume
         dims = Tuple(parse.(Int, split(facts["dims"])))
-        lab = read_volume(joinpath(dirname(abspath(csv)), facts["compartment_volume"]), dims, UInt16)   # no copy: GBs
+        zr = zrange === nothing ? (1:dims[end]) : zrange
+        1 <= first(zr) <= last(zr) <= dims[end] || throw(ArgumentError("zrange $zr is outside the volume's 1:$(dims[end]) slices"))
+        zrange === nothing || (facts["zrange"] = "$(first(zr)):$(last(zr))")
+        lab = read_volume(joinpath(dirname(abspath(csv)), facts["compartment_volume"]), dims, UInt16; zrange = zr)   # no copy: GBs
         cv = zeros(Int, 65536); for v in lab
             cv[v + 1] += 1
         end

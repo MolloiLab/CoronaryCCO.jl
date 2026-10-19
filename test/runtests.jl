@@ -178,7 +178,8 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         T0 = transport(spec, Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0)
         # the heart's body takes its coronary share from the grown tree's root flow
         qroot = sum(Cr.q[j] for j in eachindex(vt.parent) if vt.parent[j] == 0)
-        r = transport(TransportSpec(spec; f_coronary = Float32(qroot / spec.co)))
+        @test coronary_share(Cr, spec.co) == Float32(qroot / spec.co)
+        r = transport(TransportSpec(spec; f_coronary = coronary_share(Cr, spec.co)))
         pf = 1 - heart.hd; tf = collect(0.0f0:0.02f0:20.0f0)
         inp = C.Flow.InputCurve(Float32[C._interp(t, r.t, r.out[:lv]) / pf for t in tf], 0.02f0)
         @test T0.body.out[:lv] == r.out[:lv] && T0.input.c == inp.c
@@ -241,6 +242,14 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test R.flow[1][2] ≈ sum(Cr.q[j] for j in eachindex(vt.parent) if vt.parent[j] == 0) * 60 / sum(terr)
         ph = C.DynamicPhantom.load(R.csv; volume = true)
         @test ph.counts == R.counts && ph.facts["states"] == "rest" && size(ph.labels) == grid.dims
+        # each tissue class carries its ground-truth flow; the voxel-weighted mean over classes is the organ's flow per gram
+        A = C.DynamicPhantom.readdlm(R.csv, ','; header = false, quotes = true); hdr = string.(A[1, :]); rw(n) = A[findfirst(==(n), string.(A[:, 1])), :]
+        tcols = [c for c in 3:length(hdr) if all(isdigit, hdr[c]) && 1000 < parse(Int, hdr[c]) < 2000]
+        mbf = Float64.(rw("mbf_rest_ml_min_g")[tcols]); nv = Float64.(rw("voxels")[tcols])
+        @test all(>(0), mbf) && isapprox(sum(mbf .* nv) / sum(nv), R.flow[1][2] / HEART_FLOW.rho; rtol = 0.1)
+        ps = C.DynamicPhantom.load(R.csv; zrange = 2:3) # a z slab of a large phantom
+        @test ps.labels == ph.labels[:, :, 2:3] && sum(values(ps.counts)) == length(ps.labels) && ps.facts["zrange"] == "2:3"
+        @test_throws ArgumentError C.DynamicPhantom.load(R.csv; zrange = 0:2)
         tc = sort([i for i in keys(ph.counts) if 1001 <= i < 2000]) # classes rank by enhancement
         @test issorted([sum(ph.curves[("rest", i)]) for i in tc])
         m = C.DynamicPhantom.materials_at(ph, "rest", 10.0)

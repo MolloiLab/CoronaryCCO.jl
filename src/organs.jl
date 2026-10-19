@@ -92,7 +92,8 @@ const XCAT_BODY_POOLS = [
     Pool("ventricular myocardium", "ncat_heart", :coronary, :organ; ml = XCAT_MYOCARDIUM_ML), # 25 (when the heart is not the organ)
     Pool("organ tissue mean", "", :coronary, :tissue), # 26: the organ's own mean (its material is the spec's tissue_material)
 ]
-const XCAT_STATIC = Dict(0 => "air", 2 => "cartilage", 7 => "air", 11 => "air", 30 => "softtissue", 31 => "softtissue", 32 => "softtissue", 70 => "air")
+# 7 is XCAT's trach_bronch, the airway wall (cartilage rings and mucosa; 3 mm in the trachea); 11 is the air inside it
+const XCAT_STATIC = Dict(0 => "air", 2 => "cartilage", 7 => "cartilage", 11 => "air", 30 => "softtissue", 31 => "softtissue", 32 => "softtissue", 70 => "air")
 
 # heart: the myocardium in 64 kinetic classes, grown (radius >= 0.1 mm) and imaged coronary vessels in 64 classes,
 # great-artery transit delays in 0.05 s bins, frames every second for 60 s
