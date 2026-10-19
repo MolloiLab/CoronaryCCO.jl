@@ -54,16 +54,18 @@ const LUNG_VEIN_GROWTH = GrowthSpec(
     root_caps = [8.170588, 8.170588]
 )   # mm, the two pulmonary vein ostia (pulmonary_veins_left/right.xml)
 
+const XCAT_MYOCARDIUM_ML = 148.052f0 # mL, XCAT vmale_50's myocardium voxels (LV + RV)
+
 # a bolus through the whole body with the heart as its coronary bed (rest: XCAT's heart, 81.6 mL/s at 60/min)
 const HEART_TRANSPORT = TransportSpec(;
-    phys = HEART_FLOW, tissue_ml = 148.052f0, bed = :coronary, input = :lv,   # mL, XCAT myocardium voxels
+    phys = HEART_FLOW, tissue_ml = XCAT_MYOCARDIUM_ML, bed = :coronary, input = :lv,
     co = 81.6f0, beat = 1.0f0, f_coronary = 0.033f0, tmax = 70.0f0, dt = 0.002f0, every = 0.1f0, coronary = nothing,
 )
 
 # a bolus with the lungs in their own body slot, fed by the right ventricle; the body's coronary bed is the heart's (lumped)
 const LUNG_TRANSPORT = TransportSpec(
     HEART_TRANSPORT; phys = LUNG_FLOW, tissue_ml = 2813.438f0, bed = :lung, input = :rv,
-    coronary = (; ml = 148.052f0, fb = HEART_FLOW.fb, ve = HEART_FLOW.ve, ps = HEART_FLOW.ps, rho = HEART_FLOW.rho)
+    coronary = (; ml = XCAT_MYOCARDIUM_ML, fb = HEART_FLOW.fb, ve = HEART_FLOW.ve, ps = HEART_FLOW.ps, rho = HEART_FLOW.rho)
 )
 
 # ---------------------------------------------------------------------------------------------------------- phantoms
@@ -79,7 +81,7 @@ const XCAT_BODY_POOLS = [
     Pool("right brachiocephalic vein", "ncat_blood", :brachiocephalic_r, :mean), # 9
     Pool("left brachiocephalic vein", "ncat_blood", :brachiocephalic_l, :mean), # 10
     Pool("inferior vena cava", "ncat_blood", :ivc_hepatic, :mean), # 11
-    Pool("atrial myocardium", "ncat_heart", :coronary, :organ; ml = 148.052), # 12
+    Pool("atrial myocardium", "ncat_heart", :coronary, :organ; ml = XCAT_MYOCARDIUM_ML), # 12
     Pool("lung", "ncat_lung", :lung, :mean; scale = 0.1), # 13
     Pool("liver", "ncat_liver", :liver, :organ; ml = 1800), Pool("spleen", "ncat_spleen", :gut, :organ; ml = 1500), # 14, 15
     Pool("thoracic muscle", "ncat_muscle", :muscle_upper, :organ; ml = 0.3 * 28000), # 16
@@ -87,18 +89,17 @@ const XCAT_BODY_POOLS = [
     Pool("rib", "ncat_rib", :bone_upper, :organ; ml = 0.3 * 10000), Pool("cortical bone", "corticalbone", :bone_upper, :organ; ml = 0.3 * 10000), # 19, 20
     Pool("spine", "ncat_spine", :bone_upper, :organ; ml = 0.3 * 10000), Pool("stomach", "stomach", :other_upper, :organ; ml = 0.3 * 8000), # 21, 22
     Pool("muscle (other)", "ncat_muscle", :other_upper, :organ; ml = 0.3 * 8000), Pool("soft tissue", "softtissue", :other_upper, :organ; ml = 0.3 * 8000), # 23, 24
-    Pool("ventricular myocardium", "ncat_heart", :coronary, :organ; ml = 148.052), # 25 (when the heart is not the organ)
-    Pool("organ tissue mean", "ncat_heart", :coronary, :tissue), # 26: the organ's own mean
+    Pool("ventricular myocardium", "ncat_heart", :coronary, :organ; ml = XCAT_MYOCARDIUM_ML), # 25 (when the heart is not the organ)
+    Pool("organ tissue mean", "", :coronary, :tissue), # 26: the organ's own mean (its material is the spec's tissue_material)
 ]
 const XCAT_STATIC = Dict(0 => "air", 2 => "cartilage", 7 => "air", 11 => "air", 30 => "softtissue", 31 => "softtissue", 32 => "softtissue", 70 => "air")
 
-# heart: XCAT's native 0.2 mm grid; the myocardium in 64 kinetic classes (1.3 HU worst-time RMS against per-voxel truth in
-# the 2026-10-16 export), grown and imaged coronary vessels in 64 classes, great-artery transit delays in 0.05 s bins
+# heart: the myocardium in 64 kinetic classes, grown (radius >= 0.1 mm) and imaged coronary vessels in 64 classes,
+# great-artery transit delays in 0.05 s bins, frames every second for 60 s
 const HEART_PHANTOM = PhantomSpec(;
-    times = collect(0.0f0:1.0f0:60.0f0), tissue_material = "ncat_heart", tissue_classes = 64, vessel_classes = 64,
+    times = collect(0.0f0:1.0f0:60.0f0), tissue_material = "ncat_heart", blood_material = "ncat_blood", tissue_classes = 64, vessel_classes = 64,
     vessel_rmin_mm = 0.1, delay_bin_s = 0.05, energy_keV = 70, materials = XCAT_STATIC, pools = XCAT_BODY_POOLS,
 )
 
-# lung: the lung's 1 mm territories (one terminal per acinus) on a 0.5 mm grid; the pulmonary trees' grown lumens of
-# radius >= 0.25 mm drawn as blood; one state (the lung has no pharmacological stress state here)
+# lung: lung parenchyma in 64 kinetic classes; the pulmonary trees' grown lumens of radius >= 0.25 mm drawn as blood
 const LUNG_PHANTOM = PhantomSpec(HEART_PHANTOM; tissue_material = "ncat_lung", tissue_classes = 64, vessel_classes = 64, vessel_rmin_mm = 0.25)

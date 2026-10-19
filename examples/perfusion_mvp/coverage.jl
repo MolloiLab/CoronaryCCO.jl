@@ -2,7 +2,7 @@
 # Terminal coverage of the myocardium: gaps (distance from each voxel to its nearest terminal)
 # and evenness of terminal density.   julia --project=. coverage.jl <tree.bin> <xcat grow dir>
 using Printf
-@eval(import Vasculature: Flow); @eval(import Vasculature: Territory); using .Flow, .Territory
+import Vasculature: Flow, Territory; using .Flow, .Territory
 tree = load_vtree(ARGS[1]); W = ARGS[2]
 gl = split.(readlines(joinpath(W, "grid.txt"))); lower = parse.(Int, gl[1]); gd = Tuple(parse.(Int, gl[2]))
 lab = Array{UInt8}(undef, gd); read!(joinpath(W, "heart_labels_1mm.u8"), lab)

@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # The four stages end to end on HCT-CCO's public case0 sample (no licensed data): grow -> flow -> transport -> phantom,
 # at rest and at stress. Writes a DynamicPhantom bundle (compartment volume + label_healthy.csv) with its ground truth.
+# case0 has no vein tree, so the flow stage is its circuit (Flow.circuit, companion veins) over the tissue's territories
+# (Territory.territory_shares), the two steps `flow` runs for a bed with grown veins.
 #
 #   julia -t 8 --project=. run_case0.jl [nterm] [h_mm] [out_dir]
 using Vasculature, Printf, Downloads
@@ -22,7 +24,7 @@ img, lower = read_vol(data("case0.vol")); vox = findall(>(0x80), img)
 q = Float32[lower[d] + I[d] - 1 for d in 1:3, I in vox]
 terr, pairs = V.Territory.territory_shares(Float32.(vt.b[:, nch .== 0]), q)
 
-# 2. flow, from pressures, at rest and at maximal dilation
+# 2. flow from the pressures, at rest and at maximal dilation
 Cr = V.Flow.circuit(vt, terr; phys = HEART_FLOW, state = :rest); Cs = V.Flow.circuit(vt, terr; phys = HEART_FLOW, state = :stress)
 @printf("flow: MBF %.2f mL/min/g at rest, %.2f at stress\n", Cr.resist.mbf, Cs.resist.mbf)
 

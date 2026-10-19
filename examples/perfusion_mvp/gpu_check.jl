@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Runs the transport kernels on the CPU and on a Metal GPU and compares them.
 using Vasculature, Metal, Printf
-@eval(import Vasculature: Flow); @eval(import Vasculature: Territory)
+import Vasculature: Flow, Territory
 using .Flow, .Territory
 
 n = parse(Int, get(ARGS, 1, "20000"))

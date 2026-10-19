@@ -239,7 +239,7 @@ function load(csv::AbstractString; volume::Bool = true)
     lab = Array{UInt16, 3}(undef, 0, 0, 0); cnt = Dict{Int, Int}()
     if volume
         dims = Tuple(parse.(Int, split(facts["dims"])))
-        lab = UInt16.(read_volume(joinpath(dirname(abspath(csv)), facts["compartment_volume"]), dims, UInt16))
+        lab = read_volume(joinpath(dirname(abspath(csv)), facts["compartment_volume"]), dims, UInt16)   # no copy: GBs
         cv = zeros(Int, 65536); for v in lab
             cv[v + 1] += 1
         end

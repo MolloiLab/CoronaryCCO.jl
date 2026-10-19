@@ -77,7 +77,9 @@ _interp(t, ts, y) = t <= ts[1] ? y[1] : t >= ts[end] ? y[end] :
               times = 0:60, to = identity)
         -> (; body, input, t_out, outflow, artery, vein, tissue, passes, change)
 
-The injection through the whole body and the organ's own solved circuit `C` (from [`flow`](@ref)). The organ's arterial
+The injection through the whole body and the organ's own solved circuit `C` (from [`flow`](@ref)). When the organ is the
+heart (`spec.bed === :coronary`), the body's coronary share of the cardiac output is `C`'s root flow over `spec.co`, so
+the body and the grown tree carry the same coronary flow (`spec.f_coronary` is not used). The organ's arterial
 input is the plasma concentration leaving body segment `spec.input`. The organ's venous outflow is fed back into the
 body in place of its lumped segment `spec.bed`, so recirculation carries the organ's own transit; that changes the
 organ's input, so the feedback is repeated until the outflow changes by at most `tol` of its peak (at most `passes`
@@ -90,6 +92,7 @@ function transport(
         s::TransportSpec, C::Circuit, inj::Injection = Injection(); passes::Integer = 10, tol::Real = 1.0f-3, fine::Real = 0.02f0, dt_out::Real = 0.1f0,
         times = 0.0f0:1.0f0:60.0f0, to = identity
     )
+    s.bed === :coronary && (s = TransportSpec(s; f_coronary = Float32(sum(C.q[j] for j in eachindex(C.tree.parent) if C.tree.parent[j] == 0) / s.co)))
     BC = circulation(s); pf = 1 - s.phys.hd
     fine = Float32(fine); dt_out = Float32(dt_out)
     r = simulate(BC, inj; tmax = s.tmax, dt = s.dt, every = s.every)

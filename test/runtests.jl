@@ -176,9 +176,13 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         vt = vtree(tree); nch = zeros(Int, length(vt.r)); foreach(p -> p > 0 && (nch[p] += 1), vt.parent)
         Cr = C.Flow.circuit(vt, fill(0.1f0, count(==(0), nch)); phys = heart, state = :rest)
         T0 = transport(spec, Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0)
+        # the heart's body takes its coronary share from the grown tree's root flow
+        qroot = sum(Cr.q[j] for j in eachindex(vt.parent) if vt.parent[j] == 0)
+        r = transport(TransportSpec(spec; f_coronary = Float32(qroot / spec.co)))
         pf = 1 - heart.hd; tf = collect(0.0f0:0.02f0:20.0f0)
         inp = C.Flow.InputCurve(Float32[C._interp(t, r.t, r.out[:lv]) / pf for t in tf], 0.02f0)
         @test T0.body.out[:lv] == r.out[:lv] && T0.input.c == inp.c
+        @test transport(TransportSpec(spec; f_coronary = 0.5f0), Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0).body.out[:lv] == r.out[:lv]
         am, vm, tm = Array.(C.Flow.frame_masses(Cr, inp, collect(0.0f0:2.0f0:20.0f0)))
         @test T0.artery == am && T0.vein == vm && T0.tissue == tm
         T1 = transport(spec, Cr; passes = 1, times = 0.0f0:2.0f0:20.0f0)
@@ -208,6 +212,8 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test_throws ArgumentError PhantomSpec(HEART_PHANTOM; colour = 1)
         @test_throws ArgumentError PhantomSpec(HEART_PHANTOM; materials = Dict(100 => "air"))
         @test_throws ArgumentError PhantomSpec(HEART_PHANTOM; pools = [Pool("x", "ncat_blood", :lv, :peak)])
+        @test_throws ArgumentError PhantomSpec(HEART_PHANTOM; pools = [Pool("x", "ncat_liver", :liver, :organ)])        # no ml
+        @test_throws ArgumentError PhantomSpec(HEART_PHANTOM; tissue_classes = 1000)                                    # ids 1001-1999
         @test LUNG_PHANTOM.pools == HEART_PHANTOM.pools && LUNG_PHANTOM.tissue_material == "ncat_lung"
         # a 300-terminal tree on HCT-CCO's sample, its terminals' voxels as the tissue, everything else LV outflow or air
         tree = grow(GrowthSpec(HEART_GROWTH; nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])

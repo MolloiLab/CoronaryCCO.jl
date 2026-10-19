@@ -26,17 +26,19 @@ end
 Pool(name, material, segment, what; scale = 1, ml = 0) = Pool(name, material, segment, what, scale, ml)
 
 """
-    PhantomSpec(; times, tissue_material, tissue_classes, vessel_classes, vessel_rmin_mm, delay_bin_s, energy_keV,
-                materials, pools)
+    PhantomSpec(; times, tissue_material, blood_material, tissue_classes, vessel_classes, vessel_rmin_mm, delay_bin_s,
+                energy_keV, materials, pools)
     PhantomSpec(spec::PhantomSpec; kwargs...)
 
 Everything that sets an organ's dynamic CT phantom. Every field is a keyword and every one is required: an organ is an
 instance (`HEART_PHANTOM`, `LUNG_PHANTOM`, organs.jl); a variant is the second form.
 
 - `times`: the frame times (s) of the iodine curves.
-- `tissue_material`: the `XrayAttenuation.Materials` name of the perfused tissue (its base; iodine is added on top).
+- `tissue_material`: the `XrayAttenuation.Materials` name of the perfused tissue (its base; iodine is added on top). A
+  `:tissue` pool takes it too.
+- `blood_material`: the base of the grown and imaged vessels' classes.
 - `tissue_classes`: tissue voxels are grouped into this many kinetic classes (k-means on their joint curves over every
-  state), so one compartment volume serves every state.
+  state), so one compartment volume serves every state; at most 999 (ids 1001-1999).
 - `vessel_classes`, `vessel_rmin_mm`: grown vessels of radius ≥ `vessel_rmin_mm` are drawn into the tissue as blood, and
   the vessels a classifier names (imaged ones) take their grown segment's curve; all grouped into this many classes.
 - `delay_bin_s`: `:out` pools are binned by the voxel's transit delay (s).
@@ -47,6 +49,7 @@ instance (`HEART_PHANTOM`, `LUNG_PHANTOM`, organs.jl); a variant is the second f
 struct PhantomSpec
     times::Vector{Float32}
     tissue_material::String
+    blood_material::String
     tissue_classes::Int
     vessel_classes::Int
     vessel_rmin_mm::Float32
@@ -63,6 +66,9 @@ function PhantomSpec(; kwargs...)
     s = PhantomSpec((kwargs[f] for f in fieldnames(PhantomSpec))...)
     all(k -> 0 <= k <= 99, keys(s.materials)) || throw(ArgumentError("PhantomSpec: static labels must be 0-99"))
     all(p -> p.what in (:out, :mean, :organ, :tissue), s.pools) || throw(ArgumentError("PhantomSpec: pool `what` must be :out, :mean, :organ or :tissue"))
+    all(p -> p.what !== :organ || p.ml > 0, s.pools) || throw(ArgumentError("PhantomSpec: an :organ pool needs its tissue volume `ml` > 0"))
+    1 <= s.tissue_classes <= 999 || throw(ArgumentError("PhantomSpec: tissue_classes must be 1-999 (ids 1001-1999)"))
+    1 <= s.vessel_classes <= 63535 || throw(ArgumentError("PhantomSpec: vessel_classes must be 1-63535 (ids from 2001)"))
     return s
 end
 PhantomSpec(s::PhantomSpec; kwargs...) = PhantomSpec(; merge((; (f => getfield(s, f) for f in fieldnames(PhantomSpec))...), values(kwargs))...)
@@ -126,7 +132,11 @@ function phantom(
     zo = sortperm(first.(zr))
     # ---- pools, ids from 100 in order of first use (an :out pool once per delay bin)
     pid = Dict{Tuple{Int, Int}, Int}()
-    poolid(i, d) = get!(pid, (i, spec.pools[i].what === :out ? round(Int, d / spec.delay_bin_s) : 0), 100 + length(pid))
+    function poolid(i, d)
+        id = get!(pid, (i, spec.pools[i].what === :out ? round(Int, d / spec.delay_bin_s) : 0), 100 + length(pid))
+        id <= 999 || error("phantom: more than 900 pool compartments (pools x delay bins); widen delay_bin_s")
+        return id
+    end
     function pcurve(i, b, s, f)
         P = spec.pools[i]; t = spec.times[f]; r = scans[s][3].body
         c = P.what === :tissue ? tmean[s][f] :
@@ -184,19 +194,20 @@ function phantom(
     cols = NamedTuple[]
     for id in sort!(collect(keys(cnt)))
         c = if id < 100
-            (key = id, name = "static $id", base_material = get(spec.materials, id, "air"), kinetics = "static", voxels = cnt[id])
+            haskey(spec.materials, id) || error("phantom: the classifier gave static label $id, which spec.materials does not name")
+            (key = id, name = "static $id", base_material = spec.materials[id], kinetics = "static", voxels = cnt[id])
         elseif id < 1000
             (i, b) = pkey[id]; P = spec.pools[i]
             (
                 key = id, name = P.what === :out ? "$(P.name) +$(round(b * spec.delay_bin_s; digits = 2)) s" : P.name,
-                base_material = P.material, kinetics = String(P.what), voxels = cnt[id],
+                base_material = P.what === :tissue ? spec.tissue_material : P.material, kinetics = String(P.what), voxels = cnt[id],
             )
         elseif id == 1000
             (key = id, name = "tissue (no territory)", base_material = spec.tissue_material, kinetics = "static", voxels = cnt[id])
         elseif id < 2000
             (key = id, name = "tissue class $(id - 1000)", base_material = spec.tissue_material, kinetics = "tissue", voxels = cnt[id])
         else
-            (key = id, name = "vessel class $(id - 2000)", base_material = "ncat_blood", kinetics = "vessel", voxels = cnt[id])
+            (key = id, name = "vessel class $(id - 2000)", base_material = spec.blood_material, kinetics = "vessel", voxels = cnt[id])
         end
         push!(cols, c)
     end
