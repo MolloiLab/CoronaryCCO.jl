@@ -44,9 +44,9 @@ else and logs a note.
 
 ## Verification
 
-`oracle/pp_reference.py` runs the upstream script unchanged and also records its per-segment
+`test/oracle/pp_reference.py` runs the upstream script unchanged and also records its per-segment
 internals. `test/test_postprocess.jl` compares against these references whenever they exist
-under `oracle/out/pp`, running the port with `mass = :upstream, elements = :upstream`. The
+under `test/oracle/out/pp`, running the port with `mass = :upstream, elements = :upstream`. The
 trees were grown by this package on `case0` (seed 1) with 200 and 2000 terminals, plus the
 40k-terminal benchmark tree (80,242 segments). Results:
 

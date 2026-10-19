@@ -5,7 +5,7 @@
 # `AutoDiffCostFunction<CostOptPos, 2, 1, 1>` and default `Solver::Options`. This file
 # reproduces, operation for operation, what Ceres Solver 2.2.0 does on that problem when it
 # is built with Eigen 3.4.0, -ffp-contract=off and only Eigen's sparse Cholesky
-# (oracle/build.sh): trust-region Levenberg-Marquardt with Jacobi scaling, solving each
+# (test/oracle/build.sh): trust-region Levenberg-Marquardt with Jacobi scaling, solving each
 # step with SPARSE_NORMAL_CHOLESKY + EIGEN_SPARSE (SimplicialLDLT, natural ordering). With
 # T = Float64 on the CPU it returns the same bits as that build for every recorded call
 # (test/test_kamiya.jl).

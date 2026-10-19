@@ -1,9 +1,8 @@
-# Supply gaps of an imaged tree (src/xcat/supply_gaps.jl): a tree that reaches all tissue is left alone; a truncated
+# Supply gaps of an imaged tree (Vasculature.XCAT.fill_supply_gaps): a tree that reaches all tissue is left alone; a truncated
 # tree is completed until no tissue is farther than max_gap_mm from a vessel.
 module SupplyGapsTest
 using Test
-import AcceleratedKernels as AK
-include(joinpath(@__DIR__, "..", "src", "xcat", "supply_gaps.jl"))
+using Vasculature.XCAT: fill_supply_gaps
 @testset "supply gaps" begin
     dom = trues(40, 40, 40)                                  # a 40 mm cube of tissue, 1 mm voxels
     lower = (0.5, 0.5, 0.5)

@@ -8,12 +8,11 @@ LocalPreferences.toml
 
 # Downloaded upstream sample data and C++ reference outputs (regenerable)
 test/data/
-bench/out/
-oracle/build/
-oracle/out/
+
+test/oracle/build/
+test/oracle/out/
 
 # Local agent config
 .claude/
 /CLAUDE.md
 /AGENTS.md
-examples/*/out/

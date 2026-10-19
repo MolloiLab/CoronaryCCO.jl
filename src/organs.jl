@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Organs as instances of the one GrowthSpec and TransportSpec structs: each organ is only different values (the FlowSpec
 # instances, HEART_FLOW and LUNG_FLOW, are in perfusion/organs.jl). Subject values are XCAT vmale_50's. A run varies an
-# instance, e.g. a seed and a device such as `MtlArray`: GrowthSpec(LUNG_GROWTH; seed = 2, device = dev). [ids] are data/reference files.
+# instance, e.g. a seed and a device such as `MtlArray`: GrowthSpec(LUNG_GROWTH; seed = 2, device = dev). [ids] are test/reference files.
 
 # heart arteries: the scored v16 forest (LCA + RCA from XCAT's imaged dias_lad1/dias_rca1 trees)
 const HEART_GROWTH = GrowthSpec(;

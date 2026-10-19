@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Bitwise parity of `kamiya_ceres` with upstream's Ceres call (src/kamiya_lm.jl).
 #
-# Reference records come from the pinned Ceres 2.2.0 build (oracle/build.sh):
-#   oracle/out/ceres/ceres_n2000.txt, ceres_n4000.txt  every kamyiaOpt call made by
+# Reference records come from the pinned Ceres 2.2.0 build (test/oracle/build.sh):
+#   test/oracle/out/ceres/ceres_n2000.txt, ceres_n4000.txt  every kamyiaOpt call made by
 #       HctCco (CCO_SEED=1, case0, -n 2000/4000, CCO_CERES_DUMP=...);
-#   ceres_fuzz.txt, ceres_wild.txt  synthetic inputs solved by oracle/build/bin/kamiya_ref
+#   ceres_fuzz.txt, ceres_wild.txt  synthetic inputs solved by test/oracle/build/bin/kamiya_ref
 #       (`kamiya_ref fuzz 200000 7`, `kamiya_ref wild 200000 11`), covering rejected steps,
 #       failed evaluations, diagonal clamping, iteration and trust-region limits.
 # Each line: gamma dP1 dP2 f0 f1 f2 l0 l1 l2 x1_in x2_in x1_out x2_out usable iterations
@@ -13,7 +13,7 @@
 using Vasculature
 using Test
 
-const CERES_DIR = joinpath(@__DIR__, "..", "oracle", "out", "ceres")
+const CERES_DIR = joinpath(@__DIR__, "oracle", "out", "ceres")
 
 function check_ceres_file(path; show = 5)
     total = exact = 0
@@ -44,7 +44,7 @@ end
             )
         ) : String[]
     if isempty(files)
-        @info "No Ceres reference records in $CERES_DIR; run oracle/build.sh and regenerate them."
+        @info "No Ceres reference records in $CERES_DIR; run test/oracle/build.sh and regenerate them."
         @test_skip false
     end
     for path in files

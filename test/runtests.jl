@@ -419,11 +419,19 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
     end
 
     @testset "organ presets cite existing reference data" begin
-        # the presets are code (organs.jl); every [id] in their comments must be a measurement file in data/reference
+        # the presets are code (organs.jl); every [id] in their comments must be a measurement file in test/reference
         src = read(joinpath(pkgdir(C), "src", "perfusion", "organs.jl"), String)
         ids = unique(vcat([split(m.captures[1], r",\s*") for m in eachmatch(r"\[([a-z][a-z0-9_]*(?:,\s*[a-z][a-z0-9_]*)*)\]", src)]...))
         @test length(ids) > 20
-        @test all(id -> isfile(joinpath(pkgdir(C), "data", "reference", id * ".toml")), ids)
+        @test all(id -> isfile(joinpath(pkgdir(C), "test", "reference", id * ".toml")), ids)
+        # the CFC category thresholds in code are the reference files' values
+        ref = joinpath(pkgdir(C), "test", "reference")
+        g = C.DynamicPhantom.TOML.parsefile(joinpath(ref, "gould2018_cfc_revised_thresholds.toml"))["data"]["category_thresholds_revised"]
+        j = C.DynamicPhantom.TOML.parsefile(joinpath(ref, "johnson2012_coronary_flow_capacity.toml"))["data"]["category_thresholds_2012"]
+        @test C.CFC.cfc_thresholds(:current).cfr == Tuple(Float32.(g["cfr_upper_inclusive"][2:5])) &&
+            C.CFC.cfc_thresholds(:current).stress == Tuple(Float32.(g["stress_flow_upper_inclusive_mL_per_min_per_g"][2:5]))
+        @test C.CFC.cfc_thresholds(:original).cfr == Tuple(Float32.(j["cfr_upper"][2:5])) &&
+            C.CFC.cfc_thresholds(:original).stress == Tuple(Float32.(j["stress_flow_upper_mL_per_min_per_g"][2:5]))
     end
 
     @testset "terminal count from organ flow" begin

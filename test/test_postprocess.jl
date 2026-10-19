@@ -3,12 +3,12 @@
 #
 # Reference outputs, when present, come from running the upstream script on trees grown by
 # this package (the directory is regenerable and not committed):
-#   julia -t 8 --project -e 'using Vasculature; S = "oracle/build/src/samples";
+#   julia -t 8 --project -e 'using Vasculature; S = "test/oracle/build/src/samples";
 #       generate("$S/case0.vol", "$S/case0.xml"; nterm = 2000, aperf = 10000, min_dist = 1,
-#                root = (-26, 41, 13), seed = 1, T = Float64, export_xml = "oracle/out/pp/tree2000.xml")'
-#   python -I oracle/pp_reference.py oracle/build/src/postprocessing/coronary_postprocess.py \
-#       oracle/out/pp/tree2000.xml oracle/out/pp/ref2000 oracle/build/src/samples/case0.vol
-# Every oracle/out/pp/tree<N>.xml with a matching ref<N>_*.csv is compared: the CSV files
+#                root = (-26, 41, 13), seed = 1, T = Float64, export_xml = "test/oracle/out/pp/tree2000.xml")'
+#   python -I test/oracle/pp_reference.py test/oracle/build/src/postprocessing/coronary_postprocess.py \
+#       test/oracle/out/pp/tree2000.xml test/oracle/out/pp/ref2000 test/oracle/build/src/samples/case0.vol
+# Every test/oracle/out/pp/tree<N>.xml with a matching ref<N>_*.csv is compared: the CSV files
 # must be identical, and with ref<N>_internals.txt the per-segment orders and hemodynamics
 # must agree bit for bit. The tube mesh is compared for the smallest reference tree. These
 # comparisons switch on the upstream behaviour (`mass = :upstream, elements = :upstream`);
@@ -16,7 +16,7 @@
 using Vasculature
 using Test
 
-const PP_DIR = joinpath(@__DIR__, "..", "oracle", "out", "pp")
+const PP_DIR = joinpath(@__DIR__, "oracle", "out", "pp")
 const PP_CSV = ("connectivity_matrix", "diameter_stats", "diameter_ranges", "hemodynamics")
 
 function compare_internals(path, r)
@@ -111,7 +111,7 @@ end
     refs = isdir(PP_DIR) ? [m.captures[1] for m in filter(!isnothing, match.(r"^tree(\w+)\.xml$", readdir(PP_DIR)))] : String[]
     filter!(n -> all(isfile(joinpath(PP_DIR, "ref$(n)_$k.csv")) for k in PP_CSV), refs)
     if isempty(refs)
-        @info "post-processing: no upstream reference outputs in oracle/out/pp; skipping the comparison"
+        @info "post-processing: no upstream reference outputs in test/oracle/out/pp; skipping the comparison"
     end
     smallest = isempty(refs) ? "" : refs[argmin(filesize.(joinpath.(PP_DIR, "tree" .* refs .* ".xml")))]
     @testset "matches upstream coronary_postprocess.py on tree$n" for n in refs

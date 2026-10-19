@@ -12,7 +12,7 @@
 # Requires: cmake, git, curl, a C++17 compiler, Boost (for DGtal). Ceres and Eigen are
 # fetched and built here once. DGtal 1.4.2 is used from $DGtal_DIR if set, otherwise it
 # is fetched and built here once too.
-# Usage:    oracle/build.sh            -> oracle/build/bin/HctCco
+# Usage:    test/oracle/build.sh            -> test/oracle/build/bin/HctCco
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 COMMIT=9bc141f

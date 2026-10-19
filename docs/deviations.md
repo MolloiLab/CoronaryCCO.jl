@@ -279,7 +279,7 @@ batched growth is exactly sequential growth.
 **Measured agreement.** case0 with the corrected options (γ = 2.33, `volume = :full`,
 `metric = :euclidean`, `sampling = :continuous`, `fix_base`, `collision = :final`,
 `max_branch_angle = 90`), 10⁵ terminals, seeds 1–5, `n_seq = 2000`, `batch_frac = 0.01`
-(`bench/batch_validate.jl`). Ranges are min–max over the five seeds.
+(a batch-validation benchmark kept outside the package). Ranges are min–max over the five seeds.
 
 | Metric | Sequential | Batched, CPU | Batched, GPU (Metal) |
 |---|---|---|---|
@@ -317,7 +317,7 @@ by `collision = :final`). Knots are interpolated in log diameter and held flat b
 (VanBavel & Spaan 1992; Kalsho & Kassab 2004) and in about 88,000 human coronary bifurcations
 (Schwarz et al. 2020). The XCAT growth uses the human lower whisker (Q1 − 1.5 IQR) per mother-
 diameter class, 0.28 at 37 µm down to 0.02 at 566 µm
-(`data/reference/schwarz2020_human_coronary_symmetry.toml`), so only junctions that would be
+(`test/reference/schwarz2020_human_coronary_symmetry.toml`), so only junctions that would be
 outliers in real hearts are excluded. Order-1 twigs per order-6 element fall from 1.42 to 0.48.
 
 **What it does not change.** Per-order diameters. Kassab's own counts and diameters imply a

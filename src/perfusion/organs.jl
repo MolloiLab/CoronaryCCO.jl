@@ -1,6 +1,6 @@
-# Organs as instances of the one `FlowSpec` struct: each organ is only different values. data/reference/ holds the
+# Organs as instances of the one `FlowSpec` struct: each organ is only different values. test/reference/ holds the
 # measurements they come from and that the results are tested against. Each value's comment gives its unit, how it was
-# obtained and its sources [data/reference ids]. A variant: `FlowSpec(LUNG_FLOW; p_in = 20)`.
+# obtained and its sources [test/reference ids]. A variant: `FlowSpec(LUNG_FLOW; p_in = 20)`.
 
 # Human (and dog/cat where human data are missing) coronary circulation and myocardium.
 const HEART_FLOW = FlowSpec(;

@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Bitwise parity against the instrumented upstream build (oracle/build.sh). Each dump line is
+# Bitwise parity against the instrumented upstream build (test/oracle/build.sh). Each dump line is
 # one segment: index parent left right kterm x y z radius resistance flow beta, floats in
 # C99 hex. Generate with, e.g.,
-#   cd oracle/out/parity && CCO_SEED=1 CCO_DUMP=tree_n500.txt ../../build/bin/HctCco \
+#   cd test/oracle/out/parity && CCO_SEED=1 CCO_DUMP=tree_n500.txt ../../build/bin/HctCco \
 #     -d ../../build/src/samples/case0.vol -i ../../build/src/samples/case0.xml \
 #     -n 500 -a 10000 -m 1 -p -26 41 13 -x final_tree.xml --no-postprocess
 
-const PARITY_DIR = joinpath(@__DIR__, "..", "oracle", "out", "parity")
+const PARITY_DIR = joinpath(@__DIR__, "oracle", "out", "parity")
 # Committed reference dump. Bits depend on the platform's libm `pow`, so it is only checked on
-# the platform it was generated on (Apple Silicon macOS, with oracle/build.sh).
+# the platform it was generated on (Apple Silicon macOS, with test/oracle/build.sh).
 const PARITY_FIXTURES = joinpath(@__DIR__, "fixtures", "parity", "darwin-aarch64")
 
 "Compare a grown Float64 model with an oracle dump; returns (mismatching segments, first mismatch)."
@@ -42,7 +42,7 @@ end
         end
     end
     if isempty(dumps)
-        @info "no oracle dumps in $PARITY_DIR; skipping parity (see oracle/build.sh)"
+        @info "no oracle dumps in $PARITY_DIR; skipping parity (see test/oracle/build.sh)"
         @test_skip false
     end
     for f in dumps

@@ -135,7 +135,7 @@ Boundary conditions, tissue constants and vessel-wall mechanics of one organ's v
 Flow is not prescribed: it follows from the geometry, the two pressures and the arteriolar
 diameters (see [`circuit`](@ref)). Every field is a keyword and every one is required; an organ is
 an instance, `HEART_FLOW` and `LUNG_FLOW` (organs.jl), each value commented with its sources in
-`data/reference/` (the measurements, which results are also tested against). A variant of an
+`test/reference/` (the measurements, which results are also tested against). A variant of an
 instance: `FlowSpec(LUNG_FLOW; p_in = 20)`. The values below are the heart's.
 
 Boundary conditions and blood

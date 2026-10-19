@@ -146,4 +146,5 @@ The growth algorithm is HCT-CCO, extended from OpenCCO. If you use tree growth, 
 
 ## License
 
-GPL-3.0-or-later.
+GPL-3.0-or-later. The growth engine is a port of HCT-CCO; its provenance, attribution and upstream licenses are
+in [docs/NOTICE.md](docs/NOTICE.md).

@@ -386,7 +386,7 @@ per mL of non-air tissue (≈ 1146 mL around the 510 mL of lung blood at vp 0.44
 flow, gives 4.47 mL/s for gadobutrol (MW 605); PS falls with solute size as MW^-0.51 (human forearm EDTA vs inulin,
 [keiding1988]), so for iohexol (MW 821) 4.47 × (821/605)^-0.51 ≈ 3.83 mL/s. Set both to 0 for a blood-only lung.
 
-Veins (lumen volume = area × length, supine; data/reference ids in brackets):
+Veins (lumen volume = area × length, supine; test/reference ids in brackets):
 - arm (antecubital → axilla): basilic 4.4 mm [salinaro2024] over 25 cm (no in vivo length
   found) = 3.8 mL; axillary 8 mm (between basilic and subclavian; no in vivo series) × 12 cm =
   6.0 mL; subclavian 9.9 mm [berk2026] × 4 cm = 3.1 mL.

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Portable stand-in for C rand(), identical to cco_rand() in oracle/cco_oracle.h.
+# Portable stand-in for C rand(), identical to cco_rand() in test/oracle/cco_oracle.h.
 # Upstream seeds rand() from the wall clock; both sides use this generator instead so a
 # seed fixes the candidate stream on every platform.
 

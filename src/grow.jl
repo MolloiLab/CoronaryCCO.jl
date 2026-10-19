@@ -705,7 +705,7 @@ function _ensure_workspaces!(E::Engine{T}) where {T}
     return
 end
 
-# One line per step, same layout as cco_trace_step in oracle/cco_oracle.h.
+# One line per step, same layout as cco_trace_step in test/oracle/cco_oracle.h.
 function _trace_step(io, m, i, nbT, volopt)
     n = nsegments(m); s = m.parent[n]
     a = m.pos[n]; b = m.pos[s]
