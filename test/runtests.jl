@@ -175,6 +175,9 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         tree = grow(GrowthSpec(HEART_GROWTH; nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])
         vt = vtree(tree); nch = zeros(Int, length(vt.r)); foreach(p -> p > 0 && (nch[p] += 1), vt.parent)
         Cr = C.Flow.circuit(vt, fill(0.1f0, count(==(0), nch)); phys = heart, state = :rest)
+        # this coarse tree has too few vasoactive vessels to throttle it: fully contracted, its flow still exceeds the O₂
+        # need, so the regulation stops when the tone saturates instead of running to its iteration limit
+        @test Cr.resist.iters < 600 && Cr.resist.mean_act > 0.999
         T0 = transport(spec, Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0)
         # the heart's body takes its coronary share from the grown tree's root flow
         qroot = sum(Cr.q[j] for j in eachindex(vt.parent) if vt.parent[j] == 0)

@@ -1524,7 +1524,7 @@ function _autoregulate!(
     # 99th percentile of the last step |ΔD/D₀| (exact, on the host)
     p99() = nw > 0 ? partialsort!(abs.(Array(xd) .- Array(xold)), k99) : 0.0f0
     setfa!(); _solve!(S, kappa; warm = S.solved[])   # warm when called again (κ loop)
-    qprev = qsum(); iters = 0; dxok = true; ssin = 0.0f0; qhist = fill(qprev, 10); dq1 = 1.0f0
+    qprev = qsum(); iters = 0; dxok = true; ssin = 0.0f0; qhist = fill(qprev, 10); dq1 = 1.0f0; saturated = false
     maxit = stress ? 60 : 600
     for it in 1:maxit
         iters = it
@@ -1586,9 +1586,16 @@ function _autoregulate!(
             it > 2 && dq1 < 1.0f-5 && dxok && break
         else
             it > 10 && dq < 1.0f-4 && (fixtone || abs(ssin - sref) < 1.0f-3) && break
+            # tone saturated: every vasoactive vessel fully contracted with flow still above the O₂ need (or fully
+            # relaxed with flow below it), so a larger tone constant changes nothing
+            if !fixtone && it > 10 && dq < 1.0f-4 && nw > 0
+                amin = AK.reduce(min, act; init = Inf32); amax = AK.reduce(max, act; init = -Inf32)
+                sat = (amin > 0.999f0 && ssin > sref) || (amax < 0.001f0 && ssin < sref)
+                sat && (@warn "$(state) state: tone saturated (every vasoactive vessel $(amin > 0.999f0 ? "fully contracted" : "fully relaxed")) with sinus SO₂ $(round(ssin, digits = 3)) against $(round(sref, digits = 3)); the bed cannot meet its O₂ target"; saturated = true; break)
+            end
         end
     end
-    iters == maxit && @warn "$(state) state stopped at its iteration limit ($maxit) without meeting the convergence test"
+    iters == maxit && !saturated && @warn "$(state) state stopped at its iteration limit ($maxit) without meeting the convergence test"
     if sheet !== nothing
         sr, smax = _sheet_residual(S, sheet, kappa)
         sr > 1.0f-3 && @warn "sheet beds not converged: 99th percentile resistance mismatch $(round(sr, sigdigits = 2))"
