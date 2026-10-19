@@ -1810,21 +1810,27 @@ function _circuit(
     if kappa === nothing
         kappa = F32(kappa_init)
         Wd = _Wall(seg, d0, lim, to)
-        for _ in 1:20
+        for it in 1:20
             _autoregulate!(S, Wd, F32(kappa), phys, :stress, ctone, true, tg, mu0d, to(empty(sten)), lim, false, sheet, dist)   # healthy geometry
+            # Chilian's microvascular resistance needs flow entering the microvessels and leaving them through venules
+            # narrower than d_ven_micro
+            rm = _micro_resistance(S, mass_g)[1]
+            isfinite(rm) || throw(ArgumentError("Chilian's microvascular resistance, which κ is scaled by, is undefined: no flow enters the microvessels or leaves them through a venule narrower than d_ven_micro; check the venous pairing and the trees"))
             if phys.r_total_dilated > 0
                 # whole-bed resistance at full dilation, inlet pressure ÷ flow per gram (as PET reports MAP ÷ MBF). Only
                 # the microvessels scale with κ, so the step uses their share wk of the bed's resistance
                 fpg = 60.0f0 * AK.reduce(+, S.qt; init = 0.0f0) / mass_g
                 rt = phys.p_in / fpg
-                wk = clamp(_micro_resistance(S, mass_g)[1] / ((phys.p_in - phys.p_out) / fpg), 0.1f0, 1.0f0)
-                ratio = phys.r_total_dilated / rt
-                kappa *= ratio^(1 / wk)
+                wk = clamp(rm / ((phys.p_in - phys.p_out) / fpg), 0.1f0, 1.0f0)
+                ratio = phys.r_total_dilated / rt; e = 1 / wk
             else
-                ratio = phys.r_micro_dilated / _micro_resistance(S, mass_g)[1]
-                kappa *= ratio
+                ratio = phys.r_micro_dilated / rm; e = 1.0f0
             end
+            knew = ratio > 0 ? kappa * ratio^e : -1.0f0
+            0 < knew < floatmax(F32) || throw(ArgumentError("the κ search left the positive range (κ = $kappa, anchor ratio $ratio)"))
+            kappa = knew
             abs(ratio - 1) < 1.0f-3 && break
+            it == 20 && @warn "the κ search stopped after 20 steps with the anchor ratio at $ratio"
         end
     end
     kappa = F32(kappa)

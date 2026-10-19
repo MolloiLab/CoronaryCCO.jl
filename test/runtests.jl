@@ -306,16 +306,42 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test count(j -> count(==(j), b2) == 2, 1:10) <= 1 && all(in(1:10), b2)
     end
 
-    @testset "venous coupling returns the κ of its last stress solve" begin
-        # flow() starts the stress circuit's κ search from it, so it must be the κ that circuit finds with the same pairing
+    @testset "venous transit of veins with reversed beds; an undefined κ anchor" begin
         tree = grow(GrowthSpec(HEART_GROWTH; nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])
         vt = vtree(tree); terms = C._leaves(vt); terr = fill(0.1f0, length(terms))
         vn = C.Flow.VTree(vt.parent, vt.a .+ 0.5f0, vt.b .+ 0.5f0, vt.r, vt.isbase)   # a venous tree beside the arteries
-        vleaf, Cc, k = couple_veins(vt, terr, vn, terms, terms; phys = HEART_FLOW, assemble = false)
-        S = C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf, phys = HEART_FLOW)
-        @test Cc === nothing && abs(S.resist.kappa / k - 1) < 1.0f-3
-        vleaf2, C2, k2 = couple_veins(vt, terr, vn, terms, terms; phys = HEART_FLOW)
-        @test vleaf2 == vleaf && k2 == C2.resist.kappa
+        # beds behind a 99% stenosis that share venules with healthy beds partly reverse; their veins then solve to less
+        # flow than transport routes up them, and a vein's transit uses the routed plasma (audit A50-6)
+        nb = zeros(Int, length(vt.r)); for t in terms
+            k = t; while k != 0
+                nb[k] += 1; k = vt.parent[k]
+            end
+        end
+        js = argmin(abs.(nb .- length(terms) ÷ 3))                      # the segment feeding about a third of the beds
+        lo = findall(
+            i -> (
+                k = terms[i]; while k != 0 && k != js
+                    k = vt.parent[k]
+                end; k == js
+            ), eachindex(terms)
+        )
+        hi = setdiff(eachindex(terms), lo); vl = Int32.(terms)
+        for (m, i) in enumerate(lo)
+            vl[i] = terms[hi[mod1(m, length(hi))]]
+        end   # each stenosed bed drains with a healthy one
+        Cx = C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf = vl, phys = HEART_FLOW, kappa = 0.5f0, stenosis = [(js, 0.01f0, 10.0f0)])
+        qr = zeros(Float32, length(vn.r))
+        for i in eachindex(Cx.vleaf)
+            k = Int(Cx.vleaf[i]); while k != 0
+                qr[k] += Cx.fp[i]; k = vn.parent[k]
+            end
+        end
+        bind = [k for k in eachindex(qr) if qr[k] > 0 && Cx.qv[k] * (1 - HEART_FLOW.hd) < 0.99f0 * qr[k]]
+        @test count(<=(1.0f-8), Cx.fp) > 0 && !isempty(bind)
+        @test all(k -> isapprox(Cx.tau_v[k], Cx.vp_v[k] / qr[k]; rtol = 1.0f-3), bind) && all(isfinite, Cx.tau_v)
+        # the κ search names why it cannot run when no flow leaves the beds through a micro venule (all beds drained by
+        # 50 large leaves): Chilian's microvascular resistance is 0/0, which once ended in a NaN κ
+        @test_throws ArgumentError C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf = Int32.(terms[mod1.(eachindex(terms), 50)]), phys = HEART_FLOW)
     end
 
     @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin

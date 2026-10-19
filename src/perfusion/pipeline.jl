@@ -9,7 +9,7 @@ _leaves(t::VTree) = (nch = zeros(Int, length(t.r)); foreach(p -> p > 0 && (nch[p
 
 """
     couple_veins(arteries, terr, veins, terms, vterms; phys, reach = 3, passes = 24, tol = 5e-4, to = identity)
-        -> (vleaf, circuit, kappa)   # circuit === nothing with assemble = false
+        -> (vleaf, circuit)   # circuit === nothing with assemble = false
 
 Which venule drains each capillary bed. Start from a balanced pairing (`balanced_terminal`): closest pairs first, no venule
 draining more than its share of the beds while a free one lies near (plain nearest-venule pairing left ~40% of grown venules
@@ -19,8 +19,7 @@ sits above its arterial pressure (reversed flow) is re-paired with the lowest-pr
 (widened by 1 mm per pass, at most 6 mm: a capillary network spans millimetres, not centimetres). Solved at maximal
 vasodilation, where the beds' own pressure drop is smallest. Stops when the reversed beds are at most `tol` of all beds,
 or when a pass no longer removes at least 10% of them. With `assemble = false` the final circuit is not built (only
-the pairing and κ are returned; κ is the maximal-dilation κ of the last pass, so a later stress circuit with that pairing
-starts its κ search there).
+the pairing is returned).
 """
 function couple_veins(F, terr, VT, terms, vterms; phys, reach = 3.0f0, passes = 24, tol = 5.0f-4, to = identity, assemble::Bool = true)
     vleaf = Int32.(vterms[balanced_terminal(VT.b[:, vterms], F.b[:, terms])]) # each bed its own nearby venule first
@@ -55,10 +54,9 @@ function couple_veins(F, terr, VT, terms, vterms; phys, reach = 3.0f0, passes = 
             bk == typemax(Int32) || (vleaf[i] = Int32(vterms[bk]))
         end
     end
-    assemble || return vleaf, nothing, k0
+    assemble || return vleaf, nothing
     P.probe = false
-    C = circuit(F, terr; state = :stress, veins = VT, vleaf, phys, kappa_init = k0, to, pairing = P)
-    return vleaf, C, C.resist.kappa
+    return vleaf, circuit(F, terr; state = :stress, veins = VT, vleaf, phys, kappa_init = k0, to, pairing = P)
 end
 
 """
@@ -80,11 +78,10 @@ function flow(spec::FlowSpec, art::VTree, vein::VTree, tissue::AbstractMatrix; t
     # rest circuit; solving it again would only double the memory of a large tree. An O₂-regulated bed is solved again at
     # rest and at stress below, so its coupling returns only the pairing.
     passive = spec.regulation === :passive
-    vleaf, Cc, k0 = couple_veins(art, terr, vein, terms, vterms; phys = spec, to, assemble = passive)
+    vleaf, Cc = couple_veins(art, terr, vein, terms, vterms; phys = spec, to, assemble = passive)
     passive && return (; rest = Cc, stress = Cc, terr, pairs, vleaf, terms, vterms, demand = nothing)
     dem = demand_field(art.b[:, terms], terr)
-    # the last coupling pass solved this stress state (stress has no tone, so the demand does not enter): its κ starts the search
-    stress = circuit(art, terr; state = :stress, veins = vein, vleaf, demand = dem, phys = spec, kappa_init = k0, to)
+    stress = circuit(art, terr; state = :stress, veins = vein, vleaf, demand = dem, phys = spec, to)
     rest = circuit(art, terr; state = :rest, veins = vein, vleaf, kappa = stress.resist.kappa, demand = dem, phys = spec, to)
     return (; rest, stress, terr, pairs, vleaf, terms, vterms, demand = dem)
 end
