@@ -56,8 +56,12 @@ solved below it in `flow`. You can always give `nterm` directly.
 | heart (adult, rest) | 135.6 | 957,045 | 148 (myocardium) | LCA, RCA |
 | lungs (adult) | (4,800 cardiac output, not used for the count) | 29,912 acini (Vasilescu et al. 2020) | 2,813 | main pulmonary artery |
 | brain (older adult, rest) | 510 (van Es et al. 2010) | 3.6 million | 1,016 (parenchyma) | both internal carotids, both vertebrals |
-| one leg (adult, rest) | 290 (Koch Esteves et al. 2023) | 2.0 million | 11,000 | common femoral artery |
+| one leg (adult, rest) | 290 for the whole leg (Koch Esteves et al. 2023: 2.6 mL/min per 100 mL) | 2.0 million | 11,000 (whole leg: skin, fat, bone, muscle) | common femoral artery |
 | any organ | VO₂ ÷ (arterial O₂ content × O₂ extraction) | flow ÷ 0.14 µL/min | its segmented volume | each imaged inlet (femoral artery, carotids + basilar, ...) |
+
+`tissue_ml` is the volume of the domain you grow into, and the flow must be that domain's: for a leg, 2.6 mL/min per
+100 mL of tissue at rest (a muscle-only domain of 7 L gets about 180 mL/min, not the whole leg's 290). Count a `.vol`
+domain's volume with `img, _ = read_vol("leg.vol"); count(>(0x80), img) / 1000` (mL, 1 mm voxels).
 
 More inlets are just more files: `grow(spec, brain, ["lica.xml", "rica.xml", "basilar.xml"])`.
 Veins grow the same way from their imaged outlet trees (`grow(spec, domain, ["left_pulmonary_veins.xml", "right_pulmonary_veins.xml"])`).
