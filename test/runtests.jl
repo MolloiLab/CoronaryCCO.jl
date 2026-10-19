@@ -306,6 +306,18 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test count(j -> count(==(j), b2) == 2, 1:10) <= 1 && all(in(1:10), b2)
     end
 
+    @testset "venous coupling returns the κ of its last stress solve" begin
+        # flow() starts the stress circuit's κ search from it, so it must be the κ that circuit finds with the same pairing
+        tree = grow(GrowthSpec(HEART_GROWTH; nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])
+        vt = vtree(tree); terms = C._leaves(vt); terr = fill(0.1f0, length(terms))
+        vn = C.Flow.VTree(vt.parent, vt.a .+ 0.5f0, vt.b .+ 0.5f0, vt.r, vt.isbase)   # a venous tree beside the arteries
+        vleaf, Cc, k = couple_veins(vt, terr, vn, terms, terms; phys = HEART_FLOW, assemble = false)
+        S = C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf, phys = HEART_FLOW)
+        @test Cc === nothing && abs(S.resist.kappa / k - 1) < 1.0f-3
+        vleaf2, C2, k2 = couple_veins(vt, terr, vn, terms, terms; phys = HEART_FLOW)
+        @test vleaf2 == vleaf && k2 == C2.resist.kappa
+    end
+
     @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin
         # on the CPU a solver array can be its own host copy (par === hpar): freeing the work arrays must keep it (audit 29)
         tree = grow(GrowthSpec(HEART_GROWTH; nterm = 2500, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])
