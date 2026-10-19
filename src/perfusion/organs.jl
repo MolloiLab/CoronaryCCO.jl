@@ -77,9 +77,6 @@ const HEART_FLOW = FlowSpec(;
     # um. Arteries below this passive diameter carry smooth-muscle tone; adenosine and dipyridamole dilate only these.
     # [kanatsuka1989_adenosine_microvessels]
     d_active = 150.0f0,
-    # Imaged segments carry no tone: an imaged lumen is an epicardial conduit (tone lives below 150 um).
-    # [kanatsuka1989_adenosine_microvessels]
-    imaged_tone = false,
     # dyn/cm per um. Passive tension strength C_pass = slope x D0. Carlson & Secomb 2005 / Carlson 2008 fits as
     # tabulated by Fry et al. 2013 Table 1 (hamster cremaster origin; coronary refits:
     # namani2018_coronary_wall_parameters). [fry2013_vessel_wall_parameters]
@@ -249,8 +246,6 @@ const LUNG_FLOW = FlowSpec(;
     r_total_dilated = 0.0f0,
     # um. Not used: no vessel carries active tone (regulation = passive).
     d_active = 0.0f0,
-    # Not used: no vessel carries active tone (regulation = passive).
-    imaged_tone = false,
     # dyn/cm per um. Not used: no vessel carries active tone (regulation = passive).
     wall_cpass_slope = 0.0f0,
     # 1. Not used: no vessel carries active tone (regulation = passive).

@@ -7,7 +7,7 @@
 #   capillaries and veins (Kassab, Lin & Fung 1994, pig cast). These targets hold for any tree
 #   size: whatever the grown tree does not resolve is lumped into its terminals.
 # - Flow is driven by two pressures (aortic, coronary back pressure) through arteries, capillary
-#   beds and veins. Grown arteries below 150 µm are walls in force balance whose smooth-muscle tone
+#   beds and veins. Arteries below 150 µm are walls in force balance whose smooth-muscle tone
 #   follows wall tension (myogenic) and the O₂ state of the beds they feed (ATP from desaturating
 #   red cells, conducted upstream), so resting flow, its distribution, the pressure–flow curve and
 #   the response to a stenosis all follow from the physics (see `FlowSpec`, `circuit`).
@@ -212,10 +212,8 @@ Arteriolar wall mechanics (autoregulation; Carlson, Arciero & Secomb 2008, Arcie
 - `d_active`: arteries whose passive diameter is below 150 µm carry smooth-muscle tone. In the
   beating dog heart adenosine and dipyridamole dilate only arterial microvessels below 150 µm
   (Kanatsuka et al. 1989), so maximal dilation does not reach the larger ones. Larger arteries
-  are rigid conduits.
-- `imaged_tone`: whether imaged segments (`isbase`) below `d_active` carry tone. `false` in the heart: the scan resolves
-  an imaged lumen, an epicardial conduit whatever radius growth gave it (organs whose large arteries regulate, such as
-  the brain's pial arteries, would set it `true`).
+  are rigid conduits. Imaged segments follow the same rule by the radius the tree gives them: an input vessel is taken
+  at its own size, not assumed to be large because it was imaged.
 - Wall tension at equilibrium: P·D/2 = T_pass(D) + A·T_act,max(D), with the diameter-dependent
   fits of Carlson & Secomb (2005) as tabulated by Fry et al. (2013), organ data `wall_*`: C_pass = 6.666·D₀ dyn/cm,
   C′_pass = 12.52 − 0.027·D₀, C_act = 1.30·D₀^1.48 dyn/cm, C′_act = 0.773 − 0.00059·D₀,
@@ -270,7 +268,6 @@ struct FlowSpec
     r_total_dilated::F32
     # autoregulation
     d_active::F32
-    imaged_tone::Bool
     # vessel wall (Carlson & Secomb 2005 fits as functions of D₀ in µm; tensions dyn/cm)
     wall_cpass_slope::F32
     wall_cpass1_0::F32
@@ -417,8 +414,7 @@ outflow pressure `phys.p_out` at the coronary-sinus ostium. Every terminal `i` (
 feeds a capillary bed whose resistance follows its capillary count (Kassab capillary
 dimensions), then drains into the venous tree.
 
-Every grown artery with a passive diameter below `phys.d_active` (imaged ones too with `phys.imaged_tone`) is a vessel
-wall in force balance: its
+Every artery with a passive diameter below `phys.d_active`, grown or imaged, is a vessel wall in force balance: its
 diameter is where the wall tension P·D/2 equals passive plus active smooth-muscle tension (see
 [`FlowSpec`](@ref)). Flows, pressures, oxygen saturations and the conducted metabolic signal
 are solved together with all those diameters until they agree.
@@ -1706,10 +1702,9 @@ end
 # venous sub-terminal orders of each bed (solver order): the orders narrower than the venule it drains into
 _sub_venous_orders(dv, vt::VTree, vl, tperm) = Int32[count(<(2 * vt.r[vl[i]]), dv) for i in tperm]
 
-# A vasoactive artery: passive diameter below d_active, and, unless the organ's imaged arteries regulate
-# (`imaged_tone`), not imaged: in the heart an imaged segment (`isbase`) is a lumen the scan resolves, an epicardial
-# conduit whatever radius growth gave it.
-_vasoactive(t::VTree, j, phys) = 2000.0f0 * t.r[j] < phys.d_active && (phys.imaged_tone || !t.isbase[j])
+# A vasoactive artery: passive diameter below d_active, by the radius the tree gives it (imaged segments included: an
+# input vessel is taken at its own size).
+_vasoactive(t::VTree, j, phys) = 2000.0f0 * t.r[j] < phys.d_active
 # Smallest and largest passive diameter (µm) of the vasoactive arteries.
 function _active_range(t::VTree, phys)
     lo = Inf32; hi = -Inf32; found = false
