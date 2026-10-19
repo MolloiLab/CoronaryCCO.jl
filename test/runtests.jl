@@ -355,6 +355,15 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test_throws ArgumentError C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf = vw, phys = FlowSpec(HEART_FLOW; r_total_dilated = 0.0f0, r_micro_dilated = 4.0f0))
     end
 
+    @testset "contracted arteriolar wall: both branches of its hysteresis loop" begin
+        # at full activation a 15.5 µm arteriole has two stable diameters between ~100 and 105 mmHg; the tables keep both
+        # (rising and falling pressure) and they coincide outside the loop
+        L = C.Flow._Limits(10.0f0, 20.0f0, 130.0f0, C.Flow._wall(HEART_FLOW)); u = (log(15.5f0) - L.ld0) / L.dld
+        lim(P) = C.Flow._limits(L.hi, L.lo, L.ld, u, L.dp, L.np, P)
+        @test lim(103.0f0)[3] - lim(103.0f0)[2] > 0.2
+        @test all(P -> abs(lim(P)[3] - lim(P)[2]) < 1.0f-3, (80.0f0, 95.0f0, 120.0f0))
+    end
+
     @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin
         # on the CPU a solver array can be its own host copy (par === hpar): freeing the work arrays must keep it (audit 29)
         tree = grow(GrowthSpec(HEART_GROWTH; nterm = 2500, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])

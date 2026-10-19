@@ -665,7 +665,7 @@ struct _Solver{VF <: AbstractVector{F32}, VI <: AbstractVector{Int32}, VB <: Abs
     mlf::VF; mbw::VF; mnf::VF; mband::VI; nband::Int
     val::VF; sig::VF; so2::VF
     # wall-mechanics tables on the device, and the apparent viscosity μ_rel(D) on a log D grid
-    lhi::MF; llo::MF
+    lhi::MF; llo::MF; lld::MF
     mut::VF; mua::F32; mudl::F32
     # device scalars
     part::VF                      # partial results of reductions
@@ -818,7 +818,7 @@ function _solver(
         z(n), z(n), z(nt), z(nv), z(nv),
         z(nt), z(nt), z(nt), z(nt), z(nt), z(nt),
         to(mlf), to(mbw), to(mnf), to(mband), nband, z(nt), z(n), z(nt),
-        to(lim.hi), to(lim.lo), to(mut), mua, mudl,
+        to(lim.hi), to(lim.lo), to(lim.ld), to(mut), mua, mudl,
         z(4096), s(), s(), s(), s(), s(), s(), s(), s(), s(), s(), s(), to(F32[3nt]), s(), s(),
         Ref(0), Ref(false), Ref(-1.0f0),
         par, vpar, ma, mv
@@ -1230,17 +1230,19 @@ struct _Wall{VI <: AbstractVector{Int32}, VF <: AbstractVector{F32}}
 end
 
 # The relaxed and fully contracted equilibria depend only on D₀ and pressure, so they are
-# tabulated once (log D₀ × P, followed along each branch as pressure rises from 1 mmHg) and
-# interpolated bilinearly.
+# tabulated once (log D₀ × P) and interpolated bilinearly. The contracted wall has two stable
+# diameters over some pressure ranges (a hysteresis loop: at full activation a 15 µm arteriole holds
+# 0.55 or 0.9 of D₀ between 100 and 105 mmHg, and is closed or open near 45-60 mmHg), so it is
+# followed both as pressure rises from 1 mmHg (`lo`) and as it falls from the top of the table (`ld`).
 struct _Limits
     ld0::F32; dld::F32; nd::Int      # log D₀ grid
     dp::F32; np::Int                 # pressure grid from 1 mmHg
-    hi::Matrix{F32}; lo::Matrix{F32}
+    hi::Matrix{F32}; lo::Matrix{F32}; ld::Matrix{F32}
 end
 function _Limits(dmin::F32, dmax::F32, pmax::F32, w)
     nd = 96; ld0 = log(dmin) - 0.01f0; dld = (log(dmax) + 0.01f0 - ld0) / (nd - 1)
     dp = 0.25f0; np = ceil(Int, (pmax + 5.0f0 - 1.0f0) / dp) + 1
-    hi = Matrix{F32}(undef, np, nd); lo = similar(hi)
+    hi = Matrix{F32}(undef, np, nd); lo = similar(hi); ld = similar(hi)
     AK.foreachindex(1:nd; min_elems = 1) do k
         d0 = exp(ld0 + (k - 1) * dld); xh = 1.0f0; xl = 0.5f0
         for i in 1:np
@@ -1248,23 +1250,27 @@ function _Limits(dmin::F32, dmax::F32, pmax::F32, w)
             xh = _equilibrium(xh, 0.0f0, P, d0, w); xl = _equilibrium(xl, 1.0f0, P, d0, w)
             hi[i, k] = xh; lo[i, k] = xl
         end
+        for i in np:-1:1
+            xl = _equilibrium(xl, 1.0f0, 1.0f0 + (i - 1) * dp, d0, w); ld[i, k] = xl
+        end
     end
-    return _Limits(ld0, dld, nd, dp, np, hi, lo)
+    return _Limits(ld0, dld, nd, dp, np, hi, lo, ld)
 end
 function _Wall(seg, d0::Vector{F32}, L::_Limits, to = identity)
     n = length(d0); u = F32[clamp((log(d) - L.ld0) / L.dld, 0.0f0, F32(L.nd - 1) - 1.0f-4) for d in d0]
     return _Wall(to(seg), to(d0), to(u), to(ones(F32, n)), to(zeros(F32, n)))
 end
-# (tables `hi`, `lo` of a `_Limits`, passed apart so that they can live on a device; `u` is the
-# vessel's coordinate on the D₀ grid)
-@inline function _limits(hi, lo, u::F32, dp::F32, np::Int, P::F32)
+# (tables `hi`, `lo`, `ld` of a `_Limits`, passed apart so that they can live on a device; `u` is the
+# vessel's coordinate on the D₀ grid). Returns the relaxed diameter and the contracted one on each branch.
+@inline function _limits(hi, lo, ld, u::F32, dp::F32, np::Int, P::F32)
     k = floor(Int, u); fu = u - k
     v = clamp((P - 1.0f0) / dp, 0.0f0, F32(np - 1) - 1.0f-4); i = floor(Int, v); fv = v - i
     @inbounds begin
         h = (1 - fu) * ((1 - fv) * hi[i + 1, k + 1] + fv * hi[i + 2, k + 1]) + fu * ((1 - fv) * hi[i + 1, k + 2] + fv * hi[i + 2, k + 2])
         l = (1 - fu) * ((1 - fv) * lo[i + 1, k + 1] + fv * lo[i + 2, k + 1]) + fu * ((1 - fv) * lo[i + 1, k + 2] + fv * lo[i + 2, k + 2])
+        m = (1 - fu) * ((1 - fv) * ld[i + 1, k + 1] + fv * ld[i + 2, k + 1]) + fu * ((1 - fv) * ld[i + 1, k + 2] + fv * ld[i + 2, k + 2])
     end
-    return h, l
+    return h, l, m
 end
 
 # wall constants of a `FlowSpec` as a plain tuple (for kernels)
@@ -1489,7 +1495,7 @@ function _autoregulate!(
     ωw = similar(xd); fill!(ωw, 0.1f0); dA = similar(xd); fill!(dA, 0.0f0)
     stim = similar(xd); xold = similar(xd)
     fa = S.fa; ra = S.ra; q = S.q; par = S.par; pa = S.pa; Pa = S.Pa; sig = S.sig
-    lhi = S.lhi; llo = S.llo; dp = lim.dp; np = lim.np
+    lhi = S.lhi; llo = S.llo; lld = S.lld; dp = lim.dp; np = lim.np
     mut = S.mut; mua = S.mua; mudl = S.mudl; numax = F32(length(mut) - 1) - 1.0f-3
     gmeta = phys.g_meta
     cmyo = phys.wall_cmyo * DYN_PER_MMHG * 1.0f-4 / 2.0f0     # C_myo·T = C_myo·P·D/2 = cmyo·P·(D/D₀), D₀ in µm
@@ -1557,8 +1563,11 @@ function _autoregulate!(
                     ωw[w] = d * dA[w] < 0 ? max(0.005f0, 0.5f0 * ωw[w]) : min(0.3f0, 1.1f0 * ωw[w])
                     dA[w] = d; act[w] += ωw[w] * d
                 end
-                h, l = _limits(lhi, llo, uw[w], dp, np, P)
-                xd[w] = l + (h - l) * (1.0f0 - act[w])
+                # the vessel stays on the branch of the contracted wall its diameter is on (they differ only
+                # inside the hysteresis loops; a tie keeps the rising branch)
+                h, l, m = _limits(lhi, llo, lld, uw[w], dp, np, P)
+                du = l + (h - l) * (1.0f0 - act[w]); dd = m + (h - m) * (1.0f0 - act[w])
+                xd[w] = abs(dd - xd[w]) < abs(du - xd[w]) ? dd : du
             end
         end
         # a few arterioles may keep cycling (vasomotion), so convergence is judged on total flow
