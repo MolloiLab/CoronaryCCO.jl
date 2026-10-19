@@ -212,7 +212,8 @@ Arteriolar wall mechanics (autoregulation; Carlson, Arciero & Secomb 2008, Arcie
 - `d_active`: arteries whose passive diameter is below 150 µm carry smooth-muscle tone. In the
   beating dog heart adenosine and dipyridamole dilate only arterial microvessels below 150 µm
   (Kanatsuka et al. 1989), so maximal dilation does not reach the larger ones. Larger arteries
-  are rigid conduits.
+  are rigid conduits, and so are imaged segments (`isbase`): the scan resolves their lumen, whatever radius growth gave
+  them.
 - Wall tension at equilibrium: P·D/2 = T_pass(D) + A·T_act,max(D), with the diameter-dependent
   fits of Carlson & Secomb (2005) as tabulated by Fry et al. (2013), organ data `wall_*`: C_pass = 6.666·D₀ dyn/cm,
   C′_pass = 12.52 − 0.027·D₀, C_act = 1.30·D₀^1.48 dyn/cm, C′_act = 0.773 − 0.00059·D₀,
@@ -1698,12 +1699,15 @@ end
 # venous sub-terminal orders of each bed (solver order): the orders narrower than the venule it drains into
 _sub_venous_orders(dv, vt::VTree, vl, tperm) = Int32[count(<(2 * vt.r[vl[i]]), dv) for i in tperm]
 
-# Smallest and largest passive diameter (µm) of the vasoactive arteries (D₀ < d_active).
+# A vasoactive artery: passive diameter below d_active, and not imaged. An imaged segment (`isbase`) is a lumen the scan
+# resolves, an epicardial conduit whatever radius growth gave it, so it carries no arteriolar tone.
+_vasoactive(t::VTree, j, d_active) = 2000.0f0 * t.r[j] < d_active && !t.isbase[j]
+# Smallest and largest passive diameter (µm) of the vasoactive arteries.
 function _active_range(t::VTree, d_active)
     lo = Inf32; hi = -Inf32; found = false
     for j in 1:nseg(t)
         d = 2000.0f0 * t.r[j]
-        d < d_active && (lo = min(lo, d); hi = max(hi, d); found = true)
+        _vasoactive(t, j, d_active) && (lo = min(lo, d); hi = max(hi, d); found = true)
     end
     return found ? (lo, hi) : (1.0f0, 2.0f0)
 end
@@ -1769,7 +1773,7 @@ function _build(
     if max(phys.beta_art_small, phys.beta_art_large, phys.beta_ven_small, phys.beta_ven_large) > 0
         c = 1.35951f0                                                     # cmH2O per mmHg
         aact = falses(n); for k in 1:n
-            2000.0f0 * t.r[perm[k]] < phys.d_active && (aact[k] = true)
+            _vasoactive(t, perm[k], phys.d_active) && (aact[k] = true)
         end
         dist = _Dist(
             to(Bool[2000.0f0 * t.r[perm[k]] < phys.d_alveolus_um for k in 1:n]), to(Bool[2000.0f0 * vt.r[vperm[k]] < phys.d_alveolus_um for k in 1:nv]),
@@ -1777,7 +1781,7 @@ function _build(
             phys.beta_ven_small * c, phys.beta_ven_large * c, phys.p_ext, phys.p_pleural_cmH2O / c, phys.p_ref_cmH2O / c
         )
     end
-    seg = Int32[k for k in 1:n if 2000.0f0 * t.r[perm[k]] < phys.d_active]   # solver numbering
+    seg = Int32[k for k in 1:n if _vasoactive(t, perm[k], phys.d_active)]   # solver numbering
     act = perm[seg]                                                          # caller numbering
     d0 = F32[2000.0f0 * t.r[j] for j in act]
     W = _Wall(seg, d0, lim, to)

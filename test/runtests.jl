@@ -377,6 +377,9 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test C.Flow._branch(l, m, 103.0f0, 99.0f0) == (l, 99.0f0)       # entered from below: rising branch, constricted
         @test C.Flow._branch(l, m, 103.0f0, 107.0f0) == (m, 107.0f0)     # entered from above: falling branch, open
         _, l2, m2 = lim(95.0f0); @test C.Flow._branch(l2, m2, 95.0f0, 107.0f0) == (l2, 95.0f0)   # outside: pressure recorded
+        # tone only in grown arterioles below d_active: an imaged segment is a conduit whatever its grown radius (A49-3)
+        two = C.Flow.VTree(Int32[0, 1], zeros(Float32, 3, 2), ones(Float32, 3, 2), Float32[0.05, 0.05], Bool[true, false])
+        @test !C.Flow._vasoactive(two, 1, HEART_FLOW.d_active) && C.Flow._vasoactive(two, 2, HEART_FLOW.d_active)
     end
 
     @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin
