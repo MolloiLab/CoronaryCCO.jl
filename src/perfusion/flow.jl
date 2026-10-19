@@ -1813,17 +1813,18 @@ function _circuit(
         for it in 1:20
             _autoregulate!(S, Wd, F32(kappa), phys, :stress, ctone, true, tg, mu0d, to(empty(sten)), lim, false, sheet, dist)   # healthy geometry
             # Chilian's microvascular resistance needs flow entering the microvessels and leaving them through venules
-            # narrower than d_ven_micro
+            # narrower than d_ven_micro; it is NaN otherwise (e.g. every bed drained by a wide venule)
             rm = _micro_resistance(S, mass_g)[1]
-            isfinite(rm) || throw(ArgumentError("Chilian's microvascular resistance, which κ is scaled by, is undefined: no flow enters the microvessels or leaves them through a venule narrower than d_ven_micro; check the venous pairing and the trees"))
             if phys.r_total_dilated > 0
                 # whole-bed resistance at full dilation, inlet pressure ÷ flow per gram (as PET reports MAP ÷ MBF). Only
-                # the microvessels scale with κ, so the step uses their share wk of the bed's resistance
+                # the microvessels scale with κ, so the step uses their share wk of the bed's resistance (a full step
+                # when that share is undefined)
                 fpg = 60.0f0 * AK.reduce(+, S.qt; init = 0.0f0) / mass_g
                 rt = phys.p_in / fpg
-                wk = clamp(rm / ((phys.p_in - phys.p_out) / fpg), 0.1f0, 1.0f0)
+                wk = isfinite(rm) ? clamp(rm / ((phys.p_in - phys.p_out) / fpg), 0.1f0, 1.0f0) : 1.0f0
                 ratio = phys.r_total_dilated / rt; e = 1 / wk
             else
+                isfinite(rm) || throw(ArgumentError("the κ anchor r_micro_dilated needs Chilian's microvascular resistance, which is undefined here: no flow enters the microvessels or leaves them through a venule narrower than d_ven_micro"))
                 ratio = phys.r_micro_dilated / rm; e = 1.0f0
             end
             knew = ratio > 0 ? kappa * ratio^e : -1.0f0
@@ -2108,7 +2109,7 @@ function frame_masses(c::Circuit, inp::InputCurve, times::AbstractVector; to = i
     AK.foreachindex(q; min_elems = 4096) do j
         p = parent[j]
         tb = p == 0 ? 0.0f0 : t_end[p]; te = t_end[j]
-        qp = q[j] * (1.0f0 - hd)
+        qp = max(q[j], 0.0f0) * (1.0f0 - hd)          # a reversed segment is stagnant (its transit is unbounded): no iodine
         for f in 1:nf
             art[f, j] = qp * (_lin(A, tm[f] - tb, dt) - _lin(A, tm[f] - te, dt))
         end

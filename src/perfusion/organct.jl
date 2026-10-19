@@ -321,14 +321,6 @@ function stamp_vessels(P::Plane, trees::VTree...; rtube::Real = P.px / 2, step::
     return VesselStamp(seg, cover, dp, ds, dw)
 end
 
-"""
-    unresolved_masses(C::Circuit, artery, vein; rmin) -> Matrix (ntimes × nterminals), mg
-
-The iodine in the grown arteries and veins of `C` narrower than `rmin` mm (`frame_masses`' `artery` and `vein`), given to
-the terminal beds each one feeds or drains in proportion to their flow (an artery: terminal flow over its own; a vein:
-terminal plasma over the plasma routed through it). Added to the beds' masses, it keeps in the tissue the iodine of the
-vessels a picture or phantom does not draw as lumens. Imaged segments (`isbase`) are left out: the scan draws them.
-"""
 # a tree's segments grouped by depth (roots first), so each level can be processed in parallel after its parents
 function _levels(parent::AbstractVector{<:Integer})
     order = _bfs(Vector{Int32}(parent)); d = zeros(Int32, length(parent))
@@ -342,15 +334,30 @@ function _levels(parent::AbstractVector{<:Integer})
     return L
 end
 
+"""
+    unresolved_masses(C::Circuit, artery, vein; rmin) -> Matrix (ntimes × nterminals), mg
+
+The iodine in the grown arteries and veins of `C` narrower than `rmin` mm (`frame_masses`' `artery` and `vein`), given to
+the terminal beds each one feeds or drains in proportion to their flow (an artery: a bed's forward flow over the forward
+flow of all beds below it, so a reversed bed gets none; a vein: terminal plasma over the plasma routed through it). Added to the beds' masses, it keeps in the tissue the iodine of the
+vessels a picture or phantom does not draw as lumens. Imaged segments (`isbase`) are left out: the scan draws them.
+"""
 function unresolved_masses(C::Circuit, am::AbstractMatrix, vm::AbstractMatrix; rmin::Real)
     nf = size(am, 1); t = C.tree; v = C.veins; nt = length(C.terminals); rm = F32(rmin)
-    H = zeros(F32, nf, length(t.r))                 # Σ over thin ancestors (and itself) of mass / flow
-    par = t.parent; q = C.q; tr = t.r; tb = t.isbase
+    H = zeros(F32, nf, length(t.r))                 # Σ over thin ancestors (and itself) of mass / forward flow below
+    par = t.parent; q = C.q; tr = t.r; tb = t.isbase; term = C.terminals
+    order = _bfs(Vector{Int32}(par)); qf = zeros(F32, length(t.r))   # forward bed flow below each artery
+    for i in 1:nt
+        qf[term[i]] = max(q[term[i]], 0.0f0)
+    end
+    for h in length(order):-1:1
+        j = order[h]; p = par[j]; p > 0 && (qf[p] += qf[j])
+    end
     for lv in _levels(t.parent)                     # a level's segments are independent; each holds its frames contiguous
         AK.foreachindex(lv; min_elems = 2048) do h
-            j = lv[h]; p = par[j]; thin = tr[j] < rm && !tb[j] && q[j] > 0
+            j = lv[h]; p = par[j]; thin = tr[j] < rm && !tb[j] && q[j] > 0 && qf[j] > 0
             for f in 1:nf
-                H[f, j] = (p == 0 ? 0.0f0 : H[f, p]) + (thin ? am[f, j] / q[j] : 0.0f0)
+                H[f, j] = (p == 0 ? 0.0f0 : H[f, p]) + (thin ? am[f, j] / qf[j] : 0.0f0)
             end
         end
     end
@@ -370,9 +377,9 @@ function unresolved_masses(C::Circuit, am::AbstractMatrix, vm::AbstractMatrix; r
             end
         end
     end
-    X = zeros(F32, nf, nt); term = C.terminals; vl = C.vleaf; fpv = C.fp
+    X = zeros(F32, nf, nt); vl = C.vleaf; fpv = C.fp
     AK.foreachindex(1:nt; min_elems = 4096) do i
-        j = term[i]; k = vl[i]; qa = q[j]; fp = fpv[i]
+        j = term[i]; k = vl[i]; qa = qf[j]; fp = fpv[i]
         for f in 1:nf
             X[f, i] = qa * H[f, j] + fp * Hv[f, k]
         end

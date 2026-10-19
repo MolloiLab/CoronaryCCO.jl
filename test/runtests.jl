@@ -248,7 +248,7 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         thinA = [Cr.tree.r[j] < 0.1f0 && !Cr.tree.isbase[j] for j in eachindex(Cr.tree.r)]
         thinV = [Cr.veins.r[k] < 0.1f0 && !Cr.veins.isbase[k] for k in eachindex(Cr.veins.r)]
         fpk = argmax(vec(sum(T.artery; dims = 2)))
-        @test isapprox(sum(U[fpk, :]), sum(T.artery[fpk, thinA]) + sum(T.vein[fpk, thinV]); rtol = 0.02)
+        @test isapprox(sum(U[fpk, :]), sum(T.artery[fpk, thinA]) + sum(T.vein[fpk, thinV]); rtol = 1.0e-4)
         # pool_curve: the one definition of a body compartment's curve (phantoms and pictures)
         @test pool_curve(Pool("LV blood", "ncat_blood", :lv, :mean), T.body, 10.0f0) ≈ C._interp(10.0f0, T.body.t, T.body.mean[:lv])
         @test pool_curve(Pool("LV out", "ncat_blood", :lv, :out), T.body, 10.0f0; delay = 1) ≈ C._interp(9.0f0, T.body.t, T.body.out[:lv])
@@ -306,7 +306,7 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test count(j -> count(==(j), b2) == 2, 1:10) <= 1 && all(in(1:10), b2)
     end
 
-    @testset "venous transit of veins with reversed beds; an undefined κ anchor" begin
+    @testset "reversed beds: venous transit and thin-vessel iodine; κ search without Chilian's resistance" begin
         tree = grow(GrowthSpec(HEART_GROWTH; nterm = 300, tissue_ml = 100.0, wall_clearance = 1.0, root_caps = nothing, symmetry_floor = Tuple{Float64, Float64}[]), sample("case0.vol"), [sample("case0.xml")])
         vt = vtree(tree); terms = C._leaves(vt); terr = fill(0.1f0, length(terms))
         vn = C.Flow.VTree(vt.parent, vt.a .+ 0.5f0, vt.b .+ 0.5f0, vt.r, vt.isbase)   # a venous tree beside the arteries
@@ -339,9 +339,20 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         bind = [k for k in eachindex(qr) if qr[k] > 0 && Cx.qv[k] * (1 - HEART_FLOW.hd) < 0.99f0 * qr[k]]
         @test count(<=(1.0f-8), Cx.fp) > 0 && !isempty(bind)
         @test all(k -> isapprox(Cx.tau_v[k], Cx.vp_v[k] / qr[k]; rtol = 1.0f-3), bind) && all(isfinite, Cx.tau_v)
-        # the κ search names why it cannot run when no flow leaves the beds through a micro venule (all beds drained by
-        # 50 large leaves): Chilian's microvascular resistance is 0/0, which once ended in a NaN κ
-        @test_throws ArgumentError C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf = Int32.(terms[mod1.(eachindex(terms), 50)]), phys = HEART_FLOW)
+        # a thin artery's iodine goes to the beds it feeds forward: none to a reversed bed, none negative (audit A51-2)
+        U = C.OrganCT.unresolved_masses(Cx, ones(Float32, 1, length(vt.r)), zeros(Float32, 1, length(vn.r)); rmin = 1.0)
+        rev = [i for i in eachindex(Cx.terminals) if Cx.q[Cx.terminals[i]] <= 0]
+        @test !isempty(rev) && all(>=(0), U) && all(iszero, U[1, rev])
+        # a reversed artery is stagnant in the transport (unbounded transit), so it holds no injected iodine (A51-9)
+        inp = C.Flow.InputCurve(Float32[exp(-(t - 8)^2 / 8) for t in 0.0f0:0.02f0:20.0f0], 0.02f0)
+        am = Array(C.Flow.frame_masses(Cx, inp, collect(0.0f0:2.0f0:20.0f0))[1])
+        @test all(>=(0), am) && all(iszero, am[:, [Cx.terminals[i] for i in rev]])
+        # all beds drained by 50 wide leaves: no flow leaves through a micro venule, so Chilian's microvascular resistance
+        # is 0/0 (once a NaN κ). The whole-bed anchor still runs (a full step); the Chilian anchor names the cause
+        vw = Int32.(terms[mod1.(eachindex(terms), 50)])
+        Cw = C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf = vw, phys = HEART_FLOW)
+        @test isnan(Cw.resist.r_micro) && isfinite(Cw.resist.kappa) && Cw.resist.kappa > 0 && isfinite(Cw.resist.mbf)
+        @test_throws ArgumentError C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf = vw, phys = FlowSpec(HEART_FLOW; r_total_dilated = 0.0f0, r_micro_dilated = 4.0f0))
     end
 
     @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin
