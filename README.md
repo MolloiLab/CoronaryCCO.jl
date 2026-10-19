@@ -116,6 +116,9 @@ are instances of the one `PhantomSpec` struct.
 A new organ (brain, kidney, leg) is four more instances, `GrowthSpec`, `FlowSpec`, `TransportSpec` and `PhantomSpec`,
 plus its classifier; no new code path.
 
+The pictures are the lab's phantoms of XCAT vmale_50: the whole chest at 0.2 mm, made with the heart (left) and with
+the lungs (right and below) as the perfused organ, shown as CT numbers at one time point.
+
 ![lung CT](docs/assets/step5_ct.png)
 
 ## How to cite
