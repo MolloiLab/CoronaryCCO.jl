@@ -94,7 +94,7 @@ stops changing, so recirculation is included.
 
 ## 4. Phantom
 
-![phantom](docs/assets/step4_phantom.png)
+![heart input phantom](docs/assets/step4_heart_phantom.png)
 
 The result is one compartment volume (one integer per voxel) and one CSV per scenario: each compartment's base material
 and its iodine concentration every second, plus the ground-truth blood flow. Load it at any time point as material
@@ -122,10 +122,13 @@ are instances of the one `PhantomSpec` struct.
 A new organ (brain, kidney, leg) is four more instances, `GrowthSpec`, `FlowSpec`, `TransportSpec` and `PhantomSpec`,
 plus its classifier; no new code path.
 
-The pictures are the lab's phantoms of XCAT vmale_50: the whole chest at 0.2 mm, made with the heart (left) and with
-the lungs (right and below) as the perfused organ, shown as CT numbers at one time point.
+The pictures are the lab's two input phantoms of XCAT vmale_50, the whole chest at 0.2 mm, with the heart (above) and
+the lungs (below) as the perfused organ. Like every ground truth in the lab they are drawn as categorical maps, one flat
+colour per class. The perfused tissue's kinetic classes are shades of green, from the least to the most enhancing, and
+the vessels drawn into the tissue are gold. Grayscale is kept for images that have been through a scanner (a
+simulation in BasisSimulator.jl, or a real CT).
 
-![lung CT](docs/assets/step5_ct.png)
+![lung input phantom](docs/assets/step5_lung_phantom.png)
 
 ## How to cite
 
