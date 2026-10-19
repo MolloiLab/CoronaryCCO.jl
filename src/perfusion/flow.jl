@@ -1227,13 +1227,15 @@ struct _Wall{VI <: AbstractVector{Int32}, VF <: AbstractVector{F32}}
     u::VF                        # its coordinate on the D₀ grid of the `_Limits` tables
     xd::VF                       # D/D₀
     act::VF                      # activation A
+    po::VF                       # last mean pressure (mmHg) at which the vessel was outside every hysteresis loop
 end
 
 # The relaxed and fully contracted equilibria depend only on D₀ and pressure, so they are
 # tabulated once (log D₀ × P) and interpolated bilinearly. The contracted wall has two stable
 # diameters over some pressure ranges (a hysteresis loop: at full activation a 15 µm arteriole holds
-# 0.55 or 0.9 of D₀ between 100 and 105 mmHg, and is closed or open near 45-60 mmHg), so it is
-# followed both as pressure rises from 1 mmHg (`lo`) and as it falls from the top of the table (`ld`).
+# 0.55 or 0.9 of D₀ between 100 and 105 mmHg; near 45-60 mmHg the rising branch sits at the solver's 0.05 floor and the
+# falling one at 0.2-0.3), so it is followed both as pressure rises from 1 mmHg (`lo`: inside a loop, the branch reached from
+# below) and as it falls from the top of the table (`ld`: the branch reached from above). Outside the loops they coincide.
 struct _Limits
     ld0::F32; dld::F32; nd::Int      # log D₀ grid
     dp::F32; np::Int                 # pressure grid from 1 mmHg
@@ -1258,7 +1260,7 @@ function _Limits(dmin::F32, dmax::F32, pmax::F32, w)
 end
 function _Wall(seg, d0::Vector{F32}, L::_Limits, to = identity)
     n = length(d0); u = F32[clamp((log(d) - L.ld0) / L.dld, 0.0f0, F32(L.nd - 1) - 1.0f-4) for d in d0]
-    return _Wall(to(seg), to(d0), to(u), to(ones(F32, n)), to(zeros(F32, n)))
+    return _Wall(to(seg), to(d0), to(u), to(ones(F32, n)), to(zeros(F32, n)), to(zeros(F32, n)))   # po = 0: pressure rose from 0
 end
 # (tables `hi`, `lo`, `ld` of a `_Limits`, passed apart so that they can live on a device; `u` is the
 # vessel's coordinate on the D₀ grid). Returns the relaxed diameter and the contracted one on each branch.
@@ -1272,6 +1274,11 @@ end
     end
     return h, l, m
 end
+
+# The contracted wall's diameter on the branch a vessel is on, and its updated last pressure outside a loop: outside the
+# hysteresis loops the rising (`l`) and falling (`m`) branches coincide and the pressure is recorded; inside one the vessel
+# keeps the branch it entered on (from below: rising; from above: falling), whatever its activation does.
+@inline _branch(l::F32, m::F32, P::F32, po::F32) = abs(m - l) > 1.0f-3 ? (P >= po ? l : m, po) : (l, P)
 
 # wall constants of a `FlowSpec` as a plain tuple (for kernels)
 _wall(p) = (;
@@ -1491,7 +1498,7 @@ function _autoregulate!(
     # arteriole's own bed has a gain of ~20, so a fixed explicit step either crawls or makes some
     # vessels flip back and forth. A vessel's step halves whenever its activation reverses
     # direction and grows by 10% otherwise (bounded 0.005–0.3).
-    seg = W.seg; d0 = W.d0; uw = W.u; xd = W.xd; act = W.act
+    seg = W.seg; d0 = W.d0; uw = W.u; xd = W.xd; act = W.act; po = W.po
     ωw = similar(xd); fill!(ωw, 0.1f0); dA = similar(xd); fill!(dA, 0.0f0)
     stim = similar(xd); xold = similar(xd)
     fa = S.fa; ra = S.ra; q = S.q; par = S.par; pa = S.pa; Pa = S.Pa; sig = S.sig
@@ -1563,11 +1570,12 @@ function _autoregulate!(
                     ωw[w] = d * dA[w] < 0 ? max(0.005f0, 0.5f0 * ωw[w]) : min(0.3f0, 1.1f0 * ωw[w])
                     dA[w] = d; act[w] += ωw[w] * d
                 end
-                # the vessel stays on the branch of the contracted wall its diameter is on (they differ only
-                # inside the hysteresis loops; a tie keeps the rising branch)
+                # inside a hysteresis loop of the contracted wall the vessel keeps the branch it entered on: from below
+                # (its pressure is at or above where it last left a loop) the rising one, from above the falling one.
+                # It changes only when its pressure leaves the loop; a vessel starts as if its pressure rose from 0
                 h, l, m = _limits(lhi, llo, lld, uw[w], dp, np, P)
-                du = l + (h - l) * (1.0f0 - act[w]); dd = m + (h - m) * (1.0f0 - act[w])
-                xd[w] = abs(dd - xd[w]) < abs(du - xd[w]) ? dd : du
+                b, po[w] = _branch(l, m, P, po[w])
+                xd[w] = b + (h - b) * (1.0f0 - act[w])
             end
         end
         # a few arterioles may keep cycling (vasomotion), so convergence is judged on total flow

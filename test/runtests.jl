@@ -358,13 +358,18 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test_throws ArgumentError C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf = vw, phys = FlowSpec(HEART_FLOW; r_total_dilated = 0.0f0, r_micro_dilated = 4.0f0))
     end
 
-    @testset "contracted arteriolar wall: both branches of its hysteresis loop" begin
+    @testset "contracted arteriolar wall: both branches of its hysteresis loop, followed by pressure history" begin
         # at full activation a 15.5 µm arteriole has two stable diameters between ~100 and 105 mmHg; the tables keep both
         # (rising and falling pressure) and they coincide outside the loop
         L = C.Flow._Limits(10.0f0, 20.0f0, 130.0f0, C.Flow._wall(HEART_FLOW)); u = (log(15.5f0) - L.ld0) / L.dld
         lim(P) = C.Flow._limits(L.hi, L.lo, L.ld, u, L.dp, L.np, P)
         @test lim(103.0f0)[3] - lim(103.0f0)[2] > 0.2
         @test all(P -> abs(lim(P)[3] - lim(P)[2]) < 1.0f-3, (80.0f0, 95.0f0, 120.0f0))
+        # a vessel keeps the branch it entered the loop on, set by its pressure history alone (audit A52-1)
+        _, l, m = lim(103.0f0)
+        @test C.Flow._branch(l, m, 103.0f0, 99.0f0) == (l, 99.0f0)       # entered from below: rising branch, constricted
+        @test C.Flow._branch(l, m, 103.0f0, 107.0f0) == (m, 107.0f0)     # entered from above: falling branch, open
+        _, l2, m2 = lim(95.0f0); @test C.Flow._branch(l2, m2, 95.0f0, 107.0f0) == (l2, 95.0f0)   # outside: pressure recorded
     end
 
     @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin
