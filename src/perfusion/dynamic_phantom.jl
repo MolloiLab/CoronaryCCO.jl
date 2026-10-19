@@ -177,6 +177,8 @@ struct Dyn
     curves::Dict{Tuple{String, Int}, Vector{Float64}}
     reference::Dict{Tuple{String, String}, Vector{Float64}}
     counts::Dict{Int, Int}
+    columns::Dict{String, Dict{String, String}}           # every column's per-column rows (ground truth: mbf_*, cfr, mass_g, ...)
+    regions::Dict{Tuple{String, String}, Vector{Float32}} # (state, "region:<name>") -> the region's true mean iodine curve
 end
 
 function read_volume(path, dims, ::Type{T}; zrange = 1:dims[end]) where {T}
@@ -198,7 +200,10 @@ end
 
 Reads one phantom design: `label_<scenario>.csv` and (with `volume = true`) the compartment volume it names, from the
 same folder. `zrange` (slice numbers, 1 = the first) reads only those z slices, to scan part of a large phantom: the
-labels and counts are then that slab's, and `ph.facts["zrange"]` records it (slice k is at origin z + (k - 1) voxels). `ph.facts` holds the scenario facts, `ph.table` each compartment's name / base material / kinetics,
+labels and counts are then that slab's, `facts["dims"]` and `facts["origin_mm"]` describe the slab, and `facts["zrange"]`
+and `facts["full_dims"]` record where it sits. `ph.columns[header][row]` holds every column's per-column rows (the ground
+truth of each tissue class and named region: `mbf_rest_ml_min_g`, `mbf_stress_ml_min_g`, `cfr`, `mass_g`), and
+`ph.regions[(state, "region:<name>")]` each named region's true mean iodine curve. `ph.facts` holds the scenario facts, `ph.table` each compartment's name / base material / kinetics,
 `ph.curves[(state, id)]` its iodine curve, `ph.reference[(state, "roi:…")]` the tracking ROI.
 """
 function load(csv::AbstractString; volume::Bool = true, zrange::Union{Nothing, AbstractUnitRange{<:Integer}} = nothing)
@@ -242,7 +247,11 @@ function load(csv::AbstractString; volume::Bool = true, zrange::Union{Nothing, A
         dims = Tuple(parse.(Int, split(facts["dims"])))
         zr = zrange === nothing ? (1:dims[end]) : zrange
         1 <= first(zr) <= last(zr) <= dims[end] || throw(ArgumentError("zrange $zr is outside the volume's 1:$(dims[end]) slices"))
-        zrange === nothing || (facts["zrange"] = "$(first(zr)):$(last(zr))")
+        if zrange !== nothing
+            o = parse.(Float64, split(facts["origin_mm"])); h = parse(Float64, facts["voxel_mm"])
+            facts["zrange"] = "$(first(zr)):$(last(zr))"; facts["full_dims"] = facts["dims"]
+            facts["dims"] = "$(dims[1]) $(dims[2]) $(length(zr))"; facts["origin_mm"] = join((o[1], o[2], o[3] + (first(zr) - 1) * h), " ")
+        end
         lab = read_volume(joinpath(dirname(abspath(csv)), facts["compartment_volume"]), dims, UInt16; zrange = zr)   # no copy: GBs
         cv = zeros(Int, 65536); for v in lab
             cv[v + 1] += 1
@@ -252,7 +261,9 @@ function load(csv::AbstractString; volume::Bool = true, zrange::Union{Nothing, A
             haskey(table, l) || error("compartment $l is in the volume but not in $(basename(csv))")
         end
     end
-    return Dyn(csv, facts, lab, table, mats, times, curves, ref, cnt)
+    cols = Dict(hdr[c] => Dict(k => string(v[c]) for (k, v) in tab if !isempty(string(v[c]))) for c in 3:length(hdr))
+    regs = Dict{Tuple{String, String}, Vector{Float32}}((st, hdr[c]) => Float32.(num.(A[rr, c])) for (st, rr) in trows for c in 3:length(hdr) if startswith(hdr[c], "region:"))
+    return Dyn(csv, facts, lab, table, mats, times, curves, ref, cnt, cols, regs)
 end
 
 _at(times, y, t) = t <= times[1] ? y[1] : t >= times[end] ? y[end] : (k = searchsortedlast(times, t); w = (t - times[k]) / (times[k + 1] - times[k]); y[k] + w * (y[k + 1] - y[k]))

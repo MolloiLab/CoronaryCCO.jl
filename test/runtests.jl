@@ -258,6 +258,10 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         st = C.DynamicPhantom.scan_times(ph; state = "rest"); @test st.arrival <= st.peak
         ps = C.DynamicPhantom.load(R.csv; zrange = 2:3) # a z slab of a large phantom
         @test ps.labels == ph.labels[:, :, 2:3] && sum(values(ps.counts)) == length(ps.labels) && ps.facts["zrange"] == "2:3"
+        @test ps.facts["dims"] == "$(grid.dims[1]) $(grid.dims[2]) 2" && parse(Float64, split(ps.facts["origin_mm"])[3]) ≈ grid.origin[3] + grid.h
+        # the ground truth through the reader: per-class and per-region rows, region curves
+        @test parse(Float64, ph.columns["region:all"]["mbf_rest_ml_min_g"]) ≈ Float64(rw("mbf_rest_ml_min_g")[ac])
+        @test length(ph.regions[("rest", "region:half")]) == length(ph.times) && haskey(ph.columns[hdr[first(tcols)]], "mass_g") && !haskey(ph.columns[hdr[first(tcols)]], "cfr")
         @test_throws ArgumentError C.DynamicPhantom.load(R.csv; zrange = 0:2)
         tc = sort([i for i in keys(ph.counts) if 1001 <= i < 2000]) # classes rank by enhancement
         @test issorted([sum(ph.curves[("rest", i)]) for i in tc])
