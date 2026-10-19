@@ -1,6 +1,6 @@
 name = "Vasculature"
 uuid = "8abde15c-62e6-4bf1-8420-1c5aafac9fe2"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Dale Black <djblack@uci.edu>"]
 
 [deps]
