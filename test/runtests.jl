@@ -178,6 +178,9 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         # this coarse tree has too few vasoactive vessels to throttle it: fully contracted, its flow still exceeds the O₂
         # need, so the regulation stops when the tone saturates instead of running to its iteration limit
         @test Cr.resist.iters < 600 && Cr.resist.mean_act > 0.999
+        # a warm start carries each vessel's branch history (audit A53-1): re-solved from itself, the state keeps it
+        Cw = C.Flow.circuit(vt, fill(0.1f0, count(==(0), nch)); phys = heart, state = :rest, reference = Cr)
+        @test length(Cw.po) == length(vt.r) && maximum(abs.(Cw.po .- Cr.po)) < 0.1f0 && any(>(0), Cr.po)
         T0 = transport(spec, Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0)
         # the heart's body takes its coronary share from the grown tree's root flow
         qroot = sum(Cr.q[j] for j in eachindex(vt.parent) if vt.parent[j] == 0)
@@ -379,7 +382,8 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         _, l2, m2 = lim(95.0f0); @test C.Flow._branch(l2, m2, 95.0f0, 107.0f0) == (l2, 95.0f0)   # outside: pressure recorded
         # tone only in grown arterioles below d_active: an imaged segment is a conduit whatever its grown radius (A49-3)
         two = C.Flow.VTree(Int32[0, 1], zeros(Float32, 3, 2), ones(Float32, 3, 2), Float32[0.05, 0.05], Bool[true, false])
-        @test !C.Flow._vasoactive(two, 1, HEART_FLOW.d_active) && C.Flow._vasoactive(two, 2, HEART_FLOW.d_active)
+        @test !C.Flow._vasoactive(two, 1, HEART_FLOW) && C.Flow._vasoactive(two, 2, HEART_FLOW)
+        @test C.Flow._vasoactive(two, 1, FlowSpec(HEART_FLOW; imaged_tone = true))   # an organ whose imaged arteries regulate
     end
 
     @testset "flow summaries after the solver's work arrays are freed (CPU, > 4096 segments)" begin
