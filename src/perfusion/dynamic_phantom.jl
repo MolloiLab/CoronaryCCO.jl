@@ -248,7 +248,7 @@ function load(csv::AbstractString; volume::Bool = true, zrange::Union{Nothing, A
         zr = zrange === nothing ? (1:dims[end]) : zrange
         1 <= first(zr) <= last(zr) <= dims[end] || throw(ArgumentError("zrange $zr is outside the volume's 1:$(dims[end]) slices"))
         if zrange !== nothing
-            o = parse.(Float64, split(facts["origin_mm"])); h = parse(Float64, facts["voxel_mm"])
+            o = parse.(Float32, split(facts["origin_mm"])); h = parse(Float32, facts["voxel_mm"])
             facts["zrange"] = "$(first(zr)):$(last(zr))"; facts["full_dims"] = facts["dims"]
             facts["dims"] = "$(dims[1]) $(dims[2]) $(length(zr))"; facts["origin_mm"] = join((o[1], o[2], o[3] + (first(zr) - 1) * h), " ")
         end
