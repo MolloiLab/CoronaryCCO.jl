@@ -89,7 +89,7 @@ sed -i.bak 's/srand ((int) time(NULL));/cco_srand_env();/' "$SRC/bin/HctCco.cpp"
 
 # Upstream sorts candidate segments with std::sort, whose order for exactly tied distances
 # is implementation-defined (libc++ and libstdc++ differ). Use stable_sort so ties break by
-# segment index on every platform; CoronaryCCO.jl does the same.
+# segment index on every platform; Vasculature.jl does the same.
 sed -i.bak 's/std::sort(allSegments.begin(), allSegments.end(),/std::stable_sort(allSegments.begin(), allSegments.end(),/' "$SRC/src/HctccoModel.ih"
 
 # 2. Work counters and a coarse per-step clock.
