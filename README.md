@@ -110,27 +110,43 @@ stops changing, so recirculation is included.
 
 ![heart input phantom](docs/assets/step4_heart_phantom.png)
 
-The result is one compartment volume (one integer per voxel) and one CSV per scenario: each compartment's base material
-and its iodine concentration every second, plus the ground-truth blood flow. Load it at any time point as material
-maps for a CT simulator such as [BasisSimulator.jl](https://github.com/MolloiLab/BasisSimulator.jl).
+The result is one folder per scenario (healthy, a stenosis, ...), every file on one grid:
+
+| file | what it holds |
+|---|---|
+| `labels.u16.zst` | every voxel's label |
+| `rois.u8.zst` | every voxel's ROI: the compartments ground truth is given for |
+| `mbf_rest.f32.zst`, `mbf_stress.f32.zst` | every voxel's ground-truth blood flow (mL/min/g; vessels 0) |
+| `label_rest.csv`, `label_stress.csv` | one row per label: ROI, kind, base material, mass, ground-truth MBF, iodine (mg/mL) every second |
+| `ledger_rest.csv`, `ledger_stress.csv` | the organ's iodine every second: delivered, held in arteries, beds and veins, out through the veins, painted |
+| `phantom.toml` | the grid, the ROI names and groups, the tracking points, the scenario's facts |
+
+Load it at any time point as material maps for a CT simulator such as
+[BasisSimulator.jl](https://github.com/MolloiLab/BasisSimulator.jl).
 
 ```julia
 scans = [("rest", F.rest, Trest), ("stress", F.stress, Tstress)]
-R = phantom(HEART_PHANTOM, scans, classify, Vasculature.VoxelGrid(origin, 0.2, dims); F.pairs, F.terr, nvox, out = "heart_phantom")
+R = phantom(HEART_PHANTOM, scans, classify, Vasculature.VoxelGrid(origin, 0.2, dims); F.pairs, F.terr, nvox,
+    out = "heart_healthy", roi, roi_names, roi_groups = ["LV" => [1, 2, 3], "RV" => [4, 5, 6]],
+    tracking = ["descending aorta" => (x, y, z)])
 
-ph = Vasculature.DynamicPhantom.load(R.csv) # the bundle
+ph = Vasculature.DynamicPhantom.load("heart_healthy"; rois = true) # the bundle
 P, m = Vasculature.DynamicPhantom.bs_phantom(ph, BasisSimulator; state = "rest", t = 25) # material map at t = 25 s
 ```
 
-Each tissue class in the CSV also carries its own ground truth (blood flow per gram at rest and stress, CFR, mass), and
-so does every region you name (`regions = ["LAD territory" => mask, ...]`, with its true time-attenuation curve), so a
-perfusion map can be checked region by region. `rois = ["descending aorta" => (x, y, z)]` adds a bolus-tracking curve in
-HU, from which `DynamicPhantom.scan_times` picks the scan times. `DynamicPhantom.load` returns them as `ph.columns[header][row]` and `ph.regions[(state, "region:<name>")]`. A large phantom
-can be loaded a slab at a time: `DynamicPhantom.load(csv; zrange = 400:700)`.
+An ROI is a compartment in the sense of first-pass analysis: a region of the organ with everything in it, tissue and
+every artery, vein and lumen that lies in it (`roi(p)` says which ROI the voxel at `p` is in). Every label lies in one
+ROI, so an ROI is a set of whole labels: `ph.roi_table[(state, name)]` sums them into its iodine mass curve and its ground
+truth, the flow its capillary beds receive over the mass of everything in it. A label's iodine is its members' mass over
+their painted volume, so the phantom holds exactly the iodine the transport put in the organ, and the ledger
+(`ph.ledger[state]`) checks it at every second: the build fails if delivered ≠ held + outflow or painted ≠ held.
+`DynamicPhantom.scan_times` picks scan times from a tracking point's curve (`ph.reference`). A large phantom can be
+loaded a slab at a time: `DynamicPhantom.load(dir; zrange = 400:700)`.
 
-`classify(p)` is the one subject-specific step: for a voxel centre it says what is there (a static material, a blood
-pool of the body model, perfused tissue, or a grown vessel). Everything else, the tissue's kinetic classes, the grown
-vessels drawn into the tissue and the pools' curves, is the same for every organ. `HEART_PHANTOM` and `LUNG_PHANTOM`
+`classify(p)` and `roi(p)` are the subject-specific steps: for a voxel centre they say what is there (a static material,
+a blood pool of the body model, perfused tissue, or a grown vessel) and which compartment it belongs to. Everything
+else, the tissue's kinetic classes, the grown vessels drawn into the tissue, the pools' curves and the ledger, is the
+same for every organ. `HEART_PHANTOM` and `LUNG_PHANTOM`
 are instances of the one `PhantomSpec` struct.
 
 A new organ (brain, kidney, leg) is four more instances, `GrowthSpec`, `FlowSpec`, `TransportSpec` and `PhantomSpec`,

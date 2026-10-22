@@ -266,35 +266,61 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
                 p[1] < (lo[1] + hi[1]) / 2 ? (VOX_POOL, Int32(1), Float32(0.1 * (p[3] - lo[3]) / (hi[3] - lo[3]))) : (VOX_STATIC, Int32(0), 0.0f0)
         )
         out = mktempdir()
-        half = [c[1] <= cells[1][1] for c in cells] # a region of the tissue
+        # two ROIs split at the middle of x: each holds tissue and the vessels in it (one compartment each)
+        zm = (lo[3] + hi[3]) / 2
+        # (grown lumens are drawn over tissue voxels, so they take that tissue's ROI)
+        roi_of(p) = (k = classify(p)[1]; k == VOX_TISSUE || k == VOX_VESSEL ? (p[3] < zm ? 1 : 2) : 0)
         R = phantom(
-            spec, [("rest", Cr, T)], classify, grid; pairs, terr, nvox = length(cells), out, name = "case0",
-            regions = ["half" => half, "all" => fill(true, length(cells))], rois = ["outflow" => (lo[1] + 0.5, lo[2] + 2.0, lo[3] + 2.0)]
+            spec, [("rest", Cr, T)], classify, grid; pairs, terr, nvox = length(cells), out, roi = roi_of, roi_names = ["low", "high"],
+            roi_groups = ["both" => [1, 2]], tracking = ["outflow" => (lo[1] + 0.5, lo[2] + 2.0, lo[3] + 2.0)]
         )
-        @test sum(values(R.counts)) == prod(grid.dims) && 0 in R.ids && any(i -> 100 <= i < 1000, R.ids)
+        @test sum(values(R.counts)) == prod(grid.dims) && haskey(R.counts, 0) && any(i -> 100 <= i < 1000, R.ids)
         @test any(i -> 1001 <= i < 2000, R.ids) && any(i -> i > 2000, R.ids) # tissue and drawn vessels
         @test R.flow[1][2] ≈ sum(Cr.q[j] for j in eachindex(vt.parent) if vt.parent[j] == 0) * 60 / sum(terr)
-        ph = C.DynamicPhantom.load(R.csv; volume = true)
-        @test ph.counts == R.counts && ph.facts["states"] == "rest" && size(ph.labels) == grid.dims
-        # each tissue class carries its ground-truth flow; the voxel-weighted mean over classes is the organ's flow per gram
-        A = C.DynamicPhantom.readdlm(R.csv, ','; header = false, quotes = true); hdr = string.(A[1, :]); rw(n) = A[findfirst(==(n), string.(A[:, 1])), :]
-        tcols = [c for c in 3:length(hdr) if all(isdigit, hdr[c]) && 1000 < parse(Int, hdr[c]) < 2000]
-        mbf = Float64.(rw("mbf_rest_ml_min_g")[tcols]); nv = Float64.(rw("voxels")[tcols])
-        @test all(>(0), mbf) && isapprox(sum(mbf .* nv) / sum(nv), R.flow[1][2] / HEART_FLOW.rho; rtol = 0.1)
-        # regions carry the same ground truth; the whole tissue as a region is the organ's flow; the ROI is in ΔHU
-        ac = findfirst(==("region:all"), hdr)
-        @test isapprox(Float64(rw("mbf_rest_ml_min_g")[ac]), R.flow[1][2] / HEART_FLOW.rho; rtol = 0.02)
+        # the ledger: the circuit conserves iodine and painting conserves the circuit's
+        L = R.ledger[1]
+        @test maximum(abs, L.balance_mg) <= 0.01 * maximum(L.delivered_mg) && maximum(abs, L.unpainted_mg) <= 0.01 * maximum(L.delivered_mg)
+        @test all(L.held_mg .<= L.delivered_mg .+ 0.01 * maximum(L.delivered_mg)) && L.outflow_mg[end] > 0
+        ph = C.DynamicPhantom.load(out; rois = true)
+        @test size(ph.labels) == grid.dims && size(ph.rois) == grid.dims && ph.meta["states"] == ["rest"]
+        @test Dict(l => n for (l, n) in ph.counts) == Dict(l => n for (l, n) in R.counts if n > 0)
+        # every tissue and vessel label lies in one ROI, and the ROI volume agrees with the label table
+        for (l, row) in ph.table
+            row.kind in ("tissue", "artery", "vein") || continue
+            @test row.roi >= 0 && all(==(row.roi), ph.rois[ph.labels .== l])
+        end
+        # an ROI's iodine is the sum over its mask of its labels' iodine; its ground truth is its beds' flow over its mass
+        vml = (grid.h / 10)^3
+        for (r, nm) in enumerate(["low", "high"])
+            mask = ph.rois .== r; row = ph.roi_table[("rest", nm)]
+            ls = ph.labels[mask]; f = 6
+            @test isapprox(sum(get(ph.curves, ("rest", Int(l)), zeros(length(ph.times)))[f] for l in ls) * vml, row.mass[f]; rtol = 1.0e-4)
+            @test count(mask) == row.voxels
+        end
+        both = ph.roi_table[("rest", "both")]
+        @test both.voxels == ph.roi_table[("rest", "low")].voxels + ph.roi_table[("rest", "high")].voxels
+        # all the beds are in the two ROIs, so their flow over the tissue's mass is the organ's flow per gram
+        tis = [l for (l, row) in ph.table if row.kind == "tissue"]
+        @test isapprox(sum(ph.mbf[("rest", l)] * ph.label_mass[l] for l in tis) / sum(ph.label_mass[l] for l in tis), R.flow[1][2] / C.XA.Materials.ncat_heart.density.val; rtol = 0.05)
+        @test both.mbf < sum(ph.mbf[("rest", l)] * ph.label_mass[l] for l in tis) / sum(ph.label_mass[l] for l in tis) # vessels add mass, no flow
+        # the ground-truth MBF map is each tissue label's MBF, vessels 0
+        mb = C.DynamicPhantom.read_volume(joinpath(out, "mbf_rest.f32.zst"), grid.dims, Float32)
+        l1 = first(tis); @test all(mb[ph.labels .== l1] .≈ Float32(ph.mbf[("rest", l1)])) && all(mb[ph.labels .> 2000] .== 0)
         @test haskey(ph.reference, ("rest", "roi:outflow")) && maximum(ph.reference[("rest", "roi:outflow")]) > 80
-        st = C.DynamicPhantom.scan_times(ph; state = "rest"); @test st.arrival <= st.peak
-        ps = C.DynamicPhantom.load(R.csv; zrange = 2:3) # a z slab of a large phantom
-        @test ps.labels == ph.labels[:, :, 2:3] && sum(values(ps.counts)) == length(ps.labels) && ps.facts["zrange"] == "2:3"
-        @test ps.facts["dims"] == "$(grid.dims[1]) $(grid.dims[2]) 2" && parse(Float64, split(ps.facts["origin_mm"])[3]) ≈ grid.origin[3] + grid.h
-        # the ground truth through the reader: per-class and per-region rows, region curves
-        @test parse(Float64, ph.columns["region:all"]["mbf_rest_ml_min_g"]) ≈ Float64(rw("mbf_rest_ml_min_g")[ac])
-        @test length(ph.regions[("rest", "region:half")]) == length(ph.times) && haskey(ph.columns[hdr[first(tcols)]], "mass_g") && !haskey(ph.columns[hdr[first(tcols)]], "cfr")
-        @test_throws ArgumentError C.DynamicPhantom.load(R.csv; zrange = 0:2)
-        tc = sort([i for i in keys(ph.counts) if 1001 <= i < 2000]) # classes rank by enhancement
-        @test issorted([sum(ph.curves[("rest", i)]) for i in tc])
+        hu10 = C.DynamicPhantom.hu(ph, "rest", 10.0); @test hu10[0] ≈ -1000 atol = 1 # air
+        @test all(hu10[l] > hu10[l1] - 1.0e-6 for l in tis if ph.curves[("rest", l)][6] > ph.curves[("rest", l1)][6]) # more iodine, brighter
+        st = C.DynamicPhantom.scan_times(ph; state = "rest"); @test st.arrival <= st.peak_time
+        ps = C.DynamicPhantom.load(out; zrange = 2:3) # a z slab of a large phantom
+        @test ps.labels == ph.labels[:, :, 2:3] && sum(values(ps.counts)) == length(ps.labels) && ps.origin_mm[3] ≈ grid.origin[3] + grid.h
+        @test_throws ArgumentError C.DynamicPhantom.load(out; zrange = 0:2)
+        # merged into few materials, every ROI keeps its iodine: no material spans two ROIs, each is its members' mean
+        m = C.DynamicPhantom.materials_at(ph, "rest", 10.0; max_materials = 12)
+        @test length(m.materials) <= 12
+        for r in 1:2
+            ls = [l for (l, row) in ph.table if row.roi == r && haskey(ph.counts, l) && row.kind != "static"]
+            @test all(l -> all(k -> ph.table[k].roi == r || ph.table[k].kind == "static" || m.lut[k] != m.lut[l], keys(ph.counts)), ls)
+            @test isapprox(sum(ph.counts[l] * m.err[l] for l in ls), 0; atol = 1.0e-6 * sum(ph.counts[l] for l in ls))
+        end
         m = C.DynamicPhantom.materials_at(ph, "rest", 10.0)
         @test length(m.materials) <= 64 && all(l -> haskey(m.lut, l), keys(ph.counts))
     end

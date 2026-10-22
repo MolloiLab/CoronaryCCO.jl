@@ -341,11 +341,15 @@ The iodine in the grown arteries and veins of `C` narrower than `rmin` mm (`fram
 the terminal beds each one feeds or drains in proportion to their flow (an artery: a bed's forward flow over the forward
 flow of all beds below it, so a reversed bed gets none; a vein: terminal plasma over the plasma routed through it). Added to the beds' masses, it keeps in the tissue the iodine of the
 vessels a picture or phantom does not draw as lumens. Imaged segments (`isbase`) are left out: the scan draws them.
+`undrawn = (arteries, veins)`, two Bool vectors, names the unresolved segments explicitly instead (e.g. every segment a
+phantom painted no voxel of); `rmin` is then not used.
 """
-function unresolved_masses(C::Circuit, am::AbstractMatrix, vm::AbstractMatrix; rmin::Real)
+function unresolved_masses(C::Circuit, am::AbstractMatrix, vm::AbstractMatrix; rmin::Real = 0, undrawn = nothing)
     nf = size(am, 1); t = C.tree; v = C.veins; nt = length(C.terminals); rm = F32(rmin)
+    ua = undrawn === nothing ? [t.r[j] < rm && !t.isbase[j] for j in eachindex(t.r)] : collect(Bool, undrawn[1])
+    uv = undrawn === nothing ? [v.r[k] < rm && !v.isbase[k] for k in eachindex(v.r)] : collect(Bool, undrawn[2])
     H = zeros(F32, nf, length(t.r))                 # Σ over thin ancestors (and itself) of mass / forward flow below
-    par = t.parent; q = C.q; tr = t.r; tb = t.isbase; term = C.terminals
+    par = t.parent; q = C.q; term = C.terminals
     order = _bfs(Vector{Int32}(par)); qf = zeros(F32, length(t.r))   # forward bed flow below each artery
     for i in 1:nt
         qf[term[i]] = max(q[term[i]], 0.0f0)
@@ -355,7 +359,7 @@ function unresolved_masses(C::Circuit, am::AbstractMatrix, vm::AbstractMatrix; r
     end
     for lv in _levels(t.parent)                     # a level's segments are independent; each holds its frames contiguous
         AK.foreachindex(lv; min_elems = 2048) do h
-            j = lv[h]; p = par[j]; thin = tr[j] < rm && !tb[j] && q[j] > 0 && qf[j] > 0
+            j = lv[h]; p = par[j]; thin = ua[j] && q[j] > 0 && qf[j] > 0
             for f in 1:nf
                 H[f, j] = (p == 0 ? 0.0f0 : H[f, p]) + (thin ? am[f, j] / qf[j] : 0.0f0)
             end
@@ -368,10 +372,10 @@ function unresolved_masses(C::Circuit, am::AbstractMatrix, vm::AbstractMatrix; r
     for h in length(vorder):-1:1
         k = vorder[h]; p = v.parent[k]; p > 0 && (qr[p] += qr[k])
     end
-    Hv = zeros(F32, nf, length(v.r)); vpar = v.parent; vr = v.r; vb = v.isbase
+    Hv = zeros(F32, nf, length(v.r)); vpar = v.parent
     for lv in _levels(v.parent)
         AK.foreachindex(lv; min_elems = 2048) do h
-            k = lv[h]; p = vpar[k]; thin = vr[k] < rm && !vb[k] && qr[k] > 0
+            k = lv[h]; p = vpar[k]; thin = uv[k] && qr[k] > 0
             for f in 1:nf
                 Hv[f, k] = (p == 0 ? 0.0f0 : Hv[f, p]) + (thin ? vm[f, k] / qr[k] : 0.0f0)
             end

@@ -1,28 +1,29 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# The shareable dynamic CT perfusion phantom: ONE compartment volume plus ONE CSV per phantom design (scenario).
+# The shareable dynamic CT perfusion phantom: one folder per scenario (healthy, a stenosis, ...), every file on one grid.
 #
-# Each voxel of the volume (`<phantom>_compartments.u16.zst`, UInt16, column-major, zstd) holds the id of its kinetic
-# compartment: a set of voxels that share one base material and one iodine curve (a chamber blood pool, an artery segment
-# at one transit delay, a class of myocardium with nearly the same curve, a plaque sub-region, ...). A scenario (healthy,
-# a stenosis, ...) is one file `label_<scenario>.csv` on the same volume, holding everything needed for it:
-#   columns  `row`, `value`, one column per compartment id, one per summary region (`region:<name>`), and the
-#            bolus-tracking ROI (`roi:<name>`)
-#   rows     scenario facts (one value each in `value`: volume file, dims, voxel size, origin, scan times, ...);
-#            per-column facts (name, base material with density and composition, kinetics, voxels, ground-truth flow);
-#            then one row per time point, `rest` and `stress`, with `value` = time in s and each column's iodine in mg per
-#            mL of voxel (regions: their mean; ROI: ΔHU at 70 keV).
-# The writer half is organ-generic (heart, lung, brain, ...). It holds no anatomy and no licensed phantom data, so it lives
-# in the public repo; the phantom-specific step (which voxel belongs to which compartment) is supplied by the caller.
+#   labels.u16.zst      every voxel's label (UInt16, column-major: x fastest, then y, then z; zstd)
+#   rois.u8.zst         every voxel's ROI (UInt8; 0 = none): the compartments ground truth is given for, e.g. LV · LAD
+#   mbf_<state>.f32.zst every voxel's ground-truth blood flow (mL/min/g; 0 where the voxel has no perfusion of its own)
+#   label_<state>.csv   one row per label: name, ROI, kind, base material, voxels, mass, ground-truth MBF, then its iodine
+#                       (mg per mL of voxel) at each time
+#   ledger_<state>.csv  the organ's iodine at each time: delivered, held (arteries, beds, veins), outflow, painted
+#   phantom.toml        the grid, the files, the states, the ROI names and groups, the tracking ROIs, the scenario's facts
+#
+# Every label lies in one ROI, so an ROI is a set of whole labels: its iodine and ground truth are sums over them. A
+# label's iodine is its members' mass over their painted volume, so painting conserves mass. The writer half is
+# organ-generic and holds no anatomy; the phantom-specific step (which voxel is what) is supplied by the caller.
 # Mixing rule: iodine is added to a voxel without displacing tissue, ρ = ρ_base + c/1000 g/cm³, so
 # μ(E) = μ_base(E) + (c/1000)(μ/ρ)_I(E) exactly; c is mg iodine per mL of voxel.
 module DynamicPhantom
 
 using DelimitedFiles, Unitful, Printf, Random, Statistics
+import TOML
+using CodecZstd: ZstdCompressorStream, ZstdDecompressorStream
 import XrayAttenuation as XA
 import AcceleratedKernels as AK
 
-export compartment_classes, class_error, VolumeWriter, write_slice!, write_phantom_csv, scan_times_from_curve, load, iodine,
-    scan_times, materials_at, bs_phantom, iodinated
+export compartment_classes, class_error, VolumeWriter, write_slice!, write_bundle, load, iodine, hu, scan_times, materials_at,
+    bs_phantom, iodinated, hu_per_mg_ml, read_volume
 
 const F32 = Float32
 
@@ -96,14 +97,16 @@ mutable struct VolumeWriter{T}
     counts::Vector{Int}
 end
 function VolumeWriter(path::AbstractString, dims; T::Type = UInt16, level::Integer = 10)
-    io = endswith(path, ".zst") ? open(pipeline(`zstd -q -f -T4 -$level -o $path`), "w") : open(path, "w")
-    return VolumeWriter{T}(io, Tuple(dims), 0, zeros(Int, Int(typemax(T)) + 1))
+    io = endswith(path, ".zst") ? ZstdCompressorStream(open(path, "w"); level) : open(path, "w")
+    return VolumeWriter{T}(io, Tuple(dims), 0, zeros(Int, T <: Integer ? Int(typemax(T)) + 1 : 0))
 end
 function write_slice!(w::VolumeWriter{T}, s::AbstractMatrix) where {T}
     @assert size(s) == w.dims[1:2] && w.k < w.dims[3]
     sl = convert(Matrix{T}, s)
-    for v in sl
-        w.counts[Int(v) + 1] += 1
+    if T <: Integer
+        for v in sl
+            w.counts[Int(v) + 1] += 1
+        end
     end
     write(w.io, sl); w.k += 1
     return w
@@ -111,79 +114,98 @@ end
 Base.close(w::VolumeWriter) = (w.k == w.dims[3] || @warn "volume closed after $(w.k) of $(w.dims[3]) slices"; close(w.io))
 
 _cell(x) = x === nothing || (x isa AbstractFloat && isnan(x)) ? "" : x isa AbstractFloat ? @sprintf("%.6g", x) :
-    x isa AbstractVector ? join(_cell.(x), " ") : (t = string(x); occursin(r"[,\"\n]", t) ? "\"" * replace(t, "\"" => "\"\"") * "\"" : t)
+    (t = string(x); occursin(r"[,\"\n]", t) ? "\"" * replace(t, "\"" => "\"\"") * "\"" : t)
 
-"""
-    write_phantom_csv(path; facts, columns, times, states = ("rest", "stress"), curve, energy_keV = 70)
-
-Writes `label_<scenario>.csv`, the one table of a phantom design (see the file header for the layout).
-
-- `facts`: `key => value` pairs, one row each (scenario, lesion, volume file, dims, voxel size, origin, scan times, ...).
-- `columns`: one NamedTuple per column with `key` (the header: a compartment id, `"region:<name>"` or `"roi:<name>"`)
-  and any of `name, base_material, kinetics, voxels, mass_g, mbf_rest, mbf_stress, cfr, ffr, notes`. A
-  `base_material` that names an `XA.Materials` entry is written out in full (density, Z/A, I, mass fractions, base HU).
-- `curve(j, state, f)`: the value of column `j` at `times[f]` in `state` (iodine mg/mL; for an ROI, ΔHU), or `nothing`.
-"""
-function write_phantom_csv(path::AbstractString; facts, columns, times, states = ("rest", "stress"), curve, energy_keV = 70)
-    E = energy_keV * u"keV"; μ(m) = ustrip(XA.linear_attenuation_coeff(m, E)); μw = μ(XA.Materials.water); μa = μ(XA.Materials.air)
-    mat(n) = (isempty(n) || !hasproperty(XA.Materials, Symbol(n))) ? nothing : getproperty(XA.Materials, Symbol(n))
-    fields = (
-        ("name", c -> get(c, :name, "")), ("base_material", c -> get(c, :base_material, "")),
-        ("density_g_cm3", c -> (m = mat(get(c, :base_material, "")); m === nothing ? nothing : ustrip(u"g/cm^3", m.density))),
-        ("ZA_ratio", c -> (m = mat(get(c, :base_material, "")); m === nothing ? nothing : m.ZA_ratio)),
-        ("I_eV", c -> (m = mat(get(c, :base_material, "")); m === nothing ? nothing : ustrip(u"eV", m.I))),
-        ("composition_Z_massfrac", c -> (m = mat(get(c, :base_material, "")); m === nothing ? nothing : join(["$(Z):$(round(w; sigdigits = 6))" for (Z, w) in sort(collect(m.composition))], ";"))),
-        ("base_hu$(round(Int, energy_keV))", c -> (m = mat(get(c, :base_material, "")); m === nothing ? nothing : 1000 * (μ(m) - μw) / (μw - μa))),
-        ("kinetics", c -> get(c, :kinetics, "")), ("voxels", c -> get(c, :voxels, nothing)), ("mass_g", c -> get(c, :mass_g, nothing)),
-        ("mbf_rest_ml_min_g", c -> get(c, :mbf_rest, nothing)), ("mbf_stress_ml_min_g", c -> get(c, :mbf_stress, nothing)),
-        ("cfr", c -> get(c, :cfr, nothing)), ("ffr", c -> get(c, :ffr, nothing)), ("notes", c -> get(c, :notes, "")),
-    )
-    open(path, "w") do io
-        println(io, join(("row", "value", (string(c.key) for c in columns)...), ","))
-        blank = repeat(",", length(columns))
-        for (k, v) in facts
-            println(io, _cell(k), ",", _cell(v), blank)
-        end
-        for (n, f) in fields
-            println(io, n, ",,", join(_cell.(f.(columns)), ","))
-        end     # empty `value`: one cell per column
-        for st in states, (fi, t) in enumerate(times)
-            println(io, st, ",", _cell(Float64(t)), ",", join((_cell(curve(j, st, fi)) for j in eachindex(columns)), ","))
-        end
-    end
-    return path
+function _material_cells(name, energy_keV)
+    hasproperty(XA.Materials, Symbol(name)) || return (nothing, nothing, nothing, "", nothing)
+    m = getproperty(XA.Materials, Symbol(name)); E = energy_keV * u"keV"; μ(x) = ustrip(XA.linear_attenuation_coeff(x, E))
+    μw = μ(XA.Materials.water); μa = μ(XA.Materials.air)
+    comp = join(["$(Z):$(round(w; sigdigits = 6))" for (Z, w) in sort(collect(m.composition))], ";")
+    return (ustrip(u"g/cm^3", m.density), m.ZA_ratio, ustrip(u"eV", m.I), comp, 1000 * (μ(m) - μw) / (μw - μa))
 end
 
 """
-    scan_times_from_curve(times, dhu; threshold_hu = 80, lead_s = 1) -> (; arrival, peak, prepeak, peak_hu)
+    write_bundle(out; grid, files, states, times, labels, ledger, toml, energy_keV = 70)
 
-Bolus-tracking rule on a ROI curve in ΔHU over baseline: `arrival` is the first sample at or above `threshold_hu`,
-`peak` the sample of the maximum and `prepeak` `lead_s` before it (the usual "scan just before the peak").
+Writes the tables of a phantom folder (the volumes are written by the caller with `VolumeWriter`):
+
+- `labels`: one NamedTuple per label, with `id, name, roi, kind, base_material, voxels, mass_g`, `mbf` (one value per
+  state, or `nothing`) and `curve` (state index → vector of iodine, mg/mL, over `times`; `nothing` for a static label).
+- `ledger`: state index → NamedTuple of equal-length columns (the first one `t_s`).
+- `toml`: a Dict written to `phantom.toml`, with `grid`, `files`, `states` and `energy_keV` added.
 """
-function scan_times_from_curve(times, dhu; threshold_hu = 80, lead_s = 1)
-    k = findfirst(>=(threshold_hu), dhu); k === nothing && error("the ROI never reaches +$threshold_hu HU")
-    kp = argmax(dhu)
-    return (; arrival = times[k], peak = times[kp], prepeak = times[kp] - lead_s, peak_hu = dhu[kp])
+function write_bundle(out::AbstractString; grid, files, states, times, labels, ledger, toml, energy_keV = 70)
+    tcols = [@sprintf("%g", t) for t in times]
+    for (s, st) in enumerate(states)
+        open(joinpath(out, "label_$st.csv"), "w") do io
+            println(
+                io, join(
+                    [
+                        "id", "name", "roi", "kind", "base_material", "density_g_cm3", "ZA_ratio", "I_eV", "composition_Z_massfrac",
+                        "base_hu$(round(Int, energy_keV))", "voxels", "mass_g", "mbf_ml_min_g", tcols...,
+                    ], ","
+                )
+            )
+            for l in labels
+                mc = _material_cells(l.base_material, energy_keV); c = l.curve === nothing ? fill(0.0, length(times)) : l.curve[s]
+                println(
+                    io, join(
+                        _cell.(
+                            [
+                                l.id, l.name, l.roi, l.kind, l.base_material, mc..., l.voxels, l.mass_g,
+                                l.mbf === nothing ? nothing : l.mbf[s], c...,
+                            ]
+                        ), ","
+                    )
+                )
+            end
+        end
+        L = ledger[s]
+        open(joinpath(out, "ledger_$st.csv"), "w") do io
+            println(io, join(string.(keys(L)), ","))
+            for k in eachindex(first(L))
+                println(io, join((_cell(Float64(v[k])) for v in values(L)), ","))
+            end
+        end
+    end
+    meta = merge(
+        toml, Dict{String, Any}(
+            "grid" => Dict("dims" => collect(grid.dims), "origin_mm" => collect(Float64.(grid.origin)), "voxel_mm" => Float64(grid.h)),
+            "files" => files, "states" => collect(states), "energy_keV" => Float64(energy_keV),
+        )
+    )
+    open(io -> TOML.print(io, meta; sorted = true), joinpath(out, "phantom.toml"), "w")
+    return out
 end
 
 # =============================================================================================== reading
 
 struct Dyn
-    csv::String
-    facts::Dict{String, String}
+    dir::String
+    meta::Dict{String, Any}                                      # phantom.toml
     labels::Array{UInt16, 3}
-    table::Dict{Int, NamedTuple{(:name, :base, :kinetics), Tuple{String, String, String}}}
+    rois::Array{UInt8, 3}
+    origin_mm::NTuple{3, Float64}                               # of the loaded slab
+    voxel_mm::Float64
+    table::Dict{Int, NamedTuple{(:name, :base, :kind, :roi), Tuple{String, String, String, Int}}}
     materials::Dict{String, XA.Material}
     times::Vector{Float64}
-    curves::Dict{Tuple{String, Int}, Vector{Float64}}
-    reference::Dict{Tuple{String, String}, Vector{Float64}}
-    counts::Dict{Int, Int}
-    columns::Dict{String, Dict{String, String}}           # every column's per-column rows (ground truth: mbf_*, cfr, mass_g, ...)
-    regions::Dict{Tuple{String, String}, Vector{Float32}} # (state, "region:<name>") -> the region's true mean iodine curve
+    curves::Dict{Tuple{String, Int}, Vector{Float64}}          # (state, label) -> iodine, mg/mL
+    mbf::Dict{Tuple{String, Int}, Float64}                     # (state, label) -> ground-truth MBF, mL/min/g
+    label_mass::Dict{Int, Float64}                             # label -> g over the whole volume
+    counts::Dict{Int, Int}                                     # label -> voxels in the loaded slab
+    roi_table::Dict{Tuple{String, String}, NamedTuple}         # (state, ROI name) -> (; id, kind, voxels, mass_g, mbf, mass)
+    ledger::Dict{String, Dict{String, Vector{Float64}}}        # state -> column -> values
+    reference::Dict{Tuple{String, String}, Vector{Float64}}    # (state, "roi:<tracking name>") -> ΔHU of the tracking point
 end
 
+"""
+    read_volume(path, dims, T; zrange = 1:dims[end]) -> Array{T, 3}
+
+Reads a volume of the bundle (zstd or raw), only the z slices `zrange`.
+"""
 function read_volume(path, dims, ::Type{T}; zrange = 1:dims[end]) where {T}
-    io = endswith(path, ".zst") ? open(`zstd -dc $path`) : open(path)
+    io = endswith(path, ".zst") ? ZstdDecompressorStream(open(path)) : open(path)
     try
         # one z slice at a time: a single read of several GB from a pipe fails on macOS (EINVAL)
         nxy = prod(dims[1:(end - 1)]); A = Array{T}(undef, dims[1:(end - 1)]..., length(zrange)); buf = Vector{T}(undef, nxy)
@@ -196,75 +218,83 @@ function read_volume(path, dims, ::Type{T}; zrange = 1:dims[end]) where {T}
     end
 end
 
-"""
-    load(csv; volume = true, zrange = nothing) -> Dyn
+_num(x) = x isa Number ? Float64(x) : (isempty(strip(string(x))) ? NaN : parse(Float64, string(x)))
+_rows(path) = (A = readdlm(path, ','; header = false, quotes = true); (string.(A[1, :]), A[2:end, :]))
 
-Reads one phantom design: `label_<scenario>.csv` and (with `volume = true`) the compartment volume it names, from the
-same folder. `zrange` (slice numbers, 1 = the first) reads only those z slices, to scan part of a large phantom: the
-labels and counts are then that slab's, `facts["dims"]` and `facts["origin_mm"]` describe the slab, and `facts["zrange"]`
-and `facts["full_dims"]` record where it sits. `ph.columns[header][row]` holds every column's per-column rows (the ground
-truth of each tissue class and named region: `mbf_rest_ml_min_g`, `mbf_stress_ml_min_g`, `cfr`, `mass_g`), and
-`ph.regions[(state, "region:<name>")]` each named region's true mean iodine curve. `ph.facts` holds the scenario facts, `ph.table` each compartment's name / base material / kinetics,
-`ph.curves[(state, id)]` its iodine curve, `ph.reference[(state, "roi:…")]` the tracking ROI.
 """
-function load(csv::AbstractString; volume::Bool = true, zrange::Union{Nothing, AbstractUnitRange{<:Integer}} = nothing)
-    A = readdlm(csv, ','; header = false, quotes = true)
-    hdr = string.(A[1, :]); rows = string.(A[:, 1])
-    facts = Dict{String, String}(); times = Float64[]; tab = Dict{String, Vector{Any}}(); trows = Dict{String, Vector{Int}}()
-    for r in 2:size(A, 1)
-        key = rows[r]
-        if key in ("rest", "stress")
-            push!(get!(trows, key, Int[]), r)
-        elseif isempty(string(A[r, 2]))             # per-column rows leave `value` empty (even when every cell is blank)
-            tab[key] = A[r, :]
-        else
-            facts[key] = string(A[r, 2])
+    load(dir; volume = true, rois = false, zrange = nothing) -> Dyn
+
+Reads one scenario folder. `volume` reads `labels.u16.zst`, `rois` also `rois.u8.zst`; `zrange` (slice numbers, 1 = the
+first) reads only those z slices (`origin_mm` is then the slab's). `ph.curves[(state, label)]` is a label's iodine (mg/mL),
+`ph.mbf[(state, label)]` its ground-truth MBF, `ph.table[label]` its name, base material, kind and ROI,
+`ph.roi_table[(state, name)]` a compartment's (or group's) voxels, mass, ground-truth MBF and iodine mass curve (sums over
+its labels), `ph.ledger[state]` the organ's iodine ledger,
+`ph.reference[(state, "roi:<name>")]` a tracking ROI's ΔHU curve (`scan_times` reads it), `ph.meta` the `phantom.toml`.
+"""
+function load(dir::AbstractString; volume::Bool = true, rois::Bool = false, zrange::Union{Nothing, AbstractUnitRange{<:Integer}} = nothing)
+    meta = TOML.parsefile(joinpath(dir, "phantom.toml")); states = String.(meta["states"]); g = meta["grid"]
+    dims = Tuple(Int.(g["dims"])); h = Float64(g["voxel_mm"]); o = Float64.(g["origin_mm"])
+    table = Dict{Int, NamedTuple{(:name, :base, :kind, :roi), Tuple{String, String, String, Int}}}()
+    mats = Dict{String, XA.Material}(); curves = Dict{Tuple{String, Int}, Vector{Float64}}(); mbf = Dict{Tuple{String, Int}, Float64}()
+    lmass = Dict{Int, Float64}(); lvox = Dict{Int, Int}(); times = Float64[]
+    for st in states
+        hdr, A = _rows(joinpath(dir, "label_$st.csv")); col = Dict(h => i for (i, h) in enumerate(hdr))
+        it = (col["mbf_ml_min_g"] + 1):length(hdr); times = parse.(Float64, hdr[it])
+        for r in axes(A, 1)
+            id = Int(A[r, col["id"]]); b = string(A[r, col["base_material"]]); kind = string(A[r, col["kind"]])
+            table[id] = (name = string(A[r, col["name"]]), base = b, kind, roi = Int(_num(A[r, col["roi"]])))
+            lmass[id] = _num(A[r, col["mass_g"]]); lvox[id] = Int(_num(A[r, col["voxels"]]))
+            kind == "static" || (curves[(st, id)] = Float64.(_num.(A[r, it])))
+            m = _num(A[r, col["mbf_ml_min_g"]]); isnan(m) || (mbf[(st, id)] = m)
+            if !isempty(b) && !haskey(mats, b)
+                comp = Dict{Int, Float64}(); for kv in split(string(A[r, col["composition_Z_massfrac"]]), ';')
+                    Z, w = split(kv, ':'); comp[parse(Int, Z)] = parse(Float64, w)
+                end
+                mats[b] = XA.Material(b, _num(A[r, col["ZA_ratio"]]), _num(A[r, col["I_eV"]]) * u"eV", _num(A[r, col["density_g_cm3"]]) * u"g/cm^3", comp)
+            end
         end
     end
-    st1 = first(keys(trows)); times = Float64.(A[trows[st1], 2])
-    ids = Dict(c => parse(Int, hdr[c]) for c in 3:length(hdr) if all(isdigit, hdr[c]))
-    nm(c, f) = string(tab[f][c])
-    table = Dict(i => (name = nm(c, "name"), base = nm(c, "base_material"), kinetics = nm(c, "kinetics")) for (c, i) in ids)
-    mats = Dict{String, XA.Material}()
-    for (c, i) in ids
-        b = nm(c, "base_material"); (isempty(b) || haskey(mats, b)) && continue
-        comp = Dict{Int, Float64}(); for kv in split(nm(c, "composition_Z_massfrac"), ';')
-            Z, w = split(kv, ':'); comp[parse(Int, Z)] = parse(Float64, w)
-        end
-        mats[b] = XA.Material(b, Float64(tab["ZA_ratio"][c]), Float64(tab["I_eV"][c]) * u"eV", Float64(tab["density_g_cm3"][c]) * u"g/cm^3", comp)
+    led = Dict{String, Dict{String, Vector{Float64}}}()
+    for st in states
+        hdr, A = _rows(joinpath(dir, "ledger_$st.csv")); led[st] = Dict(hdr[c] => Float64.(_num.(A[:, c])) for c in eachindex(hdr))
     end
-    num(x) = x isa Number ? Float64(x) : (isempty(string(x)) ? 0.0 : parse(Float64, string(x)))
-    curves = Dict{Tuple{String, Int}, Vector{Float64}}(); ref = Dict{Tuple{String, String}, Vector{Float64}}()
-    for (st, rr) in trows
-        for (c, i) in ids
-            table[i].kinetics == "static" || (curves[(st, i)] = num.(A[rr, c]))
-        end
-        for c in 3:length(hdr)
-            startswith(hdr[c], "roi:") && (ref[(st, hdr[c])] = num.(A[rr, c]))
+    # each compartment and group from its labels: voxels, mass, ground-truth MBF (beds' flow over the mass of everything
+    # in it) and iodine mass (mg) at every time
+    vml = h^3 / 1000; names = String.(get(get(meta, "rois", Dict()), "names", String[]))
+    groups = [String(k) => Int.(v) for (k, v) in get(get(meta, "rois", Dict()), "groups", Dict())]
+    rt = Dict{Tuple{String, String}, NamedTuple}()
+    for st in states, (name, ids, kind) in [[(names[r], [r], "roi") for r in eachindex(names)]; [(g, r, "group") for (g, r) in groups]]
+        ls = [l for (l, row) in table if row.roi in ids]
+        mass = sum(lmass[l] for l in ls; init = 0.0); flow = sum(get(mbf, (st, l), 0.0) * lmass[l] for l in ls; init = 0.0)
+        io = sum((lvox[l] * vml) .* get(curves, (st, l), zeros(length(times))) for l in ls; init = zeros(length(times)))
+        rt[(st, name)] = (
+            id = kind == "roi" ? ids[1] : name, kind, voxels = sum(lvox[l] for l in ls; init = 0), mass_g = mass,
+            mbf = mass > 0 ? flow / mass : NaN, mass = io,
+        )
+    end
+    ref = Dict{Tuple{String, String}, Vector{Float64}}()
+    for (name, tr) in get(meta, "tracking", Dict())
+        l = Int(tr["label"]); hpm = hu_per_mg_ml(table[l].base, meta["energy_keV"])
+        for st in states
+            ref[(st, "roi:$name")] = hpm .* get(curves, (st, l), zeros(length(times)))
         end
     end
-    lab = Array{UInt16, 3}(undef, 0, 0, 0); cnt = Dict{Int, Int}()
+    zr = zrange === nothing ? (1:dims[end]) : zrange
+    1 <= first(zr) <= last(zr) <= dims[end] || throw(ArgumentError("zrange $zr is outside the volume's 1:$(dims[end]) slices"))
+    org = (o[1], o[2], o[3] + (first(zr) - 1) * h)
+    lab = Array{UInt16, 3}(undef, 0, 0, 0); roi = Array{UInt8, 3}(undef, 0, 0, 0); cnt = Dict{Int, Int}()
     if volume
-        dims = Tuple(parse.(Int, split(facts["dims"])))
-        zr = zrange === nothing ? (1:dims[end]) : zrange
-        1 <= first(zr) <= last(zr) <= dims[end] || throw(ArgumentError("zrange $zr is outside the volume's 1:$(dims[end]) slices"))
-        if zrange !== nothing
-            o = parse.(Float32, split(facts["origin_mm"])); h = parse(Float32, facts["voxel_mm"])
-            facts["zrange"] = "$(first(zr)):$(last(zr))"; facts["full_dims"] = facts["dims"]
-            facts["dims"] = "$(dims[1]) $(dims[2]) $(length(zr))"; facts["origin_mm"] = join((o[1], o[2], o[3] + (first(zr) - 1) * h), " ")
-        end
-        lab = read_volume(joinpath(dirname(abspath(csv)), facts["compartment_volume"]), dims, UInt16; zrange = zr)   # no copy: GBs
+        lab = read_volume(joinpath(dir, meta["files"]["labels"]), dims, UInt16; zrange = zr)
         cv = zeros(Int, 65536); for v in lab
             cv[v + 1] += 1
         end
         cnt = Dict(i - 1 => n for (i, n) in enumerate(cv) if n > 0)
         for l in keys(cnt)
-            haskey(table, l) || error("compartment $l is in the volume but not in $(basename(csv))")
+            haskey(table, l) || error("label $l is in the volume but not in label_$(first(states)).csv")
         end
     end
-    cols = Dict(hdr[c] => Dict(k => string(v[c]) for (k, v) in tab if !isempty(string(v[c]))) for c in 3:length(hdr))
-    regs = Dict{Tuple{String, String}, Vector{Float32}}((st, hdr[c]) => Float32.(num.(A[rr, c])) for (st, rr) in trows for c in 3:length(hdr) if startswith(hdr[c], "region:"))
-    return Dyn(csv, facts, lab, table, mats, times, curves, ref, cnt, cols, regs)
+    rois && (roi = read_volume(joinpath(dir, meta["files"]["rois"]), dims, UInt8; zrange = zr))
+    return Dyn(abspath(dir), meta, lab, roi, org, h, table, mats, times, curves, mbf, lmass, cnt, rt, led, ref)
 end
 
 _at(times, y, t) = t <= times[1] ? y[1] : t >= times[end] ? y[end] : (k = searchsortedlast(times, t); w = (t - times[k]) / (times[k + 1] - times[k]); y[k] + w * (y[k + 1] - y[k]))
@@ -272,14 +302,28 @@ _at(times, y, t) = t <= times[1] ? y[1] : t >= times[end] ? y[end] : (k = search
 iodine(ph::Dyn, state, t) = Dict(l => (haskey(ph.curves, (state, l)) ? _at(ph.times, ph.curves[(state, l)], t) : 0.0) for l in keys(ph.table))
 
 """
-    scan_times(ph; state, roi = first ROI column, threshold_hu = 80, lead_s = 1)
+    hu(ph, state, t; energy_keV = the phantom's) -> Dict(label => HU)
 
-Bolus-tracking times of a loaded phantom from its ROI column (ΔHU at 70 keV): `arrival` (first sample ≥ +`threshold_hu`)
-and `peak` (`lead_s` before the ROI maximum, the usual scan time), on the 1 s grid.
+Every label's CT number at time `t` (s) and `energy_keV`: its base material with its iodine added by the format's mixing
+rule. A lookup of the label volume through it is the idealized (noise- and blur-free) image of the phantom.
+"""
+function hu(ph::Dyn, state, t; energy_keV = ph.meta["energy_keV"])
+    E = energy_keV * u"keV"; μ(m) = ustrip(XA.linear_attenuation_coeff(m, E)); μw = μ(XA.Materials.water); μa = μ(XA.Materials.air)
+    c = iodine(ph, state, t)
+    return Dict(l => 1000 * (μ(iodinated(ph.materials[r.base], c[l])) - μw) / (μw - μa) for (l, r) in ph.table)
+end
+
+"""
+    scan_times(ph; state, roi = the first tracking ROI, threshold_hu = 80, lead_s = 1)
+
+Bolus-tracking times of a loaded phantom from its tracking ROI (ΔHU): `arrival` (first sample ≥ +`threshold_hu`), `peak`
+(`lead_s` before the ROI maximum, the usual scan time), `peak_time` (the maximum) and `peak_hu`, on the curves' time grid.
 """
 function scan_times(ph::Dyn; state, roi = first(k for k in keys(ph.reference) if k[1] == state)[2], threshold_hu = 80.0, lead_s = 1.0)
-    s = scan_times_from_curve(ph.times, ph.reference[(state, roi)]; threshold_hu, lead_s)
-    return (arrival = s.arrival, peak = s.prepeak, peak_time = s.peak, peak_hu = s.peak_hu)
+    dhu = ph.reference[(state, roi)]
+    k = findfirst(>=(threshold_hu), dhu); k === nothing && error("the ROI never reaches +$threshold_hu HU")
+    kp = argmax(dhu)
+    return (arrival = ph.times[k], peak = ph.times[kp] - lead_s, peak_time = ph.times[kp], peak_hu = dhu[kp])
 end
 
 """
@@ -306,20 +350,58 @@ function hu_per_mg_ml(material::AbstractString, energy_keV::Real)
     return 1000 * (μ(iodinated(b, 1.0)) - μ(b)) / (μ(XA.Materials.water) - μ(XA.Materials.air))
 end
 
-function _assign(ph, conc, tol)
-    groups = Dict{String, Vector{Int}}(); for l in keys(ph.counts)
-        push!(get!(groups, ph.table[l].base, Int[]), l)
+# a label's merge group: its base material, and for a label that carries iodine also its ROI (so no material spans two
+# ROIs and every ROI keeps its iodine mass exactly)
+_group(ph, l) = (ph.table[l].base, ph.table[l].kind == "static" ? -2 : ph.table[l].roi)
+
+# optimal 1-D weighted k-means of sorted values `v` (weights `w`) for k = 1..kmax: cost[k] (Σ w (v - bin mean)²) and the
+# bin starts of each k, by dynamic programming over prefix sums
+function _kmeans1d(v, w, kmax)
+    n = length(v); kmax = min(kmax, n)
+    W = cumsum([0.0; w]); S = cumsum([0.0; w .* v]); Q = cumsum([0.0; w .* v .^ 2])
+    sse(i, j) = (ww = W[j + 1] - W[i]; ww <= 0 ? 0.0 : max(0.0, Q[j + 1] - Q[i] - (S[j + 1] - S[i])^2 / ww))
+    D = fill(Inf, kmax, n); B = zeros(Int, kmax, n)
+    for j in 1:n
+        D[1, j] = sse(1, j); B[1, j] = 1
+    end
+    for k in 2:kmax, j in k:n, i in k:j
+        c = D[k - 1, i - 1] + sse(i, j); c < D[k, j] && (D[k, j] = c; B[k, j] = i)
+    end
+    starts(k) = (
+        st = Int[]; j = n; for kk in k:-1:1
+            i = B[kk, j]; pushfirst!(st, i); j = i - 1
+        end; st
+    )
+    return D[:, n], starts
+end
+
+# The fewest merges that fit `max_materials`: static labels of one base share a material (no iodine, nothing lost); every
+# iodinated group starts with one material, and each further material goes to the group whose iodine error it lowers
+# most. A merged material is its members' voxel-weighted mean, so mass is conserved in every group.
+function _assign(ph, conc, max_materials)
+    groups = Dict{Tuple{String, Int}, Vector{Int}}(); for l in keys(ph.counts)
+        push!(get!(groups, _group(ph, l), Int[]), l)
+    end
+    keys_ = sort(collect(keys(groups)))
+    length(keys_) > max_materials && error("$(length(keys_)) base material × ROI groups in the volume, more than max_materials = $max_materials: raise it (BasisSimulator then uses its slower :dd projector)")
+    sol = Dict{Tuple{String, Int}, Any}(); nk = Dict(g => 1 for g in keys_)
+    for g in keys_
+        ls = groups[g]; v = [conc[l] for l in ls]; o = sortperm(v); ls = ls[o]; groups[g] = ls
+        sol[g] = g[2] == -2 ? (cost = [0.0], starts = k -> [1]) : (r = _kmeans1d(v[o], Float64[ph.counts[l] for l in ls], max_materials); (cost = r[1], starts = r[2]))
+    end
+    for _ in 1:(max_materials - length(keys_))
+        gain(g) = nk[g] < length(sol[g].cost) ? sol[g].cost[nk[g]] - sol[g].cost[nk[g] + 1] : -Inf
+        g = argmax(gain, keys_); gain(g) > 0 || break
+        nk[g] += 1
     end
     lut = Dict{Int, Int}(); mats = XA.Material[]; err = Dict{Int, Float64}()
-    for base in sort(collect(keys(groups)))
-        ls = groups[base]; v = [conc[l] for l in ls]; w = [ph.counts[l] for l in ls]; o = sortperm(v); start = -Inf; bins = Vector{Vector{Int}}()
-        for i in o
-            v[i] - start > tol && (push!(bins, Int[]); start = v[i]); push!(bins[end], i)
-        end
-        for b in bins
-            cbar = sum(v[b] .* w[b]) / sum(w[b]); push!(mats, iodinated(ph.materials[base], cbar))
-            for i in b
-                lut[ls[i]] = length(mats); err[ls[i]] = v[i] - cbar
+    for g in keys_
+        ls = groups[g]; st = [sol[g].starts(nk[g]); length(ls) + 1]
+        for b in 1:(length(st) - 1)
+            m = ls[st[b]:(st[b + 1] - 1)]; w = [ph.counts[l] for l in m]
+            cbar = sum(conc[l] * ph.counts[l] for l in m) / sum(w); push!(mats, iodinated(ph.materials[g[1]], cbar))
+            for l in m
+                lut[l] = length(mats); err[l] = conc[l] - cbar
             end
         end
     end
@@ -327,20 +409,18 @@ function _assign(ph, conc, tol)
 end
 
 """
-    materials_at(ph, state, t; max_materials = 64, tol0 = 1e-4) -> (; lut, materials, tol, err)
+    materials_at(ph, state, t; max_materials = 64) -> (; lut, materials, err, max_err)
 
-Labels that share a base material and whose iodine at time `t` differs by ≤ `tol` mg/mL become one material; `tol`
-grows until the table fits `max_materials` (64 keeps BasisSimulator's `:dd_fast` projector). `err` is each label's iodine
-error in mg/mL.
+The material table of the phantom at time `t`, at most `max_materials` long (64 keeps BasisSimulator's `:dd_fast`
+projector; more falls back to its slower `:dd`). Different base materials are never merged, and a label that carries
+iodine is merged only with labels of its own base material and ROI: the fewest merges that fit, each merged material at
+its members' voxel-weighted mean iodine, so the total iodine and every ROI's iodine are kept exactly. `err` is each
+label's iodine error (mg/mL), `max_err` the largest.
 """
-function materials_at(ph::Dyn, state, t; max_materials = 64, tol0 = 1.0e-4)
-    conc = iodine(ph, state, t); tol = tol0
-    nbase = length(unique(ph.table[l].base for l in keys(ph.counts)))
-    nbase > max_materials && error("$nbase base materials in the volume, more than max_materials = $max_materials")
-    while true
-        lut, mats, err = _assign(ph, conc, tol); length(mats) <= max_materials && return (; lut, materials = mats, tol, err); tol *= 1.25
-    end
-    return
+function materials_at(ph::Dyn, state, t; max_materials = 64)
+    conc = iodine(ph, state, t)
+    lut, mats, err = _assign(ph, conc, max_materials)
+    return (; lut, materials = mats, err, max_err = maximum(abs, values(err); init = 0.0))
 end
 
 """
@@ -357,7 +437,7 @@ function bs_phantom(ph::Dyn, BS; state, t, max_materials = 64)
     mask = similar(ph.labels, UInt8); @inbounds for i in eachindex(mask)
         mask[i] = lutv[ph.labels[i] + 1]
     end
-    return BS.Phantom(mask, Dict{Int, XA.Material}(k - 1 => x for (k, x) in enumerate(m.materials)), Tuple(fill(parse(Float64, ph.facts["voxel_mm"]) / 10, 3))), m
+    return BS.Phantom(mask, Dict{Int, XA.Material}(k - 1 => x for (k, x) in enumerate(m.materials)), Tuple(fill(ph.voxel_mm / 10, 3))), m
 end
 
 end # module
