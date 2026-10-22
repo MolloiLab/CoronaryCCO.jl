@@ -366,8 +366,9 @@ unchanged), so the lung keeps the default.
 ## 16. Organ size scaling (`size_scale`)
 
 **What upstream does.** Its longest new connection (25 units), the territory reach of this port (6 mm), the convergence
-tolerance of each bifurcation (a volume) and the spacing of imaged centrelines (2.8 mm here) are fixed numbers, set for
-adult human hearts.
+tolerance of each bifurcation (a volume), the spacing of imaged centrelines (2.8 mm here) and the spacing, reach and
+depth of the inlet tree's penetrating stubs (`XCAT.penetrating_stubs`: 2.8, 6 and 1.5 mm; upstream adds none) are fixed
+numbers, set for adult human hearts.
 
 **What Vasculature.jl does.** They scale with the organ's length against a reference tissue volume:
 `size_scale = (tissue_ml / reference_ml)^(1/3)` (`GrowthSpec`; reference 148.1 mL, the adult myocardium the package is

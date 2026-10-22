@@ -65,7 +65,13 @@ share). Count a `.vol`
 domain's volume with `img, _ = read_vol("leg.vol"); count(>(0x80), img) / 1000` (mL, 1 mm voxels).
 
 XCAT inputs (NURBS surfaces, vessel centrelines, organ masks) are read with `Vasculature.XCAT` (`read_nrb`, `centerline`,
-`base_forest`, `fill_supply_gaps`).
+`base_forest`, `penetrating_stubs`, `fill_supply_gaps`).
+
+Imaged arteries rarely show their small side branches, and growth attaches new vessels near the inlet tree's ends after its
+first stage. `penetrating_stubs` adds a short branch into the tissue about every `spacing` mm along each imaged vessel,
+where tissue is within reach and no imaged branch is already there, so growth starts along the whole vessel. The heart
+input uses it (2.8 mm, the pig LAD's segment length); another organ passes `scale = size_scale(spec)`, and a bare trunk
+such as a femoral artery needs it most.
 
 More inlets are just more files: `grow(spec, brain, ["lica.xml", "rica.xml", "basilar.xml"])`.
 Veins grow the same way from their imaged outlet trees (`grow(spec, domain, ["left_pulmonary_veins.xml", "right_pulmonary_veins.xml"])`).
