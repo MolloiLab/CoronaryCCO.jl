@@ -285,16 +285,22 @@ function load(dir::AbstractString; volume::Bool = true, rois::Bool = false, zran
     lab = Array{UInt16, 3}(undef, 0, 0, 0); roi = Array{UInt8, 3}(undef, 0, 0, 0); cnt = Dict{Int, Int}()
     if volume
         lab = read_volume(joinpath(dir, meta["files"]["labels"]), dims, UInt16; zrange = zr)
-        cv = zeros(Int, 65536); for v in lab
-            cv[v + 1] += 1
-        end
-        cnt = Dict(i - 1 => n for (i, n) in enumerate(cv) if n > 0)
+        cnt = _label_counts(lab)
         for l in keys(cnt)
             haskey(table, l) || error("label $l is in the volume but not in label_$(first(states)).csv")
         end
     end
     rois && (roi = read_volume(joinpath(dir, meta["files"]["rois"]), dims, UInt8; zrange = zr))
     return Dyn(abspath(dir), meta, lab, roi, org, h, table, mats, times, curves, mbf, lmass, cnt, rt, led, ref)
+end
+
+# a function barrier: counted inline in `load`, the loop ran ~30x slower
+function _label_counts(lab)
+    cv = zeros(Int, 65536)
+    for v in lab
+        cv[v + 1] += 1
+    end
+    return Dict(i - 1 => n for (i, n) in enumerate(cv) if n > 0)
 end
 
 _at(times, y, t) = t <= times[1] ? y[1] : t >= times[end] ? y[end] : (k = searchsortedlast(times, t); w = (t - times[k]) / (times[k + 1] - times[k]); y[k] + w * (y[k + 1] - y[k]))
