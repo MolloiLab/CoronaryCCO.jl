@@ -313,6 +313,10 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         ps = C.DynamicPhantom.load(out; zrange = 2:3) # a z slab of a large phantom
         @test ps.labels == ph.labels[:, :, 2:3] && sum(values(ps.counts)) == length(ps.labels) && ps.origin_mm[3] ≈ grid.origin[3] + grid.h
         @test_throws ArgumentError C.DynamicPhantom.load(out; zrange = 0:2)
+        pb = C.DynamicPhantom.load(out; rois = true, zrange = 2:3, xrange = 2:4, yrange = 3:5) # a box: only it is held
+        @test pb.labels == ph.labels[2:4, 3:5, 2:3] && pb.rois == C.DynamicPhantom.load(out; rois = true).rois[2:4, 3:5, 2:3]
+        @test all(pb.origin_mm .≈ grid.origin .+ (1, 2, 1) .* grid.h)
+        @test_throws ArgumentError C.DynamicPhantom.load(out; xrange = 0:2)
         # merged into few materials, every ROI keeps its iodine: no material spans two ROIs, each is its members' mean
         m = C.DynamicPhantom.materials_at(ph, "rest", 10.0; max_materials = 12)
         @test length(m.materials) <= 12

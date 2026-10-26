@@ -200,17 +200,18 @@ struct Dyn
 end
 
 """
-    read_volume(path, dims, T; zrange = 1:dims[end]) -> Array{T, 3}
+    read_volume(path, dims, T; zrange = 1:dims[3], xrange = 1:dims[1], yrange = 1:dims[2]) -> Array{T, 3}
 
-Reads a volume of the bundle (zstd or raw), only the z slices `zrange`.
+Reads a volume of the bundle (zstd or raw), only the box `xrange` × `yrange` × `zrange`.
 """
-function read_volume(path, dims, ::Type{T}; zrange = 1:dims[end]) where {T}
+function read_volume(path, dims, ::Type{T}; zrange = 1:dims[3], xrange = 1:dims[1], yrange = 1:dims[2]) where {T}
     io = endswith(path, ".zst") ? ZstdDecompressorStream(open(path)) : open(path)
     try
-        # one z slice at a time: a single read of several GB from a pipe fails on macOS (EINVAL)
-        nxy = prod(dims[1:(end - 1)]); A = Array{T}(undef, dims[1:(end - 1)]..., length(zrange)); buf = Vector{T}(undef, nxy)
+        # one z slice at a time (a single read of several GB from a pipe fails on macOS, EINVAL), each cropped to (xrange,
+        # yrange) as it is read, so only the crop is ever held
+        slice = Matrix{T}(undef, dims[1], dims[2]); A = Array{T}(undef, length(xrange), length(yrange), length(zrange))
         for k in 1:last(zrange)
-            read!(io, buf); k >= first(zrange) && copyto!(A, (k - first(zrange)) * nxy + 1, buf, 1, nxy)
+            read!(io, slice); k >= first(zrange) && (A[:, :, k - first(zrange) + 1] .= view(slice, xrange, yrange))
         end
         return A
     finally
@@ -222,16 +223,20 @@ _num(x) = x isa Number ? Float64(x) : (isempty(strip(string(x))) ? NaN : parse(F
 _rows(path) = (A = readdlm(path, ','; header = false, quotes = true); (string.(A[1, :]), A[2:end, :]))
 
 """
-    load(dir; volume = true, rois = false, zrange = nothing) -> Dyn
+    load(dir; volume = true, rois = false, zrange = nothing, xrange = nothing, yrange = nothing) -> Dyn
 
 Reads one scenario folder. `volume` reads `labels.u16.zst`, `rois` also `rois.u8.zst`; `zrange` (slice numbers, 1 = the
-first) reads only those z slices (`origin_mm` is then the slab's). `ph.curves[(state, label)]` is a label's iodine (mg/mL),
+first) reads only those z slices, and `xrange`, `yrange` (voxel numbers) only that box of each (`origin_mm` is then the
+box's). `ph.curves[(state, label)]` is a label's iodine (mg/mL),
 `ph.mbf[(state, label)]` its ground-truth MBF, `ph.table[label]` its name, base material, kind and ROI,
 `ph.roi_table[(state, name)]` a compartment's (or group's) voxels, mass, ground-truth MBF and iodine mass curve (sums over
 its labels), `ph.ledger[state]` the organ's iodine ledger,
 `ph.reference[(state, "roi:<name>")]` a tracking ROI's ΔHU curve (`scan_times` reads it), `ph.meta` the `phantom.toml`.
 """
-function load(dir::AbstractString; volume::Bool = true, rois::Bool = false, zrange::Union{Nothing, AbstractUnitRange{<:Integer}} = nothing)
+function load(
+        dir::AbstractString; volume::Bool = true, rois::Bool = false, zrange::Union{Nothing, AbstractUnitRange{<:Integer}} = nothing,
+        xrange::Union{Nothing, AbstractUnitRange{<:Integer}} = nothing, yrange::Union{Nothing, AbstractUnitRange{<:Integer}} = nothing
+    )
     meta = TOML.parsefile(joinpath(dir, "phantom.toml")); states = String.(meta["states"]); g = meta["grid"]
     dims = Tuple(Int.(g["dims"])); h = Float64(g["voxel_mm"]); o = Float64.(g["origin_mm"])
     table = Dict{Int, NamedTuple{(:name, :base, :kind, :roi), Tuple{String, String, String, Int}}}()
@@ -279,18 +284,20 @@ function load(dir::AbstractString; volume::Bool = true, rois::Bool = false, zran
             ref[(st, "roi:$name")] = hpm .* get(curves, (st, l), zeros(length(times)))
         end
     end
-    zr = zrange === nothing ? (1:dims[end]) : zrange
-    1 <= first(zr) <= last(zr) <= dims[end] || throw(ArgumentError("zrange $zr is outside the volume's 1:$(dims[end]) slices"))
-    org = (o[1], o[2], o[3] + (first(zr) - 1) * h)
+    xr, yr, zr = (r === nothing ? (1:dims[d]) : r for (d, r) in enumerate((xrange, yrange, zrange)))
+    for (name, r, n) in (("xrange", xr, dims[1]), ("yrange", yr, dims[2]), ("zrange", zr, dims[3]))
+        1 <= first(r) <= last(r) <= n || throw(ArgumentError("$name $r is outside the volume's 1:$n"))
+    end
+    org = (o[1] + (first(xr) - 1) * h, o[2] + (first(yr) - 1) * h, o[3] + (first(zr) - 1) * h)
     lab = Array{UInt16, 3}(undef, 0, 0, 0); roi = Array{UInt8, 3}(undef, 0, 0, 0); cnt = Dict{Int, Int}()
     if volume
-        lab = read_volume(joinpath(dir, meta["files"]["labels"]), dims, UInt16; zrange = zr)
+        lab = read_volume(joinpath(dir, meta["files"]["labels"]), dims, UInt16; zrange = zr, xrange = xr, yrange = yr)
         cnt = _label_counts(lab)
         for l in keys(cnt)
             haskey(table, l) || error("label $l is in the volume but not in label_$(first(states)).csv")
         end
     end
-    rois && (roi = read_volume(joinpath(dir, meta["files"]["rois"]), dims, UInt8; zrange = zr))
+    rois && (roi = read_volume(joinpath(dir, meta["files"]["rois"]), dims, UInt8; zrange = zr, xrange = xr, yrange = yr))
     return Dyn(abspath(dir), meta, lab, roi, org, h, table, mats, times, curves, mbf, lmass, cnt, rt, led, ref)
 end
 
