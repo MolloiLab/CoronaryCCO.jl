@@ -327,16 +327,20 @@ function hu(ph::Dyn, state, t; energy_keV = ph.meta["energy_keV"])
 end
 
 """
-    scan_times(ph; state, roi = the first tracking ROI, threshold_hu = 80, lead_s = 1)
+    scan_times(ph; state, roi = the first tracking ROI, threshold_hu = 80, lead_s = 1, step = 0.5)
 
-Bolus-tracking times of a loaded phantom from its tracking ROI (ΔHU): `arrival` (first sample ≥ +`threshold_hu`), `peak`
-(`lead_s` before the ROI maximum, the usual scan time), `peak_time` (the maximum) and `peak_hu`, on the curves' time grid.
+Bolus-tracking times of a loaded phantom from its tracking ROI (ΔHU), sampled every `step` s (the tracking scan's
+cadence) on the curve interpolated between the stored frames: `arrival` (first sample ≥ +`threshold_hu`), `peak`
+(`lead_s` before the ROI maximum, the usual scan time), `peak_time` (the maximum) and `peak_hu`.
 """
-function scan_times(ph::Dyn; state, roi = first(k for k in keys(ph.reference) if k[1] == state)[2], threshold_hu = 80.0, lead_s = 1.0)
-    dhu = ph.reference[(state, roi)]
-    k = findfirst(>=(threshold_hu), dhu); k === nothing && error("the ROI never reaches +$threshold_hu HU")
-    kp = argmax(dhu)
-    return (arrival = ph.times[k], peak = ph.times[kp] - lead_s, peak_time = ph.times[kp], peak_hu = dhu[kp])
+function scan_times(
+        ph::Dyn; state, roi = first(k for k in keys(ph.reference) if k[1] == state)[2], threshold_hu = 80.0, lead_s = 1.0,
+        step = 0.5
+    )
+    dhu = ph.reference[(state, roi)]; ts = ph.times[1]:step:ph.times[end]; y = [_at(ph.times, dhu, t) for t in ts]
+    k = findfirst(>=(threshold_hu), y); k === nothing && error("the ROI never reaches +$threshold_hu HU")
+    kp = argmax(y)
+    return (arrival = ts[k], peak = ts[kp] - lead_s, peak_time = ts[kp], peak_hu = y[kp])
 end
 
 """

@@ -310,6 +310,8 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         hu10 = C.DynamicPhantom.hu(ph, "rest", 10.0); @test hu10[0] ≈ -1000 atol = 1 # air
         @test all(hu10[l] > hu10[l1] - 1.0e-6 for l in tis if ph.curves[("rest", l)][6] > ph.curves[("rest", l1)][6]) # more iodine, brighter
         st = C.DynamicPhantom.scan_times(ph; state = "rest"); @test st.arrival <= st.peak_time
+        st4 = C.DynamicPhantom.scan_times(ph; state = "rest", step = 0.25) # a tracking scan every 0.5 s by default
+        @test isinteger((st.arrival - ph.times[1]) / 0.5) && isinteger((st4.arrival - ph.times[1]) / 0.25) && st4.arrival <= st.arrival
         ps = C.DynamicPhantom.load(out; zrange = 2:3) # a z slab of a large phantom
         @test ps.labels == ph.labels[:, :, 2:3] && sum(values(ps.counts)) == length(ps.labels) && ps.origin_mm[3] ≈ grid.origin[3] + grid.h
         @test_throws ArgumentError C.DynamicPhantom.load(out; zrange = 0:2)
