@@ -132,13 +132,15 @@ of everything in it, vessels included.
 
 The ledger (`ledger_<state>.csv`) is the organ's iodine at each time: delivered through the inlets, held in its arteries,
 beds and veins, out through its venous outlet, and painted. With `check`, the build fails when delivered ≠ held +
-outflow or painted ≠ held (beyond 1% of the peak delivered mass).
+outflow or painted ≠ held (beyond 1% of the peak delivered mass). `verbose` logs each stage's seconds.
 """
 function phantom(
         spec::PhantomSpec, scans, classify, grid::VoxelGrid; pairs, terr, nvox::Integer, out::AbstractString,
         roi = (p -> 0), roi_names::AbstractVector{<:AbstractString} = String[], roi_groups = Pair{String, Vector{Int}}[],
-        tracking = Pair{String, Tuple}[], facts = Pair{String, Any}[], check::Bool = true
+        tracking = Pair{String, Tuple}[], facts = Pair{String, Any}[], check::Bool = true, verbose::Bool = false
     )
+    started = Ref(time()) # `verbose`: each stage's seconds
+    lap(stage) = (verbose && @info "phantom: $stage $(round(time() - started[]; digits = 1)) s"; started[] = time())
     mkpath(out); nT = length(spec.times); nS = length(scans); states = [String(s[1]) for s in scans]
     R = length(roi_names); K = spec.tissue_classes; KV = spec.vessel_classes
     R <= 255 || throw(ArgumentError("phantom: at most 255 ROIs"))
@@ -152,6 +154,7 @@ function phantom(
     a, cen = compartment_classes(Matrix{Float32}(reduce(vcat, permutedims.(Xs))), K)
     trank = invperm(sortperm(vec(sum(cen; dims = 1)))); tclass = Int[trank[a[v]] for v in 1:nvox] # 1 = least enhancing
     tlabel(r, c) = 1000 + r * K + c
+    lap("tissue classes")
     # ---- vessels: grown segments of radius ≥ vessel_rmin_mm and the imaged (base) ones, k-means on their blood curves
     C1 = scans[1][2]; trees = (C1.tree, C1.veins); na = length(C1.tree.r); nv = length(C1.veins.r)
     vols = [blood_volumes(C) for (_, C, _) in scans]
@@ -169,6 +172,7 @@ function phantom(
     segab(t, j) = (trees[t].a[:, j], trees[t].b[:, j], trees[t].r[j])
     zr = [(sa = segab(t, j); (min(sa[1][3], sa[2][3]) - sa[3], max(sa[1][3], sa[2][3]) + sa[3])) for (t, j) in stamped]
     zo = sortperm(first.(zr))
+    lap("vessel classes")
     # ---- pools, ids from 100 in order of first use (an :out pool once per delay bin)
     pid = Dict{Tuple{Int, Int}, Int}()
     function poolid(i, d)
@@ -184,6 +188,7 @@ function phantom(
         k == VOX_TISSUE && return aa > 0 ? tlabel(r, tclass[aa]) : 1000
         t = aa > 0 ? 1 : 2; return vlabel(r, t, vclass(t, abs(aa)))
     end
+    lap("pools")
     # ---- stream the volumes one z slice at a time, counting every voxel by (ROI, label), tissue by (ROI, territory voxel)
     # and vessel voxels by (ROI, segment)
     nx, ny, nz = grid.dims; h = grid.h; o = grid.origin
@@ -256,12 +261,14 @@ function phantom(
         write_slice!(wl, sl); write_slice!(wr, RO)
     end
     close(wl); close(wr)
+    lap("slices (classify, label, compress)")
     # ---- the tracking points' labels (a pool bin a point names is kept even if no voxel holds it)
     track = Dict{String, Any}()
     for (tn, p) in tracking
         pt = Tuple(1.0 .* p); k, aa, d = classify(pt)
         track[tn] = Dict("point_mm" => collect(Float64.(pt)), "label" => label_at(k, aa, d, Int(roi(pt))))
     end
+    lap("tracking points")
     # ---- masses: every artery and vein without a painted voxel gives its iodine to its beds; each bed is spread over the
     # territory voxels that kept tissue sub-voxels (its own territory, so its iodine and flow stay where it is) and each of
     # those over its tissue sub-voxels; each segment over its painted voxels
@@ -325,6 +332,7 @@ function phantom(
             end
         end
     end
+    lap("masses")
     # ---- the label table
     nvl = vec(sum(cnt_l; dims = 1)); pkey = Dict(v => k for (k, v) in pid)
     ids = sort!(unique!([[l - 1 for l in 1:nl if nvl[l] > 0]; [tr["label"] for tr in values(track)]]))
@@ -360,6 +368,7 @@ function phantom(
         curve === nothing || (conc[id] = curve)
         push!(labels, (; id, name, roi = lroi(id), kind = kd, base_material = base, voxels = n, mass_g = n * vml * dens(base), mbf, curve))
     end
+    lap("label table")
     # ---- the iodine ledger
     organ = [l for l in labels if l.kind in ("tissue", "artery", "vein")]
     ledger = map(1:nS) do s
@@ -381,6 +390,7 @@ function phantom(
             w.p <= 0.01 || error("phantom: $(states[s]) painted iodine differs from the held iodine by $(round(100w.p; digits = 2))% of the peak delivered mass")
         end
     end
+    lap("ledger")
     # ---- tables, then each state's ground-truth MBF map from the labels
     flow = [s => sum(C.q[j] for j in eachindex(C.tree.parent) if C.tree.parent[j] == 0) * 60 / sum(terr) for (s, C, _) in scans]
     files = Dict{String, Any}("labels" => "labels.u16.zst", "rois" => "rois.u8.zst", ("mbf_" * st => "mbf_$st.f32.zst" for st in states)...)
@@ -410,5 +420,6 @@ function phantom(
         end
     end
     close(lab); foreach(close, ws)
+    lap("tables and MBF maps")
     return (; dir = out, ids, counts = Dict(l.id => l.voxels for l in labels), flow, ledger, worst, lost)
 end
