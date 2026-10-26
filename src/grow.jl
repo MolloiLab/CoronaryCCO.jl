@@ -366,9 +366,12 @@ end
 # cells is counted only in the first cell (per axis) shared by its box and the query box.
 @inline function nearest_k!(bd, bj, col, E, p::P3{T}, n::Int) where {T}
     k = _nearest_any!(bd, bj, col, E, p, n)
-    E.open == 0x7fff && return k
-    # GrowthSpec split: of the nearest segments of every tree, keep those of the trees that may grow now. A location deep in
-    # the territory of a tree that holds its share is passed over, not reached for from a distant tree.
+    (E.open == 0x7fff || k == 0) && return k
+    # GrowthSpec split: a location belongs to the tree of its nearest segment, so territories stay contiguous; if that tree
+    # holds its share now, the location is passed over (re-sampled), never joined to a farther tree. Of its nearest
+    # segments, those of the trees that may grow now are the candidates.
+    t1 = @inbounds E.treeid[bj[1, col]]
+    (t1 == 0 || (E.open >> (t1 - 0x01)) & 0x0001 == 0x0001) || return 0
     kept = 0
     @inbounds for i in 1:k
         t = E.treeid[bj[i, col]]
