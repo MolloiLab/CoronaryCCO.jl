@@ -1,0 +1,45 @@
+# Ishikawa K, Haneda T, Ikeda S, Tsuiki K, Miyazawa K (1974). Coronary circulation time in man. Indocyanine green
+# into the aortic root, dye-dilution curve sampled from the coronary sinus, ten patients without heart disease.
+# ABSTRACT ONLY (J-STAGE abstract page; PubMed has no abstract text).
+
+[meta]
+id = "ishikawa1974_coronary_circulation_time"
+data_type = "experimental"
+validates = "Human resting whole-bed intravascular transit from the aortic root to the coronary sinus: mean transit time, appearance time and peak-concentration time of an intravascular dye."
+species = "human"
+preparation = "Ten patients without heart disease; catheters in the coronary sinus and the aortic root. Cardiogreen (indocyanine green) injected into the aortic root; dye-dilution curve recorded from the coronary sinus."
+conditions = "Rest; no vasodilator stated in the abstract."
+verification = "abs"
+access = "Abstract on the J-STAGE article page (https://www.jstage.jst.go.jp/article/tjem1920/114/3/114_3_253/_article). PubMed record (PMID 4617334) has no abstract text. Full text not read."
+notes = """
+'Coronary circulation time' is defined in the abstract as the mean transit time of the dye.
+The abstract states the circulation time had no significant correlation with age, body surface area, heart rate, aortic pressure, arterial O2 saturation, arterial or coronary sinus O2 content, MVO2, coronary vascular resistance or coronary sinus blood flow; it did correlate with the coronary arteriovenous O2 difference (no r given).
+Coronary sinus blood flow, heart mass and dye-curve recirculation handling are not in the abstract.
+The ratio appearance / MTT from the two group means is about 0.47; that is a ratio of means, not a per-patient statistic, and is not stored as data.
+"""
+use_in_model = """Inject an intravascular bolus at the model aortic root (both ostia), record outflow at the venous root (coronary sinus analog) and compute the transit-time density at resting flow. Compare MTT with 8.1 +/- 2.1 s (range 4.7-11.2), first appearance with 3.8 +/- 1.2 s and peak time with 4.7 +/- 1.8 s. The model's coronary sinus drains the whole bed while the human coronary sinus drains mostly LV myocardium. No hyperemic data in this source."""
+
+[source]
+authors = ["Ishikawa K", "Haneda T", "Ikeda S", "Tsuiki K", "Miyazawa K"]
+year = 1974
+title = "Coronary circulation time in man"
+journal = "Tohoku J Exp Med"
+volume = "114"
+issue = "3"
+pages = "253-261"
+doi = "10.1620/tjem.114.253"
+crossref_verified = "2026-10-26; Crossref title 'Coronary Circulation Time in Man' matches (Tohoku J Exp Med 114(3):253-261, 1974; first authors Ishikawa, Haneda, Ikeda)"
+pmid = "4617334"
+
+[data.rest_transit_times]
+description = "Aortic root to coronary sinus dye transit at rest, ten patients without heart disease"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SD (SD assumed: abstract prints 'average of 8.1+/-2.1 sec' without label); n = patients"
+quantity = ["mean transit time (coronary circulation time)", "appearance time", "peak concentration time"]
+mean_s = [8.1, 3.8, 4.7]
+sd_s = [2.1, 1.2, 1.8]
+range_min_s = [4.7, nan, nan]
+range_max_s = [11.2, nan, nan]
+n = 10
+missing_note = "Ranges are given only for the mean transit time. The +/- statistic is not labelled SD or SE in the abstract."

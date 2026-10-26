@@ -1,0 +1,57 @@
+# Kang SH, Park HK, Lee CW, et al. (1998). Impaired flow-mediated vasodilation of epicardial coronary artery in
+# vasospastic angina. Human LAD, QCA diameter at baseline, after distal intracoronary adenosine and after
+# nitroglycerin, proximal vs mid segment. ABSTRACT ONLY (PMC3054541 holds only the abstract plus a PDF).
+
+[meta]
+id = "kang1998_flow_mediated_epicardial_dilation"
+data_type = "experimental"
+validates = "Flow-mediated dilation of human epicardial conduit arteries at adenosine hyperemia, proximal vs mid LAD, in controls vs vasospastic angina; nitroglycerin dilation as the maximal-relaxation comparator."
+species = "human"
+preparation = "15 patients with vasospastic angina (spasm-related LAD) and 15 controls. Quantitative coronary angiography of proximal (pLAD) and mid LAD; Doppler average peak velocity."
+conditions = "Baseline; increased flow after distal intracoronary adenosine injection (dose not in abstract); then proximal nitroglycerin."
+verification = "abs"
+access = "PubMed abstract (PMID 9886166); PMC3054541 page shows the abstract only, the full text is a PDF that was not read."
+notes = """
+The abstract labels the velocity values as mean +/- SEM ('340 (mean)+/-24 (SEM)%'); the diameter percentages carry +/- without a label and are taken as SEM by the same convention.
+'Increased fraction of average peak velocity' after adenosine: control 340 +/- 24%, VA 330 +/- 19% (meaning of the percentage, ratio x 100 vs increase, not stated).
+Control group characteristics, baseline diameters in mm and adenosine dose are not in the abstract.
+"""
+use_in_model = """If the model lets epicardial conduit diameters respond to flow at hyperemia, compare its percentage diameter increase with 13.1% (proximal LAD) and 15.8% (mid LAD) in normal arteries, and with about 26-27% after nitroglycerin as an upper bound. A model with fixed epicardial diameters sits at 0% and so underestimates hyperemic epicardial volume (volume scales with diameter squared)."""
+
+[source]
+authors = ["Kang SH", "Park HK", "Lee CW", "Kim JJ", "Hong MK", "Park SW", "Park SJ"]
+year = 1998
+title = "Impaired flow-mediated vasodilation of epicardial coronary artery in vasospastic angina"
+journal = "J Korean Med Sci"
+volume = "13"
+issue = "6"
+pages = "591-596"
+doi = "10.3346/jkms.1998.13.6.591"
+crossref_verified = "2026-10-26; Crossref title exact match (J Korean Med Sci 13(6), first page 591, 1998; first authors Kang, Park, Lee)"
+pmid = "9886166"
+pmcid = "PMC3054541"
+
+[data.diameter_change]
+description = "Percent change in LAD lumen diameter from baseline with adenosine-induced flow increase and with nitroglycerin (QCA)"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SEM (label stated only for velocity; assumed for diameter); n = patients"
+group = ["control", "control", "vasospastic_angina", "vasospastic_angina"]
+segment = ["proximal_LAD", "mid_LAD", "proximal_LAD", "mid_LAD"]
+n = [15, 15, 15, 15]
+adenosine_change_mean_pct = [13.1, 15.8, -1.0, 0.1]
+adenosine_change_sem_pct = [1.4, 2.5, 1.8, 3.5]
+nitroglycerin_change_mean_pct = [25.8, 27.2, 26.2, 26.7]
+nitroglycerin_change_sem_pct = [2.8, 2.8, 5.2, 3.5]
+missing_note = "Absolute diameters (mm) not in the abstract."
+
+[data.velocity_response]
+description = "Increase in average peak velocity after adenosine"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- SEM; n = patients"
+group = ["control", "vasospastic_angina"]
+n = [15, 15]
+apv_increase_mean_pct = [340.0, 330.0]
+apv_increase_sem_pct = [24.0, 19.0]
+missing_note = "Whether the percentage is hyperemic/baseline x 100 or the increase over baseline is not stated."

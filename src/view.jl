@@ -105,6 +105,7 @@ struct TreeView{T, M, F, G, D, VI8, VB, VU8, VR, VT}
     rcaps::VT             # root radius cap of each tree
     rest::VT              # per tree: unscaled volume of the other trees
     rmin::VT              # per tree: tightest cap ratio of the other trees
+    open::UInt16          # trees at or below their share of the flow now (Engine.open)
 end
 Adapt.@adapt_structure TreeView
 
@@ -237,6 +238,6 @@ function tree_view(E::Engine{T}, vc::ViewCache; to = identity) where {T}
         M, F, G, D, P, up(:tcount, E.tcount), up(:middle, E.middle), up(:isbase, E.isbase), up(:treeid, E.treeid), E.cscale,
         E.lscale, E.max_angle_cos, E.rmax, up(:big, E.big), length(E.big),
         E.fix_base, E.volume === :full, _keepout(T, E), T(_level(E)), up(:roots, E.roots), up(:rcaps, E.rcaps),
-        up(:rest, E.rest), up(:rmin, E.rmin)
+        up(:rest, E.rest), up(:rmin, E.rmin), E.open
     )
 end

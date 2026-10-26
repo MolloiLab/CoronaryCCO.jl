@@ -1,0 +1,43 @@
+# Reis SE, Holubkov R, Lee JS, et al. (1999). Coronary flow velocity response to adenosine characterizes coronary
+# microvascular function in women with chest pain and no obstructive coronary disease (WISE pilot). Intracoronary
+# Doppler plus QCA cross-sectional area at intracoronary adenosine. ABSTRACT ONLY.
+
+[meta]
+id = "reis1999_adenosine_epicardial_area"
+data_type = "experimental"
+validates = "Epicardial coronary cross-sectional area change at intracoronary adenosine hyperemia in women with normal vs abnormal microvascular function, alongside velocity increase and coronary flow reserve."
+species = "human"
+preparation = "48 women with chest pain and normal coronary arteries or minimal luminal irregularities (mean stenosis 7%). Intracoronary Doppler ultrasonography and quantitative angiography; volumetric flow reserve from velocity and area."
+conditions = "Baseline vs intracoronary adenosine (dose not in abstract)."
+verification = "abs"
+access = "Abstract via PubMed E-utilities (PMID 10334410). Full text not read."
+notes = """
+Groups are split by coronary flow reserve: abnormal microcirculation n = 29 (mean CFR 1.84), normal n = 19 (mean CFR 3.24). No dispersion statistics in the abstract.
+'Failure of the epicardial coronary to dilate at least 9%' was 79% sensitive and 79% specific for microvascular dysfunction; the abstract does not say whether the 9% refers to diameter or area.
+Coronary velocity reserve threshold 2.24 gave 90% sensitivity and 89% specificity. Volumetric flow reserve vs velocity reserve: r = 0.87.
+"""
+use_in_model = """For a model with normal microvascular function, compare the epicardial cross-sectional area change at hyperemia with +17% (normal-microcirculation group, CFR about 3.2). The abnormal group (no area change) shows the conduit response depends on the flow increase."""
+
+[source]
+authors = ["Reis SE", "Holubkov R", "Lee JS", "Sharaf B", "Reichek N", "Rogers WJ", "Walsh EG", "Fuisz AR", "Kerensky R", "Detre KM", "Sopko G", "Pepine CJ"]
+year = 1999
+title = "Coronary flow velocity response to adenosine characterizes coronary microvascular function in women with chest pain and no obstructive coronary disease. Results from the pilot phase of the Women's Ischemia Syndrome Evaluation (WISE) study"
+journal = "J Am Coll Cardiol"
+volume = "33"
+issue = "6"
+pages = "1469-1475"
+doi = "10.1016/s0735-1097(99)00072-8"
+crossref_verified = "2026-10-26; Crossref title matches the main title (Crossref omits the 'Results from the pilot phase...' subtitle); J Am Coll Cardiol 33(6):1469-1475, 1999; first authors Reis, Holubkov, Lee"
+pmid = "10334410"
+
+[data.adenosine_response]
+description = "Change in coronary flow velocity and epicardial cross-sectional area with intracoronary adenosine, by microvascular function group"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "group means only (no SD/SE in abstract); n = women"
+group = ["normal_microcirculation", "abnormal_microcirculation"]
+n = [19, 29]
+mean_cfr = [3.24, 1.84]
+velocity_increase_pct = [179.0, 89.0]
+area_change_pct = [17.0, nan]
+missing_note = "Abnormal group: abstract says adenosine 'did not change coronary cross-sectional area' (no number), stored as nan. Segment (proximal/distal) not stated."

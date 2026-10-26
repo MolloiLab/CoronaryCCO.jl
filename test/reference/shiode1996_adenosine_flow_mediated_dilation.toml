@@ -1,0 +1,48 @@
+# Shiode N, Morishima N, Nakayama K, et al. (1996). Flow-mediated vasodilation of human epicardial coronary
+# arteries: effect of inhibition of nitric oxide synthesis. Proximal LAD QCA diameter during intracoronary
+# adenosine 100 ug/min, before and after L-NMMA. ABSTRACT ONLY.
+
+[meta]
+id = "shiode1996_adenosine_flow_mediated_dilation"
+data_type = "experimental"
+validates = "Flow-mediated dilation of the human proximal LAD at intracoronary adenosine hyperemia, with the accompanying flow increase and baseline diameter."
+species = "human"
+preparation = "12 patients. Quantitative coronary angiography of the proximal LAD and intracoronary Doppler flow velocity. Adenosine 100 ug/min infused into the LAD; acetylcholine 3 and 30 ug/min into the left ostium; L-NMMA 25 umol/min for 5 min intracoronary."
+conditions = "Baseline, intracoronary adenosine (flow increase), acetylcholine; repeated after L-NMMA."
+verification = "abs"
+access = "Abstract via PubMed E-utilities (PMID 8557898). Full text not read."
+notes = """
+The abstract labels the diameters 'mean +/- SEM'; the same convention is assumed for all values.
+Patient characteristics (angiographically normal or not) are not stated in the abstract.
+Flow-mediated dilation persisted after L-NMMA, so the authors conclude mediators other than NO are responsible.
+"""
+use_in_model = """Compare model proximal-LAD diameter change at hyperemia with +9.2% for a flow increase of about +400% (about 5x). With fixed epicardial diameters the model sits at 0%."""
+
+[source]
+authors = ["Shiode N", "Morishima N", "Nakayama K", "Yamagata T", "Matsuura H", "Kajiyama G"]
+year = 1996
+title = "Flow-mediated vasodilation of human epicardial coronary arteries: effect of inhibition of nitric oxide synthesis"
+journal = "J Am Coll Cardiol"
+volume = "27"
+issue = "2"
+pages = "304-310"
+doi = "10.1016/0735-1097(95)00465-3"
+crossref_verified = "2026-10-26; Crossref title exact match (J Am Coll Cardiol 27(2):304-310, 1996; first authors Shiode, Morishima, Nakayama)"
+pmid = "8557898"
+
+[data.proximal_lad_response]
+description = "Proximal LAD flow and diameter responses to intracoronary adenosine 100 ug/min, before and after L-NMMA"
+location = "Abstract (Results)"
+provenance = "abs"
+statistic = "mean +/- SEM; n = 12 patients"
+condition = ["before_LNMMA", "after_LNMMA"]
+n = [12, 12]
+baseline_diameter_mm = [2.90, 2.74]
+baseline_diameter_sem_mm = [0.14, 0.13]
+adenosine_cbf_increase_pct = [399.5, 511.9]
+adenosine_cbf_increase_sem_pct = [27.5, 33.3]
+adenosine_diameter_change_pct = [9.2, 8.6]
+adenosine_diameter_change_sem_pct = [1.5, 2.1]
+acetylcholine_3ug_diameter_change_pct = [7.6, -1.8]
+acetylcholine_3ug_diameter_change_sem_pct = [1.0, 1.0]
+missing_note = "Diameters under adenosine (mm) not in the abstract. Acetylcholine 30 ug/min responses not given numerically."

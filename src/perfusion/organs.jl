@@ -56,6 +56,12 @@ const HEART_FLOW = FlowSpec(;
     # normal pig myocardium, by 64-slice CT and EBCT, similar during adenosine.
     # [daghini2007_ct64_myocardial_permeability]
     ps = 0.37f0,
+    # 1. Imaged (epicardial) coronaries are 13% wider in diameter at maximal hyperemia than at rest: adenosine, proximal
+    # LAD +13.1 +/- 1.4% and mid LAD +15.8 +/- 2.5% (n = 15); +9.2 +/- 1.5% proximal (n = 12); distal +15% (n = 24);
+    # IVUS area +17% (n = 19). Diseased segments do not dilate (papaverine: atherosclerotic area -7.4%).
+    # [kang1998_flow_mediated_epicardial_dilation, shiode1996_adenosine_flow_mediated_dilation,
+    # lupi1997_adenosine_dipyridamole_epicardial_diameter, reis1999_adenosine_epicardial_area, nabel1990_papaverine_flow_dilation]
+    epicardial_dilation = 0.13f0,
     # g/mL. Myocardial tissue density (Vinnakota & Bassingthwaighte 2004, Table 3: 1.053; text: about 1.055 for
     # mammals including human). [vinnakota2004_myocardial_density]
     rho = 1.053f0,
@@ -234,6 +240,8 @@ const LUNG_FLOW = FlowSpec(;
     # respiratory failure). The body model (body.jl ps_lung) uses the same value.
     # [cheriyan2022_lung_dce_mri_ve_ktrans, keiding1988_human_forearm_inulin_edta_ps, brigham1983_lung_urea_ps]
     ps = 0.274f0,
+    # 1. The imaged pulmonary arteries keep their size (no hyperemic state is modelled for the lung).
+    epicardial_dilation = 0.0f0,
     # g/mL. Derived: lung weight 840 g (Molina 2012, right 445 + left 395, with blood) over XCAT's lung volume 2810 mL
     # (air included). [molina2012_lung_weight]
     rho = 0.299f0,

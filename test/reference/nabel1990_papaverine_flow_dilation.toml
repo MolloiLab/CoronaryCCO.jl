@@ -1,0 +1,47 @@
+# Nabel EG, Selwyn AP, Ganz P (1990). Large coronary arteries in humans are responsive to changing blood flow:
+# an endothelium-dependent mechanism that fails in patients with atherosclerosis. QCA cross-sectional area of the
+# proximal segment during papaverine-induced flow increase, normal vs irregular arteries. ABSTRACT ONLY
+# (PubMed abstract truncated at 250 words).
+
+[meta]
+id = "nabel1990_papaverine_flow_dilation"
+data_type = "experimental"
+validates = "Proximal epicardial cross-sectional area change at papaverine hyperemia in angiographically normal vs atherosclerotic (irregular) human coronary arteries; nitroglycerin as the maximal-relaxation comparator."
+species = "human"
+preparation = "Group 1: 10 patients with angiographically normal coronary arteries. Group 2: 14 patients with arterial irregularities. Quantitative angiography and Doppler flow velocity. Incremental flow induced by intracoronary papaverine."
+conditions = "Baseline, incremental papaverine (doses not in abstract), nitroglycerin; acetylcholine in five patients of each group."
+verification = "abs"
+access = "Abstract via PubMed E-utilities (PMID 2115539); the PubMed abstract is truncated at 250 words. Full text not read."
+notes = """
+The +/- statistic is not labelled in the abstract.
+The nitroglycerin response is given as a percentage without saying whether it is area or diameter; the context (area for the flow responses) suggests area.
+In five group 1 patients acetylcholine increased area by 20.7 +/- 4.6% and flow increased area by 24.3 +/- 6.1% in the same segment; in five group 2 patients acetylcholine decreased area by 22.8 +/- 3.4% and flow decreased it by 6.4 +/- 3.2%.
+"""
+use_in_model = """Compare model proximal epicardial area change at hyperemia with +23.2% (normal arteries, flow +384%). For a diseased-vessel scenario, the conduit response can be absent or slightly constrictive (-7.4%)."""
+
+[source]
+authors = ["Nabel EG", "Selwyn AP", "Ganz P"]
+year = 1990
+title = "Large coronary arteries in humans are responsive to changing blood flow: an endothelium-dependent mechanism that fails in patients with atherosclerosis"
+journal = "J Am Coll Cardiol"
+volume = "16"
+issue = "2"
+pages = "349-356"
+doi = "10.1016/0735-1097(90)90584-c"
+crossref_verified = "2026-10-26; Crossref title exact match (J Am Coll Cardiol 16(2):349-356, 1990; authors Nabel, Selwyn, Ganz)"
+pmid = "2115539"
+
+[data.papaverine_response]
+description = "Coronary blood flow increase and proximal-segment cross-sectional area change with papaverine; nitroglycerin dilation"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- unlabelled dispersion (SD or SE not stated); n = patients"
+group = ["normal_arteries", "irregular_arteries"]
+n = [10, 14]
+cbf_increase_mean_pct = [384.3, 339.3]
+cbf_increase_sd_pct = [32.8, 18.7]
+area_change_mean_pct = [23.2, -7.4]
+area_change_sd_pct = [4.6, 2.8]
+nitroglycerin_dilation_mean_pct = [31.7, 26.4]
+nitroglycerin_dilation_sd_pct = [4.2, 3.2]
+missing_note = "Absolute areas and diameters not in the truncated abstract. Nitroglycerin percentage not explicitly labelled as area."

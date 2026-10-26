@@ -72,6 +72,8 @@ mutable struct Engine{T}
     rcaps::Vector{T}          # root radius cap of each tree (0: none)
     rest::Vector{T}           # per tree: unscaled volume of the other trees (update_forest!)
     rmin::Vector{T}           # per tree: tightest cap ratio cap/r of the other trees (update_forest!)
+    share::Vector{T}          # per tree: its share of the forest's flow (GrowthSpec split; empty: none)
+    open::UInt16              # trees at or below their share now (bit k-1 for tree k); 0x7fff: every tree
     nd::Matrix{T}             # nearest_k! buffers of the sequential step
     nj::Matrix{Int32}
     F::FastState{T}
@@ -120,7 +122,7 @@ function Engine(
         m::CCOModel{T}, dom::MaskDomain{T}; seed::Integer = 0, cell::Real = 2.0 * m.params.size_scale,   # grid cell (mm): 2 mm × size_scale
         mode::Symbol = :fast, volume::Symbol = :upstream, sampling::Symbol = :voxel,
         fix_base::Bool = false, collision::Symbol = :current,
-        max_branch_angle::Union{Nothing, Real} = nothing, root_caps = nothing
+        max_branch_angle::Union{Nothing, Real} = nothing, root_caps = nothing, root_shares = nothing
     ) where {T}
     collision in (:current, :final) || throw(ArgumentError("collision must be :current or :final"))
     sampling in (:voxel, :continuous) || throw(ArgumentError("sampling must be :voxel or :continuous"))
@@ -135,6 +137,9 @@ function Engine(
         T.(root_caps isa Real ? fill(root_caps, length(roots)) : collect(root_caps))
     length(caps) == length(roots) ||
         throw(ArgumentError("root_caps has $(length(caps)) entries for $(length(roots)) trees"))
+    share = root_shares === nothing || length(roots) == 1 ? T[] : T.(collect(root_shares) ./ sum(root_shares))
+    isempty(share) || length(share) == length(roots) ||
+        throw(ArgumentError("root_shares has $(length(share)) entries for $(length(roots)) trees"))
     L = mode === :exact ? init_layout!(Layout{T}(), m) : Layout{T}()   # preorder layout: exact mode only
     lo = (T(dom.lower[1]), T(dom.lower[2]), T(dom.lower[3]))
     hi = (T(dom.upper[1]), T(dom.upper[2]), T(dom.upper[3]))
@@ -149,7 +154,7 @@ function Engine(
         mode, volume, sampling, fix_base, collision, one(T), one(T),
         max_branch_angle === nothing ? -one(T) : T(cosd(max_branch_angle)),
         trues(nsegments(m)) |> Vector{Bool}, _tree_ids(m, roots), roots, caps, zeros(T, length(roots)),
-        fill(T(Inf), length(roots)),
+        fill(T(Inf), length(roots)), share, 0x7fff,
         zeros(T, m.params.num_neighbors, 1), zeros(Int32, m.params.num_neighbors, 1),
         FastState{T}(), GrowStats()
     )
@@ -363,6 +368,8 @@ end
     m = E.m; g = E.g
     level = _level(E)
     bits = _allowed_bits(E.dom, p)
+    # a tree that holds its share of the flow (GrowthSpec split) offers no more connections
+    E.open == 0x7fff || (bits = bits == 0x7fff ? E.open : bits & E.open)
     R = g.h
     @inbounds while true
         k = 0
@@ -732,6 +739,20 @@ end
 end
 
 # Score of an accepted candidate (expandTree's side-branch bias).
+# Which trees may take terminals now (GrowthSpec split): those whose share of the forest's flow is at or below their
+# bifurcation-law share, so every tree grows in step with the others from the start and claims the tissue it reaches
+# first. `force` opens every tree (a round that could place nothing). Every tree is open without shares.
+function update_open!(E; force::Bool = false)
+    (isempty(E.share) || force) && (E.open = 0x7fff; return E)
+    total = sum(E.m.flow[c] for c in E.roots)
+    mask = 0x0000
+    for k in eachindex(E.roots)
+        E.m.flow[E.roots[k]] <= E.share[k] * (total + E.m.qterm) && (mask |= UInt16(1) << (k - 1))
+    end
+    E.open = mask == 0x0000 ? 0x7fff : mask
+    return E
+end
+
 @inline function candidate_score(E, s, vol::T) where {T}
     prm = E.p; m = E.m
     sb = T(prm.side_branch_bias)
@@ -774,6 +795,7 @@ end
 function sequential_step!(E::Engine{T}, results, parallel::Bool) where {T}
     m = E.m; prm = E.p; st = E.stats
     st.steps += 1
+    update_open!(E)
     update_cscale!(E)
     nbsol = 0; nbT = 0
     volopt = -one(T)
@@ -857,6 +879,7 @@ function grow!(
     i = 0
     nextp = progress
     pool = nothing
+    stalled = false
     while i < total
         nb = growth === :batched && i >= n_seq ?
             min(total - i, Int(batch_max), max(1, floor(Int, batch_frac * m.kterm_total))) : 1
@@ -866,7 +889,10 @@ function grow!(
             trace === nothing || _trace_step(trace, m, i, nbT, volopt)
         else
             pool === nothing && (pool = BatchPool{T}(; to = _mover(device)))
-            i += batched_round!(E, pool, nb; parallel = parallel)
+            # a round the split's open trees cannot place anything in opens every tree once, so growth never stalls
+            added = batched_round!(E, pool, nb; parallel = parallel, force_open = stalled)
+            stalled = added == 0 && !stalled
+            i += added
         end
         regrid!(E)
         if progress > 0 && i >= nextp

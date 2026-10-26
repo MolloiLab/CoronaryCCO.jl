@@ -3,7 +3,7 @@
 
 """
     GrowthSpec(; nterm, flow_ml_min, terminal_flow_ml_min, tissue_ml, reference_ml, wall_clearance, gamma, root_caps,
-               root_fixed, symmetry_floor, seed, T, device)
+               root_fixed, split, symmetry_floor, seed, T, device)
     GrowthSpec(spec::GrowthSpec; kwargs...)
 
 Everything that differs between organs when growing a vascular tree; everything else is the same for every organ (see
@@ -22,6 +22,11 @@ Everything that differs between organs when growing a vascular tree; everything 
 - `gamma`: bifurcation exponent r₀^γ = r₁^γ + r₂^γ.
 - `root_caps`: root radius per inlet tree (mm), the imaged inlet radii; `nothing` leaves roots to the pressure law.
 - `root_fixed`: `true` sets the forest's radius scale so the binding root sits exactly at its cap after growth.
+- `split`: how a forest's inlet trees share the terminals. `:free`: by the growth's own competition. `:bifurcation`: the
+  inlets are the daughters of one origin (the aortic root for the two coronaries), so they split the flow by the same
+  bifurcation law as every other branch, share ∝ `root_caps[k]^gamma`: a tree takes terminals only while its share of the
+  forest's flow is at or below that, so the trees grow in step and each claims the tissue it reaches. A single tree, or no
+  `root_caps`, has nothing to split.
 - `symmetry_floor`: measured minimum daughter symmetry by mother diameter, `(µm, ratio)` knots; empty for none.
 - `seed`, `T`, `device`: random stream, number type, array device (`MtlArray`, `CuArray`, ... or `identity` for CPU).
 """
@@ -35,6 +40,7 @@ struct GrowthSpec
     gamma::Float64
     root_caps::Union{Nothing, Vector{Float64}}
     root_fixed::Bool
+    split::Symbol
     symmetry_floor::Vector{Tuple{Float64, Float64}}
     seed::Int
     T::Type
@@ -45,7 +51,9 @@ function GrowthSpec(; kwargs...)
     isempty(bad) || throw(ArgumentError("unknown GrowthSpec fields $(collect(bad))"))
     miss = setdiff(fieldnames(GrowthSpec), keys(kwargs))
     isempty(miss) || throw(ArgumentError("GrowthSpec: no value for $(collect(miss))"))
-    return GrowthSpec((kwargs[f] for f in fieldnames(GrowthSpec))...)
+    s = GrowthSpec((kwargs[f] for f in fieldnames(GrowthSpec))...)
+    s.split in (:free, :bifurcation) || throw(ArgumentError("GrowthSpec: split must be :free or :bifurcation"))
+    return s
 end
 GrowthSpec(s::GrowthSpec; kwargs...) = GrowthSpec(; merge((; (f => getfield(s, f) for f in fieldnames(GrowthSpec))...), values(kwargs))...)
 
@@ -87,10 +95,12 @@ function grow(spec::GrowthSpec, domain, inlets; root = nothing, blockers = nothi
     # perfusion area per voxel as upstream's sample run sets it (aperf 10000 over its 255,000-voxel case0 domain): HCT-CCO's
     # aperf is an area in voxel units, so it scales with the domain's voxel count
     caps = spec.root_caps === nothing ? 1.588 : spec.root_caps
+    shares = spec.split === :bifurcation && spec.root_caps !== nothing ? (w = spec.root_caps .^ spec.gamma; w ./ sum(w)) : nothing
     return generate(
         domain, inlets; nterm = terminal_count(spec), aperf = 10000 * V / 255000, min_dist = spec.wall_clearance, root = root,
         seed = spec.seed, T = spec.T, gamma = spec.gamma, volume = :full, metric = :euclidean, sampling = :continuous,
         fix_base = true, collision = :final, max_branch_angle = 90, root_radius_max = caps, root_fixed = spec.root_fixed,
+        root_shares = shares,
         device = spec.device, territories = territories, base_groups = base_groups, forbidden = blockers,
         symmetry_floor = spec.symmetry_floor, size_scale = size_scale(spec)
     )

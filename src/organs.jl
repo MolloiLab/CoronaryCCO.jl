@@ -11,8 +11,13 @@ const HEART_GROWTH = GrowthSpec(;
     tissue_ml = 148.1, reference_ml = 148.1,
     wall_clearance = 0.5,          # mm, HCT-CCO default
     gamma = 2.33,                  # 7/3 from coronary structure-function scaling (Huo & Kassab 2012)
-    root_caps = [2.54, 1.59],      # mm, LCA and RCA ostial radii (decision A3, QUEUE)
+    # mm, LCA and RCA ostial radii: XCAT's left main (2.54) and its proximal RCA lumen (11.3 mm², 1.90), past the tubes'
+    # closing end caps
+    root_caps = [2.54, 1.9],
     root_fixed = false,
+    # the two coronaries are daughters of the aortic root and split its flow by the same law as every other branch
+    # (RCA share 1.90^2.33 / (1.90^2.33 + 2.54^2.33) = 34%)
+    split = :bifurcation,
     # human coronary minimum daughter symmetry by mother diameter: geometric mean of each bin, lower whisker
     # [schwarz2020_human_coronary_symmetry]
     symmetry_floor = [
@@ -28,7 +33,7 @@ const HEART_VEIN_GROWTH = GrowthSpec(;
     nterm = 100_000, flow_ml_min = nothing, terminal_flow_ml_min = NaN, tissue_ml = 148.1, reference_ml = 148.1,
     wall_clearance = 1.0, gamma = 2.33,
     root_caps = [2.7397784811568675],   # mm, coronary sinus ostium (veins/ostium.txt)
-    root_fixed = false, symmetry_floor = [], seed = 1, T = Float32, device = identity,
+    root_fixed = false, split = :free, symmetry_floor = [], seed = 1, T = Float32, device = identity,
 )
 
 # lung arteries: one tree from the main pulmonary artery (XCAT's imaged radius), grown to the lung's own unit, one terminal
@@ -44,7 +49,7 @@ const LUNG_GROWTH = GrowthSpec(;
     # CT/MRA per bifurcation; 7/3 lies in that range [horsfield1989_human_pulmonary_symmetry, altieri2025_pa_murray_ct_mra]
     gamma = 2.33,
     root_caps = [15.411707],            # mm, main pulmonary artery (pulmonary_arteries.xml)
-    root_fixed = true, symmetry_floor = [], seed = 1, T = Float32, device = identity,
+    root_fixed = true, split = :free, symmetry_floor = [], seed = 1, T = Float32, device = identity,
 )
 
 # lung veins: one tree per lung into the left atrium, one venule per acinus (no human per-junction venous exponent is

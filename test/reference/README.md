@@ -288,6 +288,14 @@ digitized figures or abstract statements. Each `[data.*]` table carries its own 
 | `liu1995_blood_volume_flow.toml` | Blood volume = A·F + B·√F | Pig | abs |
 | `mccommis2007_myocardial_blood_volume.toml` | MRI blood volume at rest, under dipyridamole and under dobutamine | Dog | abs |
 | `nickander2019_cmr_myocardial_blood_volume.toml` | Human MBV and MBF at rest and adenosine stress (MBV/MBF gives the mean transit time) | Human, healthy | FT |
+| `ishikawa1974_coronary_circulation_time.toml` | Human aortic-root-to-coronary-sinus mean transit and appearance time at rest (indocyanine green) | Human | abs |
+| `haridasan2013_coronary_sinus_filling_time.toml` | Coronary sinus filling time after LAD contrast injection at rest | Human, angiography | FT |
+| `mohlenkamp2000_ebct_blood_volume_reserve.toml` | Intramyocardial blood volume and flow reserve under adenosine (reserve definition unclear in the abstract) | Pig, EBCT | abs |
+| `kang1998_flow_mediated_epicardial_dilation.toml` | Epicardial (proximal and mid LAD) diameter gain with adenosine hyperemia | Human, QCA | abs |
+| `shiode1996_adenosine_flow_mediated_dilation.toml` | Proximal LAD diameter gain with intracoronary adenosine | Human, QCA | abs |
+| `lupi1997_adenosine_dipyridamole_epicardial_diameter.toml` | Distal epicardial diameter gain with adenosine and dipyridamole | Human, QCA | abs |
+| `reis1999_adenosine_epicardial_area.toml` | Epicardial lumen area gain with adenosine | Human, IVUS | abs |
+| `nabel1990_papaverine_flow_dilation.toml` | Flow-mediated epicardial area change, normal vs atherosclerotic segments | Human, QCA | abs |
 | `yang2024_cmr_myocardial_transit_time.toml` | Human aortic-root-to-coronary-sinus arrival delay on CMR | Human, rest | FT |
 | `chatzantonis2020_cmr_myocardial_transit_time.toml` | The same MyoTT measure in controls | Human, rest | abs |
 | `canty1991_contrast_extraction.toml` | First-pass extraction of nonionic contrast (ioversol) 33 ± 2% at vasodilated flow vs 50 ± 3% at ~half flow; intravascular-emulsion blood volume and appearance times. Flow only as circumflex mL/min (rest 20, vasodilated 123, stenotic 67), no per-gram flow or PS | Dog, closed chest, carbocromen vasodilation, fast CT | mixed (text and Table 1 FT; stenotic appearance times fig) |

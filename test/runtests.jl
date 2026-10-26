@@ -4,6 +4,14 @@ using Downloads
 using Test
 using TOML
 
+# the fields of a growth engine that GrowthSpec's split reads (update_open!)
+mutable struct Forest
+    m::Any
+    roots::Vector{Int32}
+    share::Vector{Float32}
+    open::UInt16
+end
+
 const C = Vasculature
 
 # HCT-CCO's sample case (the HCT-CCO authors' data, under the HCT-CCO license), fetched from
@@ -399,6 +407,16 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         Cw = C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf = vw, phys = HEART_FLOW)
         @test isnan(Cw.resist.r_micro) && isfinite(Cw.resist.kappa) && Cw.resist.kappa > 0 && isfinite(Cw.resist.mbf)
         @test_throws ArgumentError C.Flow.circuit(vt, terr; state = :stress, veins = vn, vleaf = vw, phys = FlowSpec(HEART_FLOW; r_total_dilated = 0.0f0, r_micro_dilated = 4.0f0))
+        # imaged conduit arteries: their volume is on top of the intramural budget, and they widen at maximal dilation only
+        vb = C.Flow.VTree(vt.parent, vt.a, vt.b, vt.r, trues(length(vt.r)))
+        rigid(phys) = FlowSpec(phys; d_active = 0.0f0) # every artery a conduit here
+        S0 = C.Flow.circuit(vb, terr; state = :stress, veins = vn, vleaf = vw, phys = rigid(FlowSpec(HEART_FLOW; epicardial_dilation = 0.0f0)))
+        S1 = C.Flow.circuit(vb, terr; state = :stress, veins = vn, vleaf = vw, phys = rigid(HEART_FLOW))
+        @test S1.volumes.art_imaged ≈ (1 + HEART_FLOW.epicardial_dilation)^2 * S0.volumes.art_imaged rtol = 1.0e-4
+        @test S1.resist.mbf > S0.resist.mbf && S0.volumes.art_imaged > 0
+        Sw = C.Flow.circuit(vb, terr; state = :stress, veins = vn, vleaf = vw, phys = rigid(FlowSpec(HEART_FLOW; fb_scope = :whole)))
+        @test Sw.volumes.art_imaged == 0 && Sw.volumes.art_unresolved <= S0.volumes.art_unresolved
+        @test_throws ArgumentError FlowSpec(HEART_FLOW; fb_scope = :some)
     end
 
     @testset "contracted arteriolar wall: both branches of its hysteresis loop, followed by pressure history" begin
@@ -475,6 +493,12 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         @test terminal_count(GrowthSpec(HEART_GROWTH; nterm = 500, tissue_ml = 1.0)) == 500
         @test_throws ArgumentError terminal_count(GrowthSpec(HEART_GROWTH; nterm = nothing, tissue_ml = 1.0))
         @test_throws ArgumentError terminal_count(GrowthSpec(HEART_GROWTH; nterm = 1, flow_ml_min = 1.0, tissue_ml = 1.0))
+        @test_throws ArgumentError GrowthSpec(HEART_GROWTH; split = :even)
+        # the split: a tree takes terminals only while its share of the forest's flow is at or below its bifurcation share
+        F = Forest((flow = Float32[0, 70, 30], qterm = 1.0f0), Int32[2, 3], Float32[0.66, 0.34], 0x7fff)
+        @test C.update_open!(F).open == 0x0002                      # the RCA (30% < 34%) only
+        @test C.update_open!(F; force = true).open == 0x7fff        # a stalled round opens both
+        F.share = Float32[]; @test C.update_open!(F).open == 0x7fff # no split: every tree
     end
 
     @testset "export round trip" begin

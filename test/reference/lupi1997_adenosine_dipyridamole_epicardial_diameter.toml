@@ -1,0 +1,54 @@
+# Lupi A, Buffon A, Finocchiaro ML, Conti E, Maseri A, Crea F (1997). Mechanisms of adenosine-induced epicardial
+# coronary artery dilatation. Human, angiographically normal arteries; QCA diameter 5 mm distal to the Doppler
+# wire tip at baseline and after intracoronary adenosine or dipyridamole. ABSTRACT ONLY.
+
+[meta]
+id = "lupi1997_adenosine_dipyridamole_epicardial_diameter"
+data_type = "experimental"
+validates = "Absolute epicardial coronary diameter at baseline and at hyperemia (intracoronary adenosine and intracoronary dipyridamole) in normal human arteries, and that the dilation is flow-mediated (correlates with flow velocity)."
+species = "human"
+preparation = "24 patients with angiographically normal coronary arteries. Doppler wire flow velocity; computer-assisted QCA of the diameter 5 mm distal to the wire tip, at baseline and immediately after each infusion."
+conditions = "Intracoronary adenosine infusion; intracoronary dipyridamole infusion (doses not in abstract)."
+verification = "abs"
+access = "Abstract via PubMed E-utilities (PMID 9129891). Full text not read."
+notes = """
+The +/- statistic is not labelled in the abstract.
+Measurement site is distal to the wire tip, so the segment is mid/distal rather than proximal; the artery measured is not named in the abstract.
+Percentage diameter change vs velocity: adenosine R = 0.617 (intercept -15.2 +/- 9.9), dipyridamole R = 0.649 (intercept -13.5 +/- 8.7). Absolute change vs velocity: adenosine R = 0.622, dipyridamole R = 0.708. Adenosine vs dipyridamole percentage changes: R = 0.836. Slopes are not in the abstract.
+Percent change is not given in the abstract; from the group means it would be about +15% (adenosine) and +17% (dipyridamole), a derived ratio of means not stored as data.
+"""
+use_in_model = """Compare model mid/distal epicardial diameter at hyperemia vs rest with the ratio of the means here (2.80/2.44 adenosine, 2.86/2.44 dipyridamole). The flow-velocity correlation supports a flow (shear) driven epicardial diameter rule rather than a direct drug effect."""
+
+[source]
+authors = ["Lupi A", "Buffon A", "Finocchiaro ML", "Conti E", "Maseri A", "Crea F"]
+year = 1997
+title = "Mechanisms of adenosine-induced epicardial coronary artery dilatation"
+journal = "Eur Heart J"
+volume = "18"
+issue = "4"
+pages = "614-617"
+doi = "10.1093/oxfordjournals.eurheartj.a015305"
+crossref_verified = "2026-10-26; Crossref title exact match (European Heart Journal 18(4):614-617, 1997; first authors Lupi, Buffon, Finocchiaro)"
+pmid = "9129891"
+
+[data.diameters]
+description = "Epicardial diameter 5 mm distal to the Doppler wire tip, baseline and immediately after intracoronary infusions"
+location = "Abstract (Methods and Results)"
+provenance = "abs"
+statistic = "mean +/- unlabelled dispersion (SD or SE not stated); n = 24 patients"
+condition = ["baseline", "adenosine_ic", "dipyridamole_ic"]
+diameter_mean_mm = [2.44, 2.80, 2.86]
+diameter_sd_mm = [0.69, 0.63, 0.64]
+n = 24
+missing_note = "Percent change per patient and doses are not in the abstract."
+
+[data.peak_velocity]
+description = "Peak coronary flow velocity during the infusions"
+location = "Abstract"
+provenance = "abs"
+statistic = "mean +/- unlabelled dispersion; n = 24 patients"
+condition = ["adenosine_ic", "dipyridamole_ic"]
+peak_velocity_mean_cm_per_s = [52.0, 47.9]
+peak_velocity_sd_cm_per_s = [15.5, 24.2]
+n = 24
+missing_note = "Baseline velocity not in the abstract."

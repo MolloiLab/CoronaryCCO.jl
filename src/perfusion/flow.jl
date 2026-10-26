@@ -180,6 +180,9 @@ Volumes and exchange
   imaged (`isbase`) vessels, which run outside it, hold their own lumen volume on top (heart: CMR's
   blood volume is intramyocardial, and the epicardial arteries and veins lie on the surface).
   `:whole`: every vessel, imaged ones included (lung: Huang's volumes count the hilar vessels).
+- `epicardial_dilation`: how much wider (fraction of the diameter) the imaged conduit arteries are at maximal
+  vasodilation (`state = :stress`) than at rest: flow-mediated dilation, which a stenosed (diseased) segment lacks. Heart
+  0.13 (adenosine, QCA and IVUS in normal human coronaries); 0 leaves them rigid.
 - `share_art`, `share_cap`, `share_ven`: 0.288 / 0.317 / 0.395 of that volume (Kassab et al.
   1994 cast volumes).
 - `cap_ht_ratio`: tube/discharge hematocrit 0.85 in unresolved microvessels (Bindschadler 2014).
@@ -256,6 +259,7 @@ struct FlowSpec
     hd::F32
     fb::F32
     fb_scope::Symbol
+    epicardial_dilation::F32
     share_art::F32
     share_cap::F32
     share_ven::F32
@@ -1741,6 +1745,16 @@ function _build(
         @nospecialize(stenosis), @nospecialize(demand), to
     )
     n = nseg(t)
+    # at maximal vasodilation the imaged conduit arteries widen by their flow-mediated dilation; a stenosed (diseased)
+    # segment does not
+    if state === :stress && phys.epicardial_dilation > 0
+        diseased = Set{Int}(Int(st[1]) for st in (stenosis === nothing ? () : stenosis))
+        r = copy(t.r)
+        for j in 1:n
+            t.isbase[j] && !_vasoactive(t, j, phys) && !(j in diseased) && (r[j] *= 1 + phys.epicardial_dilation)
+        end
+        t = VTree(t.parent, t.a, t.b, r, t.isbase)
+    end
     terminals = _terminals(t.parent)
     nt = length(terminals)
     length(territory_ml) == nt || throw(ArgumentError("territory_ml needs one entry per terminal ($nt)"))

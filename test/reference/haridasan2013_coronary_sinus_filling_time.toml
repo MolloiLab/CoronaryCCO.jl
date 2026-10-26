@@ -1,0 +1,53 @@
+# Haridasan V, Nandan D, Raju D, et al. (2013). Coronary sinus filling time: a novel method to assess
+# microcirculatory function in patients with angina and normal coronaries. Angiographic first appearance of
+# contrast in the coronary sinus after left coronary injection. Abstract (PubMed) plus open full text (PMC3860691).
+
+[meta]
+id = "haridasan2013_coronary_sinus_filling_time"
+data_type = "experimental"
+validates = "Human resting angiographic transit from the proximal LAD to first appearance of contrast at the coronary sinus origin (coronary sinus filling time, CSFT), a first-appearance (minimum transit) time, not a mean transit time."
+species = "human"
+preparation = "Diagnostic coronary angiography (Philips Allura Xper FD20, 15 frames/s). Left coronary injection of about 7 mL contrast at about 2 mL/s by hand (not standardized). Coronary sinus viewed in at least two projections (LAO cranial, RAO caudal). Angina group: 41 patients with angina and normal coronaries and a positive treadmill test. Control group: 16 patients having angiography before balloon mitral valvuloplasty."
+conditions = "Rest; no adenosine or other vasodilator used (the authors state they found no study of adenosine or dipyridamole effects on CSFT). Contrast injection itself is a mild hyperemic stimulus."
+verification = "FT"
+access = "PubMed abstract (PMID 23647892) and PMC full-text HTML (PMC3860691) read via WebFetch."
+notes = """
+Definition (Methods): first frame = frame of maximal LAD opacification at the first diagonal or first septal branch, whichever comes first; last frame = first frame with dye at the coronary sinus origin, 'the point where great cardiac vein joins the posterolateral vein'. CSFT (s) = (last frame - first frame) / 15. Modified from Sankareddi et al. (conference abstract, n = 10), who used maximal sinus opacification as the end point.
+The start point is in the proximal LAD, not at the ostium, so CSFT omits the left main and proximal LAD transit.
+The control group is the authors' comparison group (mitral stenosis before valvuloplasty), not established normal values. Mitral stenosis may alter coronary hemodynamics.
+Internal inconsistency: control 52.06 +/- 5.0 frames at 15 frames/s gives an SD of 0.33 s, but the paper prints 3.46 +/- 0.99 s. The angina group is consistent (10.7 frames = 0.71 s).
+Follow-up by the same group (Kadermuneer P et al., Indian Heart J 2015;67:245-9, PMID 26138182, abstract): controls (patients with SVT undergoing ablation) 4.16 +/- 0.72 s, n = 16; angina with normal coronaries 5.31 +/- 1.03 s, n = 72. Not stored as data here.
+"""
+use_in_model = """Inject a bolus at the model LAD at the level of its first major side branch (or at the ostium and subtract the ostium-to-that-point arrival), and record the first time contrast reaches the great cardiac vein / coronary sinus junction at resting flow. Compare with control CSFT 3.46 +/- 0.99 s (first-appearance threshold). This is a minimum-transit check, complementary to the mean transit time in ishikawa1974_coronary_circulation_time."""
+
+[source]
+authors = ["Haridasan V", "Nandan D", "Raju D", "Rajesh GN", "Sajeev CG", "Vinayakumar D", "Muneer K", "Babu K", "Krishnan MN"]
+year = 2013
+title = "Coronary sinus filling time: a novel method to assess microcirculatory function in patients with angina and normal coronaries"
+journal = "Indian Heart J"
+volume = "65"
+issue = "2"
+pages = "142-146"
+doi = "10.1016/j.ihj.2013.02.002"
+crossref_verified = "2026-10-26; Crossref title exact match (Indian Heart Journal 65(2):142-146, 2013; first authors Haridasan, Nandan, Raju)"
+pmid = "23647892"
+pmcid = "PMC3860691"
+
+[data.csft]
+description = "Coronary sinus filling time in frames and seconds, plus corrected TIMI frame count and TIMI myocardial perfusion grade"
+location = "Abstract (seconds) and Results of the PMC full text (frames, cTFC, TMP)"
+provenance = "FT"
+statistic = "mean +/- SD; n = patients"
+group = ["control", "angina_normal_coronaries"]
+n = [16, 41]
+csft_mean_frames = [52.06, 63.76]
+csft_sd_frames = [5.0, 10.7]
+csft_mean_s = [3.46, 4.25]
+csft_sd_s = [0.99, 0.72]
+ctfc_mean_frames = [21.84, 23.97]
+ctfc_sd_frames = [5.0, 6.2]
+tmp_grade_mean = [2.94, 2.9]
+tmp_grade_sd = [0.25, 0.3]
+frame_rate_fps = 15.0
+p_csft = 0.001
+missing_note = "Control SD in frames (5.0) and in seconds (0.99) disagree at 15 frames/s; both are stored as printed. The cTFC frame rate basis is not restated in the text."

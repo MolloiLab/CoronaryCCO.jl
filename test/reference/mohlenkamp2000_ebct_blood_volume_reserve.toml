@@ -1,0 +1,47 @@
+# Mohlenkamp S, Lerman LO, Lerman A, et al. (2000). Minimally invasive evaluation of coronary microvascular
+# function by electron beam computed tomography. Pig; EBCT indicator dilution gives intramyocardial blood volume
+# (BV) and perfusion (F) at baseline, intracoronary adenosine and nitroglycerin. ABSTRACT ONLY.
+
+[meta]
+id = "mohlenkamp2000_ebct_blood_volume_reserve"
+data_type = "experimental"
+validates = "Reserve of intramyocardial blood volume vs reserve of coronary blood flow under intracoronary adenosine in normal pigs, and the split of BV into recruitable (exchange) and nonrecruitable (conduit) components."
+species = "pig"
+preparation = "14 control and 14 hypercholesterolemic (HC) pigs. Contrast-enhanced EBCT indicator dilution for intramyocardial BV and F; intracoronary Doppler for coronary blood flow (CBF). Model BV = a*F + b*sqrt(F): a = recruitable (exchange) component, b = nonrecruitable (conduit) component."
+conditions = "Baseline (intracoronary saline), then 5 min each of intracoronary adenosine 100 ug/kg/min and intracoronary nitroglycerin 40 ug/min."
+verification = "abs"
+access = "Abstract via PubMed E-utilities (PMID 11067797). Full text not read."
+notes = """
+AMBIGUITY: the abstract reports 'BV and CBF reserves' as percentages (BV 127 +/- 42%, CBF 688 +/- 160% in controls) without saying whether reserve is stimulated/baseline x 100 or percent increase over baseline. A CBF reserve of 688% as a ratio is 6.9x; as an increase it is 7.9x. A BV reserve of 127% is either 1.27x or 2.27x. Read the full text before using these as ratios.
+'Intramyocardial' BV from EBCT excludes the large epicardial arteries and veins.
+The +/- statistic is not labelled in the abstract.
+The 'nonrecruitable BV reserve' (135 +/- 28% controls) is the reserve of the b*sqrt(F) term.
+"""
+use_in_model = """Once the reserve definition is confirmed from the full text, compare the model's stress/rest intramyocardial blood-volume ratio with the BV reserve, at the model's stress/rest flow ratio vs the CBF reserve. Until then use it only qualitatively: BV rises much less than flow under adenosine."""
+
+[source]
+authors = ["Mohlenkamp S", "Lerman LO", "Lerman A", "Behrenbeck TR", "Katusic ZS", "Sheedy PF 2nd", "Ritman EL"]
+year = 2000
+title = "Minimally invasive evaluation of coronary microvascular function by electron beam computed tomography"
+journal = "Circulation"
+volume = "102"
+issue = "19"
+pages = "2411-2416"
+doi = "10.1161/01.cir.102.19.2411"
+crossref_verified = "2026-10-26; Crossref title exact match (Circulation 102(19):2411-2416, 2000; first authors Mohlenkamp, Lerman, Lerman)"
+pmid = "11067797"
+
+[data.adenosine_reserves]
+description = "Reserves in response to intracoronary adenosine 100 ug/kg/min, as printed (percent; definition unclear, see notes)"
+location = "Abstract (Methods and Results)"
+provenance = "abs"
+statistic = "mean +/- unlabelled dispersion (SD or SE not stated); n = pigs"
+group = ["control", "hypercholesterolemic"]
+n = [14, 14]
+bv_reserve_pct = [127.0, 90.0]
+bv_reserve_sd_pct = [42.0, 36.0]
+cbf_reserve_pct = [688.0, 485.0]
+cbf_reserve_sd_pct = [160.0, 182.0]
+nonrecruitable_bv_reserve_pct = [135.0, 77.0]
+nonrecruitable_bv_reserve_sd_pct = [28.0, 20.0]
+missing_note = "Absolute BV (ml/100 g), F and CBF values and nitroglycerin results are not in the abstract. Reserve definition (ratio x 100 vs percent increase) not stated."

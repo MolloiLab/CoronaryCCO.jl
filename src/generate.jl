@@ -69,7 +69,8 @@ function generate(
         mode::Symbol = :fast, sampling::Symbol = :voxel, fix_base::Bool = false,
         collision::Symbol = :current, max_branch_angle = nothing,
         growth::Symbol = mode === :exact ? :sequential : :batched, n_seq::Integer = 2_000, batch_frac::Real = 0.01, batch_max::Integer = 16_384, device = identity,
-        territories = nothing, base_groups = nothing, forbidden = nothing, root_fixed::Bool = false, kwargs...
+        territories = nothing, base_groups = nothing, forbidden = nothing, root_fixed::Bool = false, root_shares = nothing,
+        kwargs...
     )
     p = CCOParams(;
         nterm = Int(nterm), aperf = Float64(aperf), gamma = Float64(gamma),
@@ -85,9 +86,10 @@ function generate(
     m = import_gxl(T, base_xml, p)
     E = Engine(
         m, dom; seed = seed, mode = mode, volume = volume, sampling = sampling, fix_base = fix_base,
-        collision = collision, max_branch_angle = max_branch_angle, root_caps = root_radius_max
+        collision = collision, max_branch_angle = max_branch_angle, root_caps = root_radius_max, root_shares = root_shares
     )  # mode = :exact is test-only
     if base_groups !== nothing
+        root_shares === nothing || throw(ArgumentError("root_shares count each tree by its id, which base_groups replace"))
         # territory group of each imaged segment, from its midpoint; grown segments inherit it
         for j in 2:nsegments(m)
             a = m.pos[m.parent[j] == 1 ? j : m.parent[j]]; b = m.pos[j]

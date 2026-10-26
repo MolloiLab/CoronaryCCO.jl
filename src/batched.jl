@@ -236,7 +236,10 @@ end
 One round of batched growth with `nb` locations. Returns the number of terminals added. The
 result does not depend on `parallel` or on the thread count.
 """
-function batched_round!(E::Engine{T}, pool::BatchPool{T}, nb::Int; parallel::Bool = true) where {T}
+function batched_round!(
+        E::Engine{T}, pool::BatchPool{T}, nb::Int; parallel::Bool = true, force_open::Bool = false
+    ) where {T}
+    update_open!(E; force = force_open)
     m = E.m; st = E.stats
     update_cscale!(E)
     pool.round += Int32(1)
