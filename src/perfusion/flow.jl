@@ -176,6 +176,10 @@ Boundary conditions and blood
 Volumes and exchange
 - `fb`: intramyocardial blood volume fraction, mL/mL. Heart 0.09 (healthy human at rest by CMR,
   Nickander et al. 2019).
+- `fb_scope`: which vessels `fb` counts. `:intramural`: only the vessels inside the tissue, so the
+  imaged (`isbase`) vessels, which run outside it, hold their own lumen volume on top (heart: CMR's
+  blood volume is intramyocardial, and the epicardial arteries and veins lie on the surface).
+  `:whole`: every vessel, imaged ones included (lung: Huang's volumes count the hilar vessels).
 - `share_art`, `share_cap`, `share_ven`: 0.288 / 0.317 / 0.395 of that volume (Kassab et al.
   1994 cast volumes).
 - `cap_ht_ratio`: tube/discharge hematocrit 0.85 in unresolved microvessels (Bindschadler 2014).
@@ -251,6 +255,7 @@ struct FlowSpec
     venous_scale::Symbol
     hd::F32
     fb::F32
+    fb_scope::Symbol
     share_art::F32
     share_cap::F32
     share_ven::F32
@@ -312,6 +317,7 @@ end
 const _REGULATION = (:o2, :passive)
 const _CAPILLARY = (:tube, :sheet)
 const _VENOUS_SCALE = (:volume_share, :grown)
+const _FB_SCOPE = (:intramural, :whole)
 
 # One keyword per field, every one required: an organ is an instance of this struct (organs.jl: `HEART_FLOW`,
 # `LUNG_FLOW`), and nothing sits underneath it.
@@ -328,6 +334,7 @@ function FlowSpec(; kwargs...)
     p.regulation in _REGULATION || throw(ArgumentError("regulation must be one of $_REGULATION"))
     p.capillary in _CAPILLARY || throw(ArgumentError("capillary must be one of $_CAPILLARY"))
     p.venous_scale in _VENOUS_SCALE || throw(ArgumentError("venous_scale must be one of $_VENOUS_SCALE"))
+    p.fb_scope in _FB_SCOPE || throw(ArgumentError("fb_scope must be one of $_FB_SCOPE"))
     (p.sub_art === nothing) == (p.sub_ven === nothing) || throw(ArgumentError("give both sub_art and sub_ven, or neither"))
     # tube beds scale their whole resistance by κ, which must not touch measured sub-terminal vessels; only the sheet bed
     # solves them (its relaxation targets the bed's own resistance) (audit A42-2)
@@ -1651,6 +1658,16 @@ function _resolved_volumes(t::VTree, vt::VTree, companion::Bool, s)
     return sum(vol), companion ? sum((s * s) .* vol) : sum(_lengths(vt)[2])
 end
 
+# The resolved arterial and venous volumes (mL) that count against `fb`: all of them (`fb_scope = :whole`), or without the
+# imaged vessels, which hold their own lumen volume on top (`:intramural`).
+function _budget_volumes(phys::FlowSpec, t::VTree, vt::VTree, companion::Bool, s, vart, vven)
+    phys.fb_scope === :whole && return vart, vven
+    vol = _lengths(t)[2]
+    vvol = companion ? (s * s) .* vol : _lengths(vt)[2]
+    imaged(tree, v) = sum(v[j] for j in eachindex(v) if tree.isbase[j]; init = 0.0f0)
+    return vart - imaged(t, vol), vven - imaged(vt, vvol)
+end
+
 # Capillary bed of terminal i (tube capillaries): its share w[i] of the capillary volume as parallel functional capillaries.
 function _cap_resistance(phys::FlowSpec, w, vcap_total)
     rc = phys.cap_diameter_um * 0.5f-3
@@ -1748,8 +1765,9 @@ function _build(
         end
     end
     vart, vven = _resolved_volumes(t, vt, companion, s)
+    vart_budget, vven_budget = _budget_volumes(phys, t, vt, companion, s, vart, vven)
     nv = nseg(vt)
-    vv_unres = max(0.0f0, phys.share_ven * vblood - vven)
+    vv_unres = max(0.0f0, phys.share_ven * vblood - vven_budget)
     vcap_total = phys.share_cap * vblood
     # vasoactive arteries
     dlo, dhi = _active_range(t, phys)
@@ -1815,7 +1833,7 @@ function _build(
     end
     tg = to(terr_g[tperm]); stend = to(sten)
     tsol = iperm[terminals]                                                  # terminal i's solver segment
-    return (; S, W, act, companion, d0, dem, dist, hd, lim, mass_g, mu0d, n, nt, nv, perm, s, seg, sheet, sten, stend, subdv, t, terminals, tg, tperm, tsol, vart, vblood, vcap_total, vl, vperm, vt, vv_unres, vven)
+    return (; S, W, act, companion, d0, dem, dist, hd, lim, mass_g, mu0d, n, nt, nv, perm, s, seg, sheet, sten, stend, subdv, t, terminals, tg, tperm, tsol, vart, vart_budget, vblood, vcap_total, vl, vperm, vt, vv_unres, vven, vven_budget)
 end
 
 function _circuit(
@@ -1826,7 +1844,7 @@ function _circuit(
     B = pairing !== nothing && pairing.B !== nothing ? _repair(pairing.B, vleaf, to) :
         _build(t, territory_ml; phys, state, veins, vleaf, reference, stenosis, demand, to)
     pairing === nothing || (pairing.B = B)
-    (; S, W, act, companion, d0, dem, dist, hd, lim, mass_g, mu0d, n, nt, nv, perm, s, seg, sheet, sten, stend, t, terminals, tg, tperm, tsol, vart, vblood, vcap_total, vl, vperm, vt, vv_unres, vven) = B
+    (; S, W, act, companion, d0, dem, dist, hd, lim, mass_g, mu0d, n, nt, nv, perm, s, seg, sheet, sten, stend, t, terminals, tg, tperm, tsol, vart, vart_budget, vblood, vcap_total, vl, vperm, vt, vv_unres, vven, vven_budget) = B
 
 
     # ---- microvascular scale κ at maximal dilation (vessels on their passive curves): the whole bed's
@@ -1881,7 +1899,7 @@ end
 # The circuit's outputs from a finished solve (`B` from `_build`), in the caller's numbering. A function of its own, with
 # the same argument types for every state, reference and stenosis, so it is compiled once per organ layout.
 function _assemble(B, territory_ml::AbstractVector, phys::FlowSpec, state::Symbol, kappa::F32, ctone, iters, dxlast)
-    (; S, W, act, companion, dem, hd, mass_g, n, nt, nv, perm, s, sheet, t, terminals, tperm, vart, vblood, vcap_total, vl, vperm, vt, vv_unres, vven) = B
+    (; S, W, act, companion, dem, hd, mass_g, n, nt, nv, perm, s, sheet, t, terminals, tperm, vart, vart_budget, vblood, vcap_total, vl, vperm, vt, vv_unres, vven, vven_budget) = B
     _release_work!(S) # only the solution and resistances are read from here on
     rmc = _micro_resistance(S, mass_g)
     # what the outputs need besides the solution, rebuilt now rather than held through the solve (the same values): the
@@ -1907,9 +1925,9 @@ function _assemble(B, territory_ml::AbstractVector, phys::FlowSpec, state::Symbo
     xd = ones(F32, n); av = zeros(F32, n); pov = zeros(F32, n)
     xd[act] = wx; av[act] = wa; pov[act] = wp
     # constricted arterioles hold less blood; the unresolved arterial volume is what the dilated
-    # tree leaves of the Kassab target, constricted with the terminal's own arteriole
+    # tree leaves of the Kassab target (`fb_scope`), constricted with the terminal's own arteriole
     vol .*= xd .^ 2; vart_now = sum(vol)
-    va_unres = max(0.0f0, phys.share_art * vblood - vart)
+    va_unres = max(0.0f0, phys.share_art * vblood - vart_budget)
 
     # ---- plasma volumes and transit times
     vp_a = similar(len); tau_a = similar(len)
@@ -1983,7 +2001,7 @@ function _assemble(B, territory_ml::AbstractVector, phys::FlowSpec, state::Symbo
         fp, ta, tc, tv, vint, ex, kk, off, rcap .* kappa, so2, dem, xd, av, pov, ctone, s, mass_g,
         (;
             blood = vblood, art_resolved = vart_now, ven_resolved = vven, art_unresolved = va_unres,
-            ven_unresolved = vv_unres, capillary = vcap_total,
+            ven_unresolved = vv_unres, capillary = vcap_total, art_imaged = vart - vart_budget, ven_imaged = vven - vven_budget,
         ), resist
     )
 end

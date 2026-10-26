@@ -31,6 +31,9 @@ const HEART_FLOW = FlowSpec(;
     # McCommis 2007 (CMR, 6.2 mL/100 g) and Kassab's dilated cast (12.2 mL/100 g LV) bracket it.
     # [nickander2019_cmr_myocardial_blood_volume, mccommis2007_myocardial_blood_volume, kassab1994_venous_morphometry]
     fb = 0.09f0,
+    # The CMR blood volume is intramyocardial: the epicardial (imaged) arteries and veins hold their own lumen volume on top.
+    # [nickander2019_cmr_myocardial_blood_volume]
+    fb_scope = :intramural,
     # 1. Derived: arterial 3.0 of 10.4 mL coronary cast volume (Kassab 1994, Discussion).
     # [kassab1994_venous_morphometry]
     share_art = 0.288f0,
@@ -202,6 +205,8 @@ const LUNG_FLOW = FlowSpec(;
     # [huang1996_human_pulmonary_morphometry, molina2012_lung_weight, bouwsema2017_capillary_blood_volume_exercise,
     # dock1961_pulmonary_blood_volume]
     fb = 0.201f0,
+    # Huang's volumes count every vessel, the hilar (imaged) ones included. [huang1996_human_pulmonary_morphometry]
+    fb_scope = :whole,
     # 1. Derived: 319 / 565 (see fb). [huang1996_human_pulmonary_morphometry, molina2012_lung_weight]
     share_art = 0.565f0,
     # 1. Derived: 83 / 565 (see fb). [bouwsema2017_capillary_blood_volume_exercise]
