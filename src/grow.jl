@@ -365,11 +365,24 @@ end
 # n rows. Returns the number found. Allocation free: a segment registered in several grid
 # cells is counted only in the first cell (per axis) shared by its box and the query box.
 @inline function nearest_k!(bd, bj, col, E, p::P3{T}, n::Int) where {T}
+    k = _nearest_any!(bd, bj, col, E, p, n)
+    E.open == 0x7fff && return k
+    # GrowthSpec split: of the nearest segments of every tree, keep those of the trees that may grow now. A location deep in
+    # the territory of a tree that holds its share is passed over, not reached for from a distant tree.
+    kept = 0
+    @inbounds for i in 1:k
+        t = E.treeid[bj[i, col]]
+        (t == 0 || (E.open >> (t - 0x01)) & 0x0001 == 0x0001) || continue
+        kept += 1
+        bd[kept, col] = bd[i, col]; bj[kept, col] = bj[i, col]
+    end
+    return kept
+end
+
+@inline function _nearest_any!(bd, bj, col, E, p::P3{T}, n::Int) where {T}
     m = E.m; g = E.g
     level = _level(E)
     bits = _allowed_bits(E.dom, p)
-    # a tree that holds its share of the flow (GrowthSpec split) offers no more connections
-    E.open == 0x7fff || (bits = bits == 0x7fff ? E.open : bits & E.open)
     R = g.h
     @inbounds while true
         k = 0
