@@ -201,16 +201,17 @@ const LUNG_FLOW = FlowSpec(;
     # clark2010_acinar_sheet_flow_parameters]
     capillary = :sheet,
     # Grown pulmonary veins keep their own radii: their root is anchored at two Huang 1996 order-15 veins per lung
-    # (lung/pulm_veins.jl), not at a volume share. [huang1996_human_pulmonary_morphometry]
+    # (XCAT.drain), not at a volume share. [huang1996_human_pulmonary_morphometry]
     venous_scale = :grown,
     # 1. Same blood as the heart (Bindschadler 2014 bulk hematocrit). [bindschadler2014_iodine_exchange_model_ps]
     hd = 0.45f0,
     # mL/mL. Derived: arteries 319 mL (Huang 1996 left lung 150.1 mL / 0.47 left-lung share of weight 395/840 g,
     # Molina 2012) + veins 163 mL (86.6 mL right lung / 0.53) + capillaries 83 mL (Bouwsema 2017, mean of 89 and 76) =
-    # 565 mL over 2810 mL. Dock 1961 PBV ~470 mL (246 mL/m2) is the same order.
+    # 565 mL over XCAT's lung, 2752.285 mL (its lung voxels, label 6, at the 1 mm the flow is solved on). Dock 1961 PBV
+    # ~470 mL (246 mL/m2) is the same order.
     # [huang1996_human_pulmonary_morphometry, molina2012_lung_weight, bouwsema2017_capillary_blood_volume_exercise,
     # dock1961_pulmonary_blood_volume]
-    fb = 0.201f0,
+    fb = 0.20528f0,
     # Huang's volumes count every vessel, the hilar (imaged) ones included. [huang1996_human_pulmonary_morphometry]
     fb_scope = :whole,
     # 1. Derived: 319 / 565 (see fb). [huang1996_human_pulmonary_morphometry, molina2012_lung_weight]
@@ -227,11 +228,11 @@ const LUNG_FLOW = FlowSpec(;
     # the repo). [bindschadler2014_iodine_exchange_model_ps]
     cap_ht_ratio = 0.85f0,
     # mL/mL. Derived: accessible extravascular lung water 2.16 g/kg in normal humans at rest (Goresky 1975) x 70 kg =
-    # 151 mL over XCAT's 2810 mL lung. An extracellular solute reaches at most this water, so it is an upper bound
+    # 151 mL over XCAT's 2752.285 mL lung. An extracellular solute reaches at most this water, so it is an upper bound
     # (Levitt 2003: 86 mL; pig extravascular ECV 21% of non-air tissue ~240 mL, Seemann 2025). The body model (body.jl
     # e_lung) uses the same 151 mL. [goresky1975_extravascular_lung_water, levitt2003_interstitial_pharmacokinetics,
     # seemann2025_porcine_lung_extravascular_ecv]
-    ve = 0.054f0,
+    ve = 0.054864f0,
     # mL/min/g. Derived (2026-10-16): human lung DCE-MRI with gadobutrol (17 healthy volunteers, extended Tofts)
     # Ktrans 0.234 /min per mL of non-air tissue (Cheriyan 2022); about 1146 mL of non-air tissue around 510 mL of
     # lung blood (vp 0.445), and Ktrans ~ PS at the lung's high flow, gives 4.47 mL/s for gadobutrol (MW 605); scaled
@@ -242,9 +243,9 @@ const LUNG_FLOW = FlowSpec(;
     ps = 0.274f0,
     # 1. The imaged pulmonary arteries keep their size (no hyperemic state is modelled for the lung).
     epicardial_dilation = 0.0f0,
-    # g/mL. Derived: lung weight 840 g (Molina 2012, right 445 + left 395, with blood) over XCAT's lung volume 2810 mL
+    # g/mL. Derived: lung weight 840 g (Molina 2012, right 445 + left 395, with blood) over XCAT's lung volume 2752.285 mL
     # (air included). [molina2012_lung_weight]
-    rho = 0.299f0,
+    rho = 0.3052f0,
     # mPa s. Same blood as the heart: midpoint of 1.10-1.30 mPa s (Kesmarky 2008). [kesmarky2008_plasma_viscosity]
     plasma_viscosity_mPas = 1.2f0,
     # 1. Diameter variability within one order: order-1 arterioles 20 +/- 3 um.
@@ -305,7 +306,7 @@ const LUNG_FLOW = FlowSpec(;
     # 1. Vascular-space-tissue ratio: the vascular fraction of the sheet's face-on area (Sobin 1970), human value via
     # Huang 2011, paired with his A = 126 m2 (below). [huang2011_human_sheet_flow_parameters, sobin1970_vstr_definition]
     sheet_s = 0.88f0,
-    # m2/mL. Huang 2011's sheet area, 126 m2 (Gehr 1978's capillary surface) over XCAT's lung volume 2810 mL; the lung flow
+    # m2/mL. Huang 2011's sheet area, 126 m2 (Gehr 1978's capillary surface) over XCAT's lung volume 2752.285 mL; the lung flow
     # row's pass rests on it (73 m2: 3.09 L/min, below the 2-SD bound; 126 m2: 3.51). The solver
     # uses only the sheet conductance S A / (4 mu k f Lbar^2 alpha), and Huang's whole set (S 0.88, A 126 m2, h0, alpha,
     # k f, Lbar, all in this instance) reproduces his validated model's flows in three normal subjects within 1% (Table 4,
@@ -316,7 +317,7 @@ const LUNG_FLOW = FlowSpec(;
     # (194 mL); here the sheet sets only conductance (volumes come from fb x share_*). [huang2011_human_sheet_flow_parameters,
     # fung1972_alveolar_sheet_elasticity, clark2010_acinar_sheet_flow_parameters, clark2011_capillary_compliance_lung_volume,
     # weibel2009_human_capillary_volume_morphometry]
-    sheet_area_m2_per_ml = 0.04484f0,
+    sheet_area_m2_per_ml = 0.04578f0,
     # cP. Apparent blood viscosity in the sheet. [huang2011_human_sheet_flow_parameters,
     # clark2010_acinar_sheet_flow_parameters]
     sheet_mu_cP = 1.92f0,

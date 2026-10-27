@@ -56,8 +56,8 @@ include("organs.jl")
 export CCOParams, CCOModel, MaskDomain, Engine, nsegments
 export GrowthSpec, HEART_GROWTH, HEART_VEIN_GROWTH, LUNG_GROWTH, LUNG_VEIN_GROWTH, grow, size_scale, terminal_count, mesh_domain, write_vol
 export FlowSpec, HEART_FLOW, LUNG_FLOW, flow, couple_veins, vtree, Unified
-export TransportSpec, HEART_TRANSPORT, LUNG_TRANSPORT, transport, circulation, coronary_share
-export PhantomSpec, Pool, pool_curve, pool_delay, phantom, VOX_STATIC, VOX_POOL, VOX_TISSUE, VOX_VESSEL, HEART_PHANTOM, LUNG_PHANTOM, XCAT_BODY_POOLS, XCAT_STATIC
+export TransportSpec, HEART_TRANSPORT, LUNG_TRANSPORT, transport, circulation, coronary_share, organ_flow
+export PhantomSpec, Pool, pool_curve, pool_delay, phantom, VOX_STATIC, VOX_POOL, VOX_TISSUE, VOX_VESSEL, HEART_PHANTOM, LUNG_PHANTOM, XCAT_BODY_POOLS, XCAT_POOL_OF_LABEL, XCAT_STATIC
 export read_vol, import_gxl, export_gxl, grow!, dds_orders, tree_qc, set_territories!, set_forbidden!
 
 end

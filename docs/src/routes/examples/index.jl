@@ -15,6 +15,13 @@ let BASE = get(ENV, "VASCULATURE_BASE", ""),
             thumbnail = "step4_heart_phantom.png",
             tags = ["Heart", "XCAT", "Phantom"],
         ),
+        "01_pulmonary_pipeline" => (
+            index = "01",
+            title = "Pulmonary Pipeline",
+            summary = "From the raw XCAT chest to a perfused lung phantom, and the same lungs with a left lower lobe artery occluded.",
+            thumbnail = "step5_lung_phantom.png",
+            tags = ["Lung", "XCAT", "Phantom"],
+        ),
     )
 
     # Tile builder — defined inside the `let` so Therapy's file-based router

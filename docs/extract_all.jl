@@ -50,6 +50,10 @@ const FORCE_FALLBACK_BONDS = Dict{String, Tuple{Vararg{Symbol}}}(
         :healthy_state, :healthy_time, :healthy_z,
         :stenosis_state, :stenosis_time, :stenosis_z,
     ),
+    "01_pulmonary_pipeline" => (
+        :z_xcat, :y_domain, :min_radius_shown, :y_flow,
+        :healthy_time, :healthy_z, :occluded_time, :occluded_z,
+    ),
 )
 const EXPORT_CONTRACT = "vasculature-lean-v1|therapy=true|fragment=true|islands=true|verify=true|optimize=size|forced-fallback="
 

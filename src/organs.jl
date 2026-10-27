@@ -43,12 +43,12 @@ const LUNG_GROWTH = GrowthSpec(;
     # acini (transitional bronchioles) in both lungs, 2 x 14,956 per lung by micro-CT stereology; one terminal artery and
     # vein per acinus as in Clark 2011 [vasilescu2020_human_terminal_transitional_bronchiole_count, clark2011_acinar_terminal_definition]
     nterm = 29_912, flow_ml_min = nothing, terminal_flow_ml_min = NaN,
-    tissue_ml = 2813.438,               # mL, XCAT's two lungs (lung.vol)
+    tissue_ml = 2752.285,               # mL, XCAT's two lungs: its lung voxels (label 6) at 1 mm
     reference_ml = 148.1, wall_clearance = 0.5,
     # per-junction exponent of human pulmonary arteries: 2.3 +/- 0.1 over 1,937 cast bifurcations, 2.31 +/- 0.60 by
     # CT/MRA per bifurcation; 7/3 lies in that range [horsfield1989_human_pulmonary_symmetry, altieri2025_pa_murray_ct_mra]
     gamma = 2.33,
-    root_caps = [15.411707],            # mm, main pulmonary artery (pulmonary_arteries.xml)
+    root_caps = [15.718822],            # mm, main pulmonary artery: XCAT's dias_pul_art, its median ring (XCAT.graft)
     root_fixed = true, split = :free, symmetry_floor = [], seed = 1, T = Float32, device = identity,
 )
 
@@ -57,7 +57,7 @@ const LUNG_GROWTH = GrowthSpec(;
 const LUNG_VEIN_GROWTH = GrowthSpec(
     LUNG_GROWTH;
     root_caps = [8.170588, 8.170588]
-)   # mm, the two pulmonary vein ostia (pulmonary_veins_left/right.xml)
+)   # mm, one per lung: its two pulmonary veins (Huang 1996 venous order 15, 12.97 mm) as one cube-law equivalent
 
 const XCAT_MYOCARDIUM_ML = 148.052f0 # mL, XCAT vmale_50's myocardium voxels (LV + RV)
 
@@ -69,7 +69,7 @@ const HEART_TRANSPORT = TransportSpec(;
 
 # a bolus with the lungs in their own body slot, fed by the right ventricle; the body's coronary bed is the heart's (lumped)
 const LUNG_TRANSPORT = TransportSpec(
-    HEART_TRANSPORT; phys = LUNG_FLOW, tissue_ml = 2813.438f0, bed = :lung, input = :rv,
+    HEART_TRANSPORT; phys = LUNG_FLOW, tissue_ml = 2752.285f0, bed = :lung, input = :rv,
     coronary = (; ml = XCAT_MYOCARDIUM_ML, fb = HEART_FLOW.fb, ve = HEART_FLOW.ve, ps = HEART_FLOW.ps, rho = HEART_FLOW.rho)
 )
 
@@ -102,6 +102,17 @@ const XCAT_BODY_POOLS = [
     Pool("organ tissue mean", "", :coronary, :tissue), # 26: the organ's own mean (its material is the spec's tissue_material)
     Pool("descending aorta", "ncat_blood", :lv, :out; through = :desc_aorta), # 27 (set lead_ml to the subject's arch)
 ]
+# The body pool of every XCAT label that is not the organ's and needs no geometry to name (the great vessels need theirs:
+# `XCAT.great_vessel_pool`). An organ's classifier names its own labels first: the heart its myocardium and coronary
+# vessels, the lungs their parenchyma and pulmonary vessels.
+const XCAT_POOL_OF_LABEL = Dict{UInt8, Int}(
+    0x13 => 4, 0x14 => 2, 0x15 => 3, 0x16 => 1, # LV, RV, LA, RA blood
+    0x11 => 12, 0x12 => 12, # atrial myocardium
+    0x0f => 25, 0x10 => 25, 0x1a => 25, 0x1b => 25, # ventricular myocardium and its coronary vessels (the heart lumped)
+    0x06 => 13, 0x0a => 14, 0x0e => 15, 0x04 => 16, 0x17 => 17, 0x01 => 18, # lung, liver, spleen, muscle, skin, fat
+    0x05 => 19, 0x08 => 20, 0x09 => 21, 0x0c => 22, 0x0d => 23, 0x03 => 24, 0x1d => 24, # rib, bone, spine, stomach, muscle, soft tissue
+    0x7d => 6, 0x7c => 7, # pulmonary arteries and veins in the lungs (the full chest's labels 125 and 124)
+)
 # 7 is XCAT's trach_bronch, the airway wall (cartilage rings and mucosa; 3 mm in the trachea); 11 is the air inside it
 const XCAT_STATIC = Dict(0 => "air", 2 => "cartilage", 7 => "cartilage", 11 => "air", 30 => "softtissue", 31 => "softtissue", 32 => "softtissue", 70 => "air")
 

@@ -218,6 +218,9 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         sL = TransportSpec(LUNG_TRANSPORT; tissue_ml = 2813, coronary = hb, tmax = 20, dt = 0.005, every = 1)
         L0 = transport(sL, Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0); L1 = transport(sL, Cr; passes = 1, times = 0.0f0:2.0f0:20.0f0)
         @test L1.body.out[:lung] != L0.body.out[:lung] && all(>=(0), L1.tissue)
+        # the lungs carry the whole output, so the body's output is the organ's own flow (spec.co is not used)
+        @test organ_flow(Cr) == Float32(qroot) && L0.body.circ.co ≈ organ_flow(Cr) && L0.body.circ.co != sL.co
+        @test transport(TransportSpec(sL; co = 1.0f0), Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0).body.out[:lung] == L0.body.out[:lung]
         # by default the feedback repeats until the organ's outflow stops changing, so the curves come from one body run
         LC = transport(sL, Cr; times = 0.0f0:2.0f0:20.0f0)
         @test L1.passes == 1 && LC.passes >= 1 && LC.change <= 1.0e-3
@@ -523,4 +526,6 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
     include("test_postprocess.jl")
     include("test_supply_gaps.jl")
     include("test_stubs.jl")
+    include("test_tubes.jl")
+    include("test_classify.jl")
 end

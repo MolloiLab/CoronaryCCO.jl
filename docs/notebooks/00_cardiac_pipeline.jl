@@ -1042,63 +1042,6 @@ territory_map = let weights = zeros(Float32, 3, size(tissue_centres, 2)),
     map
 end;
 
-# ╔═╡ 68dee50f-2c52-47d9-bb65-ec6d0b902af7
-"""
-Morphological closing of a 3-D mask by a ball of `r` voxels: dilate, then erode, each from an exact squared Euclidean
-distance transform (Felzenszwalb & Huttenlocher, one line at a time).
-"""
-function closing(mask::AbstractArray{Bool, 3}, r::Real)
-    function squared_distance(inside)
-        dims = size(inside)
-        distance = Array{Float32}(undef, dims)
-        for axis in 1:3
-            others = [dims[d] for d in 1:3 if d != axis]
-            m = dims[axis]
-            Threads.@threads for line in 1:prod(others)
-                f = Vector{Float64}(undef, m)
-                v = Vector{Int}(undef, m)
-                z = Vector{Float64}(undef, m + 1)
-                a = (line - 1) % others[1] + 1
-                b = (line - 1) ÷ others[1] + 1
-                index(u) = axis == 1 ? (u, a, b) : axis == 2 ? (a, u, b) : (a, b, u)
-
-                for u in 1:m
-                    f[u] =
-                        axis == 1 ? (inside[index(u)...] ? 0.0 : 1.0e20) :
-                        distance[index(u)...]
-                end
-                # the lower envelope of the parabolas rooted at every sample
-                k = 1
-                v[1] = 1
-                z[1] = -Inf
-                z[2] = Inf
-                for u in 2:m
-                    s = ((f[u] + u^2) - (f[v[k]] + v[k]^2)) / (2 * (u - v[k]))
-                    while s <= z[k]
-                        k -= 1
-                        s = ((f[u] + u^2) - (f[v[k]] + v[k]^2)) / (2 * (u - v[k]))
-                    end
-                    k += 1
-                    v[k] = u
-                    z[k] = s
-                    z[k + 1] = Inf
-                end
-                k = 1
-                for u in 1:m
-                    while z[k + 1] < u
-                        k += 1
-                    end
-                    distance[index(u)...] = (u - v[k])^2 + f[v[k]]
-                end
-            end
-        end
-        return distance
-    end
-
-    dilated = squared_distance(mask) .<= r^2
-    return .!(squared_distance(.!dilated) .<= r^2)
-end
-
 # ╔═╡ 1cb4005e-52ef-4b66-b4ea-02d7e982fc0c
 """
 The coronary vessels a wall wraps, as one segmenting a patient's myocardium would include them: from each vessel voxel
@@ -1183,9 +1126,9 @@ WALL_ENVELOPES = cached("wall_envelopes_enclosed") do
     (
         # the box's first voxel centre in mm, so the masks stay right whatever grid the labels come on
         origin_mm = XCAT_ORIGIN .+ (lower .- 1) .* XCAT_VOXEL_MM,
-        lv = closing(box .== 0x0f, 3 / XCAT_VOXEL_MM),
-        rv = closing(box .== 0x10, 3 / XCAT_VOXEL_MM),
-        papillary = closing(box .== 0x13, 10 / XCAT_VOXEL_MM) .& (box .== 0x0f),
+        lv = V.XCAT.closing(box .== 0x0f, 3 / XCAT_VOXEL_MM),
+        rv = V.XCAT.closing(box .== 0x10, 3 / XCAT_VOXEL_MM),
+        papillary = V.XCAT.closing(box .== 0x13, 10 / XCAT_VOXEL_MM) .& (box .== 0x0f),
         enclosed = enclosed_vessels(box),
     )
 end;
@@ -1281,201 +1224,22 @@ The 0.2 mm phantom of the whole XCAT heart, one folder per scenario. Every voxel
 # ╔═╡ ec88e71f-17a6-42ab-ae1d-131b91a396df
 begin
     "1 mm myocardial voxel number of each growth-grid voxel (0: not myocardium)."
-    const TISSUE_VOXEL_NUMBER = let numbers = zeros(Int32, growth_grid.dims)
-        numbers[findall(myocardium)] .= Int32.(1:count(myocardium))
-        numbers
-    end
+    const TISSUE_VOXEL_NUMBER = V.XCAT.tissue_numbers(myocardium)
 
-    "The number of the 1 mm myocardial voxel at grid index `k`, or of the nearest one within 2 voxels (0: none)."
-    function nearest_tissue_voxel(numbers, k)
-        dims = size(numbers)
-        all(1 .<= k .<= dims) && numbers[k...] > 0 && return numbers[k...]
-        best = typemax(Int)
-        number = Int32(0)
-        for di in -2:2, dj in -2:2, dk in -2:2
-            n = k .+ (di, dj, dk)
-            all(1 .<= n .<= dims) || continue
-            numbers[n...] > 0 || continue
-            d = di^2 + dj^2 + dk^2
-            if d < best
-                best = d
-                number = numbers[n...]
-            end
-        end
-        return number
-    end
-
-    "The imaged segments of a grown tree: (indices, starts, ends, radii), for naming XCAT's drawn coronary lumens."
-    imaged_segments(tree) = begin
-        k = findall(tree.isbase)
-        (k, tree.a[:, k], tree.b[:, k], tree.r[k])
-    end
-    const IMAGED_ARTERY_SEGMENTS = imaged_segments(arteries)
-    const IMAGED_VEIN_SEGMENTS = imaged_segments(veins)
-
-    "The imaged segment whose surface is nearest to `p`."
-    function nearest_segment((indices, starts, ends, radii), p)
-        best = Inf32
-        nearest = 1
-        for k in eachindex(radii)
-            axis = ends[:, k] .- starts[:, k]
-            offset = Float32.(p) .- starts[:, k]
-            length2 = sum(abs2, axis)
-            s = length2 > 0 ? clamp(sum(offset .* axis) / length2, 0.0f0, 1.0f0) : 0.0f0
-            distance = sqrt(sum(abs2, offset .- s .* axis)) - radii[k]
-            if distance < best
-                best = distance
-                nearest = k
-            end
-        end
-        return indices[nearest]
-    end
-
-    "XCAT label → body-model pool (`V.XCAT_BODY_POOLS`)."
-    const POOL_OF_LABEL = Dict(
-        0x13 => 4, # LV blood
-        0x14 => 2, # RV blood
-        0x15 => 3, # LA blood
-        0x16 => 1, # RA blood
-        0x11 => 12, # atrial myocardium
-        0x12 => 12, # atrial myocardium
-        0x06 => 13, # lung
-        0x0a => 14, # liver
-        0x0e => 15, # spleen
-        0x04 => 16, # muscle
-        0x17 => 17, # skin
-        0x01 => 18, # fat
-        0x05 => 19, # rib
-        0x08 => 20, # cortical bone
-        0x09 => 21, # spine
-        0x0c => 22, # stomach
-        0x0d => 23, # other muscle
-        0x03 => 24, # soft tissue
-        0x1d => 24, # soft tissue
-        0x7d => 6, # pulmonary arteries in the lungs (the full chest's label 125)
-        0x7c => 7, # pulmonary veins in the lungs (the full chest's label 124)
-    )
+    # the imaged segments of the grown trees, for naming XCAT's drawn coronary lumens
+    const IMAGED_ARTERY_SEGMENTS = V.XCAT.imaged_segments(arteries)
+    const IMAGED_VEIN_SEGMENTS = V.XCAT.imaged_segments(veins)
 end;
 
 # ╔═╡ 5b0c2f7e-3d41-4a8e-9b6f-2c7e1d9a4f10
 """
-Which great vessel each vessel voxel belongs to, and where it lies along it, on a 1 mm grid: its tree (0 off the vessels)
-and the blood (mL) between it and the heart. The trees grow breadth first through XCAT's vessel labels from where they meet
-the heart, by connection rather than by mesh:
-
-1. the aorta (label 28) and the systemic arteries joined to it, from the LV blood;
-2. the pulmonary arteries (label 25 and those in the lungs, 125), from the RV blood, never stepping beside the aorta, so
-   they cannot run into it where the two touch; grown first, so the aortic tree takes the rest;
-3. the superior vena cava, from the upper half of the RA's veins: its first 70 mm (the SVC itself, about 70 mm long [mahlon2007])
-   is tree 3, and the veins beyond it are the right (6) or left (7) brachiocephalic tree, by side (the liver's is the right);
-4. the inferior vena cava, from the lower half of the RA's veins;
-5. the pulmonary veins (label 24 and those in the lungs, 124), from the LA blood.
-
-The venous trees grow at once, each voxel joining the first to reach it. A voxel's volume is its tree's volume nearer the
-heart: a cross-section of the pulmonary or venous trees cuts every parallel branch, which together carry the whole flow, so
-all of them count; in the aortic tree only the aorta counts, since its branches run beside it, not in its path. Past the
-arch's top the descending aorta carries its own, smaller flow, so the phantom times it from the arch's volume (`apex_ml`)
-on; a brachiocephalic voxel is timed from the SVC's top (`confluence_ml`). Each state's transit is volume over flow
-(`V.pool_delay`).
+Which great vessel each vessel voxel belongs to, and where it lies along it, on a 1 mm grid: its tree and the blood (mL)
+between it and the heart. The trees grow by connection through XCAT's vessel labels from where they meet the heart: the
+aorta from the LV, the pulmonary arteries from the RV, the venae cavae and brachiocephalic veins from the RA, the pulmonary
+veins from the LA (`V.XCAT.great_vessel_transit`). Each state's transit is volume over flow (`V.pool_delay`).
 """
 GREAT_VESSEL_TRANSIT = cached("great_vessel_transit") do
-    step = round(Int, 1 / XCAT_VOXEL_MM)
-    coarse = xcat_labels[1:step:end, 1:step:end, 1:step:end]
-    origin_mm = XCAT_ORIGIN
-    h = step * XCAT_VOXEL_MM
-    sides = (
-        CartesianIndex(1, 0, 0),
-        CartesianIndex(-1, 0, 0),
-        CartesianIndex(0, 1, 0),
-        CartesianIndex(0, -1, 0),
-        CartesianIndex(0, 0, 1),
-        CartesianIndex(0, 0, -1),
-    )
-    touches(c, label) = any(s -> checkbounds(Bool, coarse, c + s) && coarse[c + s] == label, sides)
-    tree = zeros(UInt8, size(coarse))
-    distance = fill(Int32(-1), size(coarse))
-    order = Dict(t => CartesianIndex{3}[] for t in 0x01:0x07) # each tree's cells, nearest the heart first
-
-    # grows trees from their seeds at once, breadth first: a cell joins the first tree to reach it
-    function grow!(seeds, allowed)
-        queue = CartesianIndex{3}[]
-        for (c, t) in seeds
-            tree[c] == 0 || continue
-            tree[c] = t
-            distance[c] = 0
-            push!(queue, c)
-        end
-        head = 1
-        while head <= length(queue)
-            c = queue[head]
-            head += 1
-            for s in sides
-                n = c + s
-                checkbounds(Bool, coarse, n) && tree[n] == 0 && allowed(n, tree[c]) || continue
-                tree[n] = tree[c]
-                distance[n] = distance[c] + 1
-                push!(queue, n)
-            end
-        end
-        foreach(c -> push!(order[tree[c]], c), queue)
-        return nothing
-    end
-    seeds(label, blood, t) = [(c, t) for c in CartesianIndices(coarse) if coarse[c] == label && touches(c, blood)]
-
-    grow!(seeds(0x19, 0x14, 0x02), (n, t) -> coarse[n] in (0x19, 0x7d) && !touches(n, 0x1c))
-    grow!(seeds(0x1c, 0x13, 0x01), (n, t) -> coarse[n] in (0x1c, 0x19))
-    caval = seeds(0x18, 0x16, 0x00)
-    z_middle = sort([c[3] for (c, _) in caval])[(length(caval) + 1) ÷ 2]
-    grow!(
-        [
-            [(c, c[3] >= z_middle ? 0x03 : 0x04) for (c, _) in caval];
-            seeds(0x18, 0x15, 0x05)
-        ],
-        (n, t) -> coarse[n] == 0x18 || (t == 0x05 && coarse[n] == 0x7c),
-    )
-
-    # volumes nearer the heart, tree by tree
-    cell_ml = h^3 / 1000
-    volume = fill(NaN32, size(coarse))
-    for (t, cells) in order
-        counted(c) = t != 0x01 || coarse[c] == 0x1c
-        nearer = 0
-        before = 0
-        for (k, c) in enumerate(cells)
-            k > 1 && distance[c] > distance[cells[k - 1]] && (before = nearer)
-            volume[c] = before * cell_ml
-            counted(c) && (nearer += 1)
-        end
-    end
-    # the descending aorta: past the arch's top
-    aorta = [c for c in order[0x01] if coarse[c] == 0x1c]
-    apex = aorta[argmax([c[3] for c in aorta])]
-    descending = falses(size(coarse))
-    for c in aorta
-        descending[c] = distance[c] > distance[apex]
-    end
-    # the SVC's first 70 mm, then the brachiocephalic trees by side
-    trunk = [c for c in order[0x03] if distance[c] * h <= 70]
-    confluence_ml = maximum(volume[c] for c in trunk)
-    svc_x = sum(c[1] for c in trunk) / length(trunk)
-    liver = [c[1] for c in CartesianIndices(coarse) if coarse[c] == 0x0a]
-    right_is_low_x = sum(liver) / length(liver) < svc_x
-    for c in order[0x03]
-        distance[c] * h <= 70 && continue
-        tree[c] = (c[1] < svc_x) == right_is_low_x ? 0x06 : 0x07
-    end
-    (
-        origin_mm = origin_mm,
-        h = h,
-        tree = tree,
-        volume = volume,
-        descending = descending,
-        apex_ml = Float32(volume[apex]),
-        confluence_ml = Float32(confluence_ml),
-        tree_ml = Dict(t => count(==(t), tree) * cell_ml for t in 0x01:0x07),
-        # the aorta's volume where the coronary arteries (label 26) leave it: the blood before each ostium
-        ostia_ml = sort([volume[c] for c in aorta if touches(c, 0x1a)]),
-    )
+    V.XCAT.great_vessel_transit(xcat_labels, XCAT_ORIGIN, XCAT_VOXEL_MM)
 end;
 
 # ╔═╡ 2f6d8c41-7a3e-4b9c-8e15-d4a7c0b93e62
@@ -1501,8 +1265,8 @@ end;
 
 The classifier `classify(p)`: what is at the 0.2 mm voxel centre `p`. Myocardium is its 1 mm voxel, a coronary lumen its
 imaged segment, a great-vessel voxel its vessel's pool and its place along the vessel (`transit`); every other XCAT
-label is decided by the label alone (a body
-pool or a static material). Everything it reads is captured with its type, so it compiles to fast code.
+label is decided by the label alone (a body pool, `V.XCAT_POOL_OF_LABEL`, or a static material). Everything it reads is
+captured with its type, so it compiles to fast code.
 """
 function make_classifier(
         labels,
@@ -1518,79 +1282,13 @@ function make_classifier(
     for label in 0x00:0xff
         if label in (0x0f, 0x10, 0x1a, 0x1b, 0x18, 0x19, 0x1c, 0x7c, 0x7d)
             needs_geometry[label + 1] = true
-        elseif haskey(POOL_OF_LABEL, label)
-            by_label[label + 1] = (V.VOX_POOL, Int32(POOL_OF_LABEL[label]), 0.0f0)
+        elseif haskey(V.XCAT_POOL_OF_LABEL, label)
+            by_label[label + 1] = (V.VOX_POOL, Int32(V.XCAT_POOL_OF_LABEL[label]), 0.0f0)
         elseif haskey(V.XCAT_STATIC, Int(label))
             by_label[label + 1] = (V.VOX_STATIC, Int32(label), 0.0f0)
         end
     end
-    # where a great-vessel voxel lies along tree `t`: the blood (mL) between it and the heart, interpolated trilinearly over
-    # the tree's 1 mm cells around it (smooth along the vessel), else its nearest cell on the tree
-    volume = transit.volume
-    tree = transit.tree
-    function along(p, t)
-        f = (p .- transit.origin_mm) ./ transit.h .+ 1
-        k = floor.(Int, f)
-        w = f .- k
-        sum_v = 0.0f0
-        sum_w = 0.0f0
-        for corner in CartesianIndices((0:1, 0:1, 0:1))
-            c = CartesianIndex(k .+ Tuple(corner))
-            checkbounds(Bool, volume, c) && tree[c] == t && !isnan(volume[c]) || continue
-            wc = Float32(prod(ifelse.(Tuple(corner) .== 1, w, 1 .- w)))
-            sum_v += wc * volume[c]
-            sum_w += wc
-        end
-        sum_w > 0 && return sum_v / sum_w
-        best = Inf32
-        for step in CartesianIndices((-1:1, -1:1, -1:1))
-            c = CartesianIndex(round.(Int, f)) + step
-            checkbounds(Bool, volume, c) && tree[c] == t && !isnan(volume[c]) && (best = min(best, volume[c]))
-        end
-        return isfinite(best) ? best : 0.0f0
-    end
-    descending(p) = (
-        c = CartesianIndex(round.(Int, (p .- transit.origin_mm) ./ transit.h) .+ 1);
-        checkbounds(Bool, transit.descending, c) && transit.descending[c]
-    )
-    apex_ml = transit.apex_ml
-    confluence_ml = transit.confluence_ml
-    # the tree a voxel is on: of `candidates`, the one most of the 1 mm cells around it are on, else its nearest cell's
-    function tree_at(p, candidates)
-        f = (p .- transit.origin_mm) ./ transit.h .+ 1
-        k = floor.(Int, f)
-        w = f .- k
-        best = 0x00
-        best_w = 0.0f0
-        for t in candidates
-            wt = 0.0f0
-            for corner in CartesianIndices((0:1, 0:1, 0:1))
-                c = CartesianIndex(k .+ Tuple(corner))
-                checkbounds(Bool, tree, c) && tree[c] == t || continue
-                wt += Float32(prod(ifelse.(Tuple(corner) .== 1, w, 1 .- w)))
-            end
-            wt > best_w && (best = t; best_w = wt)
-        end
-        best != 0x00 && return best
-        for step in CartesianIndices((-1:1, -1:1, -1:1))
-            c = CartesianIndex(round.(Int, f)) + step
-            checkbounds(Bool, tree, c) && tree[c] in candidates && return tree[c]
-        end
-        return first(candidates)
-    end
-    # a great-vessel voxel's pool and its blood volume along tree `t`
-    function vessel_pool(p, t)
-        ml = along(p, t)
-        if t == 0x01 # past the arch's top: the descending aorta, timed from the arch's end at its own flow
-            return descending(p) ? (V.VOX_POOL, Int32(27), max(ml - apex_ml, 0.0f0)) : (V.VOX_POOL, Int32(5), ml)
-        end
-        t == 0x02 && return (V.VOX_POOL, Int32(6), ml)
-        t == 0x03 && return (V.VOX_POOL, Int32(8), ml)
-        t == 0x04 && return (V.VOX_POOL, Int32(11), ml)
-        t == 0x05 && return (V.VOX_POOL, Int32(7), ml)
-        # a brachiocephalic tree, timed from the SVC's top
-        return (V.VOX_POOL, Int32(t == 0x06 ? 9 : 10), max(ml - confluence_ml, 0.0f0))
-    end
+    vessel_pool(p, t) = V.XCAT.great_vessel_pool(transit, p, t)
 
     return function classify(p)
         voxel = round.(Int, (p .- XCAT_ORIGIN) ./ XCAT_VOXEL_MM) .+ 1
@@ -1599,26 +1297,26 @@ function make_classifier(
         needs_geometry[label + 1] || return by_label[label + 1]
 
         if label == 0x0f || label == 0x10
-            number = nearest_tissue_voxel(numbers, round.(Int, p .- grid.origin) .+ 1)
+            number = V.XCAT.nearest_tissue_voxel(numbers, round.(Int, p .- grid.origin) .+ 1)
             return number > 0 ?
                 (V.VOX_TISSUE, number, 0.0f0) :
                 (V.VOX_POOL, Int32(26), 0.0f0)
         end
         label == 0x1a && return (
             V.VOX_VESSEL,
-            Int32(nearest_segment(artery_segments, p)),
+            Int32(first(V.XCAT.nearest_segment(artery_segments, p))),
             0.0f0,
         )
         label == 0x1b && return (
             V.VOX_VESSEL,
-            -Int32(nearest_segment(vein_segments, p)),
+            -Int32(first(V.XCAT.nearest_segment(vein_segments, p))),
             0.0f0,
         )
         label == 0x1c && return vessel_pool(p, 0x01)
-        label == 0x19 && return vessel_pool(p, tree_at(p, (0x01, 0x02)))
+        label == 0x19 && return vessel_pool(p, V.XCAT.vessel_tree_at(transit, p, (0x01, 0x02)))
         label == 0x7d && return vessel_pool(p, 0x02)
         label == 0x7c && return vessel_pool(p, 0x05)
-        return vessel_pool(p, tree_at(p, (0x03, 0x04, 0x05, 0x06, 0x07)))
+        return vessel_pool(p, V.XCAT.vessel_tree_at(transit, p, (0x03, 0x04, 0x05, 0x06, 0x07)))
     end
 end
 
@@ -2556,7 +2254,6 @@ truth = heart.roi_table[(STATE, "LV")]
 # ╠═1488815e-8708-46f2-ade5-31b7438b0a41
 # ╠═2235d2e6-01bc-43ac-b6a4-1a8b5ece93c8
 # ╠═a162fdf2-c33e-4724-8874-b0ab23c96cae
-# ╠═68dee50f-2c52-47d9-bb65-ec6d0b902af7
 # ╠═1cb4005e-52ef-4b66-b4ea-02d7e982fc0c
 # ╠═a648cc82-ba31-49ce-8c88-b670dbf3a513
 # ╠═ba8d75ec-ca1a-4952-970b-a31cdd5be016

@@ -13,7 +13,8 @@ organ's [`FlowSpec`](@ref): its blood hematocrit (`hd`, used for the whole body)
 contrast permeability and tissue density. `tissue_ml` is the organ's tissue volume (mL). `bed` is the body segment the
 organ is (`:coronary` for the heart, `:lung` for the lungs) and `input` the segment whose outflow feeds it (`:lv` for an
 organ fed by the aorta, `:rv` for the lungs). `co` is the cardiac output (mL/s; rest 81.6, adenosine stress
-`Body.adenosine()`), `beat` the heart period (s), and `f_coronary` the coronary bed's share of the cardiac output where no
+`Body.adenosine()`; with the circuit of an organ that carries the whole output, the lungs, `transport(spec, C)` uses its
+own flow instead), `beat` the heart period (s), and `f_coronary` the coronary bed's share of the cardiac output where no
 grown heart sets it: the body's lumped heart when another organ is the bed, or `transport(spec)` without a circuit
 (0.033, ICRP 89 / Williams & Leggett 1989). With the heart's own circuit, `transport(spec, C)` uses
 [`coronary_share`](@ref)`(C, co)` instead. When the organ is not the heart, `coronary` gives the body's own lumped coronary bed as
@@ -75,7 +76,14 @@ using .Flow: Circuit, InputCurve, frame_masses, sinus_outflow
 
 The coronary bed's share of the cardiac output `co` (mL/s) when the heart is the grown circuit `C`: its root flow / `co`.
 """
-coronary_share(C::Circuit, co) = Float32(sum(C.q[j] for j in eachindex(C.tree.parent) if C.tree.parent[j] == 0) / co)
+coronary_share(C::Circuit, co) = Float32(organ_flow(C) / co)
+
+"""
+    organ_flow(C::Circuit) -> Float32
+
+The flow (mL/s) into the grown circuit `C`: the sum of its roots' flows.
+"""
+organ_flow(C::Circuit) = Float32(sum(C.q[j] for j in eachindex(C.tree.parent) if C.tree.parent[j] == 0))
 
 # Linear interpolation of samples y at times ts, held flat outside.
 _interp(t, ts, y) = t <= ts[1] ? y[1] : t >= ts[end] ? y[end] :
@@ -88,7 +96,9 @@ _interp(t, ts, y) = t <= ts[1] ? y[1] : t >= ts[end] ? y[end] :
 
 The injection through the whole body and the organ's own solved circuit `C` (from [`flow`](@ref)). When the organ is the
 heart (`spec.bed === :coronary`), the body's coronary share of the cardiac output is [`coronary_share`](@ref)`(C, spec.co)`,
-so the body and the grown tree carry the same coronary flow (`spec.f_coronary` is not used). The organ's arterial
+so the body and the grown tree carry the same coronary flow (`spec.f_coronary` is not used). When the organ carries the
+whole cardiac output (a `:central` segment, the lungs), the cardiac output is the grown tree's own flow
+[`organ_flow`](@ref)`(C)` (`spec.co` is not used), so the body and the organ carry the same blood. The organ's arterial
 input is the plasma concentration leaving body segment `spec.input`. The organ's venous outflow is fed back into the
 body in place of its lumped segment `spec.bed`, so recirculation carries the organ's own transit; that changes the
 organ's input, so the feedback is repeated until the outflow's change, weighted by the organ's share of the cardiac output
@@ -104,6 +114,10 @@ function transport(
     )
     s.bed === :coronary && (s = TransportSpec(s; f_coronary = coronary_share(C, s.co)))
     BC = circulation(s); pf = 1 - s.phys.hd
+    # an organ in the central path carries the whole output: the output is its own solved flow
+    if BC.segs[findfirst(x -> x.name === s.bed, BC.segs)].kind === :central
+        s = TransportSpec(s; co = organ_flow(C)); BC = circulation(s)
+    end
     fine = Float32(fine); dt_out = Float32(dt_out)
     r = simulate(BC, inj; tmax = s.tmax, dt = s.dt, every = s.every)
     curve_in(r) = InputCurve(Float32[_interp(t, r.t, r.out[s.input]) / pf for t in collect(0.0f0:fine:s.tmax)], fine) # plasma

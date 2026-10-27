@@ -54,7 +54,7 @@ solved below it in `flow`. You can always give `nterm` directly.
 | | `flow_ml_min` | → terminals | `tissue_ml` | inlets |
 |---|---|---|---|---|
 | heart (adult, rest) | 135.6 | 957,045 | 148 (myocardium) | LCA, RCA |
-| lungs (adult) | (4,800 cardiac output, not used for the count) | 29,912 acini (Vasilescu et al. 2020) | 2,813 | main pulmonary artery |
+| lungs (adult) | (the cardiac output, not used for the count) | 29,912 acini (Vasilescu et al. 2020) | 2,752 (lung voxels) | main pulmonary artery |
 | brain (older adult, rest) | 510 (van Es et al. 2010) | 3.6 million | 1,016 (parenchyma) | both internal carotids, both vertebrals |
 | one leg (adult, rest) | 290 for the whole leg (Koch Esteves et al. 2023: 2.6 mL/min per 100 mL) | 2.0 million | 11,000 (whole leg: skin, fat, bone, muscle) | common femoral artery |
 | any organ | VO₂ ÷ (arterial O₂ content × O₂ extraction) | flow ÷ 0.14 µL/min | its segmented volume | each imaged inlet (femoral artery, carotids + basilar, ...) |
@@ -104,7 +104,8 @@ T.tissue, T.artery, T.vein # iodine (mg) in every terminal bed and vessel, every
 
 `HEART_TRANSPORT` and `LUNG_TRANSPORT` are instances of the one `TransportSpec` struct: which body segment the organ
 replaces, where its blood comes from, its tissue volume. The organ's venous outflow is fed back into the body until it
-stops changing, so recirculation is included.
+stops changing, so recirculation is included. The lungs carry the whole cardiac output, so for them the cardiac output is
+their own solved flow (`organ_flow`): the body and the lungs carry the same blood.
 
 ## 4. Phantom
 

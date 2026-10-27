@@ -11,6 +11,7 @@ Falls back to the raw slug if no override is registered."""
 function _notebook_display_title(slug::AbstractString)
     overrides = Dict(
         "00_cardiac_pipeline" => "00 · Cardiac Pipeline",
+        "01_pulmonary_pipeline" => "01 · Pulmonary Pipeline",
     )
     return get(overrides, slug, replace(slug, "_" => " "))
 end
