@@ -1,4 +1,4 @@
-<!-- vasculature-export-fingerprint: 8a2539b5f9ca46d14ba6c7a983cea81f15b0506476f3d77130fc5cf9dd2a520b -->
+<!-- vasculature-export-fingerprint: b4b99fd2e468e64e0f5eeab9a967b16923053edfdbc85f30c67f3fba4fe9584a -->
 <div class="snap-notebook" data-snapshot-requires="daisyui-themes@5.6.2 katex@0.11.1">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.6.2/themes.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css">
@@ -2588,7 +2588,7 @@ end</code></pre></div>
 </div></pluto-output></div>
 <div class="pl-cell"><pre class="pl-code"><code class="pl-jl">begin
     "Radius (mm) of a terminal arteriole, the size growth must reach."
-    const TERMINAL_RADIUS_MM = 0.010
+    const TERMINAL_RADIUS_MM = 0.01
     "Murray's exponent: the leg's conduits need it (γ = 2.33 starves the beds)."
     const GAMMA = 3.0
     "The terminal count Murray's law gives for the imaged femoral artery and a 10 µm terminal."
@@ -2893,9 +2893,11 @@ REGION = let t = pass1.arteries.tree, z = t.b[3, PATCHES.segment]
     (branch = branch, patches = [k for (k, j) in enumerate(PATCHES.segment) if under(j) &amp;&amp; PATCHES.voxels[k] &gt; 0])
 end</code></pre></div>
 <div class="pl-cell"><pre class="pl-code"><code class="pl-jl">"Pass 2 for every patch of the region, each cached on its own."
-pass2 = [cached("patch_$k") do
-    grow_patch(k)
-end for k in REGION.patches];</code></pre></div>
+pass2 = [
+    cached("patch_$k") do
+        grow_patch(k)
+    end for k in REGION.patches
+];</code></pre></div>
 <div class="pl-cell"><pluto-output class="rich_output" id="out-2bdfc5d1-1351-4b5a-b678-90995faf4dd1"><div class="pluto-docs-binding">
 <span id="stitch">stitch</span>
 <div class="markdown"><pre><code class="language-julia">stitch&#40;tree, radius, grown&#41; -&gt; &#40;parent, a, b, r, pass, from&#41;</code></pre>
