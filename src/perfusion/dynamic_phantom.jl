@@ -327,16 +327,19 @@ function hu(ph::Dyn, state, t; energy_keV = ph.meta["energy_keV"])
 end
 
 """
-    scan_times(ph; state, roi = the first tracking ROI, threshold_hu = 80, lead_s = 1, step = 0.5)
+    scan_times(ph; state, roi = its only tracking ROI, threshold_hu = 80, lead_s = 1, step = 0.5)
 
 Bolus-tracking times of a loaded phantom from its tracking ROI (ΔHU), sampled every `step` s (the tracking scan's
 cadence) on the curve interpolated between the stored frames: `arrival` (first sample ≥ +`threshold_hu`), `peak`
-(`lead_s` before the ROI maximum, the usual scan time), `peak_time` (the maximum) and `peak_hu`.
+(`lead_s` before the ROI maximum, the usual scan time), `peak_time` (the maximum) and `peak_hu`. `roi` is a reference
+key, `"roi:<tracking name>"` (e.g. `"roi:descending aorta"`); a phantom with several tracking points must name one.
 """
-function scan_times(
-        ph::Dyn; state, roi = first(k for k in keys(ph.reference) if k[1] == state)[2], threshold_hu = 80.0, lead_s = 1.0,
-        step = 0.5
-    )
+function scan_times(ph::Dyn; state, roi = nothing, threshold_hu = 80.0, lead_s = 1.0, step = 0.5)
+    if roi === nothing
+        rois = sort!([k[2] for k in keys(ph.reference) if k[1] == state])
+        length(rois) == 1 || throw(ArgumentError("scan_times: the phantom has tracking ROIs $rois; name one with `roi`"))
+        roi = only(rois)
+    end
     dhu = ph.reference[(state, roi)]; ts = ph.times[1]:step:ph.times[end]; y = [_at(ph.times, dhu, t) for t in ts]
     k = findfirst(>=(threshold_hu), y); k === nothing && error("the ROI never reaches +$threshold_hu HU")
     kp = argmax(y)

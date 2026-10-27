@@ -1955,7 +1955,7 @@ function curves_figure(view)
                 label = @sprintf("%s · %.2f mL/min/g", name, row.mbf),
             )
         end
-        timing = V.DynamicPhantom.scan_times(bundle; state)
+        timing = V.DynamicPhantom.scan_times(bundle; state, roi = "roi:descending aorta")
         Mke.vlines!(
             ax,
             [timing.arrival, timing.peak_time];
@@ -2016,7 +2016,7 @@ function outflow_check(view)
     end
     rows = map(("rest", "stress")) do state
         ledger = bundle.ledger[state]
-        timing = V.DynamicPhantom.scan_times(bundle; state)
+        timing = V.DynamicPhantom.scan_times(bundle; state, roi = "roi:descending aorta")
         times = [timing.arrival .+ [1, 2, 3]; timing.peak_time]
         shares = [@sprintf("%.0f%%", 100 * share_out(ledger, t)) for t in times]
         @sprintf(
@@ -2453,7 +2453,7 @@ meta = V.DynamicPhantom.load(DIR; volume = false)
 # the tracking point (x, y, z mm)
 track = meta.meta["tracking"]["descending aorta"]["point_mm"]
 # arrival (+80 HU at the point) and the arterial peak
-timing = V.DynamicPhantom.scan_times(meta; state = STATE)
+timing = V.DynamicPhantom.scan_times(meta; state = STATE, roi = "roi:descending aorta")
 # two scans: 100 mm over the heart, 0.625 mm slices, 500 mA, at the arrival and at the peak
 grid = meta.meta["grid"]
 # the phantom's centre (x, y), on the isocentre
