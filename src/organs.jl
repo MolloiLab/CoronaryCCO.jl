@@ -77,15 +77,19 @@ const LUNG_TRANSPORT = TransportSpec(
 # The XCAT body around an organ, as pools of the whole-body model (shared by every organ's phantom; a classifier names them
 # by index). XCAT labels: 19-22 chamber blood, 25/28 arteries, 24 veins, 6 lung, 10 liver, 14 spleen, 4/13 muscle, 23 skin,
 # 1 body (fat), 5 rib, 8 cortical bone, 9 spine, 12 stomach, 3/29 soft tissue. Organ beds: blood + extracellular iodine over
-# the body model's tissue volumes (ICRP 89 masses; the thorax holds 30% of each peripheral tissue).
+# the body model's tissue volumes (ICRP 89 masses; the thorax holds 30% of each peripheral tissue). The great vessels are
+# positional (`:out` pools): the arteries downstream of their valve, the descending aorta past the arch at its own flow
+# (its `lead_ml`, the blood from the aortic valve to the arch's end, is the subject's: the caller sets it), and the veins
+# upstream of the chamber they drain into.
 const XCAT_BODY_POOLS = [
     Pool("right atrium blood", "ncat_blood", :ra, :mean), Pool("right ventricle blood", "ncat_blood", :rv, :mean), # 1, 2
     Pool("left atrium blood", "ncat_blood", :la, :mean), Pool("left ventricle blood", "ncat_blood", :lv, :mean), # 3, 4
     Pool("aorta and systemic arteries", "ncat_blood", :lv, :out), Pool("pulmonary arteries", "ncat_blood", :rv, :out), # 5, 6
-    Pool("pulmonary veins", "ncat_blood", :lung, :out), Pool("superior vena cava", "ncat_blood", :svc, :mean), # 7, 8
-    Pool("right brachiocephalic vein", "ncat_blood", :brachiocephalic_r, :mean), # 9
-    Pool("left brachiocephalic vein", "ncat_blood", :brachiocephalic_l, :mean), # 10
-    Pool("inferior vena cava", "ncat_blood", :ivc_hepatic, :mean), # 11
+    Pool("pulmonary veins", "ncat_blood", :lung, :out; upstream = true), # 7
+    Pool("superior vena cava", "ncat_blood", :svc, :out; upstream = true), # 8
+    Pool("right brachiocephalic vein", "ncat_blood", :brachiocephalic_r, :out; through = :svc, upstream = true), # 9
+    Pool("left brachiocephalic vein", "ncat_blood", :brachiocephalic_l, :out; through = :svc, upstream = true), # 10
+    Pool("inferior vena cava", "ncat_blood", :ivc_hepatic, :out; upstream = true), # 11
     Pool("atrial myocardium", "ncat_heart", :coronary, :organ; ml = XCAT_MYOCARDIUM_ML), # 12
     Pool("lung", "ncat_lung", :lung, :mean; scale = 0.1), # 13
     Pool("liver", "ncat_liver", :liver, :organ; ml = 1800), Pool("spleen", "ncat_spleen", :gut, :organ; ml = 1500), # 14, 15
@@ -96,15 +100,16 @@ const XCAT_BODY_POOLS = [
     Pool("muscle (other)", "ncat_muscle", :other_upper, :organ; ml = 0.3 * 8000), Pool("soft tissue", "softtissue", :other_upper, :organ; ml = 0.3 * 8000), # 23, 24
     Pool("ventricular myocardium", "ncat_heart", :coronary, :organ; ml = XCAT_MYOCARDIUM_ML), # 25 (when the heart is not the organ)
     Pool("organ tissue mean", "", :coronary, :tissue), # 26: the organ's own mean (its material is the spec's tissue_material)
+    Pool("descending aorta", "ncat_blood", :lv, :out; through = :desc_aorta), # 27 (set lead_ml to the subject's arch)
 ]
 # 7 is XCAT's trach_bronch, the airway wall (cartilage rings and mucosa; 3 mm in the trachea); 11 is the air inside it
 const XCAT_STATIC = Dict(0 => "air", 2 => "cartilage", 7 => "cartilage", 11 => "air", 30 => "softtissue", 31 => "softtissue", 32 => "softtissue", 70 => "air")
 
 # heart: the myocardium in 64 kinetic classes, grown (radius >= 0.1 mm) and imaged coronary vessels in 64 classes,
-# great-artery transit delays in 0.05 s bins, frames every second for 60 s
+# great-artery transit binned by 1 mL of upstream blood, frames every second for 60 s
 const HEART_PHANTOM = PhantomSpec(;
     times = collect(0.0f0:1.0f0:60.0f0), tissue_material = "ncat_heart", blood_material = "ncat_blood", tissue_classes = 64, vessel_classes = 64,
-    vessel_rmin_mm = 0.1, delay_bin_s = 0.05, energy_keV = 70, materials = XCAT_STATIC, pools = XCAT_BODY_POOLS,
+    vessel_rmin_mm = 0.1, delay_bin_ml = 1, energy_keV = 70, materials = XCAT_STATIC, pools = XCAT_BODY_POOLS,
 )
 
 # lung: lung parenchyma in 64 kinetic classes; the pulmonary trees' grown lumens of radius >= 0.25 mm drawn as blood

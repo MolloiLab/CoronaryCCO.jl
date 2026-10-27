@@ -11,12 +11,18 @@ using .OrganCT: tissue_iodine, blood_volumes, unresolved_masses
 using .Flow: sinus_outflow
 
 """
-    Pool(name, material, segment, what; scale = 1, ml = 0)
+    Pool(name, material, segment, what; scale = 1, ml = 0, through = segment, lead_ml = 0, lead_through = segment,
+         upstream = false)
 
 A compartment filled from the whole-body model: `segment` names a `Body` segment, `what` which of its curves: `:out`
-(outflow blood, shifted by the voxel's transit delay), `:mean` (the segment's mean blood), `:organ` (an organ bed: its
-blood and extracellular iodine over its tissue volume `ml`), or `:tissue` (the organ's own perfused tissue, its mean).
-`scale` multiplies the curve (e.g. a blood fraction). `material` is the `XrayAttenuation.Materials` base.
+(its outflow blood, shifted by the voxel's transit, `pool_delay`), `:mean` (the segment's mean blood), `:organ` (an organ
+bed: its blood and extracellular iodine over its tissue volume `ml`), or `:tissue` (the organ's own perfused tissue, its
+mean). `scale` multiplies the curve (e.g. a blood fraction). `material` is the `XrayAttenuation.Materials` base.
+
+An `:out` pool is positional: each voxel carries the blood volume (mL) between it and the segment's outlet along its vessel.
+That volume moves at the flow of segment `through`; `lead_ml` more lie before the pool's vessel begins, at the flow of
+`lead_through` (the aortic arch before the descending aorta). An `upstream` pool lies before the outlet (a vein draining
+into a chamber), so its voxels see the outlet's curve earlier.
 """
 struct Pool
     name::String
@@ -25,14 +31,37 @@ struct Pool
     what::Symbol
     scale::Float32
     ml::Float32
+    through::Symbol
+    lead_ml::Float32
+    lead_through::Symbol
+    upstream::Bool
 end
-Pool(name, material, segment, what; scale = 1, ml = 0) = Pool(name, material, segment, what, scale, ml)
+function Pool(
+        name, material, segment, what; scale = 1, ml = 0, through = segment, lead_ml = 0, lead_through = segment,
+        upstream = false
+    )
+    return Pool(name, material, segment, what, scale, ml, through, lead_ml, lead_through, upstream)
+end
+
+"""
+    pool_delay(P::Pool, r, ml) -> Float32
+
+The transit (s) of a voxel of `:out` pool `P` lying `ml` of blood from the outlet of `P.segment` along its vessel, in the
+state of `Body.simulate` result `r`: each stretch of blood over the flow through it (central volume principle, plug flow),
+`P.lead_ml` at the flow of `P.lead_through` and `ml` at the flow of `P.through`. Negative for an `upstream` pool, whose
+voxels see the outlet's curve earlier. One anatomy thus gives each state its own transits, shorter where the flow is higher.
+"""
+function pool_delay(P::Pool, r, ml)
+    flow(name) = (i = findfirst(x -> x.name === name, r.circ.segs); r.circ.q[i] * r.circ.co)
+    delay = P.lead_ml / flow(P.lead_through) + ml / flow(P.through)
+    return Float32(P.upstream ? -delay : delay)
+end
 
 """
     pool_curve(P::Pool, r, t; delay = 0, tissue = 0) -> Float32
 
 Pool `P`'s iodine (mg per mL) at time `t` (s) in a `Body.simulate` result `r` (a `transport` result's `body`): `:out` is
-the segment's outflow `delay` s earlier, `:mean` its mean blood, `:organ` its blood and extracellular iodine over `P.ml`,
+the segment's outflow `delay` s earlier (`pool_delay`), `:mean` its mean blood, `:organ` its blood and extracellular iodine over `P.ml`,
 `:tissue` the organ's own tissue value `tissue`. The one definition of the body's compartments, for phantoms and pictures.
 """
 function pool_curve(P::Pool, r, t; delay = 0.0f0, tissue = 0.0f0)
@@ -47,7 +76,7 @@ function pool_curve(P::Pool, r, t; delay = 0.0f0, tissue = 0.0f0)
 end
 
 """
-    PhantomSpec(; times, tissue_material, blood_material, tissue_classes, vessel_classes, vessel_rmin_mm, delay_bin_s,
+    PhantomSpec(; times, tissue_material, blood_material, tissue_classes, vessel_classes, vessel_rmin_mm, delay_bin_ml,
                 energy_keV, materials, pools)
     PhantomSpec(spec::PhantomSpec; kwargs...)
 
@@ -62,7 +91,7 @@ instance (`HEART_PHANTOM`, `LUNG_PHANTOM`, organs.jl); a variant is the second f
   state), so one compartment volume serves every state; at most 999 (ids 1001-1999).
 - `vessel_classes`, `vessel_rmin_mm`: grown vessels of radius ≥ `vessel_rmin_mm` are drawn into the tissue as blood, and
   the vessels a classifier names (imaged ones) take their grown segment's curve; all grouped into this many classes.
-- `delay_bin_s`: `:out` pools are binned by the voxel's transit delay (s).
+- `delay_bin_ml`: `:out` pools are binned by the blood volume (mL) between the voxel and the segment's outlet.
 - `energy_keV`: energy of the base HU written for each material.
 - `materials`: static label → material name (labels 0-99; no iodine).
 - `pools`: the `Pool`s a classifier can name, by index.
@@ -74,7 +103,7 @@ struct PhantomSpec
     tissue_classes::Int
     vessel_classes::Int
     vessel_rmin_mm::Float32
-    delay_bin_s::Float32
+    delay_bin_ml::Float32
     energy_keV::Float32
     materials::Dict{Int, String}
     pools::Vector{Pool}
@@ -95,8 +124,11 @@ end
 PhantomSpec(s::PhantomSpec; kwargs...) = PhantomSpec(; merge((; (f => getfield(s, f) for f in fieldnames(PhantomSpec))...), values(kwargs))...)
 
 # what a classifier returns for a voxel centre: (kind, a, d)
+# the largest blood volume (mL) an `:out` pool voxel can lie downstream of its segment's outlet
+const MAX_UPSTREAM_ML = 600
+
 const VOX_STATIC = 0x00 # a = static label (PhantomSpec.materials)
-const VOX_POOL = 0x01 # a = pool index (PhantomSpec.pools); d = transit delay (s) for `:out` pools
+const VOX_POOL = 0x01 # a = pool index (PhantomSpec.pools); d = blood volume (mL) upstream along the vessel, for `:out` pools
 const VOX_TISSUE = 0x02 # a = the territories' tissue voxel number (0: tissue the territories do not reach)
 const VOX_VESSEL = 0x03 # a = grown segment: > 0 an arterial segment, < 0 a venous one (-a)
 
@@ -112,7 +144,7 @@ Writes the phantom of a transported bed into the scenario folder `out` (the `Dyn
   `spec.times`.
 - `classify(p) -> (kind, a, d)` for a voxel centre `p` (mm, the trees' frame): one of `VOX_STATIC`, `VOX_POOL`,
   `VOX_TISSUE`, `VOX_VESSEL` (see above).
-- `roi(p) -> 0:length(roi_names)`: the ground-truth compartment of the voxel at `p` (0: none). For first-pass analysis a
+- `roi(p) -> 0:length(roi_names)`: the ground-truth compartment of the voxel at `p` (0: none). A
   compartment is a region of the organ with everything in it: tissue and every artery, vein and lumen that lies in it.
   Only tissue and vessel voxels take a compartment, so every compartment is a set of whole labels.
   `roi_groups`: `name => ROI ids` (e.g. the LV as the union of its territories).
@@ -175,13 +207,18 @@ function phantom(
     lap("vessel classes")
     # ---- pools, ids from 100 in order of first use (an :out pool once per delay bin)
     pid = Dict{Tuple{Int, Int}, Int}()
+    nbin = round(Int, MAX_UPSTREAM_ML / spec.delay_bin_ml)
+    pbin(i, d) = spec.pools[i].what === :out ? clamp(round(Int, d / spec.delay_bin_ml), 0, nbin) : 0
     function poolid(i, d)
-        id = get!(pid, (i, spec.pools[i].what === :out ? clamp(round(Int, d / spec.delay_bin_s), 0, 1 + round(Int, 60 / spec.delay_bin_s)) : 0), 100 + length(pid))
-        id <= 999 || error("phantom: more than 900 pool compartments (pools x delay bins); widen delay_bin_s")
+        id = get!(pid, (i, pbin(i, d)), 100 + length(pid))
+        id <= 999 || error("phantom: more than 900 pool compartments (pools x delay bins); widen delay_bin_ml")
         return id
     end
     tmean = [vec(sum(Xs[s]; dims = 1)) ./ nvox for s in 1:nS]
-    pcurve(i, b, s, f) = pool_curve(spec.pools[i], scans[s][3].body, spec.times[f]; delay = b * spec.delay_bin_s, tissue = tmean[s][f])
+    pcurve(i, b, s, f) = (
+        P = spec.pools[i]; r = scans[s][3].body;
+        pool_curve(P, r, spec.times[f]; delay = P.what === :out ? pool_delay(P, r, b * spec.delay_bin_ml) : 0.0f0, tissue = tmean[s][f])
+    )
     function label_at(k, aa, d, r) # a voxel's label from the classifier's answer and its ROI
         k == VOX_STATIC && return Int(aa)
         k == VOX_POOL && return poolid(aa, d)
@@ -203,8 +240,7 @@ function phantom(
     vcl = (zeros(Int32, na), zeros(Int32, nv)); for ((t, j), c) in vcls
         vcl[t][j] = c
     end
-    nbin = 1 + round(Int, 60 / spec.delay_bin_s); plut = zeros(Int32, length(spec.pools), nbin + 1)
-    pbin(i, d) = spec.pools[i].what === :out ? clamp(round(Int, d / spec.delay_bin_s), 0, nbin) : 0
+    plut = zeros(Int32, length(spec.pools), nbin + 1)
     for kz in 1:nz
         z = o[3] + (kz - 1) * h
         AK.foreachindex(1:(nx * ny); min_elems = 4096) do q
@@ -347,7 +383,7 @@ function phantom(
         elseif id < 1000
             (i, b) = pkey[id]; P = spec.pools[i]
             (
-                P.what === :out ? "$(P.name) +$(round(b * spec.delay_bin_s; digits = 2)) s" : P.name, P.what === :tissue ? spec.tissue_material : P.material,
+                P.what === :out ? "$(P.name) +$(round(b * spec.delay_bin_ml; digits = 2)) mL" : P.name, P.what === :tissue ? spec.tissue_material : P.material,
                 "pool", [[Float64(pcurve(i, b, s, f)) for f in 1:nT] for s in 1:nS], nothing,
             )
         elseif id == 1000

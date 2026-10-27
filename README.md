@@ -134,7 +134,7 @@ ph = Vasculature.DynamicPhantom.load("heart_healthy"; rois = true) # the bundle
 P, m = Vasculature.DynamicPhantom.bs_phantom(ph, BasisSimulator; state = "rest", t = 25) # material map at t = 25 s
 ```
 
-An ROI is a compartment in the sense of first-pass analysis: a region of the organ with everything in it, tissue and
+An ROI is a compartment: a region of the organ with everything in it, tissue and
 every artery, vein and lumen that lies in it (`roi(p)` says which ROI the voxel at `p` is in). Every label lies in one
 ROI, so an ROI is a set of whole labels: `ph.roi_table[(state, name)]` sums them into its iodine mass curve and its ground
 truth, the flow its capillary beds receive over the mass of everything in it. A label's iodine is its members' mass over

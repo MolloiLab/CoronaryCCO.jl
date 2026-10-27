@@ -267,6 +267,14 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         # pool_curve: the one definition of a body compartment's curve (phantoms and pictures)
         @test pool_curve(Pool("LV blood", "ncat_blood", :lv, :mean), T.body, 10.0f0) ≈ C._interp(10.0f0, T.body.t, T.body.mean[:lv])
         @test pool_curve(Pool("LV out", "ncat_blood", :lv, :out), T.body, 10.0f0; delay = 1) ≈ C._interp(9.0f0, T.body.t, T.body.out[:lv])
+        # a great-artery voxel's delay is the blood upstream of it over the flow through it: one cardiac output's worth = 1 s
+        @test pool_delay(Pool("LV out", "ncat_blood", :lv, :out), T.body, T.body.circ.co) ≈ 1
+        # each stretch at its own flow: the arch at the full output, then the descending aorta at its own
+        desc = T.body.circ.q[findfirst(s -> s.name === :desc_aorta, T.body.circ.segs)] * T.body.circ.co
+        P = Pool("descending aorta", "ncat_blood", :lv, :out; through = :desc_aorta, lead_ml = T.body.circ.co)
+        @test pool_delay(P, T.body, desc) ≈ 2
+        # a vein voxel before its outlet sees the outlet's curve earlier
+        @test pool_delay(Pool("SVC", "ncat_blood", :lv, :out; upstream = true), T.body, T.body.circ.co) ≈ -1
         lo = minimum(vt.b; dims = 2) .- 4; hi = maximum(vt.b; dims = 2) .+ 4
         grid = C.VoxelGrid(Tuple(Float64.(vec(lo))), h, Tuple(ceil.(Int, vec(hi .- lo) ./ h) .+ 1))
         classify(p) = (
