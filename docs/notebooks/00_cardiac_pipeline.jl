@@ -912,7 +912,7 @@ end
 md"""
 ## 6. Compartments
 
-A **compartment** is the region ground truth is given for: a region of the heart with everything in it, tissue, and every artery, vein and lumen that lies in it or overlaps it. Here: the LV and RV walls, each split into the LAD, LCx and RCA territories (the left main counts as LAD), and the **papillary muscles** as their own compartment, left out of the walls.
+A **compartment** is the region ground truth is given for: a region of the heart with everything in it, tissue, and every artery, vein and lumen that lies in it or overlaps it. Here: the LV and RV walls, each split into the LAD, LCx and RCA territories (the left main counts as LAD), and the **papillary muscles** as their own compartment, left out of the walls. The coronary arteries and veins on the heart's surface (the coronary sinus among them) are compartments of their own, one beside each wall: **LV epicardial vessels** and **RV epicardial vessels**. Groups give each wall two ways: its **myocardium** alone, and its **myocardium + epicardial vessels**, the ideal first-pass compartment, which also counts the iodine on its way in or out.
 
 **Edit the compartments here**, e.g. `split_walls = false` and `split_territories = false` give one compartment, the whole myocardium.
 
@@ -923,6 +923,7 @@ The rule below is applied once, when the phantom is voxelized (section 7), and e
 begin
     split_walls = true # LV and RV apart
     split_territories = true # LAD, LCx and RCA apart
+    epicardial_compartments = true # the surface coronary arteries and veins as compartments of their own
 end;
 
 # ╔═╡ 1488815e-8708-46f2-ade5-31b7438b0a41
@@ -932,20 +933,26 @@ begin
     wall_rois =
         isempty(territory_names) ? wall_names :
         ["$w · $t" for w in wall_names for t in territory_names]
-    ROI_NAMES = [wall_rois; "Papillary muscles"]
+    epicardial_names = epicardial_compartments ? ["$w epicardial vessels" for w in wall_names] : String[]
+    ROI_NAMES = [wall_rois; "Papillary muscles"; epicardial_names]
 
     roi_index(name) = findfirst(==(name), ROI_NAMES)
     ROI_GROUPS = Pair{String, Vector{Int}}[]
-    length(wall_rois) > 1 && push!(ROI_GROUPS, "heart" => collect(eachindex(wall_rois)))
-    if length(wall_names) > 1 && !isempty(territory_names)
-        append!(
-            ROI_GROUPS,
-            [w => [roi_index("$w · $t") for t in territory_names] for w in wall_names],
-        )
-        append!(
-            ROI_GROUPS,
-            [t => [roi_index("$w · $t") for w in wall_names] for t in territory_names],
-        )
+    # a wall's own compartments: its territories, or the wall itself
+    wall_ids(w) = isempty(territory_names) ? [roi_index(w)] : [roi_index("$w · $t") for t in territory_names]
+    heart_ids = collect(eachindex(wall_rois))
+    length(heart_ids) > 1 && push!(ROI_GROUPS, "heart myocardium" => heart_ids)
+    if epicardial_compartments
+        push!(ROI_GROUPS, "heart myocardium + epicardial vessels" => [heart_ids; roi_index.(epicardial_names)])
+    end
+    if length(wall_names) > 1
+        for w in wall_names
+            length(wall_ids(w)) > 1 && push!(ROI_GROUPS, "$w myocardium" => wall_ids(w))
+            epicardial_compartments && push!(ROI_GROUPS, "$w myocardium + epicardial vessels" => [wall_ids(w); roi_index("$w epicardial vessels")])
+        end
+        if !isempty(territory_names)
+            append!(ROI_GROUPS, [t => [roi_index("$w · $t") for w in wall_names] for t in territory_names])
+        end
     end
     ROI_NAMES, ROI_GROUPS
 end
@@ -1020,7 +1027,7 @@ coronary_branch = let tree = arteries, n = length(tree.r)
 end;
 
 # ╔═╡ a162fdf2-c33e-4724-8874-b0ab23c96cae
-"Each 1 mm voxel's territory (1–3), carried 12 mm out from the myocardium so the lumens on its surface get one too."
+"Each 1 mm voxel's territory (1–3), carried 25 mm out from the myocardium so the lumens on its surface get one too."
 territory_map = let weights = zeros(Float32, 3, size(tissue_centres, 2)),
         map = zeros(Int8, growth_grid.dims)
     for (voxel, terminal, w) in flows.pairs
@@ -1040,7 +1047,34 @@ territory_map = let weights = zeros(Float32, 3, size(tissue_centres, 2)),
         CartesianIndex(0, 0, -1),
     )
     front = voxels
-    for _ in 1:12
+    for _ in 1:25
+        next = CartesianIndex{3}[]
+        for voxel in front, step in steps
+            neighbour = voxel + step
+            checkbounds(Bool, map, neighbour) && map[neighbour] == 0 || continue
+            map[neighbour] = map[voxel]
+            push!(next, neighbour)
+        end
+        front = next
+    end
+    map
+end;
+
+# ╔═╡ 3e5a7c9b-1d2f-4a6e-8b0c-5d7f9a1b3c46
+"Each 1 mm voxel's wall (1 LV, 2 RV), carried 25 mm out from the myocardium: the wall a surface vessel lies beside."
+wall_map = let map = zeros(Int8, growth_grid.dims)
+    map[heart_masks.lvmyo] .= 1
+    map[heart_masks.rvmyo .& .!heart_masks.lvmyo] .= 2
+    steps = (
+        CartesianIndex(1, 0, 0),
+        CartesianIndex(-1, 0, 0),
+        CartesianIndex(0, 1, 0),
+        CartesianIndex(0, -1, 0),
+        CartesianIndex(0, 0, 1),
+        CartesianIndex(0, 0, -1),
+    )
+    front = findall(!=(0), map)
+    for _ in 1:25
         next = CartesianIndex{3}[]
         for voxel in front, step in steps
             neighbour = voxel + step
@@ -1146,39 +1180,47 @@ end;
 
 # ╔═╡ ba8d75ec-ca1a-4952-970b-a31cdd5be016
 """
-    make_roi(labels, envelopes, territories, grid, n_rois; split_walls, split_territories) -> roi
+    make_roi(labels, envelopes, territories, walls, grid; papillary, epicardial, split_walls, split_territories) -> roi
 
-The compartment rule `roi(p)` for the 0.2 mm voxel at `p` (0 = none): the papillary muscles (the last compartment); else its
-wall (XCAT's label, or for a vessel lumen or vessel wall the wall envelope it lies in) and its 1 mm voxel's territory.
+The compartment rule `roi(p)` for the 0.2 mm voxel at `p` (0 = none): the papillary muscles (compartment `papillary`); else
+its wall (XCAT's label, or for a vessel lumen or vessel wall the wall envelope it lies in) and its 1 mm voxel's territory.
+A coronary artery or vein lumen outside both, on the heart's surface, is the epicardial compartment of the wall beside it
+(`walls`): `epicardial` holds their ids (LV, RV; 0 for none).
 """
 function make_roi(
         labels,
         envelopes,
         territories,
-        grid,
-        n_rois;
+        walls,
+        grid;
+        papillary,
+        epicardial,
         split_walls,
         split_territories,
     )
     lv = envelopes.lv
     rv = envelopes.rv
-    papillary = envelopes.papillary
+    papillary_mask = envelopes.papillary
     return function roi(p)
         voxel = round.(Int, (p .- XCAT_ORIGIN) ./ XCAT_VOXEL_MM) .+ 1
         all(1 .<= voxel .<= XCAT_DIMS) || return 0
         label = labels[voxel...]
         k = round.(Int, (p .- envelopes.origin_mm) ./ XCAT_VOXEL_MM) .+ 1
         inside = all(1 .<= k .<= size(lv))
-        inside && papillary[k...] && return n_rois
+        inside && papillary_mask[k...] && return papillary
 
         wall = label == 0x0f ? 1 : label == 0x10 ? 2 : 0
         # coronary artery, vein or vessel wall: in a wall's envelope, or wrapped by a wall
         if wall == 0 && inside && label in (0x1a, 0x1b, 0x1e)
             wall = lv[k...] ? 1 : rv[k...] ? 2 : Int(envelopes.enclosed[k...])
         end
+        g = round.(Int, p .- grid.origin) .+ 1
+        # a surface coronary artery or vein lumen: the epicardial compartment of the wall beside it
+        if wall == 0 && (label == 0x1a || label == 0x1b) && all(1 .<= g .<= size(walls)) && walls[g...] > 0
+            return epicardial[split_walls ? Int(walls[g...]) : 1]
+        end
         wall == 0 && return 0
 
-        g = round.(Int, p .- grid.origin) .+ 1
         territory = all(1 .<= g .<= size(territories)) ? Int(territories[g...]) : 0
         territory == 0 && return 0
 
@@ -1192,8 +1234,12 @@ roi = make_roi(
     xcat_labels,
     WALL_ENVELOPES,
     territory_map,
-    growth_grid,
-    length(ROI_NAMES);
+    wall_map,
+    growth_grid;
+    papillary = findfirst(==("Papillary muscles"), ROI_NAMES),
+    epicardial = Tuple(
+        something(findfirst(==("$w epicardial vessels"), ROI_NAMES), 0) for w in (split_walls ? ("LV", "RV") : ("Myocardium", "Myocardium"))
+    ),
     split_walls,
     split_territories,
 )
@@ -1201,7 +1247,7 @@ roi = make_roi(
 # ╔═╡ a19d475f-edfe-41c7-ad61-2ea8bdf170bd
 """
 Categorical colours of the compartments: hue for the territory (LAD red, LCx green, RCA blue), dark for the LV and light
-for the RV, gold for the papillary muscles.
+for the RV, gold for the papillary muscles, violet for the epicardial vessels (dark beside the LV, light beside the RV).
 """
 function roi_colormap()
     lv = ["#c62828", "#2e7d32", "#1565c0"]
@@ -1209,8 +1255,9 @@ function roi_colormap()
     walls =
         split_territories ? (split_walls ? [lv; rv] : lv) :
         (split_walls ? ["#c62828", "#90caf9"] : ["#c62828"])
+    epicardial = ["#6a1b9a", "#ce93d8"][1:count(endswith(" epicardial vessels"), ROI_NAMES)]
     return Mke.cgrad(
-        [:black; walls; "#ffc400"],
+        [:black; walls; "#ffc400"; epicardial],
         length(ROI_NAMES) + 1;
         categorical = true,
     )
@@ -1992,20 +2039,22 @@ curves_figure(stenosis)
 outflow_check(stenosis)
 
 # ╔═╡ a82aaa5f-af8d-4c94-9173-936dd0b36c0e
-let fig = Mke.Figure(size = (1200, 480))
+let fig = Mke.Figure(size = (1400, 520))
+    # the myocardial compartments and every group (the epicardial vessels alone have no bed flow of their own)
+    names = [filter(!endswith(" epicardial vessels"), ROI_NAMES); first.(ROI_GROUPS)]
     for (column, state) in enumerate(("rest", "stress"))
         ax = Mke.Axis(
             fig[1, column];
             title = "Ground-truth MBF, $state",
             ylabel = "mL/min/g",
-            xticks = (eachindex(ROI_NAMES), ROI_NAMES),
-            xticklabelrotation = π / 5,
+            xticks = (eachindex(names), names),
+            xticklabelrotation = π / 4,
         )
-        healthy_mbf = [healthy.bundle.roi_table[(state, name)].mbf for name in ROI_NAMES]
-        stenosis_mbf = [stenosis.bundle.roi_table[(state, name)].mbf for name in ROI_NAMES]
+        healthy_mbf = [healthy.bundle.roi_table[(state, name)].mbf for name in names]
+        stenosis_mbf = [stenosis.bundle.roi_table[(state, name)].mbf for name in names]
         Mke.barplot!(
             ax,
-            eachindex(ROI_NAMES) .- 0.2,
+            eachindex(names) .- 0.2,
             healthy_mbf;
             width = 0.38,
             color = :gray60,
@@ -2013,7 +2062,7 @@ let fig = Mke.Figure(size = (1200, 480))
         )
         Mke.barplot!(
             ax,
-            eachindex(ROI_NAMES) .+ 0.2,
+            eachindex(names) .+ 0.2,
             stenosis_mbf;
             width = 0.38,
             color = :firebrick,
@@ -2210,7 +2259,7 @@ peak, peak_dose = scan(
 
 # ---- ground truth: any compartment or group is a sum over its labels
 # .mbf (mL/min/g), .mass (mg of iodine every second), .mass_g, .voxels
-truth = heart.roi_table[(STATE, "LV")]
+truth = heart.roi_table[(STATE, "LV myocardium")] # or "LV myocardium + epicardial vessels"
 ```
 
 `V.DynamicPhantom.hu(bundle, state, t)` gives each label's idealized 70 keV HU, the scanner-free reference.
@@ -2277,6 +2326,7 @@ truth = heart.roi_table[(STATE, "LV")]
 # ╠═1488815e-8708-46f2-ade5-31b7438b0a41
 # ╠═2235d2e6-01bc-43ac-b6a4-1a8b5ece93c8
 # ╠═a162fdf2-c33e-4724-8874-b0ab23c96cae
+# ╠═3e5a7c9b-1d2f-4a6e-8b0c-5d7f9a1b3c46
 # ╠═1cb4005e-52ef-4b66-b4ea-02d7e982fc0c
 # ╠═a648cc82-ba31-49ce-8c88-b670dbf3a513
 # ╠═ba8d75ec-ca1a-4952-970b-a31cdd5be016
