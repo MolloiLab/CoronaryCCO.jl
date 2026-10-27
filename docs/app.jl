@@ -146,21 +146,22 @@ end
 # and copied to dist/favicon.ico in build. The post-build pass below also
 # injects an explicit <link rel="icon"> into every emitted HTML file so the
 # favicon resolves under GH Pages' /Vasculature.jl/ subpath. Skipped while
-# docs/assets/favicon.ico does not exist.
+# docs/assets/favicon.{ico,svg} do not exist.
 # =============================================================================
 
 const FAVICON = joinpath(@__DIR__, "assets", "favicon.ico")
+const FAVICON_SVG = joinpath(@__DIR__, "assets", "favicon.svg") # same tree as the .ico; modern browsers prefer it
 
-if isfile(FAVICON)
-    let hdrs = Pair{String, String}["Cache-Control" => "public, max-age=86400"]
-        push!(
-            app.static_mounts, Therapy.StaticMount(
-                "/favicon.ico", FAVICON, hdrs, nothing, true,
-                Therapy.file(FAVICON; headers = hdrs)
-            )
+for (url, path) in ("/favicon.ico" => FAVICON, "/favicon.svg" => FAVICON_SVG)
+    isfile(path) || continue
+    hdrs = Pair{String, String}["Cache-Control" => "public, max-age=86400"]
+    push!(
+        app.static_mounts, Therapy.StaticMount(
+            url, path, hdrs, nothing, true,
+            Therapy.file(path; headers = hdrs)
         )
-        println("  Mounted: /favicon.ico  → $(FAVICON)")
-    end
+    )
+    println("  Mounted: $(url)  → $(path)")
 end
 
 # =============================================================================
@@ -177,7 +178,12 @@ Therapy.run(app)
 # =============================================================================
 
 if IS_BUILD && isdir(app.output_dir)
-    favicon_link = "<link rel=\"icon\" type=\"image/x-icon\" href=\"$(ENV["VASCULATURE_BASE"])/favicon.ico\">"
+    favicon_link = join(
+        [
+            "<link rel=\"icon\" href=\"$(ENV["VASCULATURE_BASE"])/favicon.ico\" sizes=\"any\">",
+            "<link rel=\"icon\" type=\"image/svg+xml\" href=\"$(ENV["VASCULATURE_BASE"])/favicon.svg\">",
+        ], "\n    "
+    )
     asset_version = get(ENV, "GITHUB_RUN_ID", get(ENV, "GITHUB_SHA", "local"))
     stylesheet_href = "$(ENV["VASCULATURE_BASE"])/styles.css"
     versioned_stylesheet_href = "$(stylesheet_href)?v=$(asset_version)"
