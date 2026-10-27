@@ -35,7 +35,7 @@ import AcceleratedKernels as AK
 using Atomix: @atomic
 
 export VTree, vtree, save_vtree, load_vtree, merge_vtrees, FlowSpec, HEART_FLOW, LUNG_FLOW, Circuit, circuit, with_extraction, InputCurve,
-    gamma_input, Transport, transport, frame_masses, sinus_outflow
+    gamma_input, frame_masses, sinus_outflow
 
 const F32 = Float32
 
@@ -95,6 +95,11 @@ function merge_vtrees(trees::VTree...)
     )
 end
 
+"""
+    save_vtree(path, t::VTree) -> path
+
+Writes a vessel list to a compact binary file ([`load_vtree`](@ref) reads it back).
+"""
 function save_vtree(path, t::VTree)
     open(path, "w") do io
         write(io, Int64(nseg(t)), t.parent, t.a, t.b, t.r, UInt8.(t.isbase))
@@ -102,6 +107,11 @@ function save_vtree(path, t::VTree)
     return path
 end
 
+"""
+    load_vtree(path) -> VTree
+
+Reads a vessel list written by [`save_vtree`](@ref).
+"""
 function load_vtree(path)
     return open(path) do io
         n = read(io, Int64)
@@ -379,6 +389,10 @@ const DYN_PER_MMHG = 1333.22f0
 # Circuit: topology, volumes, pressure-driven steady flow
 # ---------------------------------------------------------------------------------------------
 
+"""
+A solved circuit of a grown bed at one state: its trees, every segment's flow, pressure, volume and transit, and its
+beds. [`flow`](@ref) returns one at rest and one at maximal dilation.
+"""
 struct Circuit
     tree::VTree
     veins::VTree                 # venous tree (companion veins: arterial topology, radius × s)

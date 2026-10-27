@@ -1,223 +1,287 @@
-let BASE = get(ENV, "VASCULATURE_BASE", ""),
-        # One entry per exported name: (id, signature, description). The text
-        # is the first sentences of each docstring; the docstrings are the
-        # full reference (`?grow` in the REPL).
-        API = [
-        (
-            id = "grow",
-            title = "Grow",
-            intro = "Grow a vascular tree from the imaged inlets into the organ's domain.",
-            entries = [
-                (
-                    "GrowthSpec(; nterm, flow_ml_min, terminal_flow_ml_min, tissue_ml, reference_ml, wall_clearance, gamma, root_caps, root_fixed, split, symmetry_floor, seed, T, device)",
-                    "Everything that differs between organs when growing a vascular tree. Every field is a keyword and every one is required. A run varies an organ with GrowthSpec(spec; kwargs...).",
-                ),
-                (
-                    "HEART_GROWTH, HEART_VEIN_GROWTH, LUNG_GROWTH, LUNG_VEIN_GROWTH",
-                    "The organs' GrowthSpec instances.",
-                ),
-                (
-                    "grow(spec::GrowthSpec, domain, inlets; root, blockers, territories, base_groups) -> Engine",
-                    "Grow a vascular forest from the imaged inlets (GXL files, one tree each) into the tissue mask domain (a .vol file, 1 mm voxels). blockers is (mask, origin_mm, cell_mm), a fine mask no new vessel may cross.",
-                ),
-                (
-                    "mesh_domain(path, vertices, triangles; margin = 3) -> path",
-                    "The growth domain of an organ given as a closed surface mesh: the voxels of a 1 mm grid whose centres lie inside the mesh, written to path as a .vol.",
-                ),
-                (
-                    "terminal_count(spec::GrowthSpec) -> Int",
-                    "spec.nterm when given; otherwise the organ's flow over the flow of one terminal.",
-                ),
-                (
-                    "size_scale(spec::GrowthSpec) -> Float32",
-                    "The organ's length against the reference, (tissue_ml / reference_ml)^(1/3); exactly 1 for the reference heart.",
-                ),
-                (
-                    "Unified(wrap, copy)",
-                    "A device that shares memory with the host (Apple silicon, integrated GPUs). Each batched round hands the growing tree to the device in place instead of copying it.",
-                ),
-            ],
-        ),
-        (
-            id = "flow",
-            title = "Flow",
-            intro = "Blood flow in the grown bed from its two pressures alone.",
-            entries = [
-                (
-                    "FlowSpec(; kwargs...)",
-                    "Boundary conditions, tissue constants and vessel-wall mechanics of one organ's vascular bed. Every field is a keyword and every one is required. A variant: FlowSpec(HEART_FLOW; p_in = 70).",
-                ),
-                (
-                    "HEART_FLOW, LUNG_FLOW",
-                    "The organs' FlowSpec instances, each value commented with its sources.",
-                ),
-                (
-                    "vtree(E) -> VTree",
-                    "A grown Engine as a vessel list for flow.",
-                ),
-                (
-                    "flow(spec::FlowSpec, arteries, veins, tissue::AbstractMatrix; to = identity) -> (; rest, stress, terr, pairs, vleaf, terms, vterms, demand)",
-                    "Blood flow from the pressures, the vessel sizes and the arterioles' tone. tissue is 3 × n points (mm), one per tissue voxel.",
-                ),
-                (
-                    "couple_veins(arteries, terr, veins, terms, vterms; phys, reach = 3, passes = 24, tol = 5e-4, to = identity)",
-                    "Which venule drains each capillary bed, starting from a balanced pairing.",
-                ),
-            ],
-        ),
-        (
-            id = "transport",
-            title = "Transport",
-            intro = "A contrast injection through the whole body and the organ's grown tree.",
-            entries = [
-                (
-                    "TransportSpec(; phys, tissue_ml, bed, input, co, beat, f_coronary, tmax, dt, every, coronary)",
-                    "Everything that sets where an injected bolus goes. Every field is a keyword and every one is required.",
-                ),
-                (
-                    "HEART_TRANSPORT, LUNG_TRANSPORT",
-                    "The organs' TransportSpec instances.",
-                ),
-                (
-                    "transport(spec::TransportSpec, C, injection = Injection(); times = 0:60, ...) -> (; body, input, t_out, outflow, artery, vein, tissue, passes, change)",
-                    "The injection through the whole body and the organ's own solved circuit C (from flow). The organ's venous outflow is fed back into the body until it stops changing, so recirculation is included.",
-                ),
-                (
-                    "circulation(spec::TransportSpec)",
-                    "The whole-body circulation with the organ's own values in its body segment.",
-                ),
-                (
-                    "coronary_share(C, co) -> Float32",
-                    "The coronary bed's share of the cardiac output co (mL/s) when the heart is the grown circuit C.",
-                ),
-            ],
-        ),
-        (
-            id = "phantom",
-            title = "Phantom",
-            intro = "The voxelized dynamic phantom of a transported bed.",
-            entries = [
-                (
-                    "PhantomSpec(; times, tissue_material, blood_material, tissue_classes, vessel_classes, vessel_rmin_mm, delay_bin_s, energy_keV, materials, pools)",
-                    "Everything that sets an organ's dynamic CT phantom. Every field is a keyword and every one is required.",
-                ),
-                (
-                    "HEART_PHANTOM, LUNG_PHANTOM",
-                    "The organs' PhantomSpec instances.",
-                ),
-                (
-                    "phantom(spec, scans, classify, grid; pairs, terr, nvox, out, roi, roi_names, roi_groups, tracking, facts, check = true)",
-                    "Writes the phantom of a transported bed into the scenario folder out: labels, ROIs, ground-truth blood flow, per-label and per-ROI iodine curves, the iodine ledger and phantom.toml.",
-                ),
-                (
-                    "VOX_STATIC, VOX_POOL, VOX_TISSUE, VOX_VESSEL",
-                    "The voxel kinds classify(p) returns: a static material, a blood pool of the body model, perfused tissue, or a grown vessel.",
-                ),
-                (
-                    "Pool(name, material, segment, what; scale = 1, ml = 0)",
-                    "A compartment filled from the whole-body model.",
-                ),
-                (
-                    "pool_curve(P::Pool, r, t; delay = 0, tissue = 0) -> Float32",
-                    "Pool P's iodine (mg per mL) at time t (s) in a transport result's body.",
-                ),
-                (
-                    "XCAT_BODY_POOLS, XCAT_STATIC",
-                    "The pools and static materials of the XCAT body around the perfused organ.",
-                ),
-                (
-                    "Vasculature.DynamicPhantom.load(dir; volume = true, rois = false, zrange = nothing)",
-                    "Loads a scenario folder. zrange loads a large phantom a slab at a time.",
-                ),
-                (
-                    "Vasculature.DynamicPhantom.bs_phantom(ph, BasisSimulator; state, t, max_materials = 64)",
-                    "The phantom at time t (s) as a BasisSimulator.jl Phantom.",
-                ),
-            ],
-        ),
-        (
-            id = "lower-level",
-            title = "Lower-Level Tools",
-            intro = "The growth engine and tree files underneath grow.",
-            entries = [
-                (
-                    "CCOParams(; kwargs...)",
-                    "Run parameters of the growth engine. Defaults match the upstream HctCco command line.",
-                ),
-                ("CCOModel{T}", "The tree as a struct of arrays: one entry per segment, plus global hydraulic state."),
-                ("MaskDomain{T}", "The image-mask domain: the mask, its exact distance map, and the wall clearance."),
-                ("Engine{T}", "A growing tree: the model, its spatial grid and its domain. grow returns one."),
-                ("grow!(E; parallel = true, progress = 0, growth = :batched, ...)", "Add terminals until nterm."),
-                ("nsegments(m)", "The number of segments of a tree."),
-                ("set_forbidden!(dom, mask, origin, h)", "A fine forbidden mask no new vessel segment may cross."),
-                ("set_territories!(dom, allow)", "Hierarchical territories on the domain grid: which tree groups may take a terminal at each voxel."),
-                ("read_vol(path) -> (img, lower)", "Read a DGtal .vol voxel file."),
-                ("write_vol(path, mask, lower) -> path", "Write a Bool mask as a DGtal .vol (1 mm voxels)."),
-                ("import_gxl(T, path, params) -> CCOModel{T}", "Read a tree (or, with a vector of paths, a forest) from GXL files."),
-                ("export_gxl(m, path)", "Write a tree as GXL with flow, resistance and radius per segment."),
-                ("dds_orders(m; maxiter = 100, tol = 0.01) -> NamedTuple", "Diameter-defined Strahler ordering (Jiang, Kassab and Fung 1994)."),
-                ("tree_qc(E; rmin = 0.25, hops = 2) -> NamedTuple", "Checks a grown tree for overlapping vessels and sharp turns."),
-            ],
-        ),
-    ]
+# /api/ — the API reference, GENERATED at build time from Vasculature's docstrings.
+#
+# Nothing on this page is hand-written about the API: every exported name (and every documented name of the XCAT, Flow,
+# Body and DynamicPhantom modules) is listed with its signature, its rendered docstring and a link to its source. The
+# section a name appears in comes from docs/src/api_sections.jl, shared with test/docs.jl; a name the map does not place
+# lands in "Other" and fails the test suite. The name filter is the ApiFilter island (src/components/ApiFilter.jl).
+#
+# Therapy includes this file into its `TherapyApp` module; its last expression is the route.
 
+import Markdown
+import Vasculature
+
+include(joinpath(@__DIR__, "..", "..", "api_sections.jl"))
+
+# The package is not registered or tagged, so source links point at `main`.
+const _API_GITHUB_SRC = "https://github.com/MolloiLab/Vasculature.jl/blob/main/src"
+
+_api_esc(s) = replace(string(s), '&' => "&amp;", '<' => "&lt;", '>' => "&gt;", '"' => "&quot;")
+_api_unesc(s) = replace(
+    replace(s, r"&#(\d+);" => m -> string(Char(parse(Int, m[3:(end - 1)])))),
+    "&lt;" => "<", "&gt;" => ">", "&quot;" => "\"", "&amp;" => "&",
+)
+
+# `[`name`](@ref)` → an in-page link when `name` is on this page, plain code otherwise.
+function _api_ref_target(txt, onpage)
+    t = replace(_api_unesc(txt), r"^(Vasculature\.)" => "")
+    t = strip(first(split(t, r"[\(\{\s]"; limit = 2)))
+    return t in onpage ? String(t) : nothing
+end
+
+function _api_style_html(html::AbstractString, onpage::Set{String})
+    h = replace(
+        html, r"<a href=\"@ref[^\"]*\"><code>(.*?)</code></a>" => function (m)
+            inner = match(r"<code>(.*?)</code>", m).captures[1]
+            tgt = _api_ref_target(inner, onpage)
+            return tgt === nothing ? "<code>$inner</code>" : "<a href=\"#$(_api_esc(tgt))\"><code>$inner</code></a>"
+        end
+    )
+    h = replace(h, r"<a href=\"@ref[^\"]*\">(.*?)</a>" => s"\1")
+    h = replace(h, "<pre><code>" => "<pre><code class=\"language-text\">")
+    h = replace(h, r"<a href=\"(?!#)" => "<a target=\"_blank\" rel=\"noopener\" href=\"")
+    return replace(h, r"<h[1-6]>" => "<h4>", r"</h[1-6]>" => "</h4>")
+end
+
+_api_md_html(md, onpage) = _api_style_html(Markdown.html(md), onpage)
+
+# ── collecting the docstrings ─────────────────────────────────────────────────────────────────────────────────────────
+
+function _api_kind(M::Module, n::Symbol)
+    isdefined(M, n) || return "binding"
+    v = getfield(M, n)
+    v isa Module && return "module"
+    if v isa Type
+        t = Base.unwrap_unionall(v)
+        t isa DataType || return "type"
+        isabstracttype(t) && return "abstract type"
+        return ismutabletype(t) ? "mutable struct" : "struct"
+    end
+    v isa Function && return startswith(string(n), "@") ? "macro" : "function"
+    return "constant"
+end
+
+# Julia Markdown reads an underscore inside a word (`tissue_ml`, `r_root`) as emphasis, so prose written without
+# backticks would lose its underscores. Escape every intra-word underscore outside code.
+function _api_escape_underscores(text::AbstractString)
+    out = IOBuffer()
+    fenced = false
+    for line in split(text, '\n'; keepempty = true)
+        if startswith(lstrip(line), "```")
+            fenced = !fenced
+            println(out, line)
+            continue
+        end
+        if fenced || startswith(line, "    ") || startswith(line, "\t")
+            println(out, line)
+            continue
+        end
+        parts = split(line, r"(`+)"; keepempty = true)
+        ticks = [m.match for m in eachmatch(r"`+", line)]
+        incode = false
+        opener = ""
+        for (i, part) in enumerate(parts)
+            print(out, incode ? part : replace(part, r"(?<=[\p{L}\p{N}])_(?=[\p{L}\p{N}])" => "\\_"))
+            i <= length(ticks) || break
+            t = ticks[i]
+            if !incode
+                incode = true
+                opener = t
+            elseif t == opener
+                incode = false
+            end
+            print(out, t)
+        end
+        println(out)
+    end
+    return String(chomp(String(take!(out))))
+end
+
+_api_parse(d) = isempty(d.text) ? d.object : Markdown.parse(_api_escape_underscores(join(string.(d.text))))
+_api_blocks(md) = length(md.content) == 1 && md.content[1] isa Markdown.MD ? _api_blocks(md.content[1]) : md.content
+
+function _api_fallback_signature(M, n, kind)
+    kind == "module" && return "module $(nameof(getfield(M, n)))"
+    kind in ("struct", "mutable struct", "abstract type", "type") && return "$(kind) $(n)"
+    kind == "constant" && return "$(n)::$(typeof(getfield(M, n)))"
+    if kind == "function"
+        ms = [m for m in methods(getfield(M, n)) if parentmodule(m) === M]
+        sigs = unique([replace(sprint(show, m), r"\s+@\s.*$"s => "", r"Vasculature\.(\w+\.)?" => "") for m in ms])
+        isempty(sigs) || return join(sigs, "\n")
+    end
+    return string(n)
+end
+
+# The names to document from one module: its exports, or (XCAT, which exports nothing) every documented public name.
+function _api_names(M::Module, prefix::AbstractString, top::Module)
+    meta = Base.Docs.meta(M)
+    if prefix == "XCAT."
+        ns = [b.var for b in keys(meta) if b.mod === M && !startswith(string(b.var), "_") && isdefined(M, b.var)]
+    else
+        ns = filter(n -> n !== nameof(M), names(M))
+    end
+    # a submodule's name that the package also exports at top level is documented once, there
+    M === top || filter!(n -> !(isdefined(top, n) && n in names(top) && getfield(top, n) === getfield(M, n)), ns)
+    return sort!(unique(ns); by = n -> lowercase(string(n)))
+end
+
+"""Every documented name: its section, kind, and one `(sig, body, path, line)` per docstring."""
+function _api_collect()
+    top = Vasculature
+    modules = [(m == "Vasculature" ? top : getfield(top, Symbol(m)), p) for (m, p) in API_MODULES]
+    listed = [(M, p, n) for (M, p) in modules for n in _api_names(M, p, top)]
+    onpage = Set(string(p, n) for (_, p, n) in listed)
+    entries = []
+    for (M, prefix, n) in listed
+        kind = _api_kind(M, n)
+        b = Base.Docs.Binding(M, n)
+        meta = Base.Docs.meta(b.mod)
+        docs = []
+        if haskey(meta, b)
+            md = meta[b]
+            for sig in md.order
+                d = md.docs[sig]
+                blocks = copy(_api_blocks(_api_parse(d)))
+                signature = nothing
+                if !isempty(blocks) && blocks[1] isa Markdown.Code && blocks[1].language in ("", "julia") &&
+                        occursin(replace(string(n), "!" => ""), blocks[1].code)
+                    signature = blocks[1].code
+                    popfirst!(blocks)
+                end
+                path, line = api_doc_location(d.data)
+                push!(docs, (sig = signature, body = _api_md_html(Markdown.MD(blocks), onpage), path = path, line = line))
+            end
+        end
+        path = isempty(docs) ? nothing : docs[1].path
+        name = string(prefix, n)
+        push!(
+            entries, (
+                name = name, kind = kind, section = api_section(string(n), path), docs = docs, path = path,
+                line = isempty(docs) ? 0 : docs[1].line, fallback = _api_fallback_signature(M, n, kind),
+            )
+        )
+    end
+    return entries, onpage
+end
+
+# ── rendering ────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+_api_srcurl(path, line) = "$(_API_GITHUB_SRC)/$(path)" * (line > 0 ? "#L$(line)" : "")
+
+function _api_source_link(path, line)
+    path === nothing && return ""
+    return """<a href="$(_api_esc(_api_srcurl(path, line)))" target="_blank" rel="noopener" title="src/$(_api_esc(path))$(line > 0 ? ":$line" : "") on GitHub" class="tv-api-src">source ↗</a>"""
+end
+
+_api_sig_html(code) = """<pre class="tv-api-sig"><code class="language-julia">$(_api_esc(code))</code></pre>"""
+
+function _api_entry_html(e)
+    io = IOBuffer()
+    id = _api_esc(e.name)
+    print(io, """<article id="$id" data-api-entry="$(_api_esc(lowercase(e.name)))" class="tv-api-entry">""")
+    print(io, """<header class="tv-api-head"><a href="#$id" class="tv-api-name">$id</a><span class="tv-api-kind">$(_api_esc(e.kind))</span><span class="flex-1"></span>""")
+    length(e.docs) == 1 && print(io, _api_source_link(e.path, e.line))
+    print(io, "</header>")
+    isempty(e.docs) && print(io, _api_sig_html(e.fallback), """<p class="tv-api-missing">No docstring yet.</p>""")
+    for (i, d) in enumerate(e.docs)
+        i > 1 && print(io, """<hr class="tv-api-rule">""")
+        length(e.docs) > 1 && print(io, """<div class="flex justify-end">""", _api_source_link(d.path, d.line), "</div>")
+        print(io, _api_sig_html(something(d.sig, e.fallback)))
+        print(io, """<div class="tv-api-doc">""", d.body, "</div>")
+    end
+    print(io, "</article>")
+    return String(take!(io))
+end
+
+function _api_section_html(sec, entries, onpage)
+    io = IOBuffer()
+    print(io, """<div class="space-y-4"><div class="tv-api-doc tv-api-intro">""", _api_md_html(Markdown.parse(sec.intro), onpage), "</div>")
+    if !isempty(entries)
+        print(io, """<div class="flex flex-wrap gap-1.5 pt-1">""")
+        for e in entries
+            print(io, """<a href="#$(_api_esc(e.name))" data-api-chip="$(_api_esc(lowercase(e.name)))" class="tv-api-chip">$(_api_esc(e.name))</a>""")
+        end
+        print(io, "</div>")
+        lastpath = missing
+        for e in entries
+            if !isequal(e.path, lastpath)
+                lastpath = e.path
+                print(io, """<p data-api-file class="tv-api-file">$(_api_esc(e.path === nothing ? "undocumented" : "src/" * e.path))</p>""")
+            end
+            print(io, _api_entry_html(e))
+        end
+    end
+    print(io, "</div>")
+    return String(take!(io))
+end
+
+# The name filter (the pattern of BasisSimulator.jl's docs): a small dependency-free script. `data-therapy-rerun` makes
+# Therapy's client router run it again after a navigation swaps this page in.
+const _API_FILTER_JS = """
+<script data-therapy-rerun>(function(){var i=document.getElementById('api-filter');if(!i||i.dataset.bound)return;i.dataset.bound='1';
+var es=[].slice.call(document.querySelectorAll('[data-api-entry]')),cs=[].slice.call(document.querySelectorAll('[data-api-chip]')),
+ss=[].slice.call(document.querySelectorAll('[data-api-section]')),fs=[].slice.call(document.querySelectorAll('[data-api-file]')),c=document.getElementById('api-filter-count');
+function run(){var q=i.value.trim().toLowerCase(),n=0;
+es.forEach(function(e){var m=!q||e.getAttribute('data-api-entry').indexOf(q)>=0;e.style.display=m?'':'none';if(m)n++;});
+cs.forEach(function(e){e.style.display=(!q||e.getAttribute('data-api-chip').indexOf(q)>=0)?'':'none';});
+fs.forEach(function(f){f.style.display=q?'none':'';});
+ss.forEach(function(s){var any=false;s.querySelectorAll('[data-api-entry]').forEach(function(e){if(e.style.display!=='none')any=true;});s.style.display=(q&&!any)?'none':'';});
+if(c)c.textContent=q?(n+' of '+es.length+' names match'):(es.length+' names');}
+i.addEventListener('input',run);
+document.addEventListener('keydown',function(ev){var a=document.activeElement;if(ev.key==='/'&&a!==i&&!/^(input|textarea|select)\$/i.test((a&&a.tagName)||'')){ev.preventDefault();i.focus();}});
+run();})();</script>
+"""
+
+let BASE = get(ENV, "VASCULATURE_BASE", "")
     () -> begin
-        card_cls = "tv-tile p-6 sm:p-7 space-y-2"
-        sig_cls = "font-mono text-[13px] font-medium break-words"
-        prose_cls = "tv-body text-[15px]"
-        h2_cls = "tv-title text-3xl pt-6"
-        inline = "tv-code"
-
-        sections = [("overview", "Overview"); [(s.id, s.title) for s in API]]
+        entries, onpage = _api_collect()
+        by_section = Dict{String, Vector{Any}}()
+        for e in entries
+            push!(get!(by_section, e.section, Any[]), e)
+        end
+        lead_rank(n) = (i = findfirst(==(n), API_LEADS); i === nothing ? typemax(Int) : i)
+        for v in values(by_section)
+            sort!(v; by = e -> (lead_rank(e.name), something(e.path, "~"), e.line, e.name))
+        end
+        shown = [s for s in API_SECTIONS if s.id == "overview" || !isempty(get(by_section, s.id, []))]
+        toc = [(s.id, s.title) for s in shown]
 
         PageWithTOC(
-            sections, Div(
-                :class => "max-w-3xl space-y-8",
-                H1(
-                    :class => "tv-display text-5xl sm:text-6xl",
-                    "API Reference"
-                ),
-
-                H2(:id => "overview", :class => h2_cls, "Overview"),
-                P(
-                    :class => prose_cls,
-                    "Each stage is one function and one spec struct: ",
-                    Code(:class => inline, "grow"), " with ", Code(:class => inline, "GrowthSpec"), ", ",
-                    Code(:class => inline, "flow"), " with ", Code(:class => inline, "FlowSpec"), ", ",
-                    Code(:class => inline, "transport"), " with ", Code(:class => inline, "TransportSpec"), ", and ",
-                    Code(:class => inline, "phantom"), " with ", Code(:class => inline, "PhantomSpec"), ". ",
-                    "An organ is one instance of each spec. This page lists the exported names; the docstrings ",
-                    "hold the full reference (type ", Code(:class => inline, "?grow"), " in the REPL). The ",
-                    A(:href => "$(BASE)/examples/", :class => "tv-link", "Examples"),
-                    " show them in a real pipeline."
-                ),
-
-                [
-                    Div(
-                        :class => "space-y-4",
-                        H2(:id => s.id, :class => h2_cls, s.title),
-                        P(:class => prose_cls, s.intro),
-                        [
-                            Div(
-                                :class => card_cls,
-                                Div(:class => sig_cls, sig),
-                                P(:class => prose_cls, text)
-                            ) for (sig, text) in s.entries
-                        ]...
-                    ) for s in API
-                ]...,
-
+            toc, Div(
+                :class => "max-w-3xl space-y-10",
                 Div(
-                    :class => "pt-6",
+                    :class => "space-y-4",
+                    H1(:class => "tv-display text-5xl sm:text-6xl", "API Reference"),
                     P(
-                        :class => prose_cls,
-                        "XCAT inputs (NURBS surfaces, vessel centrelines, organ masks) are read with ",
-                        Code(:class => inline, "Vasculature.XCAT"), " (", Code(:class => inline, "read_nrb"), ", ",
-                        Code(:class => inline, "centerline"), ", ", Code(:class => inline, "base_forest"), ", ",
-                        Code(:class => inline, "penetrating_stubs"), ", ", Code(:class => inline, "fill_supply_gaps"),
-                        ")."
-                    )
-                )
+                        :class => "tv-body text-[17px]",
+                        "Every public name of Vasculature.jl, generated from its docstrings when the site is built. ",
+                        "Four stages, each one function and one spec struct, and the tools around them. The ",
+                        A(:href => "$(BASE)/getting-started/", :class => "tv-link", "Getting Started"),
+                        " guide and the ",
+                        A(:href => "$(BASE)/examples/", :class => "tv-link", "Examples"),
+                        " show them in real pipelines."
+                    ),
+                ),
+                # the filter bar is a direct child of the page column, so it stays pinned under the header
+                Div(
+                    :class => "tv-search-bar",
+                    Div(
+                        :class => "flex items-center gap-3",
+                        Input(
+                            :id => "api-filter", :type => "search", :class => "tv-search",
+                            :placeholder => "Filter names…  (press / to focus)", :autocomplete => "off", :spellcheck => "false",
+                            Symbol("aria-label") => "Filter the API reference by name",
+                        ),
+                        Span(:id => "api-filter-count", :class => "shrink-0 text-xs font-mono tv-muted", "$(length(entries)) names"),
+                    ),
+                ),
+                [
+                    Section(
+                        :id => s.id, :class => "space-y-4 scroll-mt-24", Symbol("data-api-section") => s.id,
+                        H2(:class => "tv-title text-3xl", s.title),
+                        RawHtml(_api_section_html(s, get(by_section, s.id, []), onpage)),
+                    ) for s in shown
+                ]...,
+                RawHtml(_API_FILTER_JS),
             )
         )
     end

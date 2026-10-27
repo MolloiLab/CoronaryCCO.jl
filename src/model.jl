@@ -40,6 +40,11 @@ mutable struct CCOModel{T}
     root_radius_max::T
 end
 
+"""
+    nsegments(m) -> Int
+
+The number of segments of a tree.
+"""
 nsegments(m::CCOModel) = length(m.pos)
 
 function CCOModel{T}(p::CCOParams) where {T}

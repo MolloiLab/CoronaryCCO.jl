@@ -582,94 +582,67 @@ let BASE = get(ENV, "VASCULATURE_BASE", "")
                     "Paste this into any coding agent before it builds on the package. It holds the goals, the rules and the ",
                     "rough edges above in the form an agent needs."
                 ),
-                Pre(
-                    :class => "tv-pre", :id => "agent-context",
-                    Code(
-                        """You are working on Vasculature.jl (github.com/MolloiLab/Vasculature.jl), a Julia package that grows complete
-                        vascular trees from imaged vessels, solves blood flow from pressures, transports contrast through a whole-body
-                        model, and writes CT perfusion phantoms with known ground truth. Docs: molloilab.github.io/Vasculature.jl.
+                CodeBlock(
+                    """You are working on Vasculature.jl (github.com/MolloiLab/Vasculature.jl), a Julia package that grows complete vascular trees from imaged vessels, solves blood flow from pressures, transports contrast through a whole-body model, and writes CT perfusion phantoms with known ground truth. Docs: molloilab.github.io/Vasculature.jl.
 
-                        PIPELINE (one code path for every organ; organs differ only in specs and geometry)
-                        - grow(spec::GrowthSpec, domain, inlets; blockers, territories) -> engine; vtree(engine)   src/spec.jl
-                        - flow(spec::FlowSpec, arteries, veins, tissue_centres) -> (; rest, stress, terr, pairs, vleaf, demand)
-                          Flow.circuit(...; reference, kappa, stenosis, demand) for diseases           src/perfusion/flow.jl
-                        - transport(spec::TransportSpec, circuit, injection; times)    src/perfusion/transport.jl, body.jl
-                        - phantom(spec::PhantomSpec, scans, classify, grid; pairs, terr, nvox, out, roi, roi_names,
-                          roi_groups, tracking) -> DynamicPhantom bundle                                  src/phantom.jl
-                        - Presets: HEART_*, LUNG_* in src/organs.jl and src/perfusion/organs.jl; sources in test/reference/.
-                        - XCAT inputs: src/xcat/ (centerline, base_forest, tube_forest, graft, drain, penetrating_stubs,
-                          vessel_tube, vessel_bridges, scale_tree, great_vessel_transit).
-                        - Organ notebooks: docs/notebooks/00_cardiac_pipeline.jl, 01_pulmonary_pipeline.jl, 02_limb_pipeline.jl.
+                    PIPELINE (one code path for every organ; organs differ only in specs and geometry)
+                    - grow(spec::GrowthSpec, domain, inlets; blockers, territories) -> engine; vtree(engine) — src/spec.jl
+                    - flow(spec::FlowSpec, arteries, veins, tissue_centres) -> (; rest, stress, terr, pairs, vleaf, demand); for a disease, Flow.circuit(...; reference, kappa, stenosis, demand) — src/perfusion/flow.jl
+                    - transport(spec::TransportSpec, circuit, injection; times) — src/perfusion/transport.jl, body.jl
+                    - phantom(spec::PhantomSpec, scans, classify, grid; pairs, terr, nvox, out, roi, roi_names, roi_groups, tracking) -> DynamicPhantom bundle — src/phantom.jl
+                    - Presets: HEART_*, LUNG_* in src/organs.jl and src/perfusion/organs.jl; sources in test/reference/.
+                    - XCAT inputs: src/xcat/ (centerline, base_forest, tube_forest, graft, drain, penetrating_stubs, vessel_tube, vessel_bridges, scale_tree, great_vessel_transit).
+                    - Organ notebooks: docs/notebooks/00_cardiac_pipeline.jl, 01_pulmonary_pipeline.jl, 02_limb_pipeline.jl.
 
-                        RULES
-                        - Never add organ-specific branches to src/. A new organ = new GrowthSpec/FlowSpec/TransportSpec/PhantomSpec
-                          + a notebook that prepares its geometry. Helpers a second organ needs move into src/ with tests.
-                        - Specs are Julia structs; every value measured and cited (test/reference/*.toml). No config files.
-                        - Flow is never prescribed. Ground truth is what the physics gives. Do not tune growth or specs to hit a
-                          measurement; report disagreements with the reason (e.g. lung flow 3.45 vs 4.8 L/min).
-                        - Each organ has its own physiology; never reuse another organ's values, thresholds or gamma.
-                        - Reach real terminal size (~10 µm) with more terminals (two-pass growth if needed), never by lowering gamma.
-                          Growth uses the HCT-CCO staged schedule only.
-                        - Diseases: re-solve with the healthy circuit as `reference` (keeps the tone constant); one folder per scenario.
-                        - Never change a perfusion measurement method to agree with the phantom; fix the physics.
-                        - Delete superseded code; no archives or .bak files. Float noise across CPU/Metal/CUDA is fine.
-                        - XCAT data and anything derived from it is licensed: never commit, publish or paste it.
+                    RULES
+                    - Never add organ-specific branches to src/. A new organ = new GrowthSpec/FlowSpec/TransportSpec/PhantomSpec + a notebook that prepares its geometry. Helpers a second organ needs move into src/ with tests.
+                    - Specs are Julia structs; every value measured and cited (test/reference/*.toml). No config files.
+                    - Flow is never prescribed. Ground truth is what the physics gives. Do not tune growth or specs to hit a measurement; report disagreements with the reason (e.g. lung flow 3.45 vs 4.8 L/min).
+                    - Each organ has its own physiology; never reuse another organ's values, thresholds or gamma.
+                    - Reach real terminal size (~10 µm) with more terminals (two-pass growth if needed), never by lowering gamma. Growth uses the HCT-CCO staged schedule only.
+                    - Diseases: re-solve with the healthy circuit as `reference` (keeps the tone constant); one folder per scenario.
+                    - Never change a perfusion measurement method to agree with the phantom; fix the physics.
+                    - Delete superseded code; no archives or .bak files. Float noise across CPU/Metal/CUDA is fine.
+                    - XCAT data and anything derived from it is licensed: never commit, publish or paste it.
 
-                        WORKFLOW (Pluto notebooks in SpaceStation, lazy mode)
-                        - Notebooks are plain .jl files; edit them as files. Keep a blank line before every "# ╔═╡" cell marker
-                          (Pluto drops a cell's last character otherwise). Update the "# ╔═╡ Cell order:" block when adding cells;
-                          fold table/figure/markdown cells (╟─), keep TableOfContents() shown.
-                        - Run only what changed: `pluto-collab run <nb>.jl --stale`; check `pluto-collab status <nb>.jl`.
-                          Never rerun a whole notebook; `pluto-collab restart` only for a dead worker.
-                        - Wrap heavy steps in cached(name) do ... end; delete a cache after changing a struct it holds.
-                        - Put loops over notebook globals in functions; draw many segments with one linesegments!.
-                        - Docs: render with docs/extract_all.jl, verify with docs/verify_notebook_exports.jl, and commit the
-                          notebook and its export together (a live session can re-save the notebook after rendering).
+                    WORKFLOW (Pluto notebooks in SpaceStation, lazy mode)
+                    - Notebooks are plain .jl files; edit them as files. Keep a blank line before every "# ╔═╡" cell marker (Pluto drops a cell's last character otherwise). Update the "# ╔═╡ Cell order:" block when adding cells; fold table/figure/markdown cells (╟─), keep TableOfContents() shown.
+                    - Run only what changed: `pluto-collab run <nb>.jl --stale`; check `pluto-collab status <nb>.jl`. Never rerun a whole notebook; `pluto-collab restart` only for a dead worker.
+                    - Wrap heavy steps in cached(name) do ... end; delete a cache after changing a struct it holds.
+                    - Put loops over notebook globals in functions; draw many segments with one linesegments!.
+                    - Docs: render with docs/extract_all.jl, verify with docs/verify_notebook_exports.jl, and commit the notebook and its export together (a live session can re-save the notebook after rendering).
 
-                        ROUGH EDGES ALREADY SOLVED (do not rediscover)
-                        - Growth only from imaged ends -> XCAT.penetrating_stubs (2.8 mm x size scale).
-                        - Branches collide with imaged pieces -> resample centrelines every 2.8 mm x size scale.
-                        - Imaged vessels outside the tissue -> vessel_tube / vessel_bridges as NOTERM voxels.
-                        - XCAT anatomy off-normal (aorta ~3 SD narrow) -> time positional vessels from the body model
-                          (scale_tree); check every vessel against measurements.
-                        - Beds reverse with the coronary gamma on a large organ -> gamma per organ (leg: 3).
-                        - Terminals too large -> more terminals; r_terminal = r_root * N^(-1/gamma).
-                        - Two-pass patches too thin / seams -> Murray radii from final counts (r = 10 µm * n^(1/3)); 3 mm NOTERM
-                          margin into neighbouring patches.
-                        - NaN pressures on a new organ -> the organ's own FlowSpec.
-                        - Stress perfusion low -> PS rises with flow (Renkin-Crone, PS = 0.22 + 0.35 MBF), fb_dilated.
-                        - Body vs organ flow -> coronary_share (heart), organ_flow (lungs); new organs need a body slot
-                          (ORGAN_SLOTS is (:coronary, :lung) today) with the same rule.
-                        - AIF timing -> positional great-vessel transit; ideal compartment includes conduit vessels.
-                        - Tracking curve wrong -> tracked segment has its own class at blood concentration; AIF ROI inside it.
-                        - Ledger must balance within 1%; a failure is a classifier/compartment bug.
-                        - XCAT labels: ids reused by distant organs (restrict by region); label 7 = airway wall, 11 = air;
-                          the main pulmonary artery is painted as RV blood (use its NURBS surface); meshes are shifted from
-                          the NURBS/label frame (apply the shift once).
-                        - Never truncate imaged arteries to "let growth define them" (stalls below ~60 mm); fill far tissue
-                          with XCAT.fill_supply_gaps.
-                        - grow() falls back to root_caps = 1.588 mm (a coronary value): always set the imaged inlet radius.
-                        - Size-dependent growth constants (connection cap, stub reach, search grid) scale with size_scale(spec)
-                          and must be numerical guards, not physiology.
-                        - Total occlusion (area 0) -> NaN; use a tiny area fraction (1e-3).
-                        - Body.Injection() default is 50 mL + 40 mL saline, NOT the lab protocol (0.5 mL/kg contrast at 5 mL/s,
-                          then 0.5 mL/kg of 30:70 contrast:saline); always pass it explicitly.
-                        - Lower arterial peak at stress is real dilution (CO x1.71), not a bug.
-                        - BasisSimulator takes <= 64 materials: DynamicPhantom.materials_at; load slabs with zrange.
-                        - Notebook traps: no docstring before begin/let; no one-line do...end; Slider is in both PlutoUI and
-                          CairoMakie; map does not take pairs(NamedTuple); restart the worker after a package change; never
-                          pkill workers by name; CairoMakie needs XDG_CACHE_HOME.
-                        - Docs: a new notebook needs NOTEBOOK_META + page title + committed render; sliders go in
-                          FORCE_FALLBACK_BONDS; no machine paths (/Users, /Volumes) or errors in outputs; any src/ change
-                          re-renders every page.
-                        - Public repo: no XCAT data, no XCAT-derived files, and no wording about the lab's private
-                          perfusion-analysis code.
+                    ROUGH EDGES ALREADY SOLVED (do not rediscover)
+                    - Growth only from imaged ends -> XCAT.penetrating_stubs (2.8 mm x size scale).
+                    - Branches collide with imaged pieces -> resample centrelines every 2.8 mm x size scale.
+                    - Imaged vessels outside the tissue -> vessel_tube / vessel_bridges as NOTERM voxels.
+                    - XCAT anatomy off-normal (aorta ~3 SD narrow) -> time positional vessels from the body model (scale_tree); check every vessel against measurements.
+                    - Beds reverse with the coronary gamma on a large organ -> gamma per organ (leg: 3).
+                    - Terminals too large -> more terminals; r_terminal = r_root * N^(-1/gamma).
+                    - Two-pass patches too thin / seams -> Murray radii from final counts (r = 10 µm * n^(1/3)); 3 mm NOTERM margin into neighbouring patches.
+                    - NaN pressures on a new organ -> the organ's own FlowSpec.
+                    - Stress perfusion low -> PS rises with flow (Renkin-Crone, PS = 0.22 + 0.35 MBF), fb_dilated.
+                    - Body vs organ flow -> coronary_share (heart), organ_flow (lungs); new organs need a body slot (ORGAN_SLOTS is (:coronary, :lung) today) with the same rule.
+                    - AIF timing -> positional great-vessel transit; ideal compartment includes conduit vessels.
+                    - Tracking curve wrong -> tracked segment has its own class at blood concentration; AIF ROI inside it.
+                    - Ledger must balance within 1%; a failure is a classifier/compartment bug.
+                    - XCAT labels: ids reused by distant organs (restrict by region); label 7 = airway wall, 11 = air; the main pulmonary artery is painted as RV blood (use its NURBS surface); meshes are shifted from the NURBS/label frame (apply the shift once).
+                    - Never truncate imaged arteries to "let growth define them" (stalls below ~60 mm); fill far tissue with XCAT.fill_supply_gaps.
+                    - grow() falls back to root_caps = 1.588 mm (a coronary value): always set the imaged inlet radius.
+                    - Size-dependent growth constants (connection cap, stub reach, search grid) scale with size_scale(spec) and must be numerical guards, not physiology.
+                    - Total occlusion (area 0) -> NaN; use a tiny area fraction (1e-3).
+                    - Body.Injection() default is 50 mL + 40 mL saline, NOT the lab protocol (0.5 mL/kg contrast at 5 mL/s, then 0.5 mL/kg of 30:70 contrast:saline); always pass it explicitly.
+                    - Lower arterial peak at stress is real dilution (CO x1.71), not a bug.
+                    - BasisSimulator takes <= 64 materials: DynamicPhantom.materials_at; load slabs with zrange.
+                    - Notebook traps: no docstring before begin/let; no one-line do...end; Slider is in both PlutoUI and CairoMakie; map does not take pairs(NamedTuple); restart the worker after a package change; never pkill workers by name; CairoMakie needs XDG_CACHE_HOME.
+                    - Docs: a new notebook needs NOTEBOOK_META + page title + committed render; sliders go in FORCE_FALLBACK_BONDS; no machine paths (/Users, /Volumes) or errors in outputs; any src/ change re-renders every page.
+                    - Public repo: no XCAT data, no XCAT-derived files, and no wording about the lab's private perfusion-analysis code.
 
-                        OPEN WORK
-                        - Body slots and flow share for organs other than heart and lungs (brain, liver, leg).
-                        - Two blood supplies (liver: hepatic artery + portal vein).
-                        - Flow on very large trees (the leg: ~117 M segments) may need a hierarchical solve per patch."""
-                    ),
+                    OPEN WORK
+                    - Body slots and flow share for organs other than heart and lungs (brain, liver, leg).
+                    - Two blood supplies (liver: hepatic artery + portal vein).
+                    - Flow on very large trees (the leg: ~117 M segments) may need a hierarchical solve per patch.""";
+                    language = "text", id = "agent-context",
                 ),
             )
         )

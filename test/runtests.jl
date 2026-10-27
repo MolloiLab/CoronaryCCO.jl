@@ -550,4 +550,5 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
     include("test_stubs.jl")
     include("test_tubes.jl")
     include("test_classify.jl")
+    include("docs.jl")
 end

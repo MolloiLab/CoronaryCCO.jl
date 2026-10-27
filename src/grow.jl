@@ -42,6 +42,10 @@ mutable struct GrowStats
 end
 GrowStats() = GrowStats(0, 0, 0, 0, 0, 0, 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0)
 
+"""
+A growing tree: its model (`CCOModel`), spatial grid and domain. [`grow`](@ref) returns one; [`vtree`](@ref) turns it
+into the vessel list [`flow`](@ref) takes.
+"""
 mutable struct Engine{T}
     m::CCOModel{T}
     L::Layout{T}

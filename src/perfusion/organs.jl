@@ -4,6 +4,10 @@
 # obtained and its sources [test/reference ids]. A variant: `FlowSpec(LUNG_FLOW; p_in = 20)`.
 
 # Human (and dog/cat where human data are missing) coronary circulation and myocardium.
+"""
+The coronary circulation and myocardium as a [`FlowSpec`](@ref): every value measured, with its source in
+`test/reference/`. Tone is O₂-regulated. A variant: `FlowSpec(HEART_FLOW; p_in = 70)`.
+"""
 const HEART_FLOW = FlowSpec(;
     # mmHg. Mean aortic pressure. Normal human mean arterial pressure; the PET subjects of the whole-bed resistance
     # anchor (r_total_dilated) had 86-89 mmHg (Kaufmann 1999). Chilian 1989 Table 2 gives 90 mmHg in the cat
@@ -194,6 +198,10 @@ const HEART_FLOW = FlowSpec(;
 )
 
 # Human pulmonary circulation at rest, normoxia, end-expiration (zone 3 throughout: gravity not modelled).
+"""
+The pulmonary circulation as a [`FlowSpec`](@ref): passive vessels, alveolar sheet capillaries and the acini's vessels
+below each terminal; every value measured, with its source in `test/reference/`.
+"""
 const LUNG_FLOW = FlowSpec(;
     # mmHg. Mean pulmonary arterial pressure at rest, semiupright (17 +/- 3). Kovacs 2009 pooled supine: 14.0 +/- 3.3.
     # [bentley2020_healthy_exercise_pulmonary_hemodynamics, kovacs2009_normal_pulmonary_pressure]

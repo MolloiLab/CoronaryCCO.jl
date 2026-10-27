@@ -100,6 +100,11 @@ function VolumeWriter(path::AbstractString, dims; T::Type = UInt16, level::Integ
     io = endswith(path, ".zst") ? ZstdCompressorStream(open(path, "w"); level) : open(path, "w")
     return VolumeWriter{T}(io, Tuple(dims), 0, zeros(Int, T <: Integer ? Int(typemax(T)) + 1 : 0))
 end
+"""
+    write_slice!(w::VolumeWriter, slice)
+
+Appends one z slice to the volume `w` streams.
+"""
 function write_slice!(w::VolumeWriter{T}, s::AbstractMatrix) where {T}
     @assert size(s) == w.dims[1:2] && w.k < w.dims[3]
     sl = convert(Matrix{T}, s)

@@ -127,9 +127,22 @@ PhantomSpec(s::PhantomSpec; kwargs...) = PhantomSpec(; merge((; (f => getfield(s
 # the largest blood volume (mL) an `:out` pool voxel can lie downstream of its segment's outlet
 const MAX_UPSTREAM_ML = 600
 
+"""
+A voxel kind `classify(p)` returns: a static material; `a` is its label in `PhantomSpec.materials`.
+"""
 const VOX_STATIC = 0x00 # a = static label (PhantomSpec.materials)
+"""
+A voxel kind `classify(p)` returns: a blood pool of the body model; `a` is its index in `PhantomSpec.pools` and `d` the
+blood (mL) upstream of it along its vessel.
+"""
 const VOX_POOL = 0x01 # a = pool index (PhantomSpec.pools); d = blood volume (mL) upstream along the vessel, for `:out` pools
+"""
+A voxel kind `classify(p)` returns: perfused tissue; `a` is its tissue voxel's number (0 where no territory reaches).
+"""
 const VOX_TISSUE = 0x02 # a = the territories' tissue voxel number (0: tissue the territories do not reach)
+"""
+A voxel kind `classify(p)` returns: a grown vessel; `a > 0` is an arterial segment, `a < 0` the venous segment `-a`.
+"""
 const VOX_VESSEL = 0x03 # a = grown segment: > 0 an arterial segment, < 0 a venous one (-a)
 
 

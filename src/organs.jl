@@ -4,6 +4,10 @@
 # instance, e.g. a seed and a device such as `MtlArray`: GrowthSpec(LUNG_GROWTH; seed = 2, device = dev). [ids] are test/reference files.
 
 # heart arteries: the scored v16 forest (LCA + RCA from XCAT's imaged dias_lad1/dias_rca1 trees)
+"""
+The heart's arteries: XCAT vmale_50's left and right coronary trees grown into its myocardium, the count from the
+resting Fick flow over one terminal's flow (957,045 terminals), γ = 2.33. A variant: `GrowthSpec(HEART_GROWTH; seed = 2)`.
+"""
 const HEART_GROWTH = GrowthSpec(;
     # the reference heart's count: its resting Fick flow (135.6 mL/min) resolved to the terminals Kassab's morphometry is scored at
     nterm = 957_045, flow_ml_min = nothing, terminal_flow_ml_min = 135.6 / 957_045,
@@ -29,6 +33,9 @@ const HEART_GROWTH = GrowthSpec(;
 )
 
 # heart veins: the scored v9 tree into the coronary sinus ostium (grown with a request of 100,000; it holds 99,989)
+"""
+The heart's veins: the coronary venous tree grown from XCAT's imaged veins into the coronary sinus ostium.
+"""
 const HEART_VEIN_GROWTH = GrowthSpec(;
     nterm = 100_000, flow_ml_min = nothing, terminal_flow_ml_min = NaN, tissue_ml = 148.1, reference_ml = 148.1,
     wall_clearance = 1.0, gamma = 2.33,
@@ -39,6 +46,10 @@ const HEART_VEIN_GROWTH = GrowthSpec(;
 # lung arteries: one tree from the main pulmonary artery (XCAT's imaged radius), grown to the lung's own unit, one terminal
 # per acinus (the vessels inside each acinus are LUNG_FLOW's sub-terminal tables). The lung carries the whole cardiac
 # output, so its terminals are sized by its tissue's gas-exchange units, not by a flow per terminal.
+"""
+The lungs' arteries: one terminal per acinus (29,912, by micro-CT stereology), grown from XCAT's main pulmonary
+artery into the lungs.
+"""
 const LUNG_GROWTH = GrowthSpec(;
     # acini (transitional bronchioles) in both lungs, 2 x 14,956 per lung by micro-CT stereology; one terminal artery and
     # vein per acinus as in Clark 2011 [vasilescu2020_human_terminal_transitional_bronchiole_count, clark2011_acinar_terminal_definition]
@@ -54,6 +65,9 @@ const LUNG_GROWTH = GrowthSpec(;
 
 # lung veins: one tree per lung into the left atrium, one venule per acinus (no human per-junction venous exponent is
 # measured; the arteries' value)
+"""
+The lungs' veins: one venule per acinus, grown from each lung's imaged pulmonary veins.
+"""
 const LUNG_VEIN_GROWTH = GrowthSpec(
     LUNG_GROWTH;
     root_caps = [8.170588, 8.170588]
@@ -62,12 +76,19 @@ const LUNG_VEIN_GROWTH = GrowthSpec(
 const XCAT_MYOCARDIUM_ML = 148.052f0 # mL, XCAT vmale_50's myocardium voxels (LV + RV)
 
 # a bolus through the whole body with the heart as its coronary bed (rest: XCAT's heart, 81.6 mL/s at 60/min)
+"""
+Contrast transport for the heart: the grown coronary tree is the body's coronary bed, fed from the left ventricle.
+"""
 const HEART_TRANSPORT = TransportSpec(;
     phys = HEART_FLOW, tissue_ml = XCAT_MYOCARDIUM_ML, bed = :coronary, input = :lv,
     co = 81.6f0, beat = 1.0f0, f_coronary = 0.033f0, tmax = 70.0f0, dt = 0.002f0, every = 0.1f0, coronary = nothing,
 )
 
 # a bolus with the lungs in their own body slot, fed by the right ventricle; the body's coronary bed is the heart's (lumped)
+"""
+Contrast transport for the lungs: the grown pulmonary trees are the body's lung bed, fed from the right ventricle; the
+cardiac output is the lungs' own flow ([`organ_flow`](@ref)).
+"""
 const LUNG_TRANSPORT = TransportSpec(
     HEART_TRANSPORT; phys = LUNG_FLOW, tissue_ml = 2752.285f0, bed = :lung, input = :rv,
     # the lumped heart's PS at the resting MBF, 0.9 mL/min/g [nickander2019_cmr_myocardial_blood_volume]
@@ -82,6 +103,10 @@ const LUNG_TRANSPORT = TransportSpec(
 # positional (`:out` pools): the arteries downstream of their valve, the descending aorta past the arch at its own flow
 # (its `lead_ml`, the blood from the aortic valve to the arch's end, is the subject's: the caller sets it), and the veins
 # upstream of the chamber they drain into.
+"""
+The XCAT body around an organ as pools of the whole-body model: the chambers' blood, the great vessels and the organ
+beds. A classifier names a pool by its index here.
+"""
 const XCAT_BODY_POOLS = [
     Pool("right atrium blood", "ncat_blood", :ra, :mean), Pool("right ventricle blood", "ncat_blood", :rv, :mean), # 1, 2
     Pool("left atrium blood", "ncat_blood", :la, :mean), Pool("left ventricle blood", "ncat_blood", :lv, :mean), # 3, 4
@@ -106,6 +131,9 @@ const XCAT_BODY_POOLS = [
 # The body pool of every XCAT label that is not the organ's and needs no geometry to name (the great vessels need theirs:
 # `XCAT.great_vessel_pool`). An organ's classifier names its own labels first: the heart its myocardium and coronary
 # vessels, the lungs their parenchyma and pulmonary vessels.
+"""
+XCAT label → the index of its pool in [`XCAT_BODY_POOLS`](@ref), for every label that needs no geometry to name.
+"""
 const XCAT_POOL_OF_LABEL = Dict{UInt8, Int}(
     0x13 => 4, 0x14 => 2, 0x15 => 3, 0x16 => 1, # LV, RV, LA, RA blood
     0x11 => 12, 0x12 => 12, # atrial myocardium
@@ -115,14 +143,25 @@ const XCAT_POOL_OF_LABEL = Dict{UInt8, Int}(
     0x7d => 6, 0x7c => 7, # pulmonary arteries and veins in the lungs (the full chest's labels 125 and 124)
 )
 # 7 is XCAT's trach_bronch, the airway wall (cartilage rings and mucosa; 3 mm in the trachea); 11 is the air inside it
+"""
+XCAT labels painted as static materials: air, the airway wall's cartilage, soft tissue.
+"""
 const XCAT_STATIC = Dict(0 => "air", 2 => "cartilage", 7 => "cartilage", 11 => "air", 30 => "softtissue", 31 => "softtissue", 32 => "softtissue", 70 => "air")
 
 # heart: the myocardium in 64 kinetic classes, grown (radius >= 0.1 mm) and imaged coronary vessels in 64 classes,
 # great-artery transit binned by 1 mL of upstream blood, frames every second for 60 s
+"""
+The heart's phantom: the myocardium in 64 kinetic classes, grown (radius ≥ 0.1 mm) and imaged coronary vessels in 64
+classes, great-artery transit binned by 1 mL of upstream blood, frames every second for 60 s.
+"""
 const HEART_PHANTOM = PhantomSpec(;
     times = collect(0.0f0:1.0f0:60.0f0), tissue_material = "ncat_heart", blood_material = "ncat_blood", tissue_classes = 64, vessel_classes = 64,
     vessel_rmin_mm = 0.1, delay_bin_ml = 1, energy_keV = 70, materials = XCAT_STATIC, pools = XCAT_BODY_POOLS,
 )
 
 # lung: lung parenchyma in 64 kinetic classes; the pulmonary trees' grown lumens of radius >= 0.25 mm drawn as blood
+"""
+The lungs' phantom: the lung parenchyma in 64 kinetic classes and the grown lumens of radius ≥ 0.25 mm drawn as blood;
+otherwise as [`HEART_PHANTOM`](@ref).
+"""
 const LUNG_PHANTOM = PhantomSpec(HEART_PHANTOM; tissue_material = "ncat_lung", tissue_classes = 64, vessel_classes = 64, vessel_rmin_mm = 0.25)

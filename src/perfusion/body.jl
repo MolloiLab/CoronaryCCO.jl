@@ -428,6 +428,12 @@ const ORGAN_SLOTS = (:coronary, :lung)
 # volume (mL) and its FlowSpec's blood and interstitial fractions, PS (mL/min/g) and density (g/mL).
 _bed_values(b) = (v = F32(b.fb * b.ml), ve = F32(b.ve * b.ml), ps = F32(b.ps / 60 * b.ml * b.rho))
 
+"""
+    human_circulation(; co, hct, beat, ...) -> Circulation
+
+The whole-body circulation: the heart and lungs, the aorta and every organ bed, and the named veins back to the right
+atrium, so a bolus recirculates.
+"""
 function human_circulation(;
         co = 81.6f0, hct = 0.43f0, beat = 1.0f0,
         v_ra = 52.0f0, v_rv = 85.4f0, v_la = 37.6f0, v_lv = 95.2f0,
