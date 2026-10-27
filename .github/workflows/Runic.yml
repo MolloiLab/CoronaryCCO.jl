@@ -17,10 +17,12 @@ jobs:
       - name: Install Runic
         run: julia --project=@runic -e 'using Pkg; Pkg.add("Runic")'
       # On main: format and commit the result, so formatting never fails the build.
+      # Pluto notebooks in docs/notebooks/ are left alone: their committed HTML exports
+      # are keyed on each notebook's exact bytes, so reformatting them would stale the docs.
       - name: Format and commit (main)
         if: github.event_name == 'push'
         run: |
-          julia --project=@runic -m Runic --inplace .
+          git ls-files -z '*.jl' ':!:docs/notebooks/*' | xargs -0 julia --project=@runic -m Runic --inplace
           if ! git diff --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -30,4 +32,4 @@ jobs:
       # On pull requests: check only (a bot cannot push to forks).
       - name: Check (pull requests)
         if: github.event_name == 'pull_request'
-        run: julia --project=@runic -m Runic --check --diff .
+        run: git ls-files -z '*.jl' ':!:docs/notebooks/*' | xargs -0 julia --project=@runic -m Runic --check --diff

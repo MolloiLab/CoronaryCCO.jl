@@ -16,3 +16,26 @@ test/oracle/out/
 .claude/
 /CLAUDE.md
 /AGENTS.md
+
+# The docs are deployable applications/export tools, not package environments.
+# Their exact locks are part of the committed notebook export fingerprint.
+!docs/Manifest.toml
+!docs/build_env/Manifest.toml
+
+# Documentation build artifacts (Therapy.jl docs site)
+docs/build/
+docs/site/
+docs/dist/
+docs/node_modules/
+docs/package-lock.json
+
+# docs/notebooks-static/ is INTENTIONALLY tracked: rendered Pluto HTML
+# (with an export fingerprint) ships with the repo so CI inherits whatever
+# was rendered locally on GPU hardware. extract_all.jl only re-renders
+# when the fingerprint (notebook, src/, locks, exporter) changes.
+
+# Local notebook datasets (XCAT phantoms and other licensed data) — never tracked.
+docs/notebooks/data/
+
+# live-session output caches of the docs notebooks (pluto-collab), local only
+docs/notebooks/*.pluto-cache.toml

@@ -1,0 +1,353 @@
+@import "tailwindcss";
+
+/* DaisyUI owns the notebook reading surface and shares its theme tokens with
+   each inline Snapshot fragment (data-theme fun-dark / fun-light). */
+@plugin "daisyui" {
+  themes: all;
+}
+
+/* Configure content sources for v4 */
+@source "./src/**/*.jl";
+
+/* Enable class-based dark mode (toggle via .dark class on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Therapy's ClientRouter wraps each SPA swap in a view transition. Zero the
+   default cross-fade so route changes stay still. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Native details gives the compact navigation keyboard semantics without an
+   island. Hide only the browser's disclosure marker. */
+[data-mobile-nav] > summary {
+  list-style: none;
+}
+[data-mobile-nav] > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* ── Type: the system face (SF Pro on Apple devices) everywhere ─────────── */
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-serif: var(--font-sans);
+  --font-mono: "SF Mono", ui-monospace, "JuliaMono", Menlo, Consolas, monospace;
+  --radius: 1.25rem;
+}
+
+/* ── Palette: dark first (pitch black, tvOS greys), light variant ──────── */
+@layer base {
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface-2: #ebebef;
+    --text: #1d1d1f;
+    --text-2: rgba(29, 29, 31, 0.64);
+    --text-3: rgba(29, 29, 31, 0.44);
+    --hairline: rgba(0, 0, 0, 0.08);
+    --accent: #c4302b;
+    --glow: rgba(196, 48, 43, 0.14);
+    --pill-bg: rgba(0, 0, 0, 0.05);
+    --pill-edge: rgba(0, 0, 0, 0.07);
+    --pill-hover: rgba(0, 0, 0, 0.09);
+    --pill-on-bg: #1d1d1f;
+    --pill-on-text: #ffffff;
+    --header-bg: rgba(245, 245, 247, 0.72);
+    --media-bg: #ebebef;
+    --code-bg: #1c1c1e;
+    --code-text: #e5e5ea;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 20px rgba(0, 0, 0, 0.05);
+    --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.06), 0 22px 48px rgba(0, 0, 0, 0.14);
+    --focus: rgba(0, 0, 0, 0.85);
+  }
+
+  .dark {
+    --bg: #000000;
+    --surface: #1c1c1e;
+    --surface-2: #2c2c2e;
+    --text: #f5f5f7;
+    --text-2: rgba(245, 245, 247, 0.64);
+    --text-3: rgba(245, 245, 247, 0.42);
+    --hairline: rgba(255, 255, 255, 0.09);
+    --accent: #ff5a52;
+    --glow: rgba(229, 62, 54, 0.2);
+    --pill-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.07));
+    --pill-edge: rgba(255, 255, 255, 0.2);
+    --pill-hover: rgba(255, 255, 255, 0.22);
+    --pill-on-bg: rgba(255, 255, 255, 0.96);
+    --pill-on-text: #111111;
+    --header-bg: rgba(0, 0, 0, 0.62);
+    --media-bg: #111214;
+    --code-bg: #121214;
+    --code-text: #e5e5ea;
+    --shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
+    --shadow-lift: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 26px 60px rgba(0, 0, 0, 0.7);
+    --focus: rgba(255, 255, 255, 0.92);
+  }
+
+  /* the page root always paints the theme background (no white when scrolling past the ends) */
+  html,
+  html[data-theme],
+  body {
+    background-color: var(--bg) !important;
+    overscroll-behavior: none;
+    min-height: 100%;
+  }
+  html.dark { color-scheme: dark; }
+  html:not(.dark) { color-scheme: light; }
+
+  html {
+    scroll-behavior: smooth;
+    /* Sticky navbar is 4rem; leave room above anchored headings. */
+    scroll-padding-top: 5.5rem;
+    background-color: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+  }
+
+  button { cursor: pointer; }
+  therapy-island { display: contents; }
+
+  pre code {
+    font-family: var(--font-mono);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+}
+
+/* ── Components ───────────────────────────────────────────────────────── */
+@layer components {
+  /* Motion: a decelerating ease, like the launcher's tile animations. */
+  .tv-ease {
+    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* Text roles */
+  .tv-display {
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 1.04;
+    color: var(--text);
+  }
+  .tv-title {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.12;
+    color: var(--text);
+  }
+  .tv-body { color: var(--text-2); line-height: 1.6; }
+  .tv-muted { color: var(--text-3); }
+  .tv-accent { color: var(--accent); }
+  .tv-eyebrow {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-3);
+    letter-spacing: -0.01em;
+  }
+  .tv-link {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .tv-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .tv-code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--text);
+    background: var(--surface-2);
+    padding: 0.1em 0.4em;
+    border-radius: 0.4em;
+  }
+
+  /* Frosted pill, tvOS style: hover brightens, the current page fills. */
+  .tv-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 2.5rem;
+    padding: 0 1.125rem;
+    border-radius: 9999px;
+    background: var(--pill-bg);
+    box-shadow: inset 0 0 0 1px var(--pill-edge);
+    color: var(--text);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 200ms, color 200ms, transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .tv-pill:hover { background: var(--pill-hover); }
+  .tv-pill:active { transform: scale(0.97); }
+  .tv-pill-icon { width: 2.5rem; padding: 0; }
+  .tv-pill-sm { height: 2rem; padding: 0 0.875rem; font-size: 0.8125rem; }
+  .tv-pill-on,
+  .tv-pill-on:hover {
+    background: var(--pill-on-bg);
+    color: var(--pill-on-text);
+    box-shadow: none;
+    transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* Tiles: big rounded surfaces that lift on hover and focus. */
+  .tv-tile {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    color: inherit;
+    text-decoration: none;
+    transition: transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .tv-tile-media {
+    overflow: hidden;
+    background: var(--media-bg);
+  }
+  .tv-tile-media img {
+    transition: transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  a.tv-tile:hover,
+  a.tv-tile:focus-visible {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-lift);
+  }
+  a.tv-tile:hover .tv-tile-media img,
+  a.tv-tile:focus-visible .tv-tile-media img {
+    transform: scale(1.035);
+  }
+  a.tv-tile:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 4px;
+  }
+  /* A label laid over a dark animation, and a caption under a stage's figure. */
+  .tv-tile-label {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 2.75rem 1.25rem 0.9rem;
+    background: linear-gradient(to top, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0));
+    color: rgb(255 255 255 / 0.62);
+    font-size: 13px;
+    letter-spacing: 0.01em;
+    pointer-events: none;
+  }
+  .tv-tile-label strong {
+    color: rgb(255 255 255 / 0.9);
+    font-weight: 500;
+  }
+  .tv-tile-caption {
+    max-width: 62ch;
+    margin: 0 auto;
+    color: var(--text-3);
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .tv-tile-more {
+    color: var(--text-3);
+    transition: color 200ms, transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  a.tv-tile:hover .tv-tile-more { color: var(--text); transform: translateX(3px); }
+
+  /* Glass panel (menus) */
+  .tv-glass {
+    border-radius: 1.25rem;
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--hairline), var(--shadow-lift);
+  }
+
+  /* Code blocks */
+  .tv-pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    border-radius: 1.25rem;
+    padding: 1.5rem 1.75rem;
+    overflow-x: auto;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    box-shadow: inset 0 0 0 1px var(--hairline);
+  }
+
+  /* Ambient glow behind the home hero, as on the launcher's top shelf. */
+  .tv-glow {
+    position: absolute;
+    inset: -14rem -10rem auto -10rem;
+    height: 36rem;
+    background: radial-gradient(ellipse at 30% 40%, var(--glow), transparent 62%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Tiles enter with a short rise, staggered by inline animation-delay. */
+  .tv-enter {
+    animation: tv-enter 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+@keyframes tv-enter {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-enter { animation: none; }
+  .tv-tile, .tv-tile-media img, .tv-pill, .tv-tile-more { transition: none; }
+  a.tv-tile:hover, a.tv-tile:focus-visible { transform: none; }
+  a.tv-tile:hover .tv-tile-media img { transform: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* Julia syntax highlighting for CodeBlock */
+@layer components {
+  .suite-hl-keyword { color: #ff7ab2; }
+  .suite-hl-string  { color: #ff8170; }
+  .suite-hl-comment { color: #7f8c98; font-style: italic; }
+  .suite-hl-number  { color: #d9c97c; }
+  .suite-hl-funcall { color: #67b7a4; }
+  .suite-hl-type    { color: #5dd8ff; }
+  .suite-hl-symbol  { color: #d0a8ff; }
+  .suite-hl-macro   { color: #fd8f3f; }
+  .suite-hl-special { color: #d9c97c; }
+  .suite-hl-operator { color: #e5e5ea; }
+}
+
+/* Prism's theme (loaded unlayered by Therapy) must not restyle the code inside
+   a tv-pre block, so this override is unlayered too. */
+.tv-pre code[class*="language-"],
+.tv-pre code {
+  background: none;
+  display: block;
+  font-family: var(--font-mono);
+  font-size: inherit;
+  line-height: inherit;
+  padding: 0;
+  text-shadow: none;
+  white-space: pre;
+}
+
+/* Prism also adds its language class to the parent <pre>. */
+pre.tv-pre[class*="language-"] {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 1.5rem 1.75rem;
+  border-radius: 1.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  text-shadow: none;
+}
