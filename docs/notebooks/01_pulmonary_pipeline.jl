@@ -1581,6 +1581,14 @@ md"""
 The same lungs with one artery of the left lower lobe blocked, as a balloon blocks it in the lab's swine studies: the largest imaged artery whose terminals lie in the left lower lobe and that feeds at most a third of it. The solver needs a finite resistance, so the blocked lumen keeps 0.1% of its area; it passes about 0.3% of its healthy flow. The right ventricle keeps the cardiac output, as it does after an acute embolism, so the pulmonary artery pressure rises until the smaller bed carries it. Saved as its own scenario.
 """
 
+# ╔═╡ 2d09b1bf-4ba6-4e97-98d4-575d2bb8c69f
+"""
+The occluded artery: of the imaged arterial segments whose terminals lie ≥ 95% in the left lower lobe and that feed at most
+a third of it, the one feeding the most; its lumen closed to `area` of its own over its length (at most 10 mm), as `circuit`
+takes a narrowing.
+"""
+OCCLUSION = occluded_artery(arteries, LOBES, growth_grid; lobe = 5, area = 1.0e-3)
+
 # ╔═╡ 9d1f4c6b-5a7e-4b9d-8c3f-4e6a8b0d2f35
 """
 The occluded artery of `tree`: the imaged segment that feeds the most of lobe `lobe` (`lobes` on `grid`) among those whose
@@ -1614,14 +1622,6 @@ function occluded_artery(tree, lobes, grid; lobe, area)
     j = candidates[argmax([counts[lobe, c] for c in candidates])]
     return (segment = j, share = counts[lobe, j] / total, stenosis = [(j, area, 10.0)])
 end
-
-# ╔═╡ 2d09b1bf-4ba6-4e97-98d4-575d2bb8c69f
-"""
-The occluded artery: of the imaged arterial segments whose terminals lie ≥ 95% in the left lower lobe and that feed at most
-a third of it, the one feeding the most; its lumen closed to `area` of its own over its length (at most 10 mm), as `circuit`
-takes a narrowing.
-"""
-OCCLUSION = occluded_artery(arteries, LOBES, growth_grid; lobe = 5, area = 1.0e-3)
 
 # ╔═╡ 72e11792-5070-47b2-87d5-08c51895c710
 """
