@@ -356,6 +356,20 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         end
         m = C.DynamicPhantom.materials_at(ph, "rest", 10.0)
         @test length(m.materials) <= 64 && all(l -> haskey(m.lut, l), keys(ph.counts))
+        # a tracking point in a vessel: its segment keeps a class of its own, painted at its blood concentration whatever
+        # its painted volume, so the point reads that segment's curve alone
+        j = argmax(vt.r); pt = Tuple((vt.a[:, j] .+ vt.b[:, j]) ./ 2)
+        classify_j(p) = sum(abs2, collect(p) .- pt) <= (1.5h)^2 ? (VOX_VESSEL, Int32(j), 0.0f0) : classify(p)
+        roi_j(p) = (k = classify_j(p)[1]; k == VOX_TISSUE || k == VOX_VESSEL ? (p[3] < zm ? 1 : 2) : 0)
+        out_j = mktempdir()
+        phantom(
+            spec, [("rest", Cr, T)], classify_j, grid; pairs, terr, nvox = length(cells), out = out_j, roi = roi_j,
+            roi_names = ["low", "high"], tracking = ["vessel" => pt]
+        )
+        pj = C.DynamicPhantom.load(out_j); lj = pj.meta["tracking"]["vessel"]["label"]
+        @test lj > 2000 && occursin("vessel tracking point", pj.table[lj].name)
+        cj = pj.curves[("rest", lj)]; aj = T.artery[:, j] ./ bv[j]; f = argmax(aj)
+        @test aj[f] > 0 && all(isapprox.(cj, aj; rtol = 1.0e-4, atol = 1.0e-6 * aj[f]))
     end
 
     @testset "balanced pairing of beds and venules" begin

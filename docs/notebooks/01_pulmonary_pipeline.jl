@@ -949,14 +949,24 @@ end
 md"""
 ## 5. Transport
 
-50 mL of iohexol 350 at 5 mL/s and 40 mL of saline into the right arm, carried through the whole-body circulation, the right heart and the lung's own trees and capillary sheets, then the left heart and the body, with recirculation. The cardiac output is the lung's solved flow (`V.organ_flow`), so the bolus is diluted into the blood the lung really carries.
+The lab's current injection (`INJECTION`, below) into the right arm, carried through the whole-body circulation, the right heart and the lung's own trees and capillary sheets, then the left heart and the body, with recirculation. The cardiac output is the lung's solved flow (`V.organ_flow`), so the bolus is diluted into the blood the lung really carries.
 """
+
+# ╔═╡ 2d22b6aa-435e-4e83-955e-b8bd38ca6d4a
+"""
+The injection: the lab's current protocol (Hadjiabdolhamid et al. 2024, Shojazadeh et al. 2026), the same as the heart's:
+0.5 mL/kg of contrast at 5 mL/s, then 0.5 mL/kg of a 30:70 contrast:saline chaser at the same rate, for the body model's
+70 kg: 35 mL of iohexol 350, then 35 mL at 105 mg/mL.
+"""
+const INJECTION = let kg = 70, conc = 350
+    V.Body.Injection(; phases = [(0.5 * kg, 5, conc), (0.5 * kg, 5, 0.3 * conc)])
+end
 
 # ╔═╡ 6817b779-c89b-47ce-b07e-ad48831b78cb
 "Contrast transport through the body and the lung circuit `circuit`, in its one (passive) state."
 function transport_state(circuit)
     spec = V.TransportSpec(V.LUNG_TRANSPORT; phys = circuit.phys, tissue_ml = Float32(size(tissue_centres, 2) / 1000))
-    return ("rest", circuit, V.transport(spec, circuit, V.Body.Injection(); times = V.LUNG_PHANTOM.times))
+    return ("rest", circuit, V.transport(spec, circuit, INJECTION; times = V.LUNG_PHANTOM.times))
 end
 
 # ╔═╡ 45a3f241-cc85-4202-ad0e-00de0342f5fd
@@ -1012,7 +1022,7 @@ end
 md"""
 ## 6. Compartments
 
-A **compartment** is the region ground truth is given for: a region of the lungs with everything in it, the lung tissue and every artery, vein and lumen that lies in it or overlaps it. Here: the five lobes. The lungs, and the right and left lung, are groups of them.
+A **compartment** is the region ground truth is given for: a region of the lungs with everything in it, the lung tissue and every artery, vein and lumen that lies in it or overlaps it. Here: the five lobes, and each lung's **hilar vessels**, its pulmonary arteries and veins between the lung and the heart. The main pulmonary artery, where the arterial input is measured, is in neither. The lungs, and the right and left lung, are groups of the lobes. Each is also grouped with its hilar vessels: the ideal first-pass compartment, which counts the iodine on its way in through the hilar arteries and out through the hilar veins.
 
 **Edit the compartments here**: `split_lobes = false` gives one compartment per lung.
 
@@ -1024,10 +1034,16 @@ split_lobes = true # the five lobes apart; false: one compartment per lung
 
 # ╔═╡ 4e169ac1-210c-49d8-8f5c-d7c62084fb18
 begin
-    ROI_NAMES = split_lobes ? copy(LOBAR_BRONCHI.names) : ["right lung", "left lung"]
-    ROI_GROUPS =
-        split_lobes ? ["lungs" => [1, 2, 3, 4, 5], "right lung" => [1, 2, 3], "left lung" => [4, 5]] :
-        ["lungs" => [1, 2]]
+    ROI_NAMES = [split_lobes ? LOBAR_BRONCHI.names : ["right lung", "left lung"]; "right hilar vessels"; "left hilar vessels"]
+    ROI_GROUPS = let n = length(ROI_NAMES) - 2, right = split_lobes ? [1, 2, 3] : [1], left = split_lobes ? [4, 5] : [2]
+        [
+            "lungs" => collect(1:n),
+            "lungs + hilar vessels" => collect(1:(n + 2)),
+            (split_lobes ? ["right lung" => right, "left lung" => left] : Pair{String, Vector{Int}}[])...,
+            "right lung + hilar vessels" => [right; n + 1],
+            "left lung + hilar vessels" => [left; n + 2],
+        ]
+    end
     ROI_NAMES, ROI_GROUPS
 end
 
@@ -1062,35 +1078,65 @@ end;
 
 # ╔═╡ 4b166f97-4217-4a97-95b2-edab3ff8aa46
 """
-    make_roi(labels, envelope, grid, n_rois; split_lobes) -> roi
+    make_roi(labels, envelope, grid, classify, hilar; split_lobes) -> roi
 
 The compartment rule `roi(p)` for the 0.2 mm voxel at `p` (0 = none): lung tissue takes its lobe; a vessel lumen takes the
-lobe it lies in when it is inside the lungs' envelope (both on `grid`). (Only tissue and vessel voxels take a compartment.)
-Everything it reads is captured with its type, so it compiles to fast code.
+lobe it lies in when it is inside the lungs' envelope (both on `grid`); outside it, an imaged pulmonary segment's lumen
+(`classify`) takes its lung's hilar vessels (`hilar`, 1 right, 2 left, 0 the main pulmonary artery). (Only tissue and
+vessel voxels take a compartment.) Everything it reads is captured with its type, so it compiles to fast code.
 """
-function make_roi(labels, envelope, grid, n_rois; split_lobes)
+function make_roi(labels, envelope, grid, classify, hilar; split_lobes)
     inside = envelope.inside
     lobe = envelope.lobe
     origin = grid.origin
+    n_lungs = split_lobes ? 5 : 2
     return function roi(p)
         voxel = round.(Int, (p .- XCAT_ORIGIN) ./ XCAT_VOXEL_MM) .+ 1
         all(1 .<= voxel .<= XCAT_DIMS) || return 0
         k = round.(Int, p .- origin) .+ 1
         all(1 .<= k .<= size(lobe)) || return 0
-        (labels[voxel...] == 0x06 || inside[k...]) || return 0
-        l = Int(lobe[k...])
-        l == 0 && return 0
-        return split_lobes ? l : (l <= 3 ? 1 : 2)
+        if labels[voxel...] == 0x06 || inside[k...]
+            l = Int(lobe[k...])
+            l == 0 && return 0
+            return split_lobes ? l : (l <= 3 ? 1 : 2)
+        end
+        kind, j, _ = classify(p)
+        kind == V.VOX_VESSEL || return 0
+        side = j > 0 ? hilar.artery[j] : hilar.vein[-j]
+        return side == 0 ? 0 : n_lungs + side
     end
 end
 
+# ╔═╡ ea878323-2529-41e2-9c46-178b6c4c3d1b
+"""
+Each imaged segment's lung (1 right, 2 left; 0 the main pulmonary artery and every grown segment), by the inlet tree's
+vessel nearest its middle: the right and left pulmonary artery tubes, and each lung's venous tree.
+"""
+HILAR_SIDE = let
+    function sides(tree, bases)
+        side = zeros(Int8, length(tree.r))
+        for j in findall(tree.isbase)
+            middle = (tree.a[:, j] .+ tree.b[:, j]) ./ 2
+            side[j] = argmin(((d, s),) -> d, ((minimum(sum(abs2, X .- middle; dims = 1)), s) for (X, s) in bases))[2]
+        end
+        return side
+    end
+    trunk = artery_base.vessel .== "dias_pul_art"
+    right = startswith.(artery_base.vessel, "right")
+    left = startswith.(artery_base.vessel, "left")
+    (
+        artery = sides(arteries, [(artery_base.X[:, trunk], 0), (artery_base.X[:, right], 1), (artery_base.X[:, left], 2)]),
+        vein = sides(veins, [(vein_bases[1].X, 1), (vein_bases[2].X, 2)]),
+    )
+end;
+
 # ╔═╡ 08f3aa33-2562-424a-8526-349c90fdd559
-roi = make_roi(xcat_labels, LUNG_ENVELOPE, growth_grid, length(ROI_NAMES); split_lobes)
+roi = make_roi(xcat_labels, LUNG_ENVELOPE, growth_grid, classify, HILAR_SIDE; split_lobes)
 
 # ╔═╡ b83e74d9-3d5e-4059-b8e6-0e6307b119bf
-"Categorical colours of the compartments (`LOBE_COLOURS`, or one per lung)."
+"Categorical colours of the compartments (`LOBE_COLOURS`, or one per lung; teal for the hilar vessels, dark on the right)."
 roi_colormap() = Mke.cgrad(
-    [:black; split_lobes ? LOBE_COLOURS : ["#e41a1c", "#377eb8"]],
+    [:black; split_lobes ? LOBE_COLOURS : ["#e41a1c", "#377eb8"]; "#00838f"; "#80deea"],
     length(ROI_NAMES) + 1;
     categorical = true,
 )
@@ -1128,9 +1174,19 @@ end;
 """
 Which great vessel each vessel voxel belongs to, and where it lies along it, on a 1 mm grid: its tree and the blood (mL)
 between it and the heart (`V.XCAT.great_vessel_transit`). Each state's transit is volume over flow (`V.pool_delay`).
+
+XCAT vmale_50's aorta is about three standard deviations narrow (21–22 mm ascending and 15 mm descending, against
+33 ± 4 and 24 ± 3 mm in adult men; Wolak et al. 2008): it holds 27 mL from the valve to the arch's top, where the body
+model the bolus is carried through holds 60 mL. The aortic tree's volumes are scaled to the body model's
+(`V.XCAT.scale_tree`), as for the heart, so the aorta's timing comes from the same body as everything else.
 """
-GREAT_VESSEL_TRANSIT = cached("great_vessel_transit") do
-    V.XCAT.great_vessel_transit(xcat_labels, XCAT_ORIGIN, XCAT_VOXEL_MM)
+GREAT_VESSEL_TRANSIT = let
+    xcat = cached("great_vessel_transit") do
+        V.XCAT.great_vessel_transit(xcat_labels, XCAT_ORIGIN, XCAT_VOXEL_MM)
+    end
+    body = V.circulation(V.LUNG_TRANSPORT)
+    volume(segment) = body.segs[findfirst(s -> s.name === segment, body.segs)].v
+    V.XCAT.scale_tree(xcat, 0x01, (volume(:aortic_root) + volume(:arch)) / xcat.apex_ml)
 end;
 
 # ╔═╡ 75243d5b-b7b8-4b71-95c4-8648072543b4
@@ -1720,7 +1776,7 @@ outflow_check(occluded)
 
 # ╔═╡ ba7b7bc0-6d9f-4292-9c59-47ca6ba3d66c
 let fig = Mke.Figure(size = (1000, 460))
-    names = [ROI_NAMES; [g for (g, _) in ROI_GROUPS]]
+    names = filter(!endswith("hilar vessels"), [ROI_NAMES; [g for (g, _) in ROI_GROUPS]]) # the hilar vessels alone have no beds
     ax = Mke.Axis(
         fig[1, 1];
         title = "Ground-truth perfusion",
@@ -1994,6 +2050,7 @@ truth = lungs.roi_table[(STATE, "lungs")]
 # ╟─7ba30cb9-e856-4e5f-a50b-4c14a0c517cd
 # ╟─56f6f8b4-669c-4bb8-9e3e-b693c342d67c
 # ╟─d5da5d67-513f-49d9-a70b-2bfead33c5fd
+# ╠═2d22b6aa-435e-4e83-955e-b8bd38ca6d4a
 # ╠═6817b779-c89b-47ce-b07e-ad48831b78cb
 # ╠═45a3f241-cc85-4202-ad0e-00de0342f5fd
 # ╠═f6016974-f880-4c69-90fc-37a14b4ff4ce
@@ -2006,6 +2063,7 @@ truth = lungs.roi_table[(STATE, "lungs")]
 # ╠═31928ce9-9fa0-402a-ba97-cfc37d5898e5
 # ╠═6b9d2a4f-3e5c-4f7b-8a1d-2c4e6f8b0d13
 # ╠═4b166f97-4217-4a97-95b2-edab3ff8aa46
+# ╠═ea878323-2529-41e2-9c46-178b6c4c3d1b
 # ╠═08f3aa33-2562-424a-8526-349c90fdd559
 # ╠═b83e74d9-3d5e-4059-b8e6-0e6307b119bf
 # ╟─ac7c95a2-969d-41f6-bf40-b299016a01ea

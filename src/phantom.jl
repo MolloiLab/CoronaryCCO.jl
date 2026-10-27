@@ -151,7 +151,10 @@ Writes the phantom of a transported bed into the scenario folder `out` (the `Dyn
 - `grid`: the output `VoxelGrid` (voxel centres, isotropic `h` mm).
 - `pairs`, `terr`, `nvox`: the territories (`flow`'s `pairs` and `terr`) over the `nvox` tissue voxels the classifier
   numbers.
-- `tracking`: `name => (x, y, z)` (mm): bolus-tracking points; `DynamicPhantom.scan_times` reads their curves.
+- `tracking`: `name => (x, y, z)` (mm): bolus-tracking points; `DynamicPhantom.scan_times` reads their curves. A point in
+  a vessel segment gives that segment a class of its own (one of `vessel_classes`), painted at the segment's blood
+  concentration, so the point reads that segment's curve alone. (Every other vessel's mass is spread over its painted
+  voxels; a tracked segment's painted iodine differs from its mass by its lumen's volume beyond the segment's.)
 
 Labels: 0-99 static, 100-999 pools (and their delay bins), 1000 tissue without a territory (static), 1001… tissue
 (`tissue_classes` kinetic classes in each ROI), 2001… drawn vessels (`vessel_classes` classes per ROI, arteries and veins
@@ -163,8 +166,9 @@ therefore sums over its labels (`DynamicPhantom.load` gives them as `roi_table`)
 of everything in it, vessels included.
 
 The ledger (`ledger_<state>.csv`) is the organ's iodine at each time: delivered through the inlets, held in its arteries,
-beds and veins, out through its venous outlet, and painted. With `check`, the build fails when delivered ≠ held +
-outflow or painted ≠ held (beyond 1% of the peak delivered mass). `verbose` logs each stage's seconds.
+beds and veins, out through its venous outlet, and painted (a tracked segment counted at its mass). With `check`, the
+build fails when delivered ≠ held + outflow or painted ≠ held (beyond 1% of the peak delivered mass). `verbose` logs each
+stage's seconds.
 """
 function phantom(
         spec::PhantomSpec, scans, classify, grid::VoxelGrid; pairs, terr, nvox::Integer, out::AbstractString,
@@ -187,14 +191,27 @@ function phantom(
     trank = invperm(sortperm(vec(sum(cen; dims = 1)))); tclass = Int[trank[a[v]] for v in 1:nvox] # 1 = least enhancing
     tlabel(r, c) = 1000 + r * K + c
     lap("tissue classes")
-    # ---- vessels: grown segments of radius ≥ vessel_rmin_mm and the imaged (base) ones, k-means on their blood curves
+    # ---- vessels: grown segments of radius ≥ vessel_rmin_mm and the imaged (base) ones, k-means on their blood curves; a
+    # segment a tracking point lies in keeps a class of its own, so the point reads that segment's curve
     C1 = scans[1][2]; trees = (C1.tree, C1.veins); na = length(C1.tree.r); nv = length(C1.veins.r)
     vols = [blood_volumes(C) for (_, C, _) in scans]
     vcurve(t, j) = Float32[(T = scans[s][3]; (t == 1 ? T.artery[f, j] : T.vein[f, j]) / vols[s][t == 1 ? j : na + j]) for s in 1:nS for f in 1:nT]
-    seg = Tuple{Int, Int}[(t, j) for t in 1:2 for j in eachindex(trees[t].r) if trees[t].r[j] >= spec.vessel_rmin_mm || trees[t].isbase[j]]
-    av, vcen = isempty(seg) ? (Int[], zeros(Float32, nS * nT, 1)) : compartment_classes(reduce(hcat, (vcurve(t, j) for (t, j) in seg)), clamp(KV, 1, length(seg)))
+    tracked = Dict{Tuple{Int, Int}, String}()
+    for (tn, p) in tracking
+        k, aa, _ = classify(Tuple(1.0 .* p))
+        k == VOX_VESSEL && (tracked[(aa > 0 ? 1 : 2, abs(aa))] = tn)
+    end
+    KS = KV - length(tracked) # classes left for the other segments
+    KS >= 1 || throw(ArgumentError("phantom: vessel_classes must exceed the $(length(tracked)) tracked segments"))
+    seg = Tuple{Int, Int}[(t, j) for t in 1:2 for j in eachindex(trees[t].r) if (trees[t].r[j] >= spec.vessel_rmin_mm || trees[t].isbase[j]) && !haskey(tracked, (t, j))]
+    av, vcen = isempty(seg) ? (Int[], zeros(Float32, nS * nT, 1)) : compartment_classes(reduce(hcat, (vcurve(t, j) for (t, j) in seg)), clamp(KS, 1, length(seg)))
     vrank = invperm(sortperm(vec(sum(vcen; dims = 1))))
     vcls = Dict{Tuple{Int, Int}, Int}(seg[k] => vrank[av[k]] for k in eachindex(seg))
+    tracked_class = Dict{Tuple{Int, Int}, String}() # (artery 1 / vein 2, class) => the tracking point's name
+    for (i, (s, tn)) in enumerate(sort!(collect(tracked)))
+        vcls[s] = KS + i; tracked_class[(s[1], KS + i)] = tn
+    end
+    seg = [seg; sort!(collect(keys(tracked)))]
     vclass(t, j) = get!(vcls, (t, j)) do # a segment the classifier names outside that set: its nearest class
         c = vcurve(t, j); vrank[argmin([sum(abs2, c .- vcen[:, k]) for k in axes(vcen, 2)])]
     end
@@ -357,14 +374,21 @@ function phantom(
             end
         end
     end
+    # a tracked segment is painted at its blood concentration (a tracking point measures a concentration, as a pool's
+    # does), not with its mass spread over its painted voxels: an imaged lumen can hold more or less than the segment
+    extra = zeros(Float64, nS * nT) # the iodine a tracked segment's lumen holds beyond its mass (the ledger counts its mass)
     for t in 1:2, j in axes(cnt_s[t], 2)
         painted[t][j] || continue
-        n = sum(@view cnt_s[t][:, j]); c = vclass(t, j)
+        n = sum(@view cnt_s[t][:, j]); c = vclass(t, j); own = haskey(tracked, (t, j))
         for r in 0:R
             cr = cnt_s[t][r + 1, j]; cr == 0 && continue
-            l = vlabel(r, t, c) + 1; w = cr / n
-            for s in 1:nS, f in 1:nT
-                T = scans[s][3]; lm[l, (s - 1) * nT + f] += w * (t == 1 ? T.artery[f, j] : T.vein[f, j])
+            l = vlabel(r, t, c) + 1
+            for s in 1:nS
+                T = scans[s][3]; w = own ? cr * vml / vols[s][t == 1 ? j : na + j] : cr / n
+                for f in 1:nT
+                    m = t == 1 ? T.artery[f, j] : T.vein[f, j]
+                    lm[l, (s - 1) * nT + f] += w * m; own && (extra[(s - 1) * nT + f] += (w - cr / n) * m)
+                end
             end
         end
     end
@@ -397,7 +421,9 @@ function phantom(
         else
             g, c = divrem(id - 2001, KV); r, t = divrem(g, 2)
             (
-                "$(r == 0 ? "outside the ROIs" : roi_names[r]) · $(t == 0 ? "artery" : "vein") class $(c + 1)", spec.blood_material, t == 0 ? "artery" : "vein",
+                "$(r == 0 ? "outside the ROIs" : roi_names[r]) · $(t == 0 ? "artery" : "vein") " *
+                    (haskey(tracked_class, (t + 1, c + 1)) ? "at the $(tracked_class[(t + 1, c + 1)]) tracking point" : "class $(c + 1)"),
+                spec.blood_material, t == 0 ? "artery" : "vein",
                 [[lm[id + 1, (s - 1) * nT + f] / (n * vml) for f in 1:nT] for s in 1:nS], zeros(nS),
             )
         end
@@ -413,7 +439,7 @@ function phantom(
         delivered = [sum(Float64, C.fp) * Ai(t) for t in ts]
         art = vec(sum(Float64.(T.artery); dims = 2)); bed = vec(sum(Float64.(T.tissue); dims = 2)); ven = vec(sum(Float64.(T.vein); dims = 2))
         held = art .+ bed .+ ven; outflow = Float64.(sinus_outflow(C, inp, ts))
-        pnt = [sum(l.voxels * vml * l.curve[s][f] for l in organ; init = 0.0) for f in 1:nT]
+        pnt = [sum(l.voxels * vml * l.curve[s][f] for l in organ; init = 0.0) - extra[(s - 1) * nT + f] for f in 1:nT]
         (;
             t_s = Float64.(spec.times), delivered_mg = delivered, artery_mg = art, bed_mg = bed, vein_mg = ven, held_mg = held,
             outflow_mg = outflow, balance_mg = delivered .- held .- outflow, painted_mg = pnt, unpainted_mg = held .- pnt,
