@@ -277,6 +277,29 @@ function great_vessel_transit(labels::AbstractArray{UInt8, 3}, origin, h::Real; 
 end
 
 """
+    scale_tree(transit, tree, k) -> NamedTuple
+
+`transit` ([`great_vessel_transit`](@ref)) with the blood along tree `tree` scaled by `k`: each of its voxels keeps its place
+along the vessel, and the blood upstream of it is `k` times XCAT's. For a phantom whose drawn vessel is narrower than the
+blood the body model that times it holds (XCAT vmale_50's aorta). The marks on that tree (`apex_ml`, `ostia_ml` on the aorta,
+`confluence_ml` on the superior vena cava) scale with it; `tree_ml` stays XCAT's.
+"""
+function scale_tree(transit, tree::UInt8, k::Real)
+    volume = copy(transit.volume)
+    on = transit.tree .== tree
+    volume[on] .*= Float32(k)
+    aorta = tree == 0x01; svc = tree == 0x03
+    return merge(
+        transit, (;
+            volume,
+            apex_ml = aorta ? Float32(k) * transit.apex_ml : transit.apex_ml,
+            ostia_ml = aorta ? Float32(k) .* transit.ostia_ml : transit.ostia_ml,
+            confluence_ml = svc ? Float32(k) * transit.confluence_ml : transit.confluence_ml,
+        )
+    )
+end
+
+"""
     vessel_volume_at(transit, p, t) -> Float32
 
 Where the great-vessel voxel at `p` (mm) lies along tree `t` of `transit` ([`great_vessel_transit`](@ref)): the blood (mL)

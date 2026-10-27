@@ -4,7 +4,7 @@ module ClassifyTest
 using Test
 using Vasculature: VOX_POOL
 using Vasculature.XCAT: tissue_numbers, nearest_tissue_voxel, imaged_segments, nearest_segment, segment_index, closing, great_vessel_transit,
-    vessel_volume_at, vessel_tree_at, great_vessel_pool
+    vessel_volume_at, vessel_tree_at, great_vessel_pool, scale_tree
 
 @testset "phantom classifier helpers" begin
     m = falses(5, 5, 5); m[2, 2, 2] = true; m[4, 4, 4] = true
@@ -47,5 +47,9 @@ using Vasculature.XCAT: tissue_numbers, nearest_tissue_voxel, imaged_segments, n
     k, pool, ml = great_vessel_pool(T, (9.0, 1.0, 4.0), 0x02); @test k == VOX_POOL && pool == 6 && ml ≈ T.volume[10, 2, 5]
     k, pool, ml = great_vessel_pool(T, (14.0, 5.0, 11.0), 0x01); @test pool == 27 && ml ≈ T.volume[15, 6, 12] - T.apex_ml
     @test great_vessel_pool(T, (4.0, 5.0, 19.0), 0x01)[2] == 5
+    # a tree at another body's volume: its blood upstream (and its marks) scale, the other trees do not
+    S = scale_tree(T, 0x01, 2)
+    @test S.volume[15, 6, 12] ≈ 2T.volume[15, 6, 12] && S.apex_ml ≈ 2T.apex_ml && S.volume[10, 2, 5] == T.volume[10, 2, 5]
+    @test great_vessel_pool(S, (14.0, 5.0, 11.0), 0x01)[3] ≈ 2great_vessel_pool(T, (14.0, 5.0, 11.0), 0x01)[3]
 end
 end

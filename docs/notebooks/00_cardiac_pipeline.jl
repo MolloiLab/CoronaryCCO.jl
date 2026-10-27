@@ -797,8 +797,19 @@ end
 md"""
 ## 5. Transport
 
-50 mL of iohexol 350 at 5 mL/s and 40 mL of saline into the right arm, carried through the whole-body circulation, the lungs and the left heart into the coronary tree, with recirculation. Adenosine stress raises cardiac output 1.71×, so the same injection is diluted into more blood and the arterial peak is lower.
+The lab's current injection (`INJECTION`, below) into the right arm, carried through the whole-body circulation, the lungs and the left heart into the coronary tree, with recirculation. Adenosine stress raises cardiac output 1.71×, so the same injection is diluted into more blood and the arterial peak is lower.
 """
+
+# ╔═╡ 0c4d6e8f-1a3b-4c5d-9e7f-2b4c6d8e0f13
+"""
+The injection: the lab's current protocol (Hadjiabdolhamid et al. 2024, Shojazadeh et al. 2026), 0.5 mL/kg of contrast at
+5 mL/s, then 0.5 mL/kg of a 30:70 contrast:saline chaser at the same rate, for the body model's 70 kg: 35 mL of iohexol
+350, then 35 mL at 105 mg/mL. A short bolus keeps the first pass inside the scan window: at stress, iodine starts leaving
+the heart about 2.5 s after it arrives.
+"""
+const INJECTION = let kg = 70, conc = 350
+    V.Body.Injection(; phases = [(0.5 * kg, 5, conc), (0.5 * kg, 5, 0.3 * conc)])
+end
 
 # ╔═╡ 3efb6e3b-8c83-43e6-8e17-7152d42f6c2d
 "Contrast transport through the body and the coronary circuit `circuit`, at rest or adenosine stress."
@@ -816,7 +827,7 @@ function transport_state(state, circuit)
         V.transport(
             spec,
             circuit,
-            V.Body.Injection();
+            INJECTION;
             times = V.HEART_PHANTOM.times,
         ),
     )
@@ -1237,9 +1248,20 @@ Which great vessel each vessel voxel belongs to, and where it lies along it, on 
 between it and the heart. The trees grow by connection through XCAT's vessel labels from where they meet the heart: the
 aorta from the LV, the pulmonary arteries from the RV, the venae cavae and brachiocephalic veins from the RA, the pulmonary
 veins from the LA (`V.XCAT.great_vessel_transit`). Each state's transit is volume over flow (`V.pool_delay`).
+
+The aorta is timed by the body model's volume, not XCAT's. XCAT vmale_50's aorta is about three standard deviations
+narrower than adult men's (21–22 mm ascending and 15 mm descending, against 33 ± 4 and 24 ± 3 mm; Wolak et al. 2008), so its
+lumen holds 26.7 mL from the valve to the arch's top. The whole-body model that makes the arterial curves holds 60 mL there
+(aortic root 25 mL, arch 35 mL). Each aortic voxel keeps its place along XCAT's aorta, and the blood upstream of it is
+scaled by that ratio (`V.XCAT.scale_tree`), so the arterial curves and their timing come from one body.
 """
-GREAT_VESSEL_TRANSIT = cached("great_vessel_transit") do
-    V.XCAT.great_vessel_transit(xcat_labels, XCAT_ORIGIN, XCAT_VOXEL_MM)
+GREAT_VESSEL_TRANSIT = let
+    xcat = cached("great_vessel_transit") do
+        V.XCAT.great_vessel_transit(xcat_labels, XCAT_ORIGIN, XCAT_VOXEL_MM)
+    end
+    body = V.circulation(V.HEART_TRANSPORT)
+    volume(segment) = body.segs[findfirst(s -> s.name === segment, body.segs)].v
+    V.XCAT.scale_tree(xcat, 0x01, (volume(:aortic_root) + volume(:arch)) / xcat.apex_ml)
 end;
 
 # ╔═╡ 2f6d8c41-7a3e-4b9c-8e15-d4a7c0b93e62
@@ -1700,7 +1722,7 @@ end
 # ╔═╡ ab9d2337-2a36-4416-97ad-e9ad2c753d4b
 """
 The share of the delivered iodine that has already left the heart through the coronary sinus, 1, 2 and 3 s after
-arrival and at the arterial peak.
+arrival, 1 s before the arterial peak and at the peak.
 """
 function outflow_check(view)
     bundle = view.bundle
@@ -1715,7 +1737,7 @@ function outflow_check(view)
     rows = map(("rest", "stress")) do state
         ledger = bundle.ledger[state]
         timing = V.DynamicPhantom.scan_times(bundle; state, roi = "roi:descending aorta")
-        times = [timing.arrival .+ [1, 2, 3]; timing.peak_time]
+        times = [timing.arrival .+ [1, 2, 3]; timing.peak_time - 1; timing.peak_time]
         shares = [@sprintf("%.0f%%", 100 * share_out(ledger, t)) for t in times]
         @sprintf(
             "| **%s** (arrival at %.1f s, peak at %.1f s) | %s |",
@@ -1727,8 +1749,8 @@ function outflow_check(view)
     end
     text = """
     !!! note "Iodine already out of the heart"
-        | | arrival + 1 s | arrival + 2 s | arrival + 3 s | arterial peak |
-        |---|---|---|---|---|
+        | | arrival + 1 s | arrival + 2 s | arrival + 3 s | 1 s before the peak | arterial peak |
+        |---|---|---|---|---|---|
     $(join("    " .* rows, "\n"))
 
         A measurement that counts the iodine the heart has taken up misses this share.
@@ -2243,6 +2265,7 @@ truth = heart.roi_table[(STATE, "LV")]
 # ╟─ecf9a259-972e-4b13-a1f2-26cab5610bcf
 # ╟─68d1c5cd-fa2f-4961-9636-f6731ad142d6
 # ╟─e03d6af1-41ef-48c6-b867-4536d946cec4
+# ╠═0c4d6e8f-1a3b-4c5d-9e7f-2b4c6d8e0f13
 # ╠═3efb6e3b-8c83-43e6-8e17-7152d42f6c2d
 # ╠═213ad6d9-995f-4b5c-9d87-549824095172
 # ╠═c2d2cdfc-a6dd-4892-be8d-9833d47b56b3
