@@ -22,6 +22,13 @@ let BASE = get(ENV, "VASCULATURE_BASE", ""),
             thumbnail = "step5_lung_phantom.png",
             tags = ["Lung", "XCAT", "Phantom"],
         ),
+        "02_limb_pipeline" => (
+            index = "02",
+            title = "Limb Pipeline",
+            summary = "From the raw XCAT leg to a vascular tree that reaches 10 µm terminals, grown in two passes that keep Murray's law.",
+            thumbnail = "step6_limb_two_pass.png",
+            tags = ["Leg", "XCAT", "Growth"],
+        ),
     )
 
     # Tile builder — defined inside the `let` so Therapy's file-based router

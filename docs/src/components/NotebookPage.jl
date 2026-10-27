@@ -12,6 +12,7 @@ function _notebook_display_title(slug::AbstractString)
     overrides = Dict(
         "00_cardiac_pipeline" => "00 · Cardiac Pipeline",
         "01_pulmonary_pipeline" => "01 · Pulmonary Pipeline",
+        "02_limb_pipeline" => "02 · Limb Pipeline",
     )
     return get(overrides, slug, replace(slug, "_" => " "))
 end

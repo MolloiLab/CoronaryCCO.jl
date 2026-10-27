@@ -49,14 +49,14 @@ How many terminals grow is the organ's own number. For an organ that feeds its t
 flow is the tissue's O₂ demand by Fick, over the flow of one terminal of the heart tree scored against Kassab's
 morphometry (0.14 µL/min, about 12 µm across). The lungs carry the whole cardiac output but are not fed by it, so their
 count comes from their structure instead: one terminal per acinus (`nterm`), with the vessels inside each acinus
-solved below it in `flow`. You can always give `nterm` directly.
+solved below it in `flow`. You can always give `nterm` directly. A leg is too large for one growth at its real terminal size, so it grows in two passes: the whole leg to 10 mL patches, then each patch to 10 µm, with every radius set by Murray's law (the `02_limb_pipeline` notebook).
 
 | | `flow_ml_min` | → terminals | `tissue_ml` | inlets |
 |---|---|---|---|---|
 | heart (adult, rest) | 135.6 | 957,045 | 148 (myocardium) | LCA, RCA |
 | lungs (adult) | (the cardiac output, not used for the count) | 29,912 acini (Vasilescu et al. 2020) | 2,752 (lung voxels) | main pulmonary artery |
 | brain (older adult, rest) | 510 (van Es et al. 2010) | 3.6 million | 1,016 (parenchyma) | both internal carotids, both vertebrals |
-| one leg (adult, rest) | 290 for the whole leg (Koch Esteves et al. 2023: 2.6 mL/min per 100 mL) | 2.0 million | 11,000 (whole leg: skin, fat, bone, muscle) | common femoral artery |
+| one leg (adult, rest) | 330 for the leg's soft tissue (Koch Esteves et al. 2023: 2.6 mL/min per 100 mL) | 58.7 million: Murray's law from the femoral artery to 10 µm terminals, grown in two passes (`02_limb_pipeline`) | 12,661 (skin, fat and muscle; bone blocks) | common femoral artery |
 | any organ | VO₂ ÷ (arterial O₂ content × O₂ extraction) | flow ÷ 0.14 µL/min | its segmented volume | each imaged inlet (femoral artery, carotids + basilar, ...) |
 
 `tissue_ml` is the volume of the domain you grow into, and the flow must be that domain's: for a leg, 2.6 mL/min per
