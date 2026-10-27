@@ -34,6 +34,10 @@ const HEART_FLOW = FlowSpec(;
     # The CMR blood volume is intramyocardial: the epicardial (imaged) arteries and veins hold their own lumen volume on top.
     # [nickander2019_cmr_myocardial_blood_volume]
     fb_scope = :intramural,
+    # mL/mL. The same cohort under adenosine: 12.1 +/- 1.1 % (MBF 0.9 -> 3.4 mL/min/g). The capillary (small-vessel) volume
+    # does not change with adenosine in dogs (Crystal 1981; total coronary blood volume +75%), so the extra is arteriolar
+    # and venular. [nickander2019_cmr_myocardial_blood_volume, crystal1981_myocardial_blood_volume]
+    fb_dilated = 0.121f0,
     # 1. Derived: arterial 3.0 of 10.4 mL coronary cast volume (Kassab 1994, Discussion).
     # [kassab1994_venous_morphometry]
     share_art = 0.288f0,
@@ -52,10 +56,14 @@ const HEART_FLOW = FlowSpec(;
     # mL/mL. Derived: interstitial fraction = ECV - plasma volume = 0.273 - 0.09 x (1 - 0.45) (Nickander 2019 ECV 27.3
     # % and MBV 9.0 %, same healthy cohort). [nickander2019_cmr_myocardial_blood_volume]
     ve = 0.224f0,
-    # mL/min/g. Capillary permeability-surface product for iodinated contrast: Patlak influx constant of iopamidol in
-    # normal pig myocardium, by 64-slice CT and EBCT, similar during adenosine.
-    # [daghini2007_ct64_myocardial_permeability]
-    ps = 0.37f0,
+    # mL/min/g. Capillary permeability-surface product for iodinated contrast, PS = ps + ps_slope * MBF: human dynamic CT
+    # against PET (Alessio 2019: 0.22 + 0.35 F; Bindschadler 2014's porcine fit 0.30 + 0.385 F). Checks: rest Patlak
+    # influx E * F_p = 0.32 vs iopamidol's 0.37 mL/min/g in pig (Daghini 2007, a lower bound on PS); extraction nearly
+    # unchanged when adenosine doubles flow (Malyar 2011). [bindschadler2014_iodine_exchange_model_ps,
+    # daghini2007_ct64_myocardial_permeability, malyar2011_ebct_contrast_extraction_microembolization]
+    ps = 0.22f0,
+    # 1. See ps. [bindschadler2014_iodine_exchange_model_ps]
+    ps_slope = 0.35f0,
     # 1. Imaged (epicardial) coronaries are 13% wider in diameter at maximal hyperemia than at rest: adenosine, proximal
     # LAD +13.1 +/- 1.4% and mid LAD +15.8 +/- 2.5% (n = 15); +9.2 +/- 1.5% proximal (n = 12); distal +15% (n = 24);
     # IVUS area +17% (n = 19). Diseased segments do not dilate (papaverine: atherosclerotic area -7.4%).
@@ -214,6 +222,8 @@ const LUNG_FLOW = FlowSpec(;
     fb = 0.20528f0,
     # Huang's volumes count every vessel, the hilar (imaged) ones included. [huang1996_human_pulmonary_morphometry]
     fb_scope = :whole,
+    # mL/mL. The lung is passive: one state. [huang1996_human_pulmonary_morphometry]
+    fb_dilated = 0.20528f0,
     # 1. Derived: 319 / 565 (see fb). [huang1996_human_pulmonary_morphometry, molina2012_lung_weight]
     share_art = 0.565f0,
     # 1. Derived: 83 / 565 (see fb). [bouwsema2017_capillary_blood_volume_exercise]
@@ -241,6 +251,8 @@ const LUNG_FLOW = FlowSpec(;
     # respiratory failure). The body model (body.jl ps_lung) uses the same value.
     # [cheriyan2022_lung_dce_mri_ve_ktrans, keiding1988_human_forearm_inulin_edta_ps, brigham1983_lung_urea_ps]
     ps = 0.274f0,
+    # 1. No flow dependence measured for the lung. [cheriyan2022_lung_dce_mri_ve_ktrans]
+    ps_slope = 0.0f0,
     # 1. The imaged pulmonary arteries keep their size (no hyperemic state is modelled for the lung).
     epicardial_dilation = 0.0f0,
     # g/mL. Derived: lung weight 840 g (Molina 2012, right 445 + left 395, with blood) over XCAT's lung volume 2752.285 mL

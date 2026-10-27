@@ -70,7 +70,8 @@ const HEART_TRANSPORT = TransportSpec(;
 # a bolus with the lungs in their own body slot, fed by the right ventricle; the body's coronary bed is the heart's (lumped)
 const LUNG_TRANSPORT = TransportSpec(
     HEART_TRANSPORT; phys = LUNG_FLOW, tissue_ml = 2752.285f0, bed = :lung, input = :rv,
-    coronary = (; ml = XCAT_MYOCARDIUM_ML, fb = HEART_FLOW.fb, ve = HEART_FLOW.ve, ps = HEART_FLOW.ps, rho = HEART_FLOW.rho)
+    # the lumped heart's PS at the resting MBF, 0.9 mL/min/g [nickander2019_cmr_myocardial_blood_volume]
+    coronary = (; ml = XCAT_MYOCARDIUM_ML, fb = HEART_FLOW.fb, ve = HEART_FLOW.ve, ps = HEART_FLOW.ps + 0.9f0 * HEART_FLOW.ps_slope, rho = HEART_FLOW.rho)
 )
 
 # ---------------------------------------------------------------------------------------------------------- phantoms

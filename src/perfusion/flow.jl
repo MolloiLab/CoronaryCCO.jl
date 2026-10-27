@@ -180,6 +180,10 @@ Volumes and exchange
   imaged (`isbase`) vessels, which run outside it, hold their own lumen volume on top (heart: CMR's
   blood volume is intramyocardial, and the epicardial arteries and veins lie on the surface).
   `:whole`: every vessel, imaged ones included (lung: Huang's volumes count the hilar vessels).
+- `fb_dilated`: the same blood volume fraction at maximal vasodilation (`state = :stress`). Heart 0.121 (the same
+  healthy cohort under adenosine, Nickander et al. 2019). The small-vessel (capillary) volume does not change with
+  adenosine (Crystal et al. 1981), so the extra blood is held by the unresolved arterioles and venules, in their volume
+  shares; capillary resistance, which follows the capillary volume, is unchanged. Equal to `fb` for a passive organ.
 - `epicardial_dilation`: how much wider (fraction of the diameter) the imaged conduit arteries are at maximal
   vasodilation (`state = :stress`) than at rest: flow-mediated dilation, which a stenosed (diseased) segment lacks. Heart
   0.13 (adenosine, QCA and IVUS in normal human coronaries); 0 leaves them rigid.
@@ -189,13 +193,14 @@ Volumes and exchange
 - `cap_length_mm`, `cap_diameter_um`: functional capillary 0.5 mm × 6 µm (Kassab & Fung 1994),
   used for the capillary-bed resistance.
 - `ve`: interstitial volume fraction. Heart 0.224 (ECV 0.273 minus plasma, Nickander et al. 2019).
-- `ps`: capillary permeability–surface product for iodinated contrast, 0.37 mL/min per g: the
-  Patlak influx constant of iopamidol in normal pig myocardium, the same by 64-slice CT and by
-  electron-beam CT, and "similar" during adenosine (Daghini et al. 2007). Each bed's first-pass
-  extraction follows Renkin–Crone, E = 1 − exp(−PS·m/F_p), so E ≈ 0.5 at rest and ≈ 0.12 at
-  maximal dilation. A Patlak constant is E·F_p, a lower bound on PS. Other measurements spread
-  around it: 0.13–0.19 for iohexol under coronary adenosine (Ritman 1994), and E = 0.33 at full
-  vasodilation in dogs (Canty et al. 1991, whose per-gram flow is unknown). These are checks.
+- `ps`, `ps_slope`: capillary permeability–surface product for iodinated contrast, PS = `ps` + `ps_slope` · F (mL/min
+  per g; F the bed's blood flow per gram), so it grows as flow recruits exchange surface. Heart 0.22 + 0.35 F: the
+  linear law of human dynamic CT fitted against PET (Alessio et al. 2019; Bindschadler et al. 2014's porcine law is
+  0.30 + 0.385 F). Each bed's first-pass extraction follows Renkin–Crone, E = 1 − exp(−PS·m/F_p): about 0.67 at rest
+  and 0.52 at maximal dilation. Checks: the rest Patlak influx constant E·F_p is 0.32 mL/min/g against iopamidol's 0.37
+  in normal pig myocardium (Daghini et al. 2007); the extraction changes little when adenosine doubles flow, as in pig
+  EBCT (Malyar et al. 2011); E = 0.33 at full vasodilation in dogs (Canty et al. 1991, flow unknown) and PS 0.13–0.19
+  for iohexol under coronary adenosine (Ritman 1994) lie below it.
 - `rho`: myocardial density 1.05 g/mL.
 - `radius_cv`: biological diameter variability. CCO sets every radius exactly from its flow;
   real vessels of one order scatter by 10–25% (Kassab et al. 1993, Table 2). Each segment's
@@ -259,6 +264,7 @@ struct FlowSpec
     hd::F32
     fb::F32
     fb_scope::Symbol
+    fb_dilated::F32
     epicardial_dilation::F32
     share_art::F32
     share_cap::F32
@@ -268,6 +274,7 @@ struct FlowSpec
     cap_ht_ratio::F32
     ve::F32
     ps::F32
+    ps_slope::F32
     rho::F32
     plasma_viscosity_mPas::F32
     radius_cv::F32
@@ -1781,7 +1788,9 @@ function _build(
     vart, vven = _resolved_volumes(t, vt, companion, s)
     vart_budget, vven_budget = _budget_volumes(phys, t, vt, companion, s, vart, vven)
     nv = nseg(vt)
-    vv_unres = max(0.0f0, phys.share_ven * vblood - vven_budget)
+    # at maximal dilation the bed holds more blood (`fb_dilated`), in its arterioles and venules: the capillaries' does not change
+    vextra = state === :stress ? max(0.0f0, phys.fb_dilated - phys.fb) * vol_tissue : 0.0f0
+    vv_unres = max(0.0f0, phys.share_ven * vblood + vextra * phys.share_ven / (phys.share_art + phys.share_ven) - vven_budget)
     vcap_total = phys.share_cap * vblood
     # vasoactive arteries
     dlo, dhi = _active_range(t, phys)
@@ -1847,7 +1856,7 @@ function _build(
     end
     tg = to(terr_g[tperm]); stend = to(sten)
     tsol = iperm[terminals]                                                  # terminal i's solver segment
-    return (; S, W, act, companion, d0, dem, dist, hd, lim, mass_g, mu0d, n, nt, nv, perm, s, seg, sheet, sten, stend, subdv, t, terminals, tg, tperm, tsol, vart, vart_budget, vblood, vcap_total, vl, vperm, vt, vv_unres, vven, vven_budget)
+    return (; S, W, act, companion, d0, dem, dist, hd, lim, mass_g, mu0d, n, nt, nv, perm, s, seg, sheet, sten, stend, subdv, t, terminals, tg, tperm, tsol, vart, vart_budget, vblood, vextra, vcap_total, vl, vperm, vt, vv_unres, vven, vven_budget)
 end
 
 function _circuit(
@@ -1913,7 +1922,7 @@ end
 # The circuit's outputs from a finished solve (`B` from `_build`), in the caller's numbering. A function of its own, with
 # the same argument types for every state, reference and stenosis, so it is compiled once per organ layout.
 function _assemble(B, territory_ml::AbstractVector, phys::FlowSpec, state::Symbol, kappa::F32, ctone, iters, dxlast)
-    (; S, W, act, companion, dem, hd, mass_g, n, nt, nv, perm, s, sheet, t, terminals, tperm, vart, vart_budget, vblood, vcap_total, vl, vperm, vt, vv_unres, vven, vven_budget) = B
+    (; S, W, act, companion, dem, hd, mass_g, n, nt, nv, perm, s, sheet, t, terminals, tperm, vart, vart_budget, vblood, vextra, vcap_total, vl, vperm, vt, vv_unres, vven, vven_budget) = B
     _release_work!(S) # only the solution and resistances are read from here on
     rmc = _micro_resistance(S, mass_g)
     # what the outputs need besides the solution, rebuilt now rather than held through the solve (the same values): the
@@ -1941,7 +1950,7 @@ function _assemble(B, territory_ml::AbstractVector, phys::FlowSpec, state::Symbo
     # constricted arterioles hold less blood; the unresolved arterial volume is what the dilated
     # tree leaves of the Kassab target (`fb_scope`), constricted with the terminal's own arteriole
     vol .*= xd .^ 2; vart_now = sum(vol)
-    va_unres = max(0.0f0, phys.share_art * vblood - vart_budget)
+    va_unres = max(0.0f0, phys.share_art * vblood + vextra * phys.share_art / (phys.share_art + phys.share_ven) - vart_budget)
 
     # ---- plasma volumes and transit times
     vp_a = similar(len); tau_a = similar(len)
@@ -1985,7 +1994,9 @@ function _assemble(B, territory_ml::AbstractVector, phys::FlowSpec, state::Symbo
         tc[i] = w[i] * vcap_total * pf / fp[i]
         tv[i] = w[i] * vv_unres * pf / fp[i]
         vint[i] = phys.ve * F32(territory_ml[i])
-        ex[i] = 1.0f0 - exp(-phys.ps / 60.0f0 * F32(territory_ml[i]) * phys.rho / fp[i])
+        # PS per gram from the bed's blood flow per gram (mL/min/g), Renkin-Crone over the bed's plasma flow
+        ps_g = phys.ps + phys.ps_slope * 60.0f0 * qt[i] / (F32(territory_ml[i]) * phys.rho)
+        ex[i] = 1.0f0 - exp(-ps_g / 60.0f0 * F32(territory_ml[i]) * phys.rho / fp[i])
         kk[i] = ex[i] * fp[i] / vint[i]
         off[i] = t_end[j] + ta[i] + tv[i] + s_v[vl[i]]
     end
@@ -2014,7 +2025,7 @@ function _assemble(B, territory_ml::AbstractVector, phys::FlowSpec, state::Symbo
         t, vt, phys, state, order, terminals, tidx, vl, len, q, qv, pa, pv, tau_a, tau_v, t_end, s_v, vp_a, vp_v,
         fp, ta, tc, tv, vint, ex, kk, off, rcap .* kappa, so2, dem, xd, av, pov, ctone, s, mass_g,
         (;
-            blood = vblood, art_resolved = vart_now, ven_resolved = vven, art_unresolved = va_unres,
+            blood = vblood + vextra, art_resolved = vart_now, ven_resolved = vven, art_unresolved = va_unres,
             ven_unresolved = vv_unres, capillary = vcap_total, art_imaged = vart - vart_budget, ven_imaged = vven - vven_budget,
         ), resist
     )

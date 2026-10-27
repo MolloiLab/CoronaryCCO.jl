@@ -190,6 +190,14 @@ same_tree(a, b) = a.pos == b.pos && a.radius == b.radius && a.parent == b.parent
         # a warm start carries each vessel's branch history (audit A53-1): re-solved from itself, the state keeps it
         Cw = C.Flow.circuit(vt, fill(0.1f0, count(==(0), nch)); phys = heart, state = :rest, reference = Cr)
         @test length(Cw.po) == length(vt.r) && maximum(abs.(Cw.po .- Cr.po)) < 0.1f0 && any(>(0), Cr.po)
+        # at maximal dilation the bed holds `fb_dilated` of blood, the extra in its arterioles and venules (the capillaries'
+        # volume, which sets their resistance, is the rest value)
+        Cs = C.Flow.circuit(vt, fill(0.1f0, count(==(0), nch)); phys = heart, state = :stress)
+        vol = 0.1f0 * count(==(0), nch)
+        @test Cr.volumes.blood ≈ heart.fb * vol && Cs.volumes.blood ≈ heart.fb_dilated * vol && Cs.volumes.capillary ≈ Cr.volumes.capillary
+        # each bed's extraction is Renkin-Crone with PS = ps + ps_slope * its blood flow per gram
+        fg = 60 * Cs.q[Cs.terminals[1]] / (0.1f0 * heart.rho)
+        @test Cs.ex[1] ≈ 1 - exp(-(heart.ps + heart.ps_slope * fg) / 60 * 0.1f0 * heart.rho / Cs.fp[1])
         T0 = transport(spec, Cr; passes = 0, times = 0.0f0:2.0f0:20.0f0)
         # the heart's body takes its coronary share from the grown tree's root flow
         qroot = sum(Cr.q[j] for j in eachindex(vt.parent) if vt.parent[j] == 0)
