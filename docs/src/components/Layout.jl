@@ -33,7 +33,7 @@ function Layout(content)
             :class => "sticky top-0 z-40 h-16 px-4 sm:px-8 backdrop-blur-xl backdrop-saturate-150",
             :style => "background:var(--header-bg)",
             Div(
-                :class => "max-w-6xl mx-auto h-full flex items-center justify-between gap-4",
+                :class => "max-w-7xl mx-auto h-full flex items-center justify-between gap-4",
                 VasculatureWordmark(),
                 Nav(
                     Symbol("aria-label") => "Primary navigation", :class => "flex items-center gap-2",
@@ -78,13 +78,13 @@ function Layout(content)
         ),
         # Main content — id="page-content" enables SPA navigation (router swaps this)
         MainEl(
-            :id => "page-content", :class => "flex-1 w-full max-w-6xl mx-auto px-4 sm:px-8 pt-10 pb-24 sm:pt-16",
+            :id => "page-content", :class => "flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 pt-10 pb-24 sm:pt-16",
             content
         ),
         Footer(
             :class => "px-4 sm:px-8 py-10",
             Div(
-                :class => "max-w-6xl mx-auto flex flex-wrap gap-x-6 gap-y-2 items-center justify-center text-sm tv-muted",
+                :class => "max-w-7xl mx-auto flex flex-wrap gap-x-6 gap-y-2 items-center justify-center text-sm tv-muted",
                 A(
                     :href => "https://github.com/MolloiLab", :target => "_blank",
                     :class => "no-underline hover:opacity-70 transition-opacity", "MolloiLab"
