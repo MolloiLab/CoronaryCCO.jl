@@ -1,11 +1,12 @@
-# TableOfContents.jl — floating right-hand list of the page's sections.
+# TableOfContents.jl — right-hand list of the page's sections.
 #
-# Fixed to the right side at xl+ breakpoints; hidden on smaller viewports.
-# Each entry is an anchor link to a section `id` within the current page.
+# A column of its own at xl+ breakpoints, sticky under the top bar and aligned with the bar's right edge, so it never
+# floats over the content at any width; hidden on smaller viewports. Each entry is an anchor link to a section `id`
+# within the current page.
 
 function TableOfContents(sections::Vector{Tuple{String, String}})
     return Nav(
-        :class => "hidden xl:block fixed right-10 top-28 w-48",
+        :class => "hidden xl:block sticky top-28 self-start max-h-[calc(100vh-8rem)] overflow-y-auto",
         Div(
             :class => "space-y-1",
             P(:class => "text-xs font-medium tv-muted mb-3 px-3", "On This Page"),
@@ -21,8 +22,9 @@ function TableOfContents(sections::Vector{Tuple{String, String}})
 end
 
 function PageWithTOC(sections::Vector{Tuple{String, String}}, content)
-    return Fragment(
-        content,
+    return Div(
+        :class => "xl:grid xl:grid-cols-[minmax(0,1fr)_12rem] xl:gap-16",
+        Div(:class => "min-w-0", content),
         TableOfContents(sections),
     )
 end

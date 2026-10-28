@@ -17,6 +17,18 @@ function _notebook_display_title(slug::AbstractString)
     return get(overrides, slug, replace(slug, "_" => " "))
 end
 
+"""The notebook's sections, `(id, label)` for every second-level heading, for the page's table of contents."""
+function _notebook_sections(html::AbstractString)
+    unescape(s) = replace(
+        s, r"&#(\d+);" => m -> string(Char(parse(Int, m[3:(end - 1)]))),
+        "&amp;" => "&", "&lt;" => "<", "&gt;" => ">", "&quot;" => "\""
+    )
+    return [
+        (unescape(m[1]), unescape(strip(replace(m[2], r"<[^>]+>" => ""))))
+            for m in eachmatch(r"<h2\b[^>]*\bid=\"([^\"]+)\"[^>]*>(.*?)</h2>"s, html)
+    ]
+end
+
 const _NOTEBOOK_GITHUB_BASE =
     "https://github.com/MolloiLab/Vasculature.jl/blob/main/docs/notebooks"
 
@@ -33,27 +45,31 @@ function NotebookPage(slug::AbstractString)
         "__VASCULATURE_NOTEBOOKS_BASE__" => "$(BASE)/notebooks-static",
     )
 
-    return Div(
-        :class => "max-w-4xl mx-auto space-y-8",
-        # Back pill (left) + source pill (right), then the title.
-        Div(
-            :class => "flex items-center justify-between gap-3",
-            A(:href => "$(BASE)/examples/", :class => "tv-pill tv-pill-sm", "← Examples"),
-            A(
-                :href => github_src_url, :target => "_blank", :rel => "noopener",
-                :class => "tv-pill tv-pill-sm",
-                RawHtml(GITHUB_ICON),
-                Span(:class => "hidden sm:inline", "View Source"),
+    # The notebook takes the page's width beside its table of contents (see `PageWithTOC`); its prose keeps a
+    # readable measure while figures and code use the width (input.css, "Notebook pages").
+    return PageWithTOC(
+        _notebook_sections(notebook_html), Div(
+            :class => "space-y-8",
+            # Back pill (left) + source pill (right), then the title.
+            Div(
+                :class => "flex items-center justify-between gap-3",
+                A(:href => "$(BASE)/examples/", :class => "tv-pill tv-pill-sm", "← Examples"),
+                A(
+                    :href => github_src_url, :target => "_blank", :rel => "noopener",
+                    :class => "tv-pill tv-pill-sm",
+                    RawHtml(GITHUB_ICON),
+                    Span(:class => "hidden sm:inline", "View Source"),
+                ),
             ),
-        ),
-        H1(:class => "tv-display text-4xl sm:text-5xl", title),
+            H1(:class => "tv-display text-4xl sm:text-5xl", title),
 
-        # Native inline notebook — scoped Pluto/Snapshot styles, one page
-        # scroll, inherited Therapy theme, no nested viewport or iframe chrome.
-        # The fragment remains real DOM and theme-aware inside a large tile.
-        Div(
-            :class => "tv-tile px-5 sm:px-10 py-8 sm:py-10",
-            RawHtml(notebook_html)
-        ),
+            # Native inline notebook — scoped Pluto/Snapshot styles, one page
+            # scroll, inherited Therapy theme, no nested viewport or iframe chrome.
+            # The fragment remains real DOM and theme-aware inside a large tile.
+            Div(
+                :class => "tv-tile px-5 sm:px-10 py-8 sm:py-10",
+                RawHtml(notebook_html)
+            ),
+        )
     )
 end
